@@ -2,7 +2,7 @@
 FROM openjdk:17-jdk-slim
 
 # 2. 작업 디렉토리 설정
-WORKDIR /.
+WORKDIR /app
 
 # 3. 프로젝트 소스 복사
 COPY . .
