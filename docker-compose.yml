@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-jdbc:mysql://db:3306/respring}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME:-ssafy}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-ssafy}
+    networks:
+      - project-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - project-network
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-ssafy}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-respring}
+      MYSQL_USER: ${MYSQL_USER:-ssafy}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ssafy}
+    ports:
+      - "3306:3306"
+    networks:
+      - project-network
+
+networks:
+  project-network:
+    driver: bridge
