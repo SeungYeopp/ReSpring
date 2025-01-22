@@ -21,7 +21,7 @@ public class Challenge {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-    private Long like;
+    private Long likes;
     private Long view;
     private String tag;
 }
