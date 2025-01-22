@@ -6,6 +6,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface EventRepositoryQuerydsl {
-    List<Event> findMyAllEvents(UUID userId);
-    List<Event> findEventsByUserId(UUID userId);
+    List<Event> getTimelineByUserId(UUID userId);
 }

@@ -7,4 +7,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface EventRepository extends JpaRepository<Event, Long>, EventRepositoryQuerydsl {
+	List<Event> findByUserId(UUID userId);
 }
