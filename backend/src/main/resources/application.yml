@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: respring
+
+  datasource:
+    url: jdbc:mysql://db:3306/respring
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
