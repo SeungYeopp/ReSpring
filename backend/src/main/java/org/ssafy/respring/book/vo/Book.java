@@ -19,7 +19,7 @@ public class Book {
     private String content;
     private String coverImg;
     private String tag;
-    private Long like;
+    private Long likes;
     private Long view;
 
     @Column(name = "created_at")
