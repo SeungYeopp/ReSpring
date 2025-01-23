@@ -6,6 +6,7 @@ pipeline {
             steps {
                 echo 'Building Backend...'
                 dir('backend') {
+                    sh 'chmod +x ./gradlew' // 실행 권한 설정
                     sh './gradlew clean build' // Gradle 빌드
                 }
             }
