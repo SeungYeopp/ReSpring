@@ -42,15 +42,15 @@ services:
       - project-network
 
   jenkins:
-    image: jenkins/jenkins:lts
+    image: custom-jenkins:latest
     container_name: jenkins-server
     user: root
     ports:
-      - "8081:8080"  # Jenkins를 8081 포트로 매핑
-      - "50000:50000" # Jenkins 에이전트와 통신을 위한 포트
+      - "8081:8080"  # Jenkins UI
+      - "50000:50000" # Jenkins 에이전트 통신
     volumes:
-      - jenkins_home:/var/jenkins_home  # Jenkins 데이터 저장소
-      - /var/run/docker.sock:/var/run/docker.sock  # Docker 데몬 접근
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # Docker 데몬 접근
     environment:
       JAVA_OPTS: "-Djenkins.install.runSetupWizard=false" # 초기 설정 스킵
     networks:
@@ -61,5 +61,4 @@ networks:
     driver: bridge
 
 volumes:
-  db_data:
-  jenkins_home:  # 여기에 jenkins_home 추가
+  jenkins_home:
