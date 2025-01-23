@@ -1,12 +1,18 @@
 package org.ssafy.respring.domain.book.vo;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "book")
+@Getter @Setter
 public class Book {
     @Id
     private Long id;
