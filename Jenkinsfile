@@ -1,31 +1,37 @@
 pipeline {
     agent any
-
+    environment {
+        ENV_FILE = credentials('project-env')
+    }
     stages {
+        stage('Setup Environment') {
+            steps {
+                script {
+                    // backend 디렉토리에 Secret File 내용 복사
+                    sh 'cp $ENV_FILE ./backend/.env'
+                }
+            }
+        }
         stage('Backend Build') {
             steps {
-                echo 'Building Backend...'
                 dir('backend') {
-                    sh 'chmod +x ./gradlew' // 실행 권한 설정
-                    sh './gradlew clean build' // Gradle 빌드
+                    script {
+                        sh 'chmod +x ./gradlew'
+                    }
+                    sh './gradlew clean build'
                 }
             }
         }
-
         stage('Frontend Build') {
             steps {
-                echo 'Building Frontend...'
                 dir('frontend') {
-                    sh 'npm install'           // Node.js 의존성 설치
-                    sh 'npm run build'         // Next.js 빌드
+                    sh 'npm install && npm run build'
                 }
             }
         }
-
         stage('Docker Compose') {
             steps {
-                echo 'Deploying with Docker Compose...'
-                sh 'docker-compose up --build -d'
+                sh 'docker-compose up -d'
             }
         }
     }
