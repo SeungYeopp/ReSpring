@@ -1,6 +1,15 @@
 spring:
   application:
     name: respring
+
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2KB
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+
   config:
     import: optional:file:.env[.properties]
   datasource:
@@ -17,6 +26,8 @@ spring:
       hibernate.dialect: org.hibernate.dialect.MySQLDialect
 
 
+
+
 logging:
   level:
     org:
@@ -24,3 +35,6 @@ logging:
         orm:
           connections:
             pooling: ERROR
+
+file:
+  upload-dir: C:/uploads

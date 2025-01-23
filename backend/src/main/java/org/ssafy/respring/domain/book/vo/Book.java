@@ -1,12 +1,18 @@
 package org.ssafy.respring.domain.book.vo;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "book")
+@Getter @Setter
 public class Book {
     @Id
     private Long id;
@@ -21,6 +27,9 @@ public class Book {
     private String tag;
     private Long likes;
     private Long view;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Image> images = new ArrayList<>();
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
