@@ -6,7 +6,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.ssafy.respring.domain.event.dto.request.EventRequestDto;
+import org.ssafy.respring.domain.event.dto.request.EventCreateRequestDto;
+import org.ssafy.respring.domain.event.dto.request.EventUpdateRequestDto;
 import org.ssafy.respring.domain.event.dto.response.EventResponseDto;
 import org.ssafy.respring.domain.event.service.EventService;
 
@@ -22,15 +23,15 @@ public class EventController {
 
 	@PostMapping
 	@Operation(summary = "이벤트 생성", description = "새로운 이벤트를 생성합니다.")
-	public ResponseEntity<Long> createEvent(@RequestBody EventRequestDto requestDto) {
+	public ResponseEntity<Long> createEvent(@RequestBody EventCreateRequestDto requestDto) {
 		return ResponseEntity.ok(eventService.createEvent(requestDto));
 	}
 
 	@PatchMapping("/{event_id}")
 	@Operation(summary = "이벤트 수정", description = "특정 이벤트를 수정합니다.")
 	public ResponseEntity<Void> updateEvent(
-	  	@Parameter(description = "해당 이벤트 ID") @PathVariable Long event_id,
-	  	@RequestBody EventRequestDto requestDto) {
+			@Parameter(description = "해당 이벤트 ID") @PathVariable Long event_id,
+			@RequestBody EventUpdateRequestDto requestDto) {
 		eventService.updateEvent(event_id, requestDto);
 		return ResponseEntity.ok().build();
 	}
@@ -38,7 +39,7 @@ public class EventController {
 	@DeleteMapping("/{event_id}")
 	@Operation(summary = "이벤트 삭제", description = "특정 이벤트를 삭제합니다.")
 	public ResponseEntity<Void> deleteEvent(
-	  	@Parameter(description = "해당 이벤트 ID") @PathVariable Long event_id
+			@Parameter(description = "해당 이벤트 ID") @PathVariable Long event_id
 	) {
 		eventService.deleteEvent(event_id);
 		return ResponseEntity.ok().build();
@@ -47,15 +48,15 @@ public class EventController {
 	@GetMapping
 	@Operation(summary = "나의 이벤트 목록 조회", description = "나의 이벤트 목록을 조회합니다.")
 	public ResponseEntity<List<EventResponseDto>> getMyEvents(
-	  @Parameter(description = "사용자 UUID") @RequestParam UUID userId
-	  ) {
+			@Parameter(description = "사용자 UUID") @RequestParam UUID userId
+	) {
 		return ResponseEntity.ok(eventService.getMyEvents(userId));
 	}
 
 	@GetMapping("/timeline/{user_id}")
 	@Operation(summary = "타임라인 조회", description = "특정 사용자의 타임라인을 조회합니다.")
 	public ResponseEntity<List<EventResponseDto>> getTimelineByUserId(
-	  	@Parameter(description = "사용자 UUID") @PathVariable UUID user_id
+			@Parameter(description = "사용자 UUID") @PathVariable UUID user_id
 	) {
 		return ResponseEntity.ok(eventService.getTimelineByUserId(user_id));
 	}
