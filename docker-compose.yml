@@ -61,4 +61,5 @@ networks:
     driver: bridge
 
 volumes:
-  jenkins_home:
+  db_data:
+  jenkins_home:  # 여기에 jenkins_home 추가
