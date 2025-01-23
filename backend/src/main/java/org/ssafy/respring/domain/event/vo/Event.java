@@ -11,24 +11,24 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "event")
-@IdClass(EventId.class)
 @RequiredArgsConstructor
 @Getter @Setter
 public class Event {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // AUTO_INCREMENT와 연결
     private Long id;
 
-    @Id
-    @Column(name = "user_id", columnDefinition = "BINARY(16)")
-    private UUID userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "occurred_at")
+    @Column(name = "occurred_at", nullable = false)
     private LocalDateTime occurredAt;
 
-    @Column(name = "event_name")
+    @Column(name = "event_name", nullable = false)
     private String eventName;
 
-    @Column(name = "is_display")
+    @Column(name = "is_display", nullable = false)
     private boolean isDisplay;
     private String category;
 }

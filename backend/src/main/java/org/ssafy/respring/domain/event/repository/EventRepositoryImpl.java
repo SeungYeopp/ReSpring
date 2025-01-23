@@ -22,7 +22,8 @@ public class EventRepositoryImpl implements EventRepositoryQuerydsl {
     @Override
     public List<Event> getTimelineByUserId(UUID userId) {
         return queryFactory.selectFrom(event)
-          .where(event.userId.eq(Expressions.constant(userId)))
+          .where(event.user.id.eq(Expressions.constant(userId))
+                  .and(event.isDisplay.eq(true)))
           .fetch();
     }
 }

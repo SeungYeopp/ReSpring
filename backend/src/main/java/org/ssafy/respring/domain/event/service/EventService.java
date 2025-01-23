@@ -20,14 +20,24 @@ public class EventService {
 	private final EventRepository eventRepository;
 
 	public Long createEvent(EventRequestDto requestDto) {
+
+//		User user = userRepository.findById(requestDto.getUserId())
+//				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + requestDto.getUserId()));
+
 		Event event = new Event();
 		event.setEventName(requestDto.getEventName());
 		event.setCategory(requestDto.getCategory());
 		event.setDisplay(requestDto.isDisplay());
 		event.setOccurredAt(requestDto.getOccurredAt());
 
-		event.setUserId(requestDto.getUserId());
+		System.out.println("before user info");
+		//event.setUserId(requestDto.getUserId());
+		User user = new User();
+		user.setId(requestDto.getUserId());
+		event.setUser(user);
+
 		eventRepository.save(event);
+		System.out.println("saved success");
 
 		return event.getId();
 	}

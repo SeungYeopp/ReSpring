@@ -26,7 +26,7 @@ public class EventController {
 		return ResponseEntity.ok(eventService.createEvent(requestDto));
 	}
 
-	@PatchMapping("/events/{event_id}")
+	@PatchMapping("/{event_id}")
 	@Operation(summary = "이벤트 수정", description = "특정 이벤트를 수정합니다.")
 	public ResponseEntity<Void> updateEvent(
 	  	@Parameter(description = "해당 이벤트 ID") @PathVariable Long event_id,
@@ -35,11 +35,10 @@ public class EventController {
 		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping("/events/{event_id}")
+	@DeleteMapping("/{event_id}")
 	@Operation(summary = "이벤트 삭제", description = "특정 이벤트를 삭제합니다.")
 	public ResponseEntity<Void> deleteEvent(
-	  	@Parameter(description = "해당 이벤트 ID") @PathVariable Long event_id,
-		@RequestBody EventRequestDto requestDto
+	  	@Parameter(description = "해당 이벤트 ID") @PathVariable Long event_id
 	) {
 		eventService.deleteEvent(event_id);
 		return ResponseEntity.ok().build();

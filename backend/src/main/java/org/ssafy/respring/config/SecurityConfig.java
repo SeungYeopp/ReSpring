@@ -16,16 +16,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 // 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                    // Swagger 경로 허용
-                    .requestMatchers(
-                            "/swagger-ui/**",       // Swagger UI
-                            "/v3/api-docs/**",      // OpenAPI 문서
-                            "/swagger-resources/**", // Swagger 리소스
-                            "/webjars/**",           // Swagger WebJar
-                            "/post/**",
-                            "/events/**"
-                    ).permitAll()
-                    .anyRequest().authenticated() // 나머지 요청은 인증 필요
+                        .requestMatchers(
+                                "/**"
+                        ).permitAll()
+                        .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
                 // 폼 로그인 비활성화
                 .formLogin(form -> form.disable());
