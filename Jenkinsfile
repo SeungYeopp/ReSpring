@@ -23,10 +23,11 @@ pipeline {
             }
         }
         stage('Frontend Build') {
+            tools {
+                nodejs "NodeJS-18"
+            }
             steps {
-                dir('frontend') {
-                    sh 'npm install && npm run build'
-                }
+                sh 'npm install && npm run build'
             }
         }
         stage('Docker Compose') {
