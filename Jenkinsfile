@@ -27,7 +27,12 @@ pipeline {
                 nodejs "NodeJS-18"
             }
             steps {
-                sh 'npm install && npm run build'
+                dir('frontend') { // frontend 디렉토리로 이동
+                    sh '''
+                    npm install
+                    npm run build
+                    '''
+                }
             }
         }
         stage('Docker Compose') {
