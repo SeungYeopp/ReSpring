@@ -26,10 +26,7 @@ public class EventService {
 		event.setDisplay(requestDto.isDisplay());
 		event.setOccurredAt(requestDto.getOccurredAt());
 
-		User user = new User();
-		user.setId(requestDto.getUserId());
-
-		event.setUser(user);
+		event.setUserId(requestDto.getUserId());
 		eventRepository.save(event);
 
 		return event.getId();
