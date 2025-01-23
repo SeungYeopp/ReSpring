@@ -17,12 +17,9 @@ public class SecurityConfig {
                 // 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/post/**",
-                                "/swagger-ui/**",
-                                "/swagger-resources/**",
-                                "/v3/api-docs/**"
-                        ).permitAll() // "/post/**"는 인증 없이 접근 가능
-                        .anyRequest().authenticated()
+                                "/**"
+                        ).permitAll()
+                        .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
                 // 폼 로그인 비활성화
                 .formLogin(form -> form.disable());
