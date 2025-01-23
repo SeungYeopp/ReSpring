@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class ImageRequestDTO {
     private Long postId;
-    private Long bookId;
+    private Long storyId;
 }

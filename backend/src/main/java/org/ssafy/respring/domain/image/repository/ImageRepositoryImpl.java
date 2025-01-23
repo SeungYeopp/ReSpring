@@ -28,10 +28,10 @@ public class ImageRepositoryImpl implements ImageRepositoryQuerydsl {
     }
 
     @Override
-    public List<Image> findImagesByBookId(Long bookId) {
+    public List<Image> findImagesByStoryId(Long storyId) {
 
         return queryFactory.selectFrom(image)
-                .where(image.book.id.eq(bookId))
+                .where(image.story.id.eq(storyId))
                 .fetch();
     }
 }

@@ -28,9 +28,6 @@ public class Book {
     private Long likes;
     private Long view;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> images = new ArrayList<>();
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

@@ -21,7 +21,7 @@ import java.util.List;
 public class ImageController {
     private final ImageService imageService;
 
-    @Operation(summary = "Create Image", description = "Upload an image and associate it with a post or book")
+    @Operation(summary = "Create Image", description = "Upload an image and associate it with a post or story")
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<List<ImageResponseDTO>> createImage(
             @RequestPart("files") List<MultipartFile> files,
@@ -36,10 +36,10 @@ public class ImageController {
         return ResponseEntity.ok(imageService.getImagesByPostId(postId));
     }
 
-    @Operation(summary = "Get Images by Book", description = "Retrieve all images associated with a book")
-    @GetMapping("/book/{bookId}")
-    public ResponseEntity<List<ImageResponseDTO>> getImagesByBook(@PathVariable Long bookId) {
-        return ResponseEntity.ok(imageService.getImagesByBookId(bookId));
+    @Operation(summary = "Get Images by Story", description = "Retrieve all images associated with a story")
+    @GetMapping("/story/{storyId}")
+    public ResponseEntity<List<ImageResponseDTO>> getImagesByStory(@PathVariable Long storyId) {
+        return ResponseEntity.ok(imageService.getImagesByStoryId(storyId));
     }
 
     @Operation(summary = "Delete Image", description = "Delete an image by its ID")

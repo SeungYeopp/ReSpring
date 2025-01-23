@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface ImageRepositoryQuerydsl {
     List<Image> findImagesByPostId(Long postId);
-    List<Image> findImagesByBookId(Long bookId);
+    List<Image> findImagesByStoryId(Long storyId);
 }

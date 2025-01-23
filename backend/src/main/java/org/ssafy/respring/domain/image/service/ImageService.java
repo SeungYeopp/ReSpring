@@ -5,12 +5,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.image.dto.request.ImageRequestDTO;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
 import org.ssafy.respring.domain.image.repository.ImageRepository;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.post.vo.Post;
+import org.ssafy.respring.domain.story.vo.Story;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,10 +54,10 @@ public class ImageService {
                     image.setPost(post);
                 }
 
-                if (dto.getBookId() != null) {
-                    Book book = new Book();
-                    book.setId(dto.getBookId());
-                    image.setBook(book);
+                if (dto.getStoryId() != null) {
+                    Story story = new Story();
+                    story.setId(dto.getStoryId());
+                    image.setStory(story);
                 }
 
                 image.validateAssociations();
@@ -75,7 +75,7 @@ public class ImageService {
                         savedImage.getImageId(),
                         savedImage.getImageUrl(),
                         savedImage.getPost() != null ? savedImage.getPost().getId() : null,
-                        savedImage.getBook() != null ? savedImage.getBook().getId() : null
+                        savedImage.getStory() != null ? savedImage.getStory().getId() : null
                 )).collect(Collectors.toList());
     }
 
@@ -88,10 +88,10 @@ public class ImageService {
     }
 
     @Transactional(readOnly = true)
-    public List<ImageResponseDTO> getImagesByBookId(Long bookId) {
-        return imageRepository.findImagesByBookId(bookId).stream()
+    public List<ImageResponseDTO> getImagesByStoryId(Long storyId) {
+        return imageRepository.findImagesByStoryId(storyId).stream()
                 .map(image -> new ImageResponseDTO(image.getImageId(), image.getImageUrl(),
-                        null, image.getBook().getId()))
+                        null, image.getStory().getId()))
                 .collect(Collectors.toList());
     }
 
@@ -137,7 +137,7 @@ public class ImageService {
                 updatedImage.getImageId(),
                 updatedImage.getImageUrl(),
                 updatedImage.getPost() != null ? updatedImage.getPost().getId() : null,
-                updatedImage.getBook() != null ? updatedImage.getBook().getId() : null
+                updatedImage.getStory() != null ? updatedImage.getStory().getId() : null
         );
     }
 

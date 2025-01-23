@@ -9,5 +9,5 @@ public class ImageResponseDTO {
     private Long imageId;
     private String imageUrl;
     private Long postId;
-    private Long bookId;
+    private Long storyId;
 }
