@@ -38,7 +38,9 @@ services:
           - database
 
   jenkins:
-    image: jenkins/jenkins:lts
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
     user: root
     ports:
       - "8081:8080"
