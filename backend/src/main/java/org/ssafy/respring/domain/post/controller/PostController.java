@@ -3,13 +3,17 @@ package org.ssafy.respring.domain.post.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
+import org.ssafy.respring.domain.post.dto.request.PostUpdateRequestDto;
 import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
 import org.ssafy.respring.domain.post.service.PostService;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,10 +25,13 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping
-    @Operation(summary = "포스트 생성", description = "새로운 포스트를 생성합니다.")
-    public ResponseEntity<Long> createPost(@RequestBody PostRequestDto requestDto) {
-        return ResponseEntity.ok(postService.createPost(requestDto));
+    @PostMapping(consumes = {"multipart/form-data"})
+    @Operation(summary = "포스트 생성", description = "새로운 포스트를 생성하고 이미지를 함께 업로드합니다.")
+    public ResponseEntity<Long> createPostWithImages(
+            @RequestPart("postDto") @Valid PostRequestDto requestDto,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
+        Long postId = postService.createPostWithImages(requestDto, images);
+        return ResponseEntity.ok(postId);
     }
 
     @GetMapping("/{post_id}")
@@ -50,22 +57,26 @@ public class PostController {
         return ResponseEntity.ok(postService.getMyPosts(userId));
     }
 
-    @PatchMapping("/{post_id}")
-    @Operation(summary = "포스트 수정", description = "특정 포스트를 수정합니다.")
+    @PatchMapping(value = "/{post_id}", consumes = {"multipart/form-data"})
+    @Operation(summary = "포스트 수정", description = "특정 포스트를 수정하고 이미지를 저장/삭제합니다.")
     public ResponseEntity<Void> updatePost(
             @Parameter(description = "수정할 포스트 ID", example = "2") @PathVariable Long post_id,
-            @RequestBody PostRequestDto requestDto) {
-        postService.updatePost(post_id, requestDto);
+            @RequestPart("postDto") @Valid PostUpdateRequestDto requestDto,
+            @RequestPart(value = "newImages", required = false) List<MultipartFile> newImages) throws IOException {
+        postService.updatePost(post_id, requestDto, newImages);
         return ResponseEntity.ok().build();
     }
 
+
     @DeleteMapping("/{post_id}")
-    @Operation(summary = "포스트 삭제", description = "특정 포스트를 삭제합니다.")
+    @Operation(summary = "포스트 삭제", description = "자신이 작성한 포스트를 삭제합니다.")
     public ResponseEntity<Void> deletePost(
-            @Parameter(description = "삭제할 포스트 ID", example = "2") @PathVariable Long post_id) {
-        postService.deletePost(post_id);
-        return ResponseEntity.ok().build();
+            @Parameter(description = "삭제할 포스트 ID", example = "2") @PathVariable Long post_id,
+            @Parameter(description = "삭제 요청을 보낸 사용자 ID", example = "dd5a7b3c-d887-11ef-b310-d4f32d147183") @RequestParam UUID userId) {
+        postService.deletePost(post_id, userId); // 사용자 ID 추가
+        return ResponseEntity.noContent().build();
     }
+
 
     @GetMapping("/search")
     @Operation(summary = "포스트 검색", description = "제목을 기반으로 포스트를 검색합니다.")

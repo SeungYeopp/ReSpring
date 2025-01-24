@@ -1,15 +1,22 @@
 package org.ssafy.respring.domain.post.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
+import org.ssafy.respring.domain.image.repository.ImageRepository;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
+import org.ssafy.respring.domain.post.dto.request.PostUpdateRequestDto;
 import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
 import org.ssafy.respring.domain.post.repository.PostRepository;
 import org.ssafy.respring.domain.post.vo.Post;
 import org.ssafy.respring.domain.user.vo.User;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -20,9 +27,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final ImageRepository imageRepository;
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     @Transactional
-    public Long createPost(PostRequestDto requestDto) {
+    public Long createPostWithImages(PostRequestDto requestDto, List<MultipartFile> imageFiles) throws IOException {
+        // 1. Post 객체 생성
         Post post = new Post();
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
@@ -33,6 +45,37 @@ public class PostService {
         user.setId(requestDto.getUserId());
         post.setUser(user);
 
+        File uploadDirFolder = new File(uploadDir);
+        if (!uploadDirFolder.exists()) {
+            if (!uploadDirFolder.mkdirs()) {
+                throw new RuntimeException("Failed to create upload directory: " + uploadDir);
+            }
+        }
+
+        // 2. 이미지 저장 및 연결
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<Image> images = imageFiles.stream().map(file -> {
+                try {
+                    String originalFileName = file.getOriginalFilename();
+                    String extension = originalFileName != null && originalFileName.contains(".") ?
+                            originalFileName.substring(originalFileName.lastIndexOf(".")) : "";
+                    String uniqueFileName = UUID.randomUUID().toString() + extension;
+
+                    String filePath = uploadDir + File.separator + uniqueFileName;
+                    file.transferTo(new File(filePath));
+
+                    Image image = new Image();
+                    image.setImageUrl(filePath);
+                    image.setPost(post); // Post와 연결
+                    return image;
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to save file: " + file.getOriginalFilename(), e);
+                }
+            }).collect(Collectors.toList());
+            post.setImages(images); // Post에 이미지 추가
+        }
+
+        // 3. Post 저장
         postRepository.save(post);
         return post.getId();
     }
@@ -58,19 +101,105 @@ public class PostService {
     }
 
     @Transactional
-    public void updatePost(Long id, PostRequestDto requestDto) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + id));
+    public void updatePost(Long postId, PostUpdateRequestDto requestDto, List<MultipartFile> imageFiles) throws IOException {
+        // 1. Post 가져오기
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
 
+        // 2. 요청한 사용자와 작성자가 같은지 확인
+        if (!post.getUser().getId().equals(requestDto.getUserId())) {
+            throw new IllegalArgumentException("You are not authorized to modify this post.");
+        }
+
+        // 3. Post 내용 수정 (userId는 수정하지 않음)
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
         post.setCategory(requestDto.getCategory());
+
+        // 4. 특정 이미지 삭제
+        List<Long> deleteImageIds = requestDto.getDeleteImageIds();
+        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+            // ImageRepository를 사용하여 삭제할 이미지 조회
+            List<Image> imagesToDelete = imageRepository.findAllById(deleteImageIds);
+
+            // 삭제하려는 이미지 ID가 Post와 연결되지 않은 경우 예외 처리
+            for (Image image : imagesToDelete) {
+                if (!post.getImages().contains(image)) {
+                    throw new IllegalArgumentException("Image ID " + image.getImageId() + " is not associated with this post.");
+                }
+            }
+
+            // 이미지 파일 및 DB 삭제
+            for (Image image : imagesToDelete) {
+                File imageFile = new File(image.getImageUrl());
+                if (imageFile.exists() && !imageFile.delete()) {
+                    throw new RuntimeException("Failed to delete file: " + imageFile.getAbsolutePath());
+                }
+                imageRepository.delete(image); // DB에서 삭제
+            }
+
+            // Post와의 관계 제거
+            post.getImages().removeAll(imagesToDelete);
+        }
+
+        // 5. 새로운 이미지 추가
+        File uploadDirFolder = new File(uploadDir);
+        if (!uploadDirFolder.exists()) {
+            if (!uploadDirFolder.mkdirs()) {
+                throw new RuntimeException("Failed to create upload directory: " + uploadDir);
+            }
+        }
+
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<Image> newImages = imageFiles.stream().map(file -> {
+                try {
+                    String originalFileName = file.getOriginalFilename();
+                    String extension = originalFileName != null && originalFileName.contains(".") ?
+                            originalFileName.substring(originalFileName.lastIndexOf(".")) : "";
+                    String uniqueFileName = UUID.randomUUID().toString() + extension;
+
+                    String filePath = uploadDir + File.separator + uniqueFileName;
+                    file.transferTo(new File(filePath));
+
+                    Image image = new Image();
+                    image.setImageUrl(filePath);
+                    image.setPost(post); // Post와 연결
+                    return image;
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to save file: " + file.getOriginalFilename(), e);
+                }
+            }).collect(Collectors.toList());
+            post.getImages().addAll(newImages); // Post에 새로운 이미지 추가
+        }
     }
 
     @Transactional
-    public void deletePost(Long id) {
-        postRepository.deleteById(id);
+    public void deletePost(Long postId, UUID requestUserId) {
+        // 1. Post 가져오기
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
+
+        // 2. 요청한 사용자와 작성자가 같은지 확인
+        if (!post.getUser().getId().equals(requestUserId)) {
+            throw new IllegalArgumentException("You are not authorized to delete this post.");
+        }
+
+        // 3. 이미지 파일 및 DB 삭제
+        List<Image> images = post.getImages();
+        for (Image image : images) {
+            File file = new File(image.getImageUrl());
+            if (file.exists() && !file.delete()) {
+                throw new RuntimeException("Failed to delete file: " + file.getAbsolutePath());
+            }
+        }
+
+        // DB에서 이미지 삭제
+        imageRepository.deleteAll(images);
+
+        // 4. 포스트 삭제
+        postRepository.delete(post);
     }
+
 
     public List<PostResponseDto> searchPostsByTitle(String title) {
         return postRepository.searchByTitle(title)
@@ -112,9 +241,11 @@ public class PostService {
     }
 
     private PostResponseDto toResponseDto(Post post) {
-        List<Long> imageIds = post.getImages().stream()
-                .map(Image::getImageId)
+
+        List<ImageResponseDTO> imageDtos = post.getImages().stream()
+                .map(image -> new ImageResponseDTO(image.getImageId(), image.getImageUrl()))
                 .collect(Collectors.toList());
+
 
         return new PostResponseDto(
                 post.getId(),
@@ -126,7 +257,7 @@ public class PostService {
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getLikes(),
-                imageIds
+                imageDtos
         );
     }
 }

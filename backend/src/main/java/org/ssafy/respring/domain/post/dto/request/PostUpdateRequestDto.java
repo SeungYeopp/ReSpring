@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-public class PostRequestDto {
+public class PostUpdateRequestDto {
     private UUID userId;
     private String title;
     private String content;
     private Category category;
+    private List<Long> deleteImageIds;
 }

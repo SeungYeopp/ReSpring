@@ -2,6 +2,8 @@ package org.ssafy.respring.domain.post.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
+import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.post.vo.Category;
 
 import java.time.LocalDateTime;
@@ -20,5 +22,5 @@ public class PostResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long likes;
-    private List<Long> imageIds;
+    private List<ImageResponseDTO> images;
 }
