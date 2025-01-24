@@ -25,12 +25,8 @@ RUN curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-
 # Jenkins 플러그인 설치
 RUN jenkins-plugin-cli --plugins "workflow-aggregator docker-workflow"
 
-# PATH 환경 변수 확인
-ENV PATH="/usr/local/bin:/usr/bin:/bin:${PATH}"
-
 # Jenkins 사용자에게 필요한 디렉토리 권한 부여
-RUN chown -R jenkins:jenkins /var/jenkins_home && \
-    chmod -R 777 /var/jenkins_home
+RUN chown -R jenkins:jenkins /var/jenkins_home
 
 # Jenkins 사용자로 복귀
 USER jenkins

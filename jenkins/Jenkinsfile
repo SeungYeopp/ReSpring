@@ -8,7 +8,6 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'project-env', variable: 'ENV_FILE')]) {
                     sh '''
-                    chmod -R 777 ./backend ./frontend
                     cp $ENV_FILE ./backend/.env
                     cp $ENV_FILE ./frontend/.env
                     '''
@@ -40,7 +39,6 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    export DOCKER_HOST=tcp://dind:2375
                     docker-compose down || true
                     docker-compose up -d --build
                     '''
