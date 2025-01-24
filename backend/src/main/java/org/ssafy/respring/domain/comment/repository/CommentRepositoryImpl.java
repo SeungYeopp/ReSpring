@@ -24,4 +24,20 @@ public class CommentRepositoryImpl implements CommentRepositoryQuerydsl {
                 .where(comment.parent.id.eq(parentId)) // parentId가 같은 댓글들 조회
                 .fetch();
     }
+
+    @Override
+    public List<Comment> findByPostIdWithFetchJoin(Long postId) {
+        return queryFactory.selectFrom(comment)
+                .leftJoin(comment.children).fetchJoin()
+                .where(comment.post.id.eq(postId))
+                .fetch();
+    }
+
+    @Override
+    public List<Comment> findByBookIdWithFetchJoin(Long bookId) {
+        return queryFactory.selectFrom(comment)
+                .leftJoin(comment.children).fetchJoin()
+                .where(comment.book.id.eq(bookId))
+                .fetch();
+    }
 }
