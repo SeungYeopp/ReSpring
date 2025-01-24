@@ -4,7 +4,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"  # Backend는 8081 사용
+      - "8080:8080"
     environment:
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
@@ -41,11 +41,11 @@ services:
     image: jenkins/jenkins:lts
     user: root
     ports:
-      - "8080:8080"
+      - "8081:8080"
       - "50000:50000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./jenkins/jenkins_home:/var/jenkins_home
+      - jenkins_home:/var/jenkins_home
     networks:
       - project-network
 
