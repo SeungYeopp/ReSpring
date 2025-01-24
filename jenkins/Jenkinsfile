@@ -39,8 +39,15 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    echo "Stopping and removing old containers if exist..."
                     docker-compose down || true
+
+                    echo "Starting services with Docker Compose..."
                     docker-compose up -d --build
+
+                    echo "Currently running containers and their ports:"
+                    docker ps --filter "name=backend" --format "Backend running on port: {{.Ports}}"
+                    docker ps --filter "name=frontend" --format "Frontend running on port: {{.Ports}}"
                     '''
                 }
             }
