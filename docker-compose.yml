@@ -4,7 +4,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "0:8080" # 동적 포트 할당
     environment:
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
@@ -19,7 +19,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "0:3000" # 동적 포트 할당
     networks:
       - project-network
 
@@ -31,7 +31,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3306:3306"
+      - "3306:3306" # DB는 고정 포트를 유지
     networks:
       project-network:
         aliases:
@@ -43,7 +43,7 @@ services:
       dockerfile: Dockerfile
     user: root
     ports:
-      - "8081:8080"
+      - "8080:8080"
       - "50000:50000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
