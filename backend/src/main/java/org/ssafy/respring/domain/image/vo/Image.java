@@ -1,5 +1,6 @@
 package org.ssafy.respring.domain.image.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,8 @@ public class Image {
     private String imageUrl;
 
     @ManyToOne
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id", nullable = false)
+    @JsonIgnore // 순환 참조 방지
     private Post post;
 
     @ManyToOne
