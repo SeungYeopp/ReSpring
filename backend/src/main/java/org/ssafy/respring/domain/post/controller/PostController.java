@@ -80,4 +80,19 @@ public class PostController {
             @Parameter(description = "필터링할 카테고리", example = "INFORMATION_SHARING") @RequestParam String category) {
         return ResponseEntity.ok(postService.filterPostsByCategory(category));
     }
+
+    @GetMapping("/popular")
+    @Operation(summary = "인기 포스트 조회", description = "일주일 동안 좋아요 Top 3 포스트를 조회합니다.")
+    public ResponseEntity<List<PostResponseDto>> getPopularPosts() {
+        return ResponseEntity.ok(postService.getPopularPosts());
+    }
+
+    @PatchMapping("/{post_id}/like")
+    @Operation(summary = "좋아요 추가/취소", description = "특정 포스트에 좋아요를 추가하거나 취소합니다.")
+    public ResponseEntity<String> toggleLike(
+            @Parameter(description = "좋아요를 추가/취소할 포스트 ID", example = "1") @PathVariable Long post_id,
+            @Parameter(description = "좋아요를 누른 사용자 UUID", example = "dd5a7b3c-d887-11ef-b310-d4f32d147183") @RequestParam UUID userId) {
+        boolean isLiked = postService.toggleLike(post_id, userId);
+        return ResponseEntity.ok(isLiked ? "Liked" : "Unliked");
+    }
 }

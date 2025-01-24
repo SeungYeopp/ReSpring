@@ -8,8 +8,7 @@ import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "post")
@@ -38,6 +37,11 @@ public class Post {
 
     private Long likes;
 
+    @ElementCollection // 사용자 UUID를 저장하는 컬렉션
+    @CollectionTable(name = "post_likes", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "user_id")
+    private Set<UUID> likedUsers = new HashSet<>();
+
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
@@ -53,6 +57,17 @@ public class Post {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // 좋아요 추가/취소 로직
+    public boolean toggleLike(UUID userId) {
+        if (likedUsers.contains(userId)) {
+            likedUsers.remove(userId); // 좋아요 취소
+            return false;
+        } else {
+            likedUsers.add(userId); // 좋아요 추가
+            return true;
+        }
     }
 
 }

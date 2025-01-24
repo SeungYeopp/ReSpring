@@ -8,6 +8,7 @@ import org.ssafy.respring.domain.post.vo.Category;
 import org.ssafy.respring.domain.post.vo.Post;
 import org.ssafy.respring.domain.post.vo.QPost;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -51,6 +52,15 @@ public class PostRepositoryImpl implements PostRepositoryQuerydsl {
                 .where(cursorCondition)
                 .orderBy(post.id.desc()) // 최신 포스트부터 가져오기
                 .limit(limit)
+                .fetch();
+    }
+
+    @Override
+    public List<Post> findTop3ByLikesInPastWeek(LocalDateTime oneWeekAgo) {
+        return queryFactory.selectFrom(post)
+                .where(post.createdAt.after(oneWeekAgo))
+                .orderBy(post.likes.desc())
+                .limit(3)
                 .fetch();
     }
 

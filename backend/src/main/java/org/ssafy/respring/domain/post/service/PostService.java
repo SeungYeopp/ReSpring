@@ -3,12 +3,14 @@ package org.ssafy.respring.domain.post.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
 import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
 import org.ssafy.respring.domain.post.repository.PostRepository;
 import org.ssafy.respring.domain.post.vo.Post;
 import org.ssafy.respring.domain.user.vo.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -91,7 +93,29 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    public List<PostResponseDto> getPopularPosts() {
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        return postRepository.findTop3ByLikesInPastWeek(oneWeekAgo)
+                .stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public boolean toggleLike(Long postId, UUID userId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
+
+        boolean isLiked = post.toggleLike(userId); // 좋아요 토글
+        post.setLikes((long) post.getLikedUsers().size()); // 좋아요 수 업데이트
+        return isLiked;
+    }
+
     private PostResponseDto toResponseDto(Post post) {
+        List<Long> imageIds = post.getImages().stream()
+                .map(Image::getImageId)
+                .collect(Collectors.toList());
+
         return new PostResponseDto(
                 post.getId(),
                 post.getTitle(),
@@ -101,7 +125,8 @@ public class PostService {
                 post.getUser().getUsername(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                post.getLikes()
+                post.getLikes(),
+                imageIds
         );
     }
 }
