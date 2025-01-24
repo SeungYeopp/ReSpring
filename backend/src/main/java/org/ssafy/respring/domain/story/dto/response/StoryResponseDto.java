@@ -2,6 +2,7 @@ package org.ssafy.respring.domain.story.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
 import org.ssafy.respring.domain.image.vo.Image;
 
 import java.time.LocalDateTime;
@@ -16,5 +17,5 @@ public class StoryResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long eventId;
-    private List<Long> imageIds;
+    private List<ImageResponseDTO> images;
 }
