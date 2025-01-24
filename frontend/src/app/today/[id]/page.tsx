@@ -4,7 +4,7 @@ import React from "react";
 export default function HomePage() {
   return (
     <div>
-      <h2>어제 페이지</h2>
+      <h2>오늘 상세 페이지</h2>
     </div>
   );
 }
