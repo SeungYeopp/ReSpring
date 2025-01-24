@@ -25,7 +25,6 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: mysql-db
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -42,7 +41,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: jenkins-server-${BUILD_NUMBER}
     user: root
     privileged: true
     ports:
