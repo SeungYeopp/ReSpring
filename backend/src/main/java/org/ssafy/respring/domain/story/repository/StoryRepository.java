@@ -6,6 +6,6 @@ import org.ssafy.respring.domain.story.vo.Story;
 import java.util.List;
 import java.util.UUID;
 
-public interface StoryRepository extends JpaRepository<Story, Long>, StoryRepositoryQuerydsl {
+public interface StoryRepository extends JpaRepository<Story, Long> {
     List<Story> findByUserId(UUID userId);
 }

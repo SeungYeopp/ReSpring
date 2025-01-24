@@ -2,6 +2,7 @@ package org.ssafy.respring.domain.story.vo;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.ssafy.respring.domain.event.vo.Event;
@@ -21,7 +22,7 @@ public class Story {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // AUTO_INCREMENT와 연결
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 
@@ -29,18 +30,27 @@ public class Story {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "story_title")
-    private String storyTitle;
 
-    @Column(name = "story_content")
-    private String storyContent;
+    private String title;
+    private String content;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "modified_at")
-    private LocalDateTime modifiedAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }
