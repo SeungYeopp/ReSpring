@@ -4,8 +4,7 @@ import React from "react";
 export default function HomePage() {
   return (
     <div>
-      <h2>Welcome to the Home Page!</h2>
-      <p>This is the content of the home page.</p>
+      <h2>메인 페이지</h2>
     </div>
   );
 }
