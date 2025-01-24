@@ -27,6 +27,9 @@ public class Comment {
 
     private String content;
 
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
