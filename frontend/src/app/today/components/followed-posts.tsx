@@ -1,87 +1,55 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
-import { Card, CardContent } from "@/components/ui/card"
-import { MessageSquare, Heart } from "lucide-react"
+import { Heart, MessageCircle } from "lucide-react"
+import type { Post } from '../types/posts'
 
-// 팔로우한 사람의 글 타입 정의
-interface FollowedPost {
-  id: number
-  author: {
-    name: string
-    image: string
-  }
-  title: string
-  content: string
-  likes: number
-  comments: number
-  tag: string
+interface PopularPostsProps {
+  posts: Post[]
 }
 
-// 더미 데이터 (나중에 API로 대체)
-const dummyFollowedPosts: FollowedPost[] = [
-  {
-    id: 1,
-    author: {
-      name: "제2의 인생 누비",
-      image: "/placeholder.svg",
-    },
-    title: "다들 무슨 취미를 갖고 계신가요?",
-    content:
-      "안녕하세요. 퇴직한지 4개월차가 되어가는 누비입니다. 특히 요즘 건강과 관련해서 스포츠를 알아보고 있는데...",
-    likes: 12,
-    comments: 3,
-    tag: "고민/질문",
-  },
-  {
-    id: 2,
-    author: {
-      name: "행복한 은퇴자",
-      image: "/placeholder.svg",
-    },
-    title: "오늘의 산책 루트 공유합니다",
-    content: "오늘 아침 일찍 일어나 동네 한 바퀴를 돌았어요. 벚꽃이 피기 시작했더라구요. 여러분도 봄을 만끽하세요!",
-    likes: 15,
-    comments: 5,
-    tag: "정보 공유",
-  },
-  // 더 많은 더미 데이터...
-]
+export default function PopularPosts({ posts }: PopularPostsProps) {
+  const [currentIndex, setCurrentIndex] = useState(0)
 
-export default function FollowedPosts() {
   return (
-    <div className="space-y-4">
-      {dummyFollowedPosts.map((post) => (
-        <Card key={post.id}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <Image
-                src={post.author.image || "/placeholder.svg"}
-                alt={post.author.name}
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-              <div>
-                <p className="font-semibold">{post.author.name}</p>
-                <span className="text-sm text-muted-foreground">{post.tag}</span>
-              </div>
-            </div>
-            <h3 className="text-lg font-bold mb-2">{post.title}</h3>
-            <p className="text-muted-foreground mb-4">{post.content}</p>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                <Heart className="w-4 h-4" />
-                <span className="text-sm">{post.likes}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <MessageSquare className="w-4 h-4" />
-                <span className="text-sm">{post.comments}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="relative">
+      {/* 현재 선택된 게시글 */}
+      <div className="bg-muted rounded-lg p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <Image
+            src={posts[currentIndex].author.profileImage || "/placeholder.webp"}
+            alt={posts[currentIndex].author.name}
+            width={40}
+            height={40}
+            className="rounded-full"
+          />
+          <span className="font-medium">{posts[currentIndex].author.name}</span>
+        </div>
+        <h3 className="font-bold text-lg mb-2">{posts[currentIndex].title}</h3>
+        <p className="text-muted-foreground line-clamp-2 mb-4">{posts[currentIndex].content}</p>
+        <div className="flex items-center gap-4 text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <Heart className="w-4 h-4" />
+            <span>{posts[currentIndex].likes}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <MessageCircle className="w-4 h-4" />
+            <span>{posts[currentIndex].comments}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 슬라이더 인디케이터 */}
+      <div className="flex justify-center gap-2 mt-4">
+        {posts.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`w-2 h-2 rounded-full ${index === currentIndex ? "bg-primary" : "bg-muted-foreground/30"}`}
+          />
+        ))}
+      </div>
     </div>
   )
 }
