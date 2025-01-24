@@ -15,7 +15,7 @@ import java.util.UUID;
 
 
 @RestController
-@RequestMapping("/comment")
+@RequestMapping("/comments")
 @RequiredArgsConstructor
 @Tag(name = "댓글 관리", description = "댓글 생성, 수정, 삭제 및 조회 기능을 제공합니다.")
 public class CommentController {

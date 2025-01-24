@@ -1,8 +1,8 @@
 package org.ssafy.respring.domain.post.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
 import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
 import org.ssafy.respring.domain.post.repository.PostRepository;
@@ -14,11 +14,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
 
+    @Transactional
     public Long createPost(PostRequestDto requestDto) {
         Post post = new Post();
         post.setTitle(requestDto.getTitle());
@@ -54,6 +55,7 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void updatePost(Long id, PostRequestDto requestDto) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + id));
@@ -63,6 +65,7 @@ public class PostService {
         post.setCategory(requestDto.getCategory());
     }
 
+    @Transactional
     public void deletePost(Long id) {
         postRepository.deleteById(id);
     }
@@ -76,6 +79,13 @@ public class PostService {
 
     public List<PostResponseDto> filterPostsByCategory(String category) {
         return postRepository.filterByCategory(category)
+                .stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<PostResponseDto> getPostsByCursor(Long lastId, int limit) {
+        return postRepository.findByCursor(lastId, limit)
                 .stream()
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());

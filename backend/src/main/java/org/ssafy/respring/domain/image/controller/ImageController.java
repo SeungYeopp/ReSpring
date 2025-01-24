@@ -15,13 +15,13 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/image")
+@RequestMapping("/images")
 @RequiredArgsConstructor
-@Tag(name = "Image API", description = "APIs for managing images")
+@Tag(name = "이미지 API", description = "이미지를 관리하는 API")
 public class ImageController {
     private final ImageService imageService;
 
-    @Operation(summary = "Create Image", description = "Upload an image and associate it with a post or story")
+    @Operation(summary = "이미지 생성", description = "이미지를 업로드하고 게시글 또는 스토리에 연관짓습니다.")
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<List<ImageResponseDTO>> createImage(
             @RequestPart("files") List<MultipartFile> files,
@@ -30,31 +30,31 @@ public class ImageController {
         return ResponseEntity.ok(createdImages);
     }
 
-    @Operation(summary = "Get Images by Post", description = "Retrieve all images associated with a post")
+    @Operation(summary = "게시글의 이미지 조회", description = "특정 게시글에 연관된 모든 이미지를 조회합니다.")
     @GetMapping("/post/{postId}")
     public ResponseEntity<List<ImageResponseDTO>> getImagesByPost(@PathVariable Long postId) {
         return ResponseEntity.ok(imageService.getImagesByPostId(postId));
     }
 
-    @Operation(summary = "Get Images by Story", description = "Retrieve all images associated with a story")
+    @Operation(summary = "스토리의 이미지 조회", description = "특정 스토리에 연관된 모든 이미지를 조회합니다.")
     @GetMapping("/story/{storyId}")
     public ResponseEntity<List<ImageResponseDTO>> getImagesByStory(@PathVariable Long storyId) {
         return ResponseEntity.ok(imageService.getImagesByStoryId(storyId));
     }
 
-    @Operation(summary = "Delete Image", description = "Delete an image by its ID")
+    @Operation(summary = "이미지 삭제", description = "특정 ID를 가진 이미지를 삭제합니다.")
     @DeleteMapping("/{imageId}")
     public ResponseEntity<Void> deleteImage(@PathVariable Long imageId) {
         imageService.deleteImage(imageId);
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update Image", description = "Update an image and its associations")
-    @PatchMapping(value = "/{imageId}", consumes = {"multipart/form-data"})
-    public ResponseEntity<ImageResponseDTO> updateImage(@PathVariable Long imageId,
-                                                        @RequestPart(required = false) MultipartFile file) throws IOException {
-        ImageResponseDTO updatedImage = imageService.updateImage(imageId, file);
-        return ResponseEntity.ok(updatedImage);
-    }
+//    @Operation(summary = "이미지 업데이트", description = "이미지와 해당 연관 데이터를 업데이트합니다.")
+//    @PatchMapping(value = "/{imageId}", consumes = {"multipart/form-data"})
+//    public ResponseEntity<ImageResponseDTO> updateImage(@PathVariable Long imageId,
+//                                                        @RequestPart(required = false) MultipartFile file) throws IOException {
+//        ImageResponseDTO updatedImage = imageService.updateImage(imageId, file);
+//        return ResponseEntity.ok(updatedImage);
+//    }
 }
 

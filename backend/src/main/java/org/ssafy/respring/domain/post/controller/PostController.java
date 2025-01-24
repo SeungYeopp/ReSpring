@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/post")
+@RequestMapping("/posts")
 @RequiredArgsConstructor
 @Tag(name = "Post API", description = "포스트 관련 API")
 public class PostController {
@@ -35,10 +35,13 @@ public class PostController {
     }
 
     @GetMapping("/all")
-    @Operation(summary = "전체 포스트 조회", description = "모든 포스트를 조회합니다.")
-    public ResponseEntity<List<PostResponseDto>> getAllPosts() {
-        return ResponseEntity.ok(postService.getAllPosts());
+    @Operation(summary = "전체 포스트 조회", description = "모든 포스트를 조회합니다. 커서 기반 페이지네이션을 지원합니다.")
+    public ResponseEntity<List<PostResponseDto>> getAllPosts(
+            @Parameter(description = "마지막으로 조회된 포스트 ID", example = "50") @RequestParam(required = false) Long lastId,
+            @Parameter(description = "가져올 포스트 개수", example = "10") @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(postService.getPostsByCursor(lastId, limit));
     }
+
 
     @GetMapping
     @Operation(summary = "내 포스트 조회", description = "특정 사용자의 포스트를 조회합니다.")

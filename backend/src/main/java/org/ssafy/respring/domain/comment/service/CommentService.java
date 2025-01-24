@@ -77,6 +77,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
         comment.setContent(content);
+        commentRepository.save(comment);
         return mapToResponseDto(comment);
     }
 
@@ -86,6 +87,7 @@ public class CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 
         comment.setContent("삭제된 댓글입니다.");
+        commentRepository.save(comment);
     }
 
     public List<CommentResponseDto> getCommentsByPostId(Long postId) {

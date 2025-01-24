@@ -79,7 +79,6 @@ public class ImageService {
                 )).collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public List<ImageResponseDTO> getImagesByPostId(Long postId) {
         return imageRepository.findImagesByPostId(postId).stream()
                 .map(image -> new ImageResponseDTO(image.getImageId(), image.getImageUrl(),
@@ -87,7 +86,6 @@ public class ImageService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public List<ImageResponseDTO> getImagesByStoryId(Long storyId) {
         return imageRepository.findImagesByStoryId(storyId).stream()
                 .map(image -> new ImageResponseDTO(image.getImageId(), image.getImageUrl(),
@@ -100,46 +98,46 @@ public class ImageService {
         imageRepository.deleteById(imageId);
     }
 
-    @Transactional
-    public ImageResponseDTO updateImage(Long imageId, MultipartFile file) throws IOException {
-        // 데이터베이스에서 기존 이미지 조회
-        Image image = imageRepository.findById(imageId)
-                .orElseThrow(() -> new IllegalArgumentException("Image not found"));
-
-        if (file != null && !file.isEmpty()) {
-            File directory = new File(uploadDir);
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
-
-            String originalFileName = file.getOriginalFilename();
-            String extension = originalFileName != null && originalFileName.contains(".") ?
-                    originalFileName.substring(originalFileName.lastIndexOf(".")) : "";
-            String uniqueFileName = UUID.randomUUID().toString() + extension;
-
-            String filePath = uploadDir + File.separator + uniqueFileName;
-            file.transferTo(new File(filePath));
-
-            String oldFilePath = image.getImageUrl();
-            if (oldFilePath != null) {
-                File oldFile = new File(oldFilePath);
-                if (oldFile.exists()) {
-                    oldFile.delete();
-                }
-            }
-
-            image.setImageUrl(filePath);
-        }
-
-        Image updatedImage = imageRepository.save(image);
-
-        return new ImageResponseDTO(
-                updatedImage.getImageId(),
-                updatedImage.getImageUrl(),
-                updatedImage.getPost() != null ? updatedImage.getPost().getId() : null,
-                updatedImage.getStory() != null ? updatedImage.getStory().getId() : null
-        );
-    }
+//    @Transactional
+//    public ImageResponseDTO updateImage(Long imageId, MultipartFile file) throws IOException {
+//        // 데이터베이스에서 기존 이미지 조회
+//        Image image = imageRepository.findById(imageId)
+//                .orElseThrow(() -> new IllegalArgumentException("Image not found"));
+//
+//        if (file != null && !file.isEmpty()) {
+//            File directory = new File(uploadDir);
+//            if (!directory.exists()) {
+//                directory.mkdirs();
+//            }
+//
+//            String originalFileName = file.getOriginalFilename();
+//            String extension = originalFileName != null && originalFileName.contains(".") ?
+//                    originalFileName.substring(originalFileName.lastIndexOf(".")) : "";
+//            String uniqueFileName = UUID.randomUUID().toString() + extension;
+//
+//            String filePath = uploadDir + File.separator + uniqueFileName;
+//            file.transferTo(new File(filePath));
+//
+//            String oldFilePath = image.getImageUrl();
+//            if (oldFilePath != null) {
+//                File oldFile = new File(oldFilePath);
+//                if (oldFile.exists()) {
+//                    oldFile.delete();
+//                }
+//            }
+//
+//            image.setImageUrl(filePath);
+//        }
+//
+//        Image updatedImage = imageRepository.save(image);
+//
+//        return new ImageResponseDTO(
+//                updatedImage.getImageId(),
+//                updatedImage.getImageUrl(),
+//                updatedImage.getPost() != null ? updatedImage.getPost().getId() : null,
+//                updatedImage.getStory() != null ? updatedImage.getStory().getId() : null
+//        );
+//    }
 
 }
 
