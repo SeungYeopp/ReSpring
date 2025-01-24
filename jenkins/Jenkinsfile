@@ -38,6 +38,7 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    export DOCKER_HOST=tcp://dind:2375
                     docker-compose down || true
                     docker-compose up -d --build
                     '''

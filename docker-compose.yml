@@ -37,6 +37,16 @@ services:
         aliases:
           - database
 
+  dind:
+    image: docker:dind
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    ports:
+      - "2375:2375"  # Docker 데몬이 외부에서 접근 가능하도록 설정
+    networks:
+      - project-network
+
   jenkins:
     build:
       context: ./jenkins
@@ -46,15 +56,14 @@ services:
     ports:
       - "8081:8080"
       - "50000:50000"
-    volumes:
-      - ./jenkins:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
+      DOCKER_HOST: "tcp://dind:2375"  # dind 컨테이너와 연결
+    volumes:
+      - ./jenkins:/var/jenkins_home:z
     networks:
       - project-network
-
-
+      -
 networks:
   project-network:
     driver: bridge
