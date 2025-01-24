@@ -5,8 +5,11 @@ USER root
 # Docker CLI 설치
 RUN apt-get update && apt-get install -y docker.io
 
+# Docker Compose 설치
+RUN curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose
+
 # Docker 그룹 권한 부여
 RUN usermod -aG root jenkins
 
-# Jenkins 사용자로 복귀
 USER jenkins
