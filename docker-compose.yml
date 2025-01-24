@@ -63,7 +63,6 @@ services:
       - ./jenkins:/var/jenkins_home:z
     networks:
       - project-network
-      -
 networks:
   project-network:
     driver: bridge

@@ -30,3 +30,6 @@ ENV PATH="/usr/local/bin:/usr/bin:/bin:${PATH}"
 
 # Jenkins 사용자로 복귀
 USER jenkins
+
+# Jenkins 사용자에게 필요한 디렉토리 권한 부여
+RUN chown -R jenkins:jenkins /var/jenkins_home
