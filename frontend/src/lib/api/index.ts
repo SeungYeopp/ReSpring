@@ -1,6 +1,8 @@
 // index.ts
 // auth.ts, onboarding.ts, post.ts에서 export한 모든 함수/객체를 그대로 다시 내보낸다.
 
+export * from './apitest';
+
 // auth.ts에서 export한 모든 것
 //export * from './auth';
 
