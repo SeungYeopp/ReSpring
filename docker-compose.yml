@@ -42,7 +42,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: jenkins-server
+    container_name: jenkins-server-${BUILD_NUMBER}
     user: root
     privileged: true
     ports:
