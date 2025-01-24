@@ -8,6 +8,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'project-env', variable: 'ENV_FILE')]) {
                     sh '''
+                    chmod -R 777 ./backend ./frontend
                     cp $ENV_FILE ./backend/.env
                     cp $ENV_FILE ./frontend/.env
                     '''
