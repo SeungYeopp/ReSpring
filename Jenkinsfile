@@ -36,10 +36,12 @@ pipeline {
         }
         stage('Docker Compose') {
             steps {
-                sh '''
-                docker-compose down || true
-                docker-compose up -d --build
-                '''
+                script {
+                    sh '''
+                    docker-compose down || true
+                    docker-compose up -d --build
+                    '''
+                }
             }
         }
     }
