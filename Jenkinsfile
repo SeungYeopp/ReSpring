@@ -36,10 +36,15 @@ pipeline {
         }
         stage('Docker Compose') {
             steps {
-                sh '''
-                docker-compose down || true
-                docker-compose up -d --build
-                '''
+                script {
+                    // Jenkins에 등록된 'DefaultDocker' 도구를 사용하여 Docker Compose 실행
+                    docker.withTool('DefaultDocker') {
+                        sh '''
+                        docker-compose down || true
+                        docker-compose up -d --build
+                        '''
+                    }
+                }
             }
         }
     }
