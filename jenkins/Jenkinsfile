@@ -6,10 +6,11 @@ pipeline {
     stages {
         stage('Setup Environment') {
             steps {
-                script {
-                    // backend와 frontend 디렉토리에 Secret File 내용 복사
-                    sh 'cp $ENV_FILE ./backend/.env'
-                    sh 'cp $ENV_FILE ./frontend/.env'
+                withCredentials([file(credentialsId: 'project-env', variable: 'ENV_FILE')]) {
+                    sh '''
+                    cp $ENV_FILE ./backend/.env
+                    cp $ENV_FILE ./frontend/.env
+                    '''
                 }
             }
         }
