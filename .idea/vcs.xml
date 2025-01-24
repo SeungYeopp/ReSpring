@@ -2,5 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/jenkins/caches/git-7659a862157b4691d8f6d88c6a3413fd" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/jenkins/workspace/TotalBuildTest" vcs="Git" />
   </component>
 </project>
