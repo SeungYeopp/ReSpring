@@ -1,39 +1,28 @@
-import { popularPosts, posts } from "./mocks/posts"
-import PopularPosts from "./components/popular-posts"
-import FollowedPosts from "./components/followed-posts"
-import CommunityPosts from "./components/community-posts"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import PopularPosts from "./components/popular-posts";
+// import FollowedPosts from "./components/followed-posts";
+import CommunityPosts from "./components/community-posts";
+import { getPopularPosts, type Post } from "@/lib/api";
+import { posts as mockFollowedPosts } from "./mocks/posts"; // 임시로 목데이터 사용
 
-export default function TodayPage() {
+export default async function TodayPage() {
+  const popularPosts = await getPopularPosts();
+
   return (
-    <div className="h-full flex flex-col space-y-4 p-4 overflow-y-auto">
-      <Card className="flex-[1_0_25%]">
-        <CardHeader>
-          <CardTitle>인기글</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <PopularPosts posts={popularPosts.slice(0, 5)} />
-        </CardContent>
-      </Card>
+    <div className="h-full flex flex-col space-y-1 overflow-y-auto bg-gray-50">
+      <section className="p-2 sm:p-4 bg-gray-100">
+        <h2 className="text-lg font-semibold mb-2 text-primary">인기글</h2>
+        <PopularPosts posts={popularPosts} />
+      </section>
 
-      <Card className="flex-[1_0_25%]">
-        <CardHeader>
-          <CardTitle>팔로우한 사람의 글</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <FollowedPosts posts={posts.slice(0, 1)} />
-        </CardContent>
-      </Card>
+      <section className="p-2 sm:p-4 bg-gray-100 shadow-sm">
+        <h2 className="text-lg font-semibold mb-2 text-primary">내가 구독한 사람의 글</h2>
+        {/* <FollowedPosts posts={mockFollowedPosts.slice(0, 1)} /> */}
+      </section>
 
-      <Card className="flex-[1_0_50%]">
-        <CardHeader>
-          <CardTitle>생각 나누기</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CommunityPosts posts={posts.slice(0, 2)} />
-        </CardContent>
-      </Card>
+      <section className="p-2 sm:p-4 bg-gray-100 flex-grow">
+        <h2 className="text-lg font-semibold mb-2 text-primary">생각 나누기</h2>
+        <CommunityPosts />
+      </section>
     </div>
-  )
+  );
 }
-
