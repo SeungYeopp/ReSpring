@@ -42,6 +42,7 @@ services:
     image: jenkins/jenkins:lts  # 기본 이미지를 직접 사용
     container_name: jenkins-server
     user: root
+    privileged: true
     ports:
       - "8081:8080"
       - "50000:50000"
