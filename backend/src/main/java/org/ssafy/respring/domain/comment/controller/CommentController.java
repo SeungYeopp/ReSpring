@@ -96,6 +96,13 @@ public class CommentController {
         return ResponseEntity.ok(commentService.getCommentsByBookId(bookId));
     }
 
+    @Operation(summary = "나의 책 댓글 조회", description = "사용자가 작성한 모든 책 댓글을 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
+    @GetMapping("/books")
+    public ResponseEntity<List<CommentResponseDto>> getMyBookComments(@RequestParam UUID userId) {
+        return ResponseEntity.ok(commentService.getMyBookComments(userId));
+    }
+
     @Operation(summary = "자식 댓글 조회", description = "특정 댓글의 자식 댓글들을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "자식 댓글 조회 성공")
     @GetMapping("/children/{parentId}")
