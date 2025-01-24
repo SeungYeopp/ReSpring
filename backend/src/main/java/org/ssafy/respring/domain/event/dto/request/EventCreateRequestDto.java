@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class EventRequestDto {
+public class EventCreateRequestDto {
 	private UUID userId;
 	private String eventName;
 	private LocalDateTime occurredAt;
