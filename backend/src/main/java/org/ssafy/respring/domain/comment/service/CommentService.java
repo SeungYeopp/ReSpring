@@ -73,19 +73,37 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDto updateComment(Long commentId, String content) {
+    public CommentResponseDto updateComment(Long commentId, UUID userId, String content) {
+        // 1. 댓글 조회
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+
+        // 2. 요청한 사용자와 작성자가 같은지 확인
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("댓글을 수정할 권한이 없습니다.");
+        }
+
+        // 3. 댓글 내용 수정
         comment.setContent(content);
         commentRepository.save(comment);
+
+        // 4. 수정된 댓글 반환
         return mapToResponseDto(comment);
     }
 
+
     @Transactional
-    public void deleteComment(Long commentId) {
+    public void deleteComment(Long commentId, UUID userId) {
+        // 1. 댓글 조회
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 
+        // 2. 요청한 사용자와 작성자가 같은지 확인
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("댓글을 삭제할 권한이 없습니다.");
+        }
+
+        // 3. 댓글 내용 삭제 처리
         comment.setContent("삭제된 댓글입니다.");
         commentRepository.save(comment);
     }

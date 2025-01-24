@@ -98,7 +98,7 @@ public class PostController {
         return ResponseEntity.ok(postService.getPopularPosts());
     }
 
-    @PatchMapping("/{post_id}/like")
+    @PatchMapping("/like/{post_id}")
     @Operation(summary = "좋아요 추가/취소", description = "특정 포스트에 좋아요를 추가하거나 취소합니다.")
     public ResponseEntity<String> toggleLike(
             @Parameter(description = "좋아요를 추가/취소할 포스트 ID", example = "1") @PathVariable Long post_id,
