@@ -39,9 +39,9 @@ public class EventController {
 	@Operation(summary = "이벤트 삭제", description = "특정 이벤트를 삭제합니다.")
 	public ResponseEntity<Void> deleteEvent(
 			@Parameter(description = "해당 이벤트 ID") @PathVariable Long event_id,
-			@RequestParam UUID user_id
+			@RequestHeader("X-User-Id") UUID userId
 	) {
-		eventService.deleteEvent(event_id, user_id);
+		eventService.deleteEvent(event_id, userId);
 		return ResponseEntity.ok().build();
 	}
 
