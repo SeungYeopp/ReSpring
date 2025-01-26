@@ -6,8 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.ssafy.respring.domain.event.dto.request.EventCreateRequestDto;
-import org.ssafy.respring.domain.event.dto.request.EventUpdateRequestDto;
+import org.ssafy.respring.domain.event.dto.request.EventRequestDto;
 import org.ssafy.respring.domain.event.dto.response.EventResponseDto;
 import org.ssafy.respring.domain.event.service.EventService;
 
@@ -23,7 +22,7 @@ public class EventController {
 
 	@PostMapping
 	@Operation(summary = "이벤트 생성", description = "새로운 이벤트를 생성합니다.")
-	public ResponseEntity<Long> createEvent(@RequestBody EventCreateRequestDto requestDto) {
+	public ResponseEntity<Long> createEvent(@RequestBody EventRequestDto requestDto) {
 		return ResponseEntity.ok(eventService.createEvent(requestDto));
 	}
 
@@ -31,7 +30,7 @@ public class EventController {
 	@Operation(summary = "이벤트 수정", description = "특정 이벤트를 수정합니다.")
 	public ResponseEntity<Void> updateEvent(
 			@Parameter(description = "해당 이벤트 ID") @PathVariable Long event_id,
-			@RequestBody EventUpdateRequestDto requestDto) {
+			@RequestBody EventRequestDto requestDto) {
 		eventService.updateEvent(event_id, requestDto);
 		return ResponseEntity.ok().build();
 	}
@@ -39,9 +38,10 @@ public class EventController {
 	@DeleteMapping("/{event_id}")
 	@Operation(summary = "이벤트 삭제", description = "특정 이벤트를 삭제합니다.")
 	public ResponseEntity<Void> deleteEvent(
-			@Parameter(description = "해당 이벤트 ID") @PathVariable Long event_id
+			@Parameter(description = "해당 이벤트 ID") @PathVariable Long event_id,
+			@RequestParam UUID user_id
 	) {
-		eventService.deleteEvent(event_id);
+		eventService.deleteEvent(event_id, user_id);
 		return ResponseEntity.ok().build();
 	}
 
