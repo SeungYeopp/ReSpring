@@ -5,7 +5,9 @@ import {useState, ChangeEvent} from "react";
 // 컴포넌트 내부에서 상태 관리 위한 useState 훅.
 // onChange 이벤트에 발생하는 이벤트 타입 ChangeEvent.
 
-//
+import {Search} from "lucide-react";
+import Link from "next/link";
+
 interface iSearchBar{
     defaultValue: string | null;
     placeholder: string;
@@ -43,8 +45,7 @@ export const SearchBar = ({defaultValue, placeholder} : iSearchBar) => {
     }
 
     return (
-        <div className="search__input border-[2px] border-solid border-slate-500 flex flex-row items-center gap-5 p-1 rounded-[15px]">
-            <label htmlFor="inputId">searchIcon</label>
+        <div className="search__input border-[4px] border-brand-light border-solid flex flex-row items-center gap-5 p-1 rounded-[15px]">
             <input type="text"
                 id="inputId"
                 placeholder={placeholder}
@@ -52,6 +53,9 @@ export const SearchBar = ({defaultValue, placeholder} : iSearchBar) => {
                 onKeyDown={handleKeyPress}
                 className="bg-[transparent] outline-none border-none w-full py-3 pl-2 pr-3"
             />
+            <Link href={`${pathname}?q=${inputValue}`}>
+                <Search className="text-brand-dark"/>
+            </Link>
         </div>
 
     )

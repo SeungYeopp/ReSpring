@@ -8,7 +8,7 @@ export const SearchProfileCard = (props: iProfile) => {
         <div className="profile__card rounded-[15px] border border-solid">
             <Image src={photo} alt={username} className="h-[200px]" height={1000} width={400} />
         
-            <div className=" bg-slate-300 p-3">
+            <div className=" bg-brand p-3">
                 <h2 className="">Name : {name}</h2>
                 <p>Role: {role}</p>
                 <p>Email: {email}</p>
