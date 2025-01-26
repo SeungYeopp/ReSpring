@@ -40,6 +40,7 @@ public class EventService {
 	public void updateEvent(Long id, EventRequestDto requestDto) {
 		Event event = eventRepository.findById(id)
 		  				.orElseThrow(() -> new IllegalArgumentException("Event not found"));
+		// 예외 처리)
 		if (!event.getUser().getId().equals(requestDto.getUserId())) {
 			throw new IllegalArgumentException("You are not allowed to update this event");
 		}
@@ -52,6 +53,7 @@ public class EventService {
 	public void deleteEvent(Long id, UUID userId) {
 		Event event = eventRepository.findById(id)
 		  				.orElseThrow(() -> new IllegalArgumentException("Event not found"));
+		// 예외 처리)
 		if (!event.getUser().getId().equals(userId)) {
 			throw new IllegalArgumentException("You are not allowed to delete this event");
 		}
