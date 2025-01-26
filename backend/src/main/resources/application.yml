@@ -37,4 +37,5 @@ logging:
             pooling: ERROR
 
 file:
-  upload-dir: C:/uploads
+  upload-dir: ${FILE_UPLOAD_DIR:${user.home}/uploads}
+  # upload-dir: C:/uploads
