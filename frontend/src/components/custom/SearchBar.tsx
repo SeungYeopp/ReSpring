@@ -45,7 +45,7 @@ export const SearchBar = ({defaultValue, placeholder} : iSearchBar) => {
     }
 
     return (
-        <div className="search__input border-[4px] border-brand-light border-solid flex flex-row items-center gap-5 p-1 rounded-[15px]">
+        <div className="search__input border-[4px] border-brand-light border-solid flex flex-row items-center gap-5 p-1 rounded-[15px] w-full max-w-lg mx-auto">
             <input type="text"
                 id="inputId"
                 placeholder={placeholder}
