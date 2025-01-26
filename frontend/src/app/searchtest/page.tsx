@@ -11,10 +11,11 @@ const SearchPage = () => {
     const searchParams = useSearchParams()
 
     const searchQuery = searchParams && searchParams.get("q");
-    console.log("검색한 단어 : " + searchQuery);
     
+    // 아래는 searchQuery가 바뀔때마다 실행.
     useEffect(() => {
         const handleSearch = () => {
+            // foundUsers는 mock 데이터 중 searchQuery를 포함한 데이터를 필터링한 결과.
             const foundUsers = mockProfileData.filter((user) => {
                 if(searchQuery){
                     return (
@@ -24,30 +25,31 @@ const SearchPage = () => {
                         user.email.toLowerCase().includes(searchQuery.toLowerCase())
                     );
                 }else{
-                    return true;
+                    return true; // 따로 검색을 하지 않은 경우 모든 mockProfileData를 가져오도록 한다.
                 }
             });
-            setProfileData(foundUsers)
+            setProfileData(foundUsers) // 현재 발견한 프로필을 가져온다.
         }
 
-        handleSearch();
-    }, [searchQuery])
+        handleSearch(); // 위에서 정의한 함수 실행.
+    }, [searchQuery]) // searchQuery 내용이 바뀔 때마다 useEffect 내용이 실행된다.
 
     const allUsers = profileData.length;
 
     return (
         <section className="h-[100vh] w-screen px-[2rem] md:px-[6rem] mt-[100px]">
             <p className="mb-10 ">Showing {allUsers} {allUsers > 1 ? "Users" : "User"}</p>
-            <SearchBar defaultValue={""}></SearchBar>
+            <SearchBar defaultValue={""} placeholder={"testing"}></SearchBar>
 
             {/* rendering cards conditionally*/}
 
             <div className="mt-8">
                 {allUsers === 0 ? 
-                <p>No result was returned</p>
+                <p>검색 결과가 없습니다.</p>
                 : (
                     <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-5">
                         {
+                            // profileData 내의 모든 데이터를 SearchProfileCard 형식으로 출력.
                             profileData.map(({username, role, name, photo, email} : iProfile) => {
                                 return (
                                     <div key={username}>
