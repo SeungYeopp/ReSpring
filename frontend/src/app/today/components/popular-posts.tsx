@@ -1,98 +1,83 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { Card, CardContent } from "@/components/ui/card"
-import { MessageSquare, Heart } from "lucide-react"
+import Image from "next/image";
+import { Heart, MessageCircle } from "lucide-react";
+import type { Post } from "@/lib/api";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
+import { useEffect, useState } from "react";
+import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
 
-// 인기글 타입 정의
-interface PopularPost {
-  id: number
-  author: {
-    name: string
-    image: string
-  }
-  title: string
-  content: string
-  likes: number
-  comments: number
-  tag: string
+interface PopularPostsProps {
+  posts: Post[];
 }
 
-// 더미 데이터 (나중에 API로 대체)
-const dummyPopularPosts: PopularPost[] = [
-  {
-    id: 1,
-    author: {
-      name: "실버맨",
-      image: "/placeholder.svg",
-    },
-    title: "퇴직금 제대로 관리하기: 재테크 노하우 공유",
-    content:
-      "안녕하세요. 실버맨입니다. 오늘은 더 나은 노하우가 있으시면 공유받길 바라며 제가 퇴직금을 관리하는 방법에 대해 이야기하고자 합니다....",
-    likes: 19,
-    comments: 3,
-    tag: "정보 공유",
-  },
-  // 더 많은 더미 데이터...
-]
+export default function PopularPosts({ posts }: PopularPostsProps) {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
 
-export default function PopularPosts() {
-  const [currentSlide, setCurrentSlide] = useState(0)
+  useEffect(() => {
+    if (!api) return;
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    const onSelect = () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    };
+
+    api.on("select", onSelect);
+
+    return () => {
+      api.off("select", onSelect);
+    };
+  }, [api]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      api?.scrollNext();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [api]);
 
   return (
-    <div className="relative">
-      {/* 게시글 슬라이더 */}
-      <div className="overflow-hidden">
-        <div
-          className="flex transition-transform duration-300 ease-in-out"
-          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-        >
-          {dummyPopularPosts.map((post) => (
-            <Card key={post.id} className="flex-shrink-0 w-full">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <Image
-                    src={post.author.image || "/placeholder.svg"}
-                    alt={post.author.name}
-                    width={40}
-                    height={40}
-                    className="rounded-full"
-                  />
+    <Carousel setApi={setApi} className="w-full" opts={{ loop: true }}>
+      <CarouselContent>
+        {posts.map((post) => (
+          <CarouselItem key={post.id}>
+            <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200">
+              <CardContent className="p-3">
+                <div className="flex items-center space-x-3 mb-2">
+                  <Avatar>
+                    <AvatarFallback>{post.userName[0]}</AvatarFallback>
+                  </Avatar>
                   <div>
-                    <p className="font-semibold">{post.author.name}</p>
-                    <span className="text-sm text-muted-foreground">{post.tag}</span>
+                    <p className="text-sm font-medium">{post.userName}</p>
+                    <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}</p>
                   </div>
                 </div>
-                <h3 className="text-lg font-bold mb-2">{post.title}</h3>
-                <p className="text-muted-foreground mb-4">{post.content}</p>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1">
-                    <Heart className="w-4 h-4" />
-                    <span className="text-sm">{post.likes}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <MessageSquare className="w-4 h-4" />
-                    <span className="text-sm">{post.comments}</span>
-                  </div>
+                <h3 className="font-bold text-sm mb-1">{post.title}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{post.content}</p>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Heart className="w-3 h-3" /> {post.likes}
+                  </span>
+                  {/* 댓글 수는 API에서 제공되지 않아 임시로 제거 */}
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* 슬라이드 인디케이터 */}
-      <div className="flex justify-center gap-2 mt-4">
-        {dummyPopularPosts.map((_, index) => (
-          <button
-            key={index}
-            className={`w-2 h-2 rounded-full ${currentSlide === index ? "bg-primary" : "bg-muted"}`}
-            onClick={() => setCurrentSlide(index)}
-          />
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <div className="py-2 text-center">
+        {Array.from({ length: count }).map((_, index) => (
+          <span key={index} className={`inline-block h-2 w-2 mx-1 rounded-full ${index === current - 1 ? "bg-primary" : "bg-gray-300"}`} />
         ))}
       </div>
-    </div>
-  )
+    </Carousel>
+  );
 }
-

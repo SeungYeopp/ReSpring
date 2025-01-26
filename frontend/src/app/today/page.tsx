@@ -1,43 +1,28 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import PopularPosts from "./components/popular-posts"
-import FollowedPosts from "./components/followed-posts"
-import AllPosts from "./components/all-posts"
+import PopularPosts from "./components/popular-posts";
+// import FollowedPosts from "./components/followed-posts";
+import CommunityPosts from "./components/community-posts";
+import { getPopularPosts, type Post } from "@/lib/api";
+import { posts as mockFollowedPosts } from "./mocks/posts"; // 임시로 목데이터 사용
 
-export default function TodayPage() {
+export default async function TodayPage() {
+  const popularPosts = await getPopularPosts();
+
   return (
-    <main>
-      {/* 인기글 섹션 */}
-      <section className="px-4 py-6">
-        <h2 className="text-2xl font-bold mb-4">인기글</h2>
-        <PopularPosts />
+    <div className="h-full flex flex-col space-y-1 overflow-y-auto bg-gray-50">
+      <section className="p-2 sm:p-4 bg-gray-100">
+        <h2 className="text-lg font-semibold mb-2 text-primary">인기글</h2>
+        <PopularPosts posts={popularPosts} />
       </section>
 
-      {/* 팔로우한 사람의 글 섹션 */}
-      <section className="px-4 py-6">
-        <h2 className="text-2xl font-bold mb-4">팔로우한 사람의 글</h2>
-        <FollowedPosts />
+      <section className="p-2 sm:p-4 bg-gray-100 shadow-sm">
+        <h2 className="text-lg font-semibold mb-2 text-primary">내가 구독한 사람의 글</h2>
+        {/* <FollowedPosts posts={mockFollowedPosts.slice(0, 1)} /> */}
       </section>
 
-      {/* 생각 나누기 탭 섹션 */}
-      <section className="px-4 py-6">
-        <Tabs defaultValue="all">
-          <TabsList className="w-full justify-start mb-4">
-            <TabsTrigger value="all">전체</TabsTrigger>
-            <TabsTrigger value="concerns">고민/질문</TabsTrigger>
-            <TabsTrigger value="info">정보 공유</TabsTrigger>
-          </TabsList>
-          <TabsContent value="all">
-            <AllPosts filter="all" />
-          </TabsContent>
-          <TabsContent value="concerns">
-            <AllPosts filter="concerns" />
-          </TabsContent>
-          <TabsContent value="info">
-            <AllPosts filter="info" />
-          </TabsContent>
-        </Tabs>
+      <section className="p-2 sm:p-4 bg-gray-100 flex-grow">
+        <h2 className="text-lg font-semibold mb-2 text-primary">생각 나누기</h2>
+        <CommunityPosts />
       </section>
-    </main>
-  )
+    </div>
+  );
 }
-
