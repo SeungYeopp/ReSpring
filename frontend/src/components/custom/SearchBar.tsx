@@ -29,7 +29,7 @@ export const SearchBar = ({defaultValue} : iDefault) => {
 
     // 검색하는 함수.
     const handleSearch = () => {
-        if(inputValue) return router.push(`/?q=${inputValue}`);
+        if(inputValue) return router.push(`/searchtest?q=${inputValue}`);
         else return router.push("/");
     }
 

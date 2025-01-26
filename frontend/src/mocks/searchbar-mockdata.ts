@@ -75,7 +75,7 @@ for(let i=0;i<randomNames.length;i++){
                 ? "FE dev" : "BE dev",
             email: `${randomNames[i].toLowerCase()}@gmail.com`,
             username: `user_${randomNames[i].toLowerCase()}`,
-            photo: `https://source.unsplash.com/random/200x200?sig=${i}`,
+            photo: ``,
         };
         profileData.push(profile);
     }else{
