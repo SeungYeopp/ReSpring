@@ -3,14 +3,15 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
     environment:
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
     volumes:
       - ~/.gradle:/home/gradle/.gradle
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - project-network
 
@@ -18,41 +19,41 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
     networks:
       - project-network
 
   db:
     image: mysql:8.0
-    container_name: mysql-db
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      project-network:
+        aliases:
+          - database
+
+  jenkins:
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+    user: root
     ports:
-      - "3306:3306"
+      - "8081:8080"
+      - "50001:50000"
     volumes:
-      - db_data:/var/lib/mysql
+      - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins_home:/var/jenkins_home
     networks:
       - project-network
 
-  jenkins:
-    image: jenkins/jenkins:lts  # 기본 이미지를 직접 사용
-    container_name: jenkins-server
-    user: root
-    privileged: true
-    ports:
-      - "8081:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
-    networks:
-      - project-network
 
 networks:
   project-network:
