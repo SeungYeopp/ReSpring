@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-public class StoryRequestDto {
+public class StoryUpdateRequestDto {
     private UUID userId;
     private String title;
     private String content;
     private Long eventId;
+    private List<Long> deleteImageIds;
 }
