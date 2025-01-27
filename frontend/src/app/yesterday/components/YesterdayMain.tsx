@@ -1,6 +1,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/custom/TabGreen"
 import TodaysBook from "@/app/yesterday/components/TodaysBook"
+import Subscribe from "@/app/yesterday/components/Subscribe"
 
   
 
@@ -15,7 +16,9 @@ export const YesterdayMain = () => {
                 <TabsContent value="today">
                     <TodaysBook />
                 </TabsContent>
-                <TabsContent value="subscribe">구독</TabsContent>
+                <TabsContent value="subscribe">
+                    <Subscribe />
+                </TabsContent>
             </Tabs>
         </div>
     )
