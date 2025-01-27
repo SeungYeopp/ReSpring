@@ -19,11 +19,11 @@
             side="top"
             className="flex flex-col space-y-2"
           >
-            <Button variant="ghost" className="flex items-center gap-2 rounded-full border-2 border-brand-light">
+            <Button variant="ghost" className="flex items-center bg-white gap-2 rounded-full border-2 border-brand-light">
               <PenTool  className="h-5 w-5" />
               글 작성하기
             </Button>
-            <Button variant="ghost" className="flex items-center gap-2 rounded-full border-2 border-brand-light">
+            <Button variant="ghost" className="flex items-center bg-white gap-2 rounded-full border-2 border-brand-light">
               <ChevronUp className="h-5 w-5" />
               맨 위로
             </Button>

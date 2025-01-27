@@ -19,11 +19,11 @@
             side="top"
             className="flex flex-col space-y-2"
           >
-            <Button variant="ghost" className="flex items-center gap-2 rounded-full border-2 border-brand-light">
+            <Button variant="ghost" className="flex items-center gap-2 bg-white rounded-full border-2 border-brand-light">
               <PenTool  className="h-5 w-5" />
               글조각 쓰기
             </Button>
-            <Button variant="ghost" className="flex items-center gap-2 rounded-full border-2 border-brand-light">
+            <Button variant="ghost" className="flex items-center gap-2 bg-white rounded-full border-2 border-brand-light">
               <BookOpen className="h-5 w-5" />
               봄날의 서 쓰기
             </Button>
