@@ -13,9 +13,9 @@ export default function Yesterday() {
   const searchQuery = searchParams && searchParams.get("q");
 
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center">
       <SearchBar defaultValue={""} placeholder="봄날의 서, 작가 검색.."></SearchBar>
-      {searchQuery ? <BookSearchResult query = {searchQuery}/> : <YesterdayMain/>}
+      {searchQuery ? <BookSearchResult query = {searchQuery} /> : <YesterdayMain/>}
     </div>
   );
 }
