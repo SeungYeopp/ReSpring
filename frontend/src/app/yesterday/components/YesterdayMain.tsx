@@ -3,8 +3,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/custom/Ta
 import TodaysBook from "@/app/yesterday/components/TodaysBook"
 import Subscribe from "@/app/yesterday/components/Subscribe"
 
-  
-
 export const YesterdayMain = () => {
     return (
         <div className="flex flex-col items-center justify-center">

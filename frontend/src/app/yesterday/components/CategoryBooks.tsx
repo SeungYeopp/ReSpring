@@ -16,7 +16,7 @@ import {
 import {bookData, iBook} from "@/mocks/book/book-mockdata"
 import Image from 'next/image'
 
-export const Subscribe = () => {
+export const CategoryBooks = () => {
     return(
         <div>
             <Carousel opts={{ align: "start", loop: true, }}>
@@ -49,4 +49,4 @@ export const Subscribe = () => {
     )
 }
 
-export default Subscribe
+export default CategoryBooks
