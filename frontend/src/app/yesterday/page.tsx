@@ -6,7 +6,7 @@ import {SearchBar} from "@/components/custom/SearchBar"
 import { useSearchParams } from "next/navigation";
 import {BookSearchResult} from "@/app/yesterday/components/BookSearchResult"
 import { YesterdayMain } from "./components/YesterdayMain";
-import FloatingMenu from "@/app/yesterday/components/ui/FloatingMenu"
+import FloatingMenu from "@/components/custom/FloatingMenu"
 
 
 export default function Yesterday() {
