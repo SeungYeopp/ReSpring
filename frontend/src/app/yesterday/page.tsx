@@ -6,6 +6,8 @@ import {SearchBar} from "@/components/custom/SearchBar"
 import { useSearchParams } from "next/navigation";
 import {BookSearchResult} from "@/app/yesterday/components/BookSearchResult"
 import { YesterdayMain } from "./components/YesterdayMain";
+import FloatingMenu from "@/app/yesterday/components/ui/FloatingMenu"
+
 
 export default function Yesterday() {
   const searchParams = useSearchParams()
@@ -16,6 +18,7 @@ export default function Yesterday() {
     <div className="flex flex-col items-center justify-center">
       <SearchBar defaultValue={""} placeholder="봄날의 서, 작가 검색.."></SearchBar>
       {searchQuery ? <BookSearchResult query = {searchQuery} /> : <YesterdayMain/>}
+      <FloatingMenu/>
     </div>
   );
 }
