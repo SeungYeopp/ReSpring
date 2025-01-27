@@ -6,7 +6,8 @@ import {SearchBar} from "@/components/custom/SearchBar"
 import { useSearchParams } from "next/navigation";
 import {BookSearchResult} from "@/app/yesterday/components/BookSearchResult"
 import { YesterdayMain } from "./components/YesterdayMain";
-import FloatingMenu from "@/components/custom/FloatingMenu"
+import BubbleMenuYesterday from "@/components/custom/BubbleMenuYesterday"
+import BubbleMenuToday from "@/components/custom/BubbleMenuToday"
 
 
 export default function Yesterday() {
@@ -18,7 +19,7 @@ export default function Yesterday() {
     <div className="flex flex-col items-center justify-center">
       <SearchBar defaultValue={""} placeholder="봄날의 서, 작가 검색.."></SearchBar>
       {searchQuery ? <BookSearchResult query = {searchQuery} /> : <YesterdayMain/>}
-      <FloatingMenu/>
+      <BubbleMenuToday/>
     </div>
   );
 }

@@ -3,9 +3,9 @@
   import * as React from "react";
   import { Popover, PopoverTrigger, PopoverContent } from "@/components/custom/BubblePopover"; 
   import { Button } from "@/components/ui/button";
-  import { BookOpen, PenTool, Plus} from "lucide-react"; // 아이콘 사용
+  import { PenTool, Plus, ChevronUp } from "lucide-react"; // 아이콘 사용
 
-  export default function FloatingMenu() {
+  export default function BubbleMenuYesterday() {
     return (
       <div className="fixed bottom-20 right-6">
         <Popover>
@@ -21,11 +21,11 @@
           >
             <Button variant="ghost" className="flex items-center gap-2 rounded-full border-2 border-brand-light">
               <PenTool  className="h-5 w-5" />
-              글조각 쓰기
+              글 작성하기
             </Button>
             <Button variant="ghost" className="flex items-center gap-2 rounded-full border-2 border-brand-light">
-              <BookOpen className="h-5 w-5" />
-              봄날의 서 쓰기
+              <ChevronUp className="h-5 w-5" />
+              맨 위로
             </Button>
           </PopoverContent>
         </Popover>
