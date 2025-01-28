@@ -18,5 +18,4 @@ export const getAllEvents = async (userId : string): Promise<Event[]> => {
         console.error('에러 발생 : ', error);
         throw new Error("getAllEvents의 에러 발생");
     }
-
 }
