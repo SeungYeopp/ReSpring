@@ -1,10 +1,32 @@
-// page.tsx
+"use client"
+
 import React from "react";
 
-export default function HomePage() {
+import {SearchBar} from "@/components/custom/SearchBar"
+import { useSearchParams } from "next/navigation";
+import {BookSearchResult} from "@/app/yesterday/components/BookSearchResult"
+import { YesterdayMain } from "./components/YesterdayMain";
+import BubbleMenuYesterday from "@/components/custom/BubbleMenuYesterday"
+import Category from "./components/Category";
+
+
+export default function Yesterday() {
+  const searchParams = useSearchParams()
+
+  const searchQuery = searchParams && searchParams.get("q");
+
   return (
-    <div>
-      <h2>어제 페이지</h2>
+    <div className="flex flex-col items-center justify-center">
+      <SearchBar defaultValue={""} placeholder="봄날의 서, 작가 검색.."></SearchBar>
+      {
+      searchQuery ? 
+      <BookSearchResult query = {searchQuery} /> : 
+      <div>
+        <YesterdayMain/>
+        <Category />
+      </div>
+      }
+      <BubbleMenuYesterday/>
     </div>
   );
 }
