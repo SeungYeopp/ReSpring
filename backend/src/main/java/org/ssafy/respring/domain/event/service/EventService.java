@@ -3,8 +3,7 @@ package org.ssafy.respring.domain.event.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.ssafy.respring.domain.event.dto.request.EventCreateRequestDto;
-import org.ssafy.respring.domain.event.dto.request.EventUpdateRequestDto;
+import org.ssafy.respring.domain.event.dto.request.EventRequestDto;
 import org.ssafy.respring.domain.event.dto.response.EventResponseDto;
 import org.ssafy.respring.domain.event.repository.EventRepository;
 import org.ssafy.respring.domain.event.vo.Event;
@@ -20,10 +19,7 @@ import java.util.stream.Collectors;
 public class EventService {
 	private final EventRepository eventRepository;
 
-	public Long createEvent(EventCreateRequestDto requestDto) {
-
-//		User user = userRepository.findById(requestDto.getUserId())
-//				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + requestDto.getUserId()));
+	public Long createEvent(EventRequestDto requestDto) {
 
 		Event event = new Event();
 		event.setEventName(requestDto.getEventName());
@@ -31,29 +27,36 @@ public class EventService {
 		event.setDisplay(requestDto.isDisplay());
 		event.setOccurredAt(requestDto.getOccurredAt());
 
-		System.out.println("before user info");
-		//event.setUserId(requestDto.getUserId());
+//		User user = userRepository.findById(requestDto.getUserId())
+//				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + requestDto.getUserId()));
 		User user = new User();
 		user.setId(requestDto.getUserId());
 		event.setUser(user);
 
 		eventRepository.save(event);
-		System.out.println("saved success");
-
 		return event.getId();
 	}
 
-	public void updateEvent(Long id, EventUpdateRequestDto requestDto) {
+	public void updateEvent(Long id, EventRequestDto requestDto) {
 		Event event = eventRepository.findById(id)
 		  				.orElseThrow(() -> new IllegalArgumentException("Event not found"));
-
+		// 예외 처리)
+		if (!event.getUser().getId().equals(requestDto.getUserId())) {
+			throw new IllegalArgumentException("You are not allowed to update this event");
+		}
 		event.setEventName(requestDto.getEventName());
 		event.setCategory(requestDto.getCategory());
 		event.setDisplay(requestDto.isDisplay());
 		event.setOccurredAt(requestDto.getOccurredAt());
 	}
 
-	public void deleteEvent(Long id) {
+	public void deleteEvent(Long id, UUID userId) {
+		Event event = eventRepository.findById(id)
+		  				.orElseThrow(() -> new IllegalArgumentException("Event not found"));
+		// 예외 처리)
+		if (!event.getUser().getId().equals(userId)) {
+			throw new IllegalArgumentException("You are not allowed to delete this event");
+		}
 		eventRepository.deleteById(id);
 	}
 
