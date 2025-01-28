@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import mockData from "@/mocks/story/story-mock"
+
 export default function CreateBook() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -24,21 +26,9 @@ export default function CreateBook() {
     }
   };
 
-  // 백엔드에 데이터 전송
-  const handleSubmit = async () => {
-    const formDataToSend = new FormData();
-    formDataToSend.append("title", formData.title);
-    formDataToSend.append("content", formData.content);
-    formData.tags.forEach((tag) => formDataToSend.append("tags", tag));
-    formData.images.forEach((image) => formDataToSend.append("images", image));
-
-    await fetch("/api/upload", {
-      method: "POST",
-      body: formDataToSend,
-    });
-
-    alert("글이 성공적으로 저장되었습니다!");
-  };
+  const handleSubmit = () => {
+    alert("봄날의 서 제작 완료!");
+  }
 
   return (
     <div className="flex flex-col items-center max-w-lg mx-auto p-4">
@@ -84,7 +74,7 @@ export default function CreateBook() {
               </button>
               미리보기
               <button className="px-4 py-2 bg-green-500 text-white rounded" onClick={handleSubmit}>
-                제출하기
+                편찬
               </button>
             </div>
           }
@@ -93,16 +83,7 @@ export default function CreateBook() {
       <div className="basis-6/7">
         {step === 1 && (
           <div>
-            <label className="block font-semibold">태그 입력</label>
-            <input
-              type="text"
-              className="w-full border p-2 rounded mt-2"
-              placeholder="예: 기술, 일상, 개발"
-              value={formData.tags.join(", ")}
-              onChange={(e) =>
-                updateFormData("tags", e.target.value.split(",").map((tag) => tag.trim()))
-              }
-            />
+
           </div>
         )}
 
@@ -116,7 +97,16 @@ export default function CreateBook() {
               value={formData.title}
               onChange={(e) => updateFormData("title", e.target.value)}
             />
-
+            <label className="block font-semibold">태그 입력</label>
+            <input
+              type="text"
+              className="w-full border p-2 rounded mt-2"
+              placeholder="예: 기술, 일상, 개발"
+              value={formData.tags.join(", ")}
+              onChange={(e) =>
+                updateFormData("tags", e.target.value.split(",").map((tag) => tag.trim()))
+              }
+            />
             <label className="block font-semibold mt-4">내용</label>
             <textarea
               className="w-full border p-2 rounded mt-2"
