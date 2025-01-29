@@ -81,3 +81,14 @@ export const updateEvent = async (eventId : number, eventPostData : EventPostDto
         return false;
     }
 }
+
+// 어떤 사용자의 타임라인 내 이벤트 목록을 불러옵니다.
+export const getTimelineEvents = async (userId : string) : Promise<Event[]> => {
+    try{
+        const response = await axiosAPI.get(`/events/timeline/${userId}`);
+        return response.data;
+    }catch(error){
+        console.error('getTimeline 에러 발생', error);
+        throw new Error("getTimeline 에러 발생");
+    }
+}
