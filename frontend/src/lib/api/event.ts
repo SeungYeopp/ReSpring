@@ -53,7 +53,7 @@ export const deleteEvent = async (eventId : number, userId : string) : Promise<b
             }
         )
 
-        if(response.status === 200 || response.status === 204){
+        if(response.status === 200){
             return true; // 성공 시 true 반환.
         }else{
             console.log("deleteEvent : response status 200이 아님. 에러 발생.");
@@ -66,10 +66,18 @@ export const deleteEvent = async (eventId : number, userId : string) : Promise<b
 }
 
 // 이벤트를 업데이트 하는 함수. 이벤트 ID와 이벤트 POST DTO를 모두 받는다.
-export const updateEvent = async (eventId : number, eventPostData : EventPostDto) => {
+export const updateEvent = async (eventId : number, eventPostData : EventPostDto) : Promise<boolean> => {
     try{
+        const response = await axiosAPI.patch(`/events/${eventId}`, eventPostData);
 
+        if(response.status === 200){
+            return true;
+        }else{
+            console.log("updateEvent : response status 200이 아님. 에러 발생.");
+            return false;
+        }
     }catch(error){
-
+        console.error('에러 발생 : ', error);
+        return false;
     }
 }
