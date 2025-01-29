@@ -17,3 +17,6 @@ export * from "./today";
 
 // '이벤트' 관련 API 내보내기
 export * from "./event"
+
+// '글조각(스토리)' 관련 API 내보내기
+export * from "./story"
