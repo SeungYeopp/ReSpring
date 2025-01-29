@@ -35,7 +35,7 @@ export const getAllEvents = async (userId : string): Promise<Event[]> => {
 // 새로운 이벤트를 만든다. 이때 반환되는 값은 그 이벤트의 ID 값이다.
 // 입력 : 이벤트 POST 관련 데이터 (EventPostDto)
 // 출력 : 새로 만들어진 이벤트의 ID (number)
-export const makeEvent = async (eventPostData : EventPostDto) => {
+export const makeEvent = async (eventPostData : EventPostDto) : Promise<number>=> {
     try{
         const response = await axiosAPI.post(`/events`, eventPostData)
         return response.data; // 새로 만들어진 이벤트의 ID가 반환된다.
