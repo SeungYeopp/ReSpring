@@ -91,6 +91,23 @@ export const makeStory = async (userId : string,
     }
 }
 
+export const getStoryById = async (storyId : number) : Promise<Story>=> {
+    try{
+        const response = await axiosAPI.get(`/stories/${storyId}`);
+
+        const story= {
+            ...response.data,
+            createdAt: new Date(response.data.createdAt),
+            updatedAt: new Date(response.data.updatedAt)
+        }
+
+        return story;
+    }catch(error){
+        console.error('getStoryByStoryId 에러 발생!', error);
+        throw new Error('getStoryByStoryId 에러 발생!');
+    }
+}
+
 // // user ID를 기반으로 해당 유저의 모든 이벤트 목록을 반환한다.
 // // 입력 : user ID (String)
 // // 출력 : Event 배열 (Event[])
