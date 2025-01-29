@@ -1,6 +1,7 @@
 // 이벤트 관련 API를 호출하는 함수의 모음.
 import axiosAPI from "./axios";
 
+// 이벤트에 대한 인터페이스
 export interface Event{
     id: number,
     eventName: string,
@@ -9,6 +10,7 @@ export interface Event{
     display: boolean
 }
 
+// 새로운 이벤트를 생성할 때 사용되는 인터페이스.
 export interface EventPostDto{
     userId: string,
     eventName: string,
@@ -36,5 +38,23 @@ export const makeEvent = async (eventPostData : EventPostDto) => {
     } catch(error){
         console.error('에러 발생 : ', error)
         throw new Error("makeEvent의 에러 발생");
+    }
+}
+
+// 이벤트를 삭제한다. 이 때 이벤트 id와 유저 id를 받아서 처리한다.
+export const deleteEvent = async (eventId : number, userId : string) => {
+    try{
+        const response = await axiosAPI.delete(`/events/${eventId}`,
+            {
+                headers: {
+                    "X-User-Id": userId,
+                    "Accept": "*/*"
+                  }
+            }
+        )
+        return response.data;
+    }catch(error){
+        console.error('에러 발생 : ', error);
+        throw new Error("deleteEvent의 에러 발생");
     }
 }
