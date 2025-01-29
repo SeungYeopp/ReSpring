@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { getAllEvents, Event } from "@/lib/api/event"; // 이벤트 리스트 호출 함수와 Event 인터페이스.
+import { getAllEvents, Event } from "@/lib/api/index"; // 이벤트 리스트 호출 함수와 Event 인터페이스.
 
 const EventList = () => {
   const [userId, setUserId] = useState<string>(""); // userID를 담는 상태.
