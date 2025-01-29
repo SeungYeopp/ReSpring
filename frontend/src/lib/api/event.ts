@@ -42,19 +42,34 @@ export const makeEvent = async (eventPostData : EventPostDto) => {
 }
 
 // 이벤트를 삭제한다. 이 때 이벤트 id와 유저 id를 받아서 처리한다.
-export const deleteEvent = async (eventId : number, userId : string) => {
+export const deleteEvent = async (eventId : number, userId : string) : Promise<boolean> => {
     try{
         const response = await axiosAPI.delete(`/events/${eventId}`,
             {
                 headers: {
                     "X-User-Id": userId,
-                    "Accept": "*/*"
-                  }
+                    "Accept": "*/*" // 서버로부터 아무 타입의 반환값을 받겠다는 것을 의미한데요.
+                }
             }
         )
-        return response.data;
+
+        if(response.status === 200 || response.status === 204){
+            return true; // 성공 시 true 반환.
+        }else{
+            console.log("deleteEvent : response status 200이 아님. 에러 발생.");
+            return false;
+        }
     }catch(error){
         console.error('에러 발생 : ', error);
-        throw new Error("deleteEvent의 에러 발생");
+        return false;
+    }
+}
+
+// 이벤트를 업데이트 하는 함수. 이벤트 ID와 이벤트 POST DTO를 모두 받는다.
+export const updateEvent = async (eventId : number, eventPostData : EventPostDto) => {
+    try{
+
+    }catch(error){
+
     }
 }
