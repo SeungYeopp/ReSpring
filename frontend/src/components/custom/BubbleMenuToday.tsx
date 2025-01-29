@@ -6,7 +6,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/custom/Bub
 import { Button } from "@/components/ui/button";
 import { PenTool, Plus, ChevronUp } from "lucide-react";
 
-export default function BubbleMenuYesterday() {
+export default function BubbleMenuToday() {
   // 페이지 상단으로 스크롤 이동 함수
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
