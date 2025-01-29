@@ -34,6 +34,13 @@ export interface Story{
     images : Image[]
 }
 
+export interface StoryDto{
+    userId : string,
+    title : string,
+    content : string,
+    eventId : number
+}
+
 export const getAllStories = async (userId : string) : Promise<Story[]> => {
     try{
         const response = await axiosAPI.get(`/stories?userId=${userId}`);
@@ -51,6 +58,36 @@ export const getAllStories = async (userId : string) : Promise<Story[]> => {
     }catch(error){
         console.error(`getAllStories 에러 발생, 발생한 userId : ${userId}`, error);
         throw new Error('getAllstories 에러 발생');
+    }
+}
+
+export const makeStory = async (userId : string,
+    title : string,
+    content : string,
+    eventId : number, 
+    images : File[]) : Promise<number>=> {
+    try{
+        const formData = new FormData();
+        formData.append('storyDto', new Blob(
+            [JSON.stringify(
+                {
+                    userId,
+                    title,
+                    content,
+                    eventId,
+                }
+            )], {type:'application/json'}
+        ));
+
+        images.forEach((image) => {
+            formData.append('images', image);
+        })
+        const response = await axiosAPI.post('/stories', formData, {headers: { "Content-Type": "multipart/form-data" }});
+
+        return response.data; // 생성된 스토리의 ID 반환.
+    }catch(error){
+        console.error('makeStory 에러 발생', error)
+        throw new Error('makeStory 에러 발생');
     }
 }
 
