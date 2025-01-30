@@ -92,8 +92,14 @@ public class BookService {
 		}
 	}
 
+	public List<BookResponseDto> getAllBooks() {
+		return bookRepository.findAll()
+		  .stream()
+		  .map(this::toResponseDto)
+		  .collect(Collectors.toList());
+	}
 
-	public List<BookResponseDto> getMyBooks(UUID userId) {
+	public List<BookResponseDto> getBooksByUser(UUID userId) {
 		return bookRepository.findByUserId(userId)
 		  .stream()
 		  .map(this::toResponseDto)

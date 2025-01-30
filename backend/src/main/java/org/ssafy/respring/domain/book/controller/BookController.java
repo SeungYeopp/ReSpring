@@ -46,9 +46,21 @@ public class BookController {
 	}
 
 	@GetMapping
+	@Operation(summary = "모든 봄날의 서(자서전) 조회", description = "모든 봄날의 서를 조회합니다.")
+	public ResponseEntity<List<BookResponseDto>> getAllBooks() {
+		return ResponseEntity.ok(bookService.getAllBooks());
+	}
+
+	@GetMapping("/my")
 	@Operation(summary = "나의 모든 봄날의 서(자서전) 조회", description = "나의 모든 봄날의 서를 조회합니다.")
 	public ResponseEntity<List<BookResponseDto>> getMyBooks(@RequestHeader("X-User-Id") UUID userId) {
-		return ResponseEntity.ok(bookService.getMyBooks(userId));
+		return ResponseEntity.ok(bookService.getBooksByUser(userId));
+	}
+
+	@GetMapping("/{user_id}")
+	@Operation(summary = "특정 유저가 작성한 모든 봄날의 서(자서전) 조회", description = "특정 유저가 작성한 모든 봄날의 서를 조회합니다.")
+	public ResponseEntity<List<BookResponseDto>> getBooksByUser(@Parameter(description = "봄날의 서 ID") @PathVariable UUID userId) {
+		return ResponseEntity.ok(bookService.getBooksByUser(userId));
 	}
 
 	@GetMapping("/{book_id}")
