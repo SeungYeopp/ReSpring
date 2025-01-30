@@ -22,10 +22,6 @@ public class MongoConfig {
         String uri = dotenv.get("MONGODB_URI", "mongodb://localhost:27017"); // 기본값
         String databaseName = dotenv.get("MONGODB_DATABASE", "respring");   // 기본값
 
-        // 디버깅용 로그 추가
-        System.out.println("MONGODB_URI: " + uri);
-        System.out.println("MONGODB_DATABASE: " + databaseName);
-
         // MongoDB 연결
         MongoClient mongoClient = MongoClients.create(uri);
         return mongoClient.getDatabase(databaseName);
