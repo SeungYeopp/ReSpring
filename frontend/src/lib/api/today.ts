@@ -1,5 +1,5 @@
 import axios from "axios";
-import { posts } from "../../app/today/mocks/posts";
+import { posts } from "@/app/today/mocks/posts";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
