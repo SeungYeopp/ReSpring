@@ -80,14 +80,6 @@ ps. 첨부한 사진은 제가 가꾸고 있는 작은 정원입니다. 어떠�
         imageId: 106,
         imageUrl: "/placeholder.webp",
       },
-      {
-        imageId: 107,
-        imageUrl: "/placeholder.webp",
-      },
-      {
-        imageId: 108,
-        imageUrl: "/placeholder.webp",
-      },
     ],
   },
 ];
@@ -494,17 +486,28 @@ async function updatePost(postId: number, title: string, content: string, catego
     userId,
     deleteImageIds,
   };
+  console.log("🔍 보낼 데이터:", postDto);
+  console.log("🖼 추가할 이미지:", newFiles);
   formData.append("postDto", new Blob([JSON.stringify(postDto)], { type: "application/json" }));
 
   if (newFiles) {
-    newFiles.forEach((file) => formData.append("newImages", file));
+    newFiles.forEach((file) => {
+      formData.append("newImages", file);
+      console.log("📸 추가된 이미지 파일:", file.name);
+    });
   }
 
   const response = await fetch(`/posts/${postId}`, {
     method: "PATCH",
     body: formData,
   });
-  if (!response.ok) throw new Error("게시글 수정 실패");
+
+  console.log("🔍 서버 응답 상태 코드:", response.status);
+
+  if (!response.ok) {
+    console.error("❌ 게시글 수정 실패");
+    throw new Error("게시글 수정 실패");
+  }
 }
 
 async function deletePost(postId: number, userId: string): Promise<void> {
