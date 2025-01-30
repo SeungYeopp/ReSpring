@@ -38,7 +38,7 @@ const mockPosts: Post[] = [
   {
     id: 1,
     title: "퇴직 후 새로운 삶의 시작",
-    content: `안녕하세요, 여러분. 저는 30년간 한 회사에서 근무하다 얼마 전 퇴직한 김철수입니다. 
+    content: `안녕하세요, 여러분. 저는 30년간 한 회사에서 근무하다 얼마 전 퇴직한 김민철입니다. 
 퇴직 후 처음에는 무엇을 해야 할지 막막했습니다. 하지만 이제는 새로운 삶의 장을 열어가는 중입니다.
 
 첫째, 건강 관리에 신경 쓰고 있습니다. 매일 아침 공원을 산책하고, 주 3회 수영을 하고 있어요. 
@@ -50,7 +50,7 @@ const mockPosts: Post[] = [
 ps. 첨부한 사진은 제가 가꾸고 있는 작은 정원입니다. 어떠신가요?`,
     category: "LIFE_STORY",
     userId: "user123",
-    userName: "김철수",
+    userName: "김민철",
     createdAt: "2023-06-15T10:00:00",
     updatedAt: "2023-06-15T10:00:00",
     likes: 128,
@@ -78,14 +78,6 @@ ps. 첨부한 사진은 제가 가꾸고 있는 작은 정원입니다. 어떠�
       },
       {
         imageId: 106,
-        imageUrl: "/placeholder.webp",
-      },
-      {
-        imageId: 107,
-        imageUrl: "/placeholder.webp",
-      },
-      {
-        imageId: 108,
         imageUrl: "/placeholder.webp",
       },
     ],
@@ -177,7 +169,7 @@ const mockComments: Comment[] = [
   {
     id: 1011,
     content: "맞아요, 토마토는 물 조절이 중요해요. 저는 일주일에 두 번 정도 듬뿍 줍니다.",
-    username: "김철수",
+    username: "김민철",
     createdAt: "2023-06-16T10:30:00",
     updatedAt: "2023-06-16T10:30:00",
     parentId: 1005,
@@ -185,7 +177,7 @@ const mockComments: Comment[] = [
   {
     id: 1012,
     content: "재정 관리는 정말 중요한 주제네요. 나중에 따로 포스트로 다뤄볼게요!",
-    username: "김철수",
+    username: "김민철",
     createdAt: "2023-06-16T11:15:00",
     updatedAt: "2023-06-16T11:15:00",
     parentId: 1006,
@@ -193,7 +185,7 @@ const mockComments: Comment[] = [
   {
     id: 1013,
     content: "주로 장미, 백일홍, 메리골드를 심었어요. 관리하기 비교적 쉬운 꽃들이죠.",
-    username: "김철수",
+    username: "김민철",
     createdAt: "2023-06-16T12:00:00",
     updatedAt: "2023-06-16T12:00:00",
     parentId: 1007,
@@ -201,7 +193,7 @@ const mockComments: Comment[] = [
   {
     id: 1014,
     content: "수영 정말 추천드려요! 처음엔 어렵지만 곧 익숙해지실 거예요.",
-    username: "김철수",
+    username: "김민철",
     createdAt: "2023-06-16T13:20:00",
     updatedAt: "2023-06-16T13:20:00",
     parentId: 1008,
@@ -209,7 +201,7 @@ const mockComments: Comment[] = [
   {
     id: 1015,
     content: "보드게임이나 간단한 요리를 같이 해요. 아이들이 정말 좋아하더라고요!",
-    username: "김철수",
+    username: "김민철",
     createdAt: "2023-06-16T14:10:00",
     updatedAt: "2023-06-16T14:10:00",
     parentId: 1009,
@@ -241,7 +233,7 @@ const mockComments: Comment[] = [
   {
     id: 1019,
     content: "네, 주말마다 동네 공원에서 태극권을 함께 해요. 참여해보세요!",
-    username: "김철수",
+    username: "김민철",
     createdAt: "2023-06-16T18:30:00",
     updatedAt: "2023-06-16T18:30:00",
     parentId: 1018,
@@ -265,7 +257,7 @@ const mockComments: Comment[] = [
   {
     id: 1022,
     content: "채식 위주의 식단을 유지하고 있어요. 과일과 채소를 많이 먹으려고 해요.",
-    username: "김철수",
+    username: "김민철",
     createdAt: "2023-06-16T21:00:00",
     updatedAt: "2023-06-16T21:00:00",
     parentId: 1021,
@@ -281,7 +273,7 @@ const mockComments: Comment[] = [
   {
     id: 1024,
     content: "네, 정말 큰 도움이 돼요. 식물을 돌보는 것만으로도 마음이 편안해져요.",
-    username: "김철수",
+    username: "김민철",
     createdAt: "2023-06-16T23:00:00",
     updatedAt: "2023-06-16T23:00:00",
     parentId: 1023,
@@ -297,7 +289,7 @@ const mockComments: Comment[] = [
   {
     id: 1026,
     content: "규칙적인 일과를 만들어 지내고 있어요. 할 일이 많아 지루할 틈이 없답니다!",
-    username: "김철수",
+    username: "김민철",
     createdAt: "2023-06-17T10:15:00",
     updatedAt: "2023-06-17T10:15:00",
     parentId: 1025,
@@ -321,7 +313,7 @@ const mockComments: Comment[] = [
   {
     id: 1029,
     content: "건강 검진, 재정 계획, 그리고 새로운 취미 탐색을 추천드려요. 미리 준비하면 큰 도움이 됩니다.",
-    username: "김철수",
+    username: "김민철",
     createdAt: "2023-06-17T13:30:00",
     updatedAt: "2023-06-17T13:30:00",
     parentId: 1028,
@@ -494,17 +486,28 @@ async function updatePost(postId: number, title: string, content: string, catego
     userId,
     deleteImageIds,
   };
+  console.log("🔍 보낼 데이터:", postDto);
+  console.log("🖼 추가할 이미지:", newFiles);
   formData.append("postDto", new Blob([JSON.stringify(postDto)], { type: "application/json" }));
 
   if (newFiles) {
-    newFiles.forEach((file) => formData.append("newImages", file));
+    newFiles.forEach((file) => {
+      formData.append("newImages", file);
+      console.log("📸 추가된 이미지 파일:", file.name);
+    });
   }
 
   const response = await fetch(`/posts/${postId}`, {
     method: "PATCH",
     body: formData,
   });
-  if (!response.ok) throw new Error("게시글 수정 실패");
+
+  console.log("🔍 서버 응답 상태 코드:", response.status);
+
+  if (!response.ok) {
+    console.error("❌ 게시글 수정 실패");
+    throw new Error("게시글 수정 실패");
+  }
 }
 
 async function deletePost(postId: number, userId: string): Promise<void> {

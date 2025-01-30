@@ -1,5 +1,5 @@
 import axios from "axios";
-import { posts } from "../../app/today/mocks/posts";
+import { posts } from "@/app/today/mocks/posts";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
@@ -95,4 +95,21 @@ export async function createPost(postData: CreatePostDto, images?: File[]): Prom
     console.error("Error creating post:", error);
     throw new Error("게시글 생성에 실패했습니다.");
   }
+}
+
+import { posts as mockFollowedPosts } from "@/app/today/mocks/posts"; // ✅ Mock 데이터 활용
+
+/**
+ * ✅ 구독한 사람들의 게시물 가져오기 (현재 Mock 데이터 사용)
+ * @param lastId - 페이지네이션을 위한 마지막 게시물 ID (옵션)
+ * @param limit - 한 번에 가져올 게시물 수 (기본값: 10)
+ * @returns Post[] - 구독한 사람들의 게시물 배열
+ */
+export async function getFollowedPosts(lastId?: number | null | undefined, limit = 10): Promise<Post[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const filteredPosts = lastId ? mockFollowedPosts.filter((post) => post.id < lastId).slice(0, limit) : mockFollowedPosts.slice(0, limit);
+      resolve(filteredPosts);
+    }, 500); // ✅ 0.5초 지연 후 데이터 반환 (실제 API 응답처럼 보이도록)
+  });
 }
