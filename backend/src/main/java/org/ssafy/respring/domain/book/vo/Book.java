@@ -11,17 +11,15 @@ import org.ssafy.respring.domain.user.vo.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Document(collection = "book")
 @Getter @Setter
 public class Book {
     @Id
-    private String id; // MongoDB는 기본적으로 String ID 사용
-
-    @DBRef
-    private User user;
-
+    private Long id; // Auto-Increment 적용을 위해 Long 사용
+    private UUID userId;
     private String title;
     private String content;
     private String coverImg;
@@ -30,4 +28,6 @@ public class Book {
     private Long view;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private List<Long> storyIds; // MySQL에서 관리되는 Story ID 리스트
 }

@@ -4,10 +4,16 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
+@EnableMongoRepositories(basePackages = "org.ssafy.respring.domain.book.repository") // MongoDB만 활성화
+@ComponentScan(basePackages = "org.ssafy.respring.domain.book") // MongoDB 관련 Bean만 스캔
+@EntityScan(basePackages = "org.ssafy.respring.domain.book.vo") // Book 엔티티만 인식
 public class MongoConfig {
 
     private final Dotenv dotenv;
