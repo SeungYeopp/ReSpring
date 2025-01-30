@@ -1,209 +1,173 @@
-// 글조각 관련 API를 호출하는 함수의 모음.
+// 글조각 관련 API를 호출하는 함수 모음
 import axiosAPI from "./axios";
 
-// // 이벤트에 대한 인터페이스
-// export interface Event{
-//     id: number,
-//     eventName: string,
-//     occurredAt: Date,
-//     category: string,
-//     display: boolean
-// }
-
-// // 새로운 이벤트를 생성할 때 사용되는 인터페이스.
-// export interface EventPostDto{
-//     userId: string,
-//     eventName: string,
-//     occurredAt: Date,
-//     category: string,
-//     display: boolean
-// }
-
-export interface Image{
-    imageId : number,
-    imageUrl : string
+/**
+ * 이미지 정보 인터페이스
+ */
+export interface Image {
+    imageId: number;
+    imageUrl: string;
 }
 
-export interface Story{
-    id : number,
-    title : string,
-    content : string,
-    createdAt : Date,
-    updatedAt : Date,
-    eventId : number,
-    images : Image[]
+/**
+ * 스토리(글조각) 정보 인터페이스
+ */
+export interface Story {
+    id: number;
+    title: string;
+    content: string;
+    createdAt: Date;
+    updatedAt: Date;
+    eventId: number;
+    images: Image[];
 }
 
-export interface StoryDto{
-    userId : string,
-    title : string,
-    content : string,
-    eventId : number
+/**
+ * 스토리 생성 요청 데이터 인터페이스
+ */
+export interface StoryDto {
+    userId: string;
+    title: string;
+    content: string;
+    eventId: number;
 }
 
-export const getAllStories = async (userId : string) : Promise<Story[]> => {
-    try{
+/**
+ * 특정 사용자의 모든 스토리를 가져오는 함수
+ * @param userId - 조회할 사용자의 ID
+ * @returns Promise<Story[]> - 사용자의 모든 스토리 목록 반환
+ */
+export const getAllStories = async (userId: string): Promise<Story[]> => {
+    try {
         const response = await axiosAPI.get(`/stories?userId=${userId}`);
 
-        // response로 받은 data의 날짜 관련 정보를 Date로 형 변환.
-        const stories : Story[] = response.data.map((story : Story) => (
-            {
-                ...story,
-                createdAt: new Date(story.createdAt),
-                updatedAt: new Date(story.updatedAt)
-            }
-        ))
+        // 응답 데이터의 날짜 정보를 Date 객체로 변환
+        const stories: Story[] = response.data.map((story: Story) => ({
+            ...story,
+            createdAt: new Date(story.createdAt),
+            updatedAt: new Date(story.updatedAt)
+        }));
 
         return stories;
-    }catch(error){
+    } catch (error) {
         console.error(`getAllStories 에러 발생, 발생한 userId : ${userId}`, error);
-        throw new Error('getAllstories 에러 발생');
+        throw new Error('getAllStories 에러 발생');
     }
-}
+};
 
-export const makeStory = async (userId : string,
-    title : string,
-    content : string,
-    eventId : number, 
-    images : File[]) : Promise<number>=> {
-    try{
+/**
+ * 새로운 스토리를 생성하는 함수
+ * @param userId - 작성자 ID
+ * @param title - 스토리 제목
+ * @param content - 스토리 내용
+ * @param eventId - 관련 이벤트 ID
+ * @param images - 업로드할 이미지 목록
+ * @returns Promise<number> - 생성된 스토리의 ID 반환
+ */
+export const makeStory = async (
+    userId: string,
+    title: string,
+    content: string,
+    eventId: number,
+    images: File[]
+): Promise<number> => {
+    try {
         const formData = new FormData();
-        formData.append('storyDto', new Blob(
-            [JSON.stringify(
-                {
-                    userId,
-                    title,
-                    content,
-                    eventId,
-                }
-            )], {type:'application/json'}
-        ));
+        formData.append('storyDto', new Blob([
+            JSON.stringify({ userId, title, content, eventId })
+        ], { type: 'application/json' }));
 
         images.forEach((image) => {
             formData.append('images', image);
-        })
-        const response = await axiosAPI.post('/stories', formData, {headers: { "Content-Type": "multipart/form-data" }});
+        });
 
-        return response.data; // 생성된 스토리의 ID 반환.
-    }catch(error){
-        console.error('makeStory 에러 발생', error)
+        const response = await axiosAPI.post('/stories', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        return response.data; // 생성된 스토리의 ID 반환
+    } catch (error) {
+        console.error('makeStory 에러 발생', error);
         throw new Error('makeStory 에러 발생');
     }
-}
+};
 
-export const getStoryById = async (storyId : number) : Promise<Story>=> {
-    try{
+/**
+ * 특정 ID의 스토리를 조회하는 함수
+ * @param storyId - 조회할 스토리의 ID
+ * @returns Promise<Story> - 조회된 스토리 객체 반환
+ */
+export const getStoryById = async (storyId: number): Promise<Story> => {
+    try {
         const response = await axiosAPI.get(`/stories/${storyId}`);
 
-        const story= {
+        return {
             ...response.data,
             createdAt: new Date(response.data.createdAt),
             updatedAt: new Date(response.data.updatedAt)
-        }
-
-        return story;
-    }catch(error){
+        };
+    } catch (error) {
         console.error('getStoryByStoryId 에러 발생!', error);
         throw new Error('getStoryByStoryId 에러 발생!');
     }
-}
+};
 
-export const deleteStory = async (storyId : number) : Promise<boolean> => {
-    try{
+/**
+ * 특정 ID의 스토리를 삭제하는 함수
+ * @param storyId - 삭제할 스토리의 ID
+ * @returns Promise<boolean> - 삭제 성공 여부 반환
+ */
+export const deleteStory = async (storyId: number): Promise<boolean> => {
+    try {
         const response = await axiosAPI.delete(`/stories/${storyId}`);
 
-        if(response.status === 200)
+        if (response.status === 200) {
             return true;
-        else{
-            console.log('deleteStory에서 status : 200 이 아닌 다른 상태를 반환했습니다. storyID : ' + storyId);
+        } else {
+            console.log(`deleteStory에서 status : 200 이 아닌 다른 상태를 반환했습니다. storyID : ${storyId}`);
             return false;
         }
-    }catch(error){
+    } catch (error) {
         console.error('deleteStory 에러 발생', error);
-        throw new Error('deleteStory 에러 발생')
+        throw new Error('deleteStory 에러 발생');
     }
-}
+};
 
-// // user ID를 기반으로 해당 유저의 모든 이벤트 목록을 반환한다.
-// // 입력 : user ID (String)
-// // 출력 : Event 배열 (Event[])
-// export const getAllEvents = async (userId : string): Promise<Event[]> => {
-//     try{
-//         const response = await axiosAPI.get(`/s?userId=${userId}`)
-//         return response.data;
-//     } catch(error){
-//         console.error('에러 발생 : ', error);
-//         throw new Error("getAllEvents의 에러 발생");
-//     }
-// }
+/**
+ * 기존 스토리를 업데이트하는 함수
+ * @param storyId - 수정할 스토리의 ID
+ * @param userId - 작성자 ID
+ * @param title - 수정할 제목
+ * @param content - 수정할 내용
+ * @param eventId - 관련 이벤트 ID
+ * @param images - 업데이트할 이미지 목록
+ * @returns Promise<Story> - 업데이트된 스토리 객체 반환
+ */
+export const updateStory = async (
+    storyId: number,
+    userId: string,
+    title: string,
+    content: string,
+    eventId: number,
+    images: File[]
+): Promise<Story> => {
+    try {
+        const formData = new FormData();
+        formData.append('storyDto', new Blob([
+            JSON.stringify({ userId, title, content, eventId })
+        ], { type: 'application/json' }));
 
-// // 새로운 이벤트를 만든다. 이때 반환되는 값은 그 이벤트의 ID 값이다.
-// // 입력 : 이벤트 POST 관련 데이터 (EventPostDto)
-// // 출력 : 새로 만들어진 이벤트의 ID (number)
-// export const makeEvent = async (eventPostData : EventPostDto) : Promise<number>=> {
-//     try{
-//         const response = await axiosAPI.post(`/events`, eventPostData)
-//         return response.data; // 새로 만들어진 이벤트의 ID가 반환된다.
-//     } catch(error){
-//         console.error('에러 발생 : ', error)
-//         throw new Error("makeEvent의 에러 발생");
-//     }
-// }
+        images.forEach((image) => {
+            formData.append('deleteImageIds', image);
+        });
 
-// // 이벤트를 삭제한다. 이 때 이벤트 id와 유저 id를 받아서 처리한다.
-// // 입력 : 이벤트 ID(number), 유저 ID(string)
-// // 출력 : 삭제가 제대로 되었는지 여부 boolean
-// export const deleteEvent = async (eventId : number, userId : string) : Promise<boolean> => {
-//     try{
-//         const response = await axiosAPI.delete(`/events/${eventId}`,
-//             {
-//                 headers: {
-//                     "X-User-Id": userId,
-//                     "Accept": "*/*" // 서버로부터 아무 타입의 반환값을 받겠다는 것을 의미한데요.
-//                 }
-//             }
-//         )
+        const response = await axiosAPI.patch(`/stories/${storyId}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
 
-//         if(response.status === 200){
-//             return true; // 성공 시 true 반환.
-//         }else{
-//             console.log("deleteEvent : response status 200이 아님. 에러 발생.");
-//             return false;
-//         }
-//     }catch(error){
-//         console.error('에러 발생 : ', error);
-//         return false;
-//     }
-// }
-
-// // 이벤트를 업데이트 하는 함수. 이벤트 ID와 이벤트 POST DTO를 모두 받는다.
-// // 입력 : 이벤트 ID(number), 이벤트 POST 관련 데이터 (EventPostDto)
-// // 출력 : 업데이트가 제대로 되었는지 여부 boolean
-// export const updateEvent = async (eventId : number, eventPostData : EventPostDto) : Promise<boolean> => {
-//     try{
-//         const response = await axiosAPI.patch(`/events/${eventId}`, eventPostData);
-
-//         if(response.status === 200){
-//             return true;
-//         }else{
-//             console.log("updateEvent : response status 200이 아님. 에러 발생.");
-//             return false;
-//         }
-//     }catch(error){
-//         console.error('에러 발생 : ', error);
-//         return false;
-//     }
-// }
-
-// // 어떤 사용자의 타임라인 내 이벤트 목록을 불러옵니다.
-// // 입력 : 유저 ID(string)
-// // 출력 : 타임라인 내 이벤트 배열(Event[])
-// export const getTimelineEvents = async (userId : string) : Promise<Event[]> => {
-//     try{
-//         const response = await axiosAPI.get(`/events/timeline/${userId}`);
-//         return response.data;
-//     }catch(error){
-//         console.error('getTimeline 에러 발생', error);
-//         throw new Error("getTimeline 에러 발생");
-//     }
-// }
+        return response.data;
+    } catch (error) {
+        console.error(`updateStory 에러 발생! storyId : ${storyId}`, error);
+        throw new Error(`updateStory 에러 발생! storyId : ${storyId}`);
+    }
+};
