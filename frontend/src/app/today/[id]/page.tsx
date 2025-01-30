@@ -3,10 +3,10 @@
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { notFound } from "next/navigation";
-import { ArrowLeft, MessageSquare, Heart, ChevronDown } from "lucide-react";
+import { notFound, useRouter } from "next/navigation";
+import { ArrowLeft, MessageSquare, Heart, ChevronDown, Edit } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
-import { useAuth } from "@/lib/hooks/tempUseAuth";
+import { useAuthWithUser } from "@/lib/hooks/tempUseAuthWithUser";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,17 +26,20 @@ async function getPost(id: number): Promise<Post> {
 
 // 오늘의 상세 페이지 컴포넌트
 export default function TodayDetailPage({ params }: { params: { id: string } }) {
-  // 사용자 인증 상태 관리
-  const { isLoggedIn, login } = useAuth();
+  const { user, isLoggedIn } = useAuthWithUser(); // 로그인 정보 가져오기
+  const router = useRouter();
 
   // 상태 관리
-  const [post, setPost] = useState<Post | null>(null); // 게시글 데이터
-  const [likes, setLikes] = useState(0); // 좋아요 수
-  const [likeByMe, setLikeByMe] = useState(false); // 현재 사용자의 좋아요 여부
-  const [isContentExpanded, setIsContentExpanded] = useState(false); // 내용 펼치기 상태
-  const [commentCount, setCommentCount] = useState(0); // 댓글 수
+  const [post, setPost] = useState<Post | null>(null);
+  const [likes, setLikes] = useState(0);
+  const [likeByMe, setLikeByMe] = useState(false);
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
 
-  // 컴포넌트 마운트 시 게시글 데이터 가져오기
+  // 본인 게시글 여부 확인
+  const isMyPost = user?.id === post?.userId;
+
+  // 게시글 데이터 가져오기
   useEffect(() => {
     async function fetchPost() {
       try {
@@ -91,9 +94,6 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* 상단 고정 헤더 */}
-      {/* <header className="sticky top-14 md:top-0 z-50 bg-white border-b">헤더 내용은 필요에 따라 추가</header> */}
-
       <main className="md:pt-0">
         {/* 게시글 내용 */}
         <div className="bg-white p-4 mb-2">
@@ -125,9 +125,8 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
             <p className={`text-sm text-gray-800 whitespace-pre-wrap leading-relaxed ${!isContentExpanded && "max-h-24 overflow-hidden"}`}>
               {isContentExpanded ? post.content : truncateContent(post.content, 100)}
             </p>
-            {/* 긴 내용일 경우 그라데이션 효과 */}
-            {!isContentExpanded && post.content.length > 100 && <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent h-8" />}
           </div>
+
           {/* 더보기/접기 버튼 */}
           {post.content.length > 100 && (
             <Button variant="ghost" size="sm" className="mt-2 text-blue-500 hover:text-blue-700" onClick={() => setIsContentExpanded(!isContentExpanded)}>
@@ -139,19 +138,30 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
           {/* 이미지 갤러리 */}
           {post.images.length > 0 && <ImageGallery images={post.images} />}
 
-          {/* 좋아요 및 댓글 수 표시 */}
-          <div className="flex items-center gap-4 text-gray-600 mt-3">
-            <button
-              className={`flex items-center gap-1 text-sm ${isLoggedIn ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
-              onClick={isLoggedIn ? handleLike : () => alert("좋아요를 누르려면 로그인이 필요합니다.")}
-            >
-              <Heart className={`w-4 h-4 ${likeByMe ? "fill-red-500 text-red-500" : ""}`} />
-              <span>{likes}</span>
-            </button>
-            <button className="flex items-center gap-1 text-sm">
-              <MessageSquare className="w-4 h-4" />
-              <span>{commentCount}</span>
-            </button>
+          {/* 좋아요 및 댓글 수 표시, 본인일 시 수정하기 및 삭제하기(이건 미구현) 버튼 */}
+          <div className="flex items-center justify-between mt-3">
+            <div className="flex items-center gap-4 text-gray-600">
+              <button className={`flex items-center gap-1 text-sm ${isLoggedIn ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`} onClick={handleLike}>
+                <Heart className={`w-4 h-4 ${likeByMe ? "fill-red-500 text-red-500" : ""}`} />
+                <span>{likes}</span>
+              </button>
+              <button className="flex items-center gap-1 text-sm">
+                <MessageSquare className="w-4 h-4" />
+                <span>{commentCount}</span>
+              </button>
+            </div>
+            {isMyPost && (
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => router.push(`/today/${post.id}/edit`)}>
+                  <Edit className="w-4 h-4 mr-1" />
+                  수정하기
+                </Button>
+                {/* <Button variant="outline" size="sm" onClick={handleDelete}>
+            <Trash2 className="w-4 h-4 mr-1" />
+            삭제하기
+          </Button> */}
+              </div>
+            )}
           </div>
         </div>
 

@@ -13,14 +13,14 @@ export function useAuthWithUser() {
     const token = localStorage.getItem("fakeToken");
     if (token) {
       setIsLoggedIn(true);
-      setUser({ id: "test-user-id", name: "김민철" }); // 임시 사용자 정보
+      setUser({ id: "user123", name: "김민철" }); // 임시 사용자 정보
     }
   }, []);
 
   const login = () => {
     localStorage.setItem("fakeToken", "loggedIn");
     setIsLoggedIn(true);
-    setUser({ id: "test-user-id", name: "김민철" }); // 로그인 시 임시 유저 정보 설정
+    setUser({ id: "user123", name: "김민철" }); // 로그인 시 임시 유저 정보 설정
   };
 
   const logout = () => {
