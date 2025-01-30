@@ -108,6 +108,22 @@ export const getStoryById = async (storyId : number) : Promise<Story>=> {
     }
 }
 
+export const deleteStory = async (storyId : number) : Promise<boolean> => {
+    try{
+        const response = await axiosAPI.delete(`/stories/${storyId}`);
+
+        if(response.status === 200)
+            return true;
+        else{
+            console.log('deleteStory에서 status : 200 이 아닌 다른 상태를 반환했습니다. storyID : ' + storyId);
+            return false;
+        }
+    }catch(error){
+        console.error('deleteStory 에러 발생', error);
+        throw new Error('deleteStory 에러 발생')
+    }
+}
+
 // // user ID를 기반으로 해당 유저의 모든 이벤트 목록을 반환한다.
 // // 입력 : user ID (String)
 // // 출력 : Event 배열 (Event[])
