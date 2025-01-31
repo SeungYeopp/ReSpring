@@ -126,6 +126,10 @@ public class BookService {
 	public BookResponseDto getBookDetail(String bookId) {
 		Book book = bookRepository.findById(bookId)
 		  .orElseThrow(() -> new IllegalArgumentException("Book not found - id: " + bookId));
+
+		book.increaseView();		// 조회수 + 1
+		bookRepository.save(book);	// 조회수 업데이트 반영
+		
 		return toResponseDto(book);
 	}
 
