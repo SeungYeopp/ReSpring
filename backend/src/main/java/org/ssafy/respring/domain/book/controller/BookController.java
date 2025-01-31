@@ -24,28 +24,28 @@ public class BookController {
 
 	@PostMapping(consumes = {"multipart/form-data"})
 	@Operation(summary = "봄날의 서(자서전) 생성", description = "새로운 봄날의 서를 생성합니다.")
-	public ResponseEntity<Long> createBook(@RequestBody BookRequestDto requestDto,
-										   @RequestPart(value = "표지 이미지", required = false) MultipartFile coverImg) {
+	public ResponseEntity<String> createBook(@RequestPart("requestDto") BookRequestDto requestDto,
+										     @RequestPart(value = "표지 이미지", required = false) MultipartFile coverImg) {
 		return ResponseEntity.ok(bookService.createBook(requestDto, coverImg));
 	}
 
-	@PutMapping("/{book_id}")
+	@PutMapping(path = "/{book_id}", consumes = {"multipart/form-data"})
 	@Operation(summary = "봄날의 서(자서전) 수정", description = "특정 봄날의 서를 수정합니다.")
-	public ResponseEntity<Void> updateBook(@Parameter(description = "봄날의 서 ID") @PathVariable Long bookId,
-										   @RequestBody BookRequestDto bookRequestDto,
+	public ResponseEntity<Void> updateBook(@Parameter(description = "봄날의 서 ID") @PathVariable String book_id,
+										   @RequestPart("requestDto") BookRequestDto requestDto,
 										   @RequestPart(value = "표지 이미지", required = false) MultipartFile coverImg) {
-		bookService.updateBook(bookId, bookRequestDto, coverImg);
+		bookService.updateBook(book_id, requestDto, coverImg);
 		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping("/{book_id}")
 	@Operation(summary = "봄날의 서(자서전) 삭제", description = "특정 봄날의 서를 삭제합니다.")
-	public ResponseEntity<Void> deleteBook(@Parameter(description = "봄날의 서 ID") @PathVariable Long bookId) {
-		bookService.deleteBook(bookId);
+	public ResponseEntity<Void> deleteBook(@Parameter(description = "봄날의 서 ID") @PathVariable String book_id) {
+		bookService.deleteBook(book_id);
 		return ResponseEntity.noContent().build();
 	}
 
-	@GetMapping
+	@GetMapping("/all")
 	@Operation(summary = "모든 봄날의 서(자서전) 조회", description = "모든 봄날의 서를 조회합니다.")
 	public ResponseEntity<List<BookResponseDto>> getAllBooks() {
 		return ResponseEntity.ok(bookService.getAllBooks());
@@ -57,16 +57,16 @@ public class BookController {
 		return ResponseEntity.ok(bookService.getBooksByUser(userId));
 	}
 
-	@GetMapping("/{user_id}")
+	@GetMapping("/user/{user_id}")
 	@Operation(summary = "특정 유저가 작성한 모든 봄날의 서(자서전) 조회", description = "특정 유저가 작성한 모든 봄날의 서를 조회합니다.")
-	public ResponseEntity<List<BookResponseDto>> getBooksByUser(@Parameter(description = "봄날의 서 ID") @PathVariable UUID userId) {
-		return ResponseEntity.ok(bookService.getBooksByUser(userId));
+	public ResponseEntity<List<BookResponseDto>> getBooksByUser(@Parameter(description = "유저 ID") @PathVariable UUID user_id) {
+		return ResponseEntity.ok(bookService.getBooksByUser(user_id));
 	}
 
 	@GetMapping("/{book_id}")
 	@Operation(summary = "봄날의 서(자서전) 세부 조회", description = "특정 봄날의 서 내용을 조회합니다.")
 	public ResponseEntity<BookResponseDto> getBookDetail(
-	  @Parameter(description = "글 조각 ID") @PathVariable Long bookId) {
-		return ResponseEntity.ok(bookService.getBookDetail(bookId));
+			@Parameter(description = "봄날의 서 ID") @PathVariable String book_id) {
+		return ResponseEntity.ok(bookService.getBookDetail(book_id));
 	}
 }

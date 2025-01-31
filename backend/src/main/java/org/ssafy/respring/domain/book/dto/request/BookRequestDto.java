@@ -12,7 +12,5 @@ public class BookRequestDto {
 	private String title;
 	private String content;
 	private String tag;
-	private Long likes = 0L;
-	private Long view = 0L;
 	private List<Long> storyIds;
 }

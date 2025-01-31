@@ -7,6 +7,6 @@ import org.ssafy.respring.domain.book.vo.Book;
 import java.util.List;
 import java.util.UUID;
 
-public interface  MongoBookRepository extends MongoRepository<Book, Long> {
+public interface  MongoBookRepository extends MongoRepository<Book, String> {
 	List<Book> findByUserId(UUID userId);
 }

@@ -22,7 +22,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class BookService {
 	private final MongoBookRepository bookRepository;
@@ -33,19 +32,18 @@ public class BookService {
 	@Value("${file.upload-dir}")
 	private String uploadDir;
 
-	public Long createBook(BookRequestDto requestDto, MultipartFile coverImg) {
+	public String createBook(BookRequestDto requestDto, MultipartFile coverImg) {
 //		User user = userRepository.findById(requestDto.getUserId())
 //				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + requestDto.getUserId()));
 
 		Book book = new Book();
-		book.setId(counterService.getNextSequence("book"));
 		book.setUserId(requestDto.getUserId());
 		book.setTitle(requestDto.getTitle());
 		book.setContent(requestDto.getContent());
 
 		book.setTag(requestDto.getTag());
-		book.setLikes(requestDto.getLikes());
-		book.setView(requestDto.getView());
+		book.setLikes(0L);
+		book.setView(0L);
 		book.setCoverImg(saveCoverImage(coverImg));
 
 		book.setCreatedAt(LocalDateTime.now());
@@ -55,7 +53,7 @@ public class BookService {
 		return book.getId();
 	}
 
-	public void updateBook(Long bookId, BookRequestDto requestDto, MultipartFile coverImg) {
+	public void updateBook(String bookId, BookRequestDto requestDto, MultipartFile coverImg) {
 		Book book = bookRepository.findById(bookId)
 		  				.orElseThrow(()-> new IllegalArgumentException("Book not found - id: "+ bookId));
 		book.setTitle(requestDto.getTitle());
@@ -65,6 +63,9 @@ public class BookService {
 
 		book.setStoryIds(requestDto.getStoryIds());
 		book.setUpdatedAt(LocalDateTime.now());
+
+		bookRepository.save(book);
+
 	}
 
 	private String saveCoverImage(MultipartFile coverImg) {
@@ -106,13 +107,13 @@ public class BookService {
 		  .collect(Collectors.toList());
 	}
 
-	public BookResponseDto getBookDetail(Long bookId) {
+	public BookResponseDto getBookDetail(String bookId) {
 		Book book = bookRepository.findById(bookId)
 		  .orElseThrow(() -> new IllegalArgumentException("Book not found - id: " + bookId));
 		return toResponseDto(book);
 	}
 
-	public void deleteBook(Long bookId) {
+	public void deleteBook(String bookId) {
 		if (!bookRepository.existsById(bookId)) {
 			throw new IllegalArgumentException("Book not found - id: " + bookId);
 		}

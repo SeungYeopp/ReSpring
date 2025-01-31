@@ -13,7 +13,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 public class BookResponseDto {
-	private Long id;
+	private String id;
 	private UUID userId;
 	private String title;
 	private String content;

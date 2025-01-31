@@ -13,12 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
 @Document(collection = "book")
 @Getter @Setter
 public class Book {
     @Id
-    private Long id; // Auto-Increment 적용을 위해 Long 사용
+    private String id; // MongoDB는 기본적으로 ObjectId 사용
     private UUID userId;
     private String title;
     private String content;
