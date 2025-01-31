@@ -1,10 +1,7 @@
 import "../styles/globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { TopNav } from "@/components/layout/top-nav";
-import { BottomNav } from "@/components/layout/bottom-nav";
-import { Sidebar } from "@/components/layout/sidebar";
-
+import LayoutWrapper from "./LayoutWrapper";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -16,10 +13,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko">
       <body className={inter.className}>
-        <TopNav />
-        <Sidebar />
-        <main className="md:ml-64 pt-14 pb-16 md:py-4">{children}</main>
-        <BottomNav />
+        {/* 네비게이션/사이드바 관리를 별도 컴포넌트에서 처리 */}
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );

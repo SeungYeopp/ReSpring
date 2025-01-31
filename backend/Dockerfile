@@ -10,6 +10,9 @@ RUN ./gradlew bootJar --no-daemon
 FROM openjdk:17-jdk-slim
 # 작업 디렉토리 설정
 WORKDIR /app
+
+RUN apt update && apt install -y wget curl && rm -rf /var/lib/apt/lists/*
+
 # 빌드된 JAR 파일 복사
 COPY --from=build /app/build/libs/*.jar app.jar
 # 애플리케이션 실행

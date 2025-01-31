@@ -106,4 +106,13 @@ public class PostController {
         boolean isLiked = postService.toggleLike(post_id, userId);
         return ResponseEntity.ok(isLiked ? "Liked" : "Unliked");
     }
+
+    @GetMapping("/like/{post_id}")
+    @Operation(summary = "좋아요 여부 조회", description = "특정 포스트에 대해 현재 사용자가 좋아요를 눌렀는지 여부를 반환합니다.")
+    public ResponseEntity<Boolean> checkIfLiked(
+            @Parameter(description = "좋아요 여부를 확인할 포스트 ID", example = "1") @PathVariable Long post_id,
+            @Parameter(description = "사용자 UUID", example = "dd5a7b3c-d887-11ef-b310-d4f32d147183") @RequestParam UUID userId) {
+        boolean isLiked = postService.isPostLikedByUser(post_id, userId);
+        return ResponseEntity.ok(isLiked);
+    }
 }
