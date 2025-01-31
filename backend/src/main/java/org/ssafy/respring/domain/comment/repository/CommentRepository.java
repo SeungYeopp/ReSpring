@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface CommentRepository extends JpaRepository<Comment, Long>, CommentRepositoryQuerydsl {
     List<Comment> findByPostId(Long postId);
-    List<Comment> findByBookId(Long bookId);
+    List<Comment> findByBookId(String bookId);
     List<Comment> findByUserIdAndPostNotNull(UUID userId);
-    List<Comment> findByUserIdAndBookNotNull(UUID userId);
+    List<Comment> findByUserIdAndBookIdNotNull(UUID userId);
 }

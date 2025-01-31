@@ -41,7 +41,6 @@ export default function WriteNotePage() {
             key={entry.title}
             title={entry.title}
             subtitle={entry.subtitle}
-            extra={entry.extra}
             isSelected={selected === entry.title}
             onClick={() => setSelected(entry.title)}
           />
@@ -54,13 +53,11 @@ export default function WriteNotePage() {
 function SelectableEntry({
   title,
   subtitle,
-  extra,
   isSelected,
   onClick,
 }: {
   title: string;
   subtitle: string;
-  extra: string;
   isSelected: boolean;
   onClick: () => void;
 }) {
