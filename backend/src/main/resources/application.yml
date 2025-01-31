@@ -56,3 +56,10 @@ logging:
 file:
   upload-dir: ${FILE_UPLOAD_DIR:${user.home}/uploads}
   # upload-dir: C:/uploads
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
