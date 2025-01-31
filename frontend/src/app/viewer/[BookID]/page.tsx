@@ -6,7 +6,8 @@ import { BottomToolbar } from "./components/Toolbar/BottomToolbar";
 import { Reader } from "./components/Reader";
 import { exampleBookData } from "../mocks/bookData";
 import { useDynamicPages } from "./hooks/useDynamicPages";
-import { usePageControls } from "./hooks/usePageControls"; // 반응형 기능 추가
+import { usePageControls } from "./hooks/usePageControls";
+import { PageProvider, usePageContext } from "./context/PageContext"; // ✅ Context 추가
 
 interface ViewerPageProps {
   params: {
@@ -19,8 +20,17 @@ export default function ViewerPage({ params }: ViewerPageProps) {
   const { pages } = useDynamicPages(exampleBookData);
   const totalPages = pages.length;
 
-  // ✅ `usePageControls`에서 상태를 반환받아 직접 사용
-  const { currentPage, setCurrentPage } = usePageControls({ totalPages });
+  return (
+    <PageProvider totalPages={totalPages}> {/* ✅ Context Provider 추가 */}
+      <MainContent BookID={BookID} />
+    </PageProvider>
+  );
+}
+
+// ✅ 별도의 컴포넌트로 분리 (usePageControls을 JSX 내부에서 호출하지 않기 위해)
+function MainContent({ BookID }: { BookID: string }) {
+  usePageControls(); // ✅ JSX 바깥에서 호출 (에러 방지)
+  const { currentPage } = usePageContext(); // ✅ 현재 페이지 가져오기
 
   return (
     <main className="min-h-screen bg-white text-black">
@@ -32,12 +42,11 @@ export default function ViewerPage({ params }: ViewerPageProps) {
           <strong>현재 BookID:</strong> {BookID}
         </div>
 
-        {/* Reader 컴포넌트 */}
+        {/* ✅ currentPage을 Reader에 전달 */}
         <Reader textData={exampleBookData} currentPage={currentPage} />
       </div>
 
-      {/* ✅ Props에서 setCurrentPage 제거, 내부 상태 사용 */}
-      <BottomToolbar currentPage={currentPage} totalPages={totalPages} />
+      <BottomToolbar />
     </main>
   );
 }
