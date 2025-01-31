@@ -73,11 +73,25 @@ public class BookController {
 	}
 
 	@PatchMapping("/likes/{book_id}")
-	@Operation(summary = "좋아요 추가/취소", description = "특정 포스트에 좋아요를 추가하거나 취소합니다.")
+	@Operation(summary = "좋아요 추가/취소", description = "특정 봄날의 서에 좋아요를 추가하거나 취소합니다.")
 	public ResponseEntity<String> toggleLike(
-			@Parameter(description = "좋아요를 추가/취소할 자서전 ID", example = "1") @PathVariable String book_id,
+			@Parameter(description = "좋아요를 추가/취소할 봄날의 서 ID", example = "1") @PathVariable String book_id,
 			@Parameter(description = "좋아요를 누른 사용자 UUID", example = "2c85e3f3-da0a-11ef-bb99-28c5d21f3483") @RequestParam UUID userId) {
 		boolean isLiked = bookService.toggleLike(book_id, userId);
 		return ResponseEntity.ok(isLiked ? "Liked" : "Unliked");
+	}
+
+	@GetMapping("/all/sorted")
+	@Operation(summary = "모든 봄날의 서 정렬", description = "모든 봄날의 서를 조회할 때 정렬 기준을 지정합니다.")
+	public ResponseEntity<List<BookResponseDto>> getBooksSorted(
+			@RequestParam List<String> sortFields,
+			@RequestParam(required = false, defaultValue = "desc") List<String> directions) {
+		return ResponseEntity.ok(bookService.getBooksSorted(sortFields, directions));
+	}
+
+	@GetMapping("/weeklyTop3")
+	@Operation(summary = "봄날의 서 주간 랭킹 Top3", description = "봄날의 서 주간 랭킹 Top3를 반환합니다.")
+	public ResponseEntity<List<BookResponseDto>> getWeeklyTop3() {
+		return ResponseEntity.ok(bookService.getWeeklyTop3());
 	}
 }

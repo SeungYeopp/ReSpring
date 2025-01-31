@@ -2,6 +2,9 @@ package org.ssafy.respring.domain.book.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
@@ -106,10 +109,11 @@ public class BookService {
 	}
 
 	public List<BookResponseDto> getAllBooks() {
-		return bookRepository.findAll()
-		  .stream()
-		  .map(this::toResponseDto)
-		  .collect(Collectors.toList());
+		Sort sort = Sort.by(Sort.Order.desc("likes")); // 좋아요 내림차순 정렬
+		return bookRepository.findAll(sort)
+				.stream()
+				.map(this::toResponseDto)
+				.collect(Collectors.toList());
 	}
 
 	public List<BookResponseDto> getBooksByUser(UUID userId) {
@@ -150,6 +154,48 @@ public class BookService {
 		boolean isLiked = book.toggleLike(userId); // 좋아요 토글
 		bookRepository.save(book);
 		return isLiked;
+	}
+
+	public List<BookResponseDto> getWeeklyTop3() {
+		LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+
+		Pageable pageable = PageRequest.of(0, 3, Sort.by(
+				Sort.Order.desc("likes"),  // 1순위: 좋아요 많은 순
+				Sort.Order.desc("view"),   // 2순위: 조회수 많은 순
+				Sort.Order.desc("createdAt") // 3순위: 최신순 (동일한 경우)
+		));
+
+		return bookRepository.findTop3ByCreatedAtAfter(oneWeekAgo, pageable)
+				.stream()
+				.map(this::toResponseDto)
+				.collect(Collectors.toList());
+	}
+
+
+	public  List<BookResponseDto> getBooksSorted(List<String> sortFields, List<String> directions) {
+		Sort sort = buildSort(sortFields, directions);
+		return bookRepository.findAll(sort)
+				.stream()
+				.map(this::toResponseDto)
+				.collect(Collectors.toList());
+	}
+
+	private Sort buildSort(List<String> sortFields, List<String> directions) {
+		if (sortFields == null || sortFields.isEmpty()) {
+			return Sort.unsorted();
+		}
+
+		Sort sort = Sort.unsorted();
+		for (int i = 0; i < sortFields.size(); i++) {
+			String field = sortFields.get(i);
+			Sort.Direction direction = (i < directions.size() && "desc".equalsIgnoreCase(directions.get(i)))
+					? Sort.Direction.DESC
+					: Sort.Direction.ASC;
+
+			sort = sort.and(Sort.by(direction, field));
+		}
+
+		return sort;
 	}
 
 	private BookResponseDto toResponseDto(Book book) {

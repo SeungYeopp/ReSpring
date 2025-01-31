@@ -25,9 +25,7 @@ public class Book {
     private Long view;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
     private List<Long> storyIds; // MySQL에서 관리되는 Story ID 리스트
-
     private Set<UUID> likedUsers = new HashSet<>();
 
     // 좋아요 추가/취소 로직
