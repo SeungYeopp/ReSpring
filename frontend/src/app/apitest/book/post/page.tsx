@@ -16,12 +16,12 @@ export default function BookPostTestPage() {
     const [msg, setMsg] = useState<string>("");
 
     const handleStoryIdsInput = (event : React.ChangeEvent<HTMLInputElement>) => {
-        setStoryIdsString(event.target.value);
+        const parsedStoryIds = event.target.value
+        .split(/[\s,]+/) // 공백 또는 쉼표 기준으로 분리
+        .map(num => Number(num.trim())) // 숫자로 변환
+        .filter(num => !isNaN(num)); // 숫자가 아닌 값 제거
 
-        const parsedStoryIds = storyIdsString
-        .split(/[\s,]+/)
-        .map(token => parseInt(token, 10))
-        .filter(num => !isNaN(num))
+        console.log(parsedStoryIds)
 
         setStoryIds(parsedStoryIds);
     }

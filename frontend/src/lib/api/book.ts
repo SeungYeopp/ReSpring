@@ -40,8 +40,7 @@ export const makeBook = async (
         ], {type : 'application/json'}
         ));
         
-        formData.append('coverImg', coverImg);
-        
+        formData.append('표지 이미지', coverImg);
         const response = await axiosAPI.post('/books', formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
         return response.data;
