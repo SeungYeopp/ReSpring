@@ -14,3 +14,12 @@ export * from "./apitest";
 
 // '오늘' 페이지 관련 API 내보내기
 export * from "./today";
+
+// '이벤트' 관련 API 내보내기
+export * from "./event";
+
+// '내일' 페이지 관련 API 내보내기
+export * from "./tomorrow";
+
+// 스토리 관련 API 내보내기
+export * from "./story";

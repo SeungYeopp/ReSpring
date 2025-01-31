@@ -49,9 +49,10 @@ public class StoryController {
     @DeleteMapping("/{story_id}")
     @Operation(summary = "글 조각 삭제", description = "특정 글 조각을 삭제합니다.")
     public ResponseEntity<Void> deleteStory(
-            @Parameter(description = "글 조각 ID") @PathVariable Long story_id
+            @Parameter(description = "글 조각 ID") @PathVariable Long story_id,
+            @RequestHeader("X-User-Id") UUID userId
     ) {
-        storyService.deleteStory(story_id);
+        storyService.deleteStory(story_id, userId);
         return ResponseEntity.ok().build();
     }
 
@@ -66,8 +67,9 @@ public class StoryController {
     @GetMapping("/{story_id}")
     @Operation(summary = "글 조각 세부 조회", description = "글 조각의 세부 정보를 조회합니다.")
     public ResponseEntity<StoryResponseDto> getStoryDetail(
-            @Parameter(description = "글 조각 ID") @PathVariable Long story_id
+            @Parameter(description = "글 조각 ID") @PathVariable Long story_id,
+            @RequestHeader("X-User-Id") UUID userId
     ) {
-        return ResponseEntity.ok(storyService.getStoryDetail(story_id));
+        return ResponseEntity.ok(storyService.getStoryDetail(story_id, userId));
     }
 }
