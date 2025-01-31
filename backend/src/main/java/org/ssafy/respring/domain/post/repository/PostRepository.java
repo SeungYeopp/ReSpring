@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryQuerydsl {
     List<Post> findByUser_Id(UUID userId);
+
 }
