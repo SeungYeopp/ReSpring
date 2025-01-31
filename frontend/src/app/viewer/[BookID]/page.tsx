@@ -1,51 +1,51 @@
 "use client";
+
 /**
- * 1단계: 기본 레이아웃 & 라우팅 설정
- * - BookID 라우트 파라미터 확인
- * - 간단한 가짜 본문(bookData) 표시
- * - 나중에 Reader, Toolbar, Panel 등을 붙일 예정
+툴바 2개(상단 TopToolbar / 하단 BottomToolbar)를 배치.
+Reader 컴포넌트를 중앙에 두어 본문(dummyText) 표시.
+상단/하단 툴바 높이(약 3rem)를 고려하여 **pt-14 pb-14**를 적용 → 내용이 툴바에 가리지 않도록.
  */
 
+
 import React from "react";
+import { TopToolbar } from "./components/Toolbar/TopToolbar";
+import { BottomToolbar } from "./components/Toolbar/BottomToolbar";
+import { Reader } from "./components/Reader";
 
 interface ViewerPageProps {
   params: {
-    BookID: string; 
+    BookID: string;
   };
 }
 
-// 가짜 본문(책 데이터)
+// 가짜 본문
 const dummyText = `
   <h1>예시 자서전 제목</h1>
-  <p>이곳에 자서전 본문이 들어갑니다.</p>
-  <p>1단계에서는 최소한의 내용만 표시합니다.</p>
+  <p>여기에 자서전 본문이 표시됩니다.</p>
+  <p>2단계에서는 최소한의 툴바 + 본문만 구성합니다.</p>
 `;
 
 export default function ViewerPage({ params }: ViewerPageProps) {
   const { BookID } = params;
 
-  // 추후 API가 구현되면 실제 책 데이터를 가져올 수도 있음.
-  // const bookData = await fetch(`/api/book/${BookID}`).then((res) => res.json());
-
   return (
-    <main className="min-h-screen bg-white text-black p-4">
-      {/* BookID 확인 (디버그용) */}
-      <div className="mb-4 text-gray-600">
-        <strong>현재 BookID:</strong> {BookID}
+    <main className="min-h-screen bg-white text-black">
+      {/* 상단 툴바 */}
+      <TopToolbar />
+
+      {/* 자서전 본문 (Reader) */}
+      <div className="pt-14 pb-14"> 
+        {/* top toolbar height: 3rem(12px), bottom toolbar height: 3rem(12px) 
+            여백(paddingTop/Bottom)으로 컨텐츠가 툴바에 가리지 않도록 */}
+        <div className="text-gray-600 p-4">
+          <strong>현재 BookID:</strong> {BookID}
+        </div>
+
+        <Reader textData={dummyText} />
       </div>
 
-      {/* 간단한 본문 */}
-      <section
-        className="max-w-2xl mx-auto"
-        dangerouslySetInnerHTML={{ __html: dummyText }}
-      />
-
-      {/* 
-        앞으로 추가할 내용(미구현)
-        - Reader 컴포넌트 (페이지 분할, 스와이프 등)
-        - TopToolbar, BottomToolbar
-        - SettingsPanel, TableOfContents, CommentsPanel, TTSPlayer
-      */}
+      {/* 하단 툴바 */}
+      <BottomToolbar />
     </main>
   );
 }
