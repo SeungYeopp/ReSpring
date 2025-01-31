@@ -43,4 +43,7 @@ public class Book {
         return isLiked;
     }
 
+    public void increaseView() {
+        this.view = (this.view == null) ? 1 : this.view + 1;
+    }
 }
