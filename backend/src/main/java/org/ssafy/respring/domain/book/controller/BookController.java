@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
+import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
 import org.ssafy.respring.domain.book.service.BookService;
 import org.ssafy.respring.domain.book.vo.Book;
@@ -32,16 +33,18 @@ public class BookController {
 	@PutMapping(path = "/{book_id}", consumes = {"multipart/form-data"})
 	@Operation(summary = "봄날의 서(자서전) 수정", description = "특정 봄날의 서를 수정합니다.")
 	public ResponseEntity<Void> updateBook(@Parameter(description = "봄날의 서 ID") @PathVariable String book_id,
-										   @RequestPart("requestDto") BookRequestDto requestDto,
-										   @RequestPart(value = "표지 이미지", required = false) MultipartFile coverImg) {
-		bookService.updateBook(book_id, requestDto, coverImg);
+										   @RequestPart("requestDto") BookUpdateRequestDto requestDto,
+										   @RequestPart(value = "표지 이미지", required = false) MultipartFile coverImg,
+										   @RequestHeader("X-User-Id") UUID userId) {
+		bookService.updateBook(book_id, requestDto, coverImg, userId);
 		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping("/{book_id}")
 	@Operation(summary = "봄날의 서(자서전) 삭제", description = "특정 봄날의 서를 삭제합니다.")
-	public ResponseEntity<Void> deleteBook(@Parameter(description = "봄날의 서 ID") @PathVariable String book_id) {
-		bookService.deleteBook(book_id);
+	public ResponseEntity<Void> deleteBook(@Parameter(description = "봄날의 서 ID") @PathVariable String book_id,
+										   @RequestHeader("X-User-Id") UUID userId) {
+		bookService.deleteBook(book_id, userId);
 		return ResponseEntity.noContent().build();
 	}
 

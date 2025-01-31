@@ -9,9 +9,7 @@ import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Document(collection = "book")
 @Getter @Setter
@@ -22,11 +20,12 @@ public class Book {
     private String title;
     private String content;
     private String coverImg;
-    private String tag;
+    private List<String> tag;
     private Long likes;
     private Long view;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     private List<Long> storyIds; // MySQL에서 관리되는 Story ID 리스트
+
 }

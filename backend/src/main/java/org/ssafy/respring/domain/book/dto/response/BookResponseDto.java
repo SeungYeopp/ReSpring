@@ -18,7 +18,7 @@ public class BookResponseDto {
 	private String title;
 	private String content;
 	private String coverImg;
-	private String tag;
+	private List<String> tag;
 	private Long likes;
 	private Long view;
 	private LocalDateTime createdAt;

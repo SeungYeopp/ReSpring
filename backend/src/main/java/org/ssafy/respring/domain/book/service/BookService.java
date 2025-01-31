@@ -1,18 +1,17 @@
 package org.ssafy.respring.domain.book.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
+import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
 import org.ssafy.respring.domain.book.repository.MongoBookRepository;
 import org.ssafy.respring.domain.book.vo.Book;
-import org.ssafy.respring.domain.common.counter.service.CounterService;
+
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.story.repository.StoryRepository;
-import org.ssafy.respring.domain.story.vo.Story;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +25,6 @@ import java.util.stream.Collectors;
 public class BookService {
 	private final MongoBookRepository bookRepository;
 	private final StoryRepository storyRepository;
-	private final CounterService counterService;
 	// private final UserRepository userRepository;
 
 	@Value("${file.upload-dir}")
@@ -49,13 +47,29 @@ public class BookService {
 		book.setCreatedAt(LocalDateTime.now());
 		book.setUpdatedAt(LocalDateTime.now());
 		book.setStoryIds(requestDto.getStoryIds());
+
 		bookRepository.save(book);
 		return book.getId();
 	}
 
-	public void updateBook(String bookId, BookRequestDto requestDto, MultipartFile coverImg) {
+	public void updateBook(String bookId, BookUpdateRequestDto requestDto, MultipartFile coverImg, UUID userId) {
 		Book book = bookRepository.findById(bookId)
 		  				.orElseThrow(()-> new IllegalArgumentException("Book not found - id: "+ bookId));
+
+		if (!book.getUserId().equals(userId)) {
+			throw new IllegalArgumentException("You are not allowed to update this book");
+		}
+
+		// 자신의 story인지 확인하는 과정
+		boolean isValidStories = requestDto.getStoryIds().stream()
+				.allMatch(storyId -> storyRepository.findById(storyId)
+						.map(story -> story.getUser().getId().equals(userId))
+						.orElse(false));
+
+		if (!isValidStories) {
+			throw new IllegalArgumentException("One or more stories do not belong to the user.");
+		}
+
 		book.setTitle(requestDto.getTitle());
 		book.setContent(requestDto.getContent());
 		book.setTag(requestDto.getTag());
@@ -65,7 +79,6 @@ public class BookService {
 		book.setUpdatedAt(LocalDateTime.now());
 
 		bookRepository.save(book);
-
 	}
 
 	private String saveCoverImage(MultipartFile coverImg) {
@@ -79,15 +92,14 @@ public class BookService {
 		}
 
 		try {
-			String originalFileName = coverImg.getOriginalFilename();
-			String extension = (originalFileName != null && originalFileName.contains(".")) ?
-			  originalFileName.substring(originalFileName.lastIndexOf(".")) : "";
-			String uniqueFileName = UUID.randomUUID().toString() + extension;
+			String extension = coverImg.getOriginalFilename() != null
+					? coverImg.getOriginalFilename().substring(coverImg.getOriginalFilename().lastIndexOf("."))
+					: "";
+			String uniqueFileName = UUID.randomUUID() + extension;
+			File file = new File(uploadDirFolder, uniqueFileName);
 
-			String filePath = uploadDir + File.separator + uniqueFileName;
-			coverImg.transferTo(new File(filePath));
-
-			return filePath;
+			coverImg.transferTo(file);
+			return file.getAbsolutePath();
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to save file: " + coverImg.getOriginalFilename(), e);
 		}
@@ -113,20 +125,24 @@ public class BookService {
 		return toResponseDto(book);
 	}
 
-	public void deleteBook(String bookId) {
-		if (!bookRepository.existsById(bookId)) {
-			throw new IllegalArgumentException("Book not found - id: " + bookId);
+	public void deleteBook(String bookId, UUID userId) {
+		Book book = bookRepository.findById(bookId)
+				.orElseThrow(()-> new IllegalArgumentException("Book not found - id: "+ bookId));
+
+		if (!book.getUserId().equals(userId)) {
+			throw new IllegalArgumentException("You are not allowed to delete this book");
 		}
+
 		bookRepository.deleteById(bookId);
 	}
 
 	private List<String> getImagesFromStories(List<Long> storyIds) {
-		List<Story> stories = storyRepository.findAllById(storyIds);
-		return stories.stream()
-		  .flatMap(story -> story.getImages().stream())
-		  .map(Image::getImageUrl)
-		  .collect(Collectors.toList());
+		return storyRepository.findAllById(storyIds).stream()
+				.flatMap(story -> story.getImages() != null ? story.getImages().stream() : List.<Image>of().stream())
+				.map(Image::getImageUrl)
+				.collect(Collectors.toList());
 	}
+
 
 	private BookResponseDto toResponseDto(Book book) {
 		return new BookResponseDto(
