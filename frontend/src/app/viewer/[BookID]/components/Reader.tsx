@@ -1,19 +1,23 @@
 "use client";
-/**
- * 2단계 : 간단히 구현한 Reader 컴포넌트
- * - textData를 받아서 화면에 표시만 해줌
- * - 나중에 페이지 분할, 스와이프 등 기능을 추가할 예정
- */
+
 import React from "react";
+import { useDynamicPages } from "../hooks/useDynamicPages";
 
 interface ReaderProps {
   textData: string;
+  currentPage: number; // ✅ 페이지 번호를 필수로 받도록 설정
 }
 
-export function Reader({ textData }: ReaderProps) {
+export function Reader({ textData, currentPage }: ReaderProps) {
+  const { pages } = useDynamicPages(textData);
+
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <div dangerouslySetInnerHTML={{ __html: textData }} />
+      {pages[currentPage] ? (
+        <div dangerouslySetInnerHTML={{ __html: pages[currentPage] }} />
+      ) : (
+        <div>해당 페이지가 없습니다.</div>
+      )}
     </div>
   );
 }
