@@ -14,6 +14,7 @@ import { todayAPI } from "@/app/today/api/todayDetail";
 import type { Post } from "@/app/today/api/todayDetail";
 import { CommentSection } from "./comment-section";
 import { ImageGallery } from "./image-gallery";
+import { Trash2 } from "lucide-react";
 
 // 게시글 데이터를 가져오는 비동기 함수
 async function getPost(id: number): Promise<Post> {
@@ -92,6 +93,26 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
     return content.slice(0, maxLength) + "...";
   };
 
+
+  // 게시글 삭제 핸들러
+  const handleDelete = async () => {
+    if (!post || !user?.id) return;
+  // 삭제 팝업
+    const confirmDelete = window.confirm("정말 이 게시글을 삭제하시겠습니까?");
+    if (!confirmDelete) return;
+  
+    try {
+      await todayAPI.deletePost(post.id, user.id);
+      alert("게시글이 삭제되었습니다.");
+      router.push("/today");
+    } catch (error) {
+      console.error("게시글 삭제 중 오류 발생:", error);
+      alert("게시글 삭제에 실패했습니다.");
+    }
+  };
+  
+
+
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="md:pt-0">
@@ -156,10 +177,11 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
                   <Edit className="w-4 h-4 mr-1" />
                   수정하기
                 </Button>
-                {/* <Button variant="outline" size="sm" onClick={handleDelete}>
-            <Trash2 className="w-4 h-4 mr-1" />
-            삭제하기
-          </Button> */}
+                <Button variant="outline"size="sm" onClick={handleDelete} className="text-red-500 hover:text-black border-red-500 hover:bg-red-500" >
+                  <Trash2 className="w-4 h-4 mr-1 hover:stroke-black" />
+                  삭제하기
+                </Button>
+
               </div>
             )}
           </div>
