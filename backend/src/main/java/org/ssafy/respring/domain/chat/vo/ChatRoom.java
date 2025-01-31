@@ -18,7 +18,9 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name; // 1:1 채팅일 경우 null
+    private String name;
+
+    private boolean isOpenChat = false;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatMessage> messages;

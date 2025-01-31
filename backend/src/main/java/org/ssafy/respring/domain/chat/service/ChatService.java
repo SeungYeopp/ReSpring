@@ -3,6 +3,7 @@ package org.ssafy.respring.domain.chat.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.ssafy.respring.domain.chat.dto.request.ChatRoomRequest;
 import org.ssafy.respring.domain.chat.dto.response.ChatMessageResponse;
 import org.ssafy.respring.domain.chat.repository.ChatMessageRepository;
 import org.ssafy.respring.domain.chat.repository.ChatRoomRepository;
@@ -29,22 +30,23 @@ public class ChatService {
 
     private final Path fileStoragePath = Paths.get("uploads");
 
-    public ChatRoom createRoom(String name, List<String> userIds) {
-        if (userIds == null || userIds.isEmpty()) {
+    public ChatRoom createRoom(ChatRoomRequest request) {
+        if (request.getUserIds() == null || request.getUserIds().isEmpty()) {
             throw new IllegalArgumentException("유효한 유저 ID 리스트를 제공해야 합니다.");
         }
 
-        List<User> users = userIds.stream()
+        List<User> users = request.getUserIds().stream()
                 .map(userId -> {
                     User user = new User();
-                    user.setId(UUID.fromString(userId)); // String을 UUID로 변환
+                    user.setId(UUID.fromString(userId));
                     return user;
                 })
                 .collect(Collectors.toList());
 
         ChatRoom chatRoom = ChatRoom.builder()
-                .name(name)
+                .name(request.getName())
                 .users(users)
+                .isOpenChat(request.isOpenChat()) // 🔹 오픈채팅 여부 설정
                 .build();
 
         return chatRoomRepository.save(chatRoom);
@@ -155,5 +157,18 @@ public class ChatService {
 
     public List<ChatMessage> searchMessages(Long roomId, String keyword) {
         return chatMessageRepository.findByContentContainingAndChatRoomId(keyword, roomId);
+    }
+
+    public List<ChatRoom> getUserRooms(UUID userId) {
+        return chatRoomRepository.findRoomsByUserId(userId);
+    }
+
+    public void removeUserFromRoom(ChatRoom chatRoom, UUID userId) {
+        List<User> updatedUsers = chatRoom.getUsers().stream()
+                .filter(user -> !user.getId().equals(userId)) // 유저 제외
+                .collect(Collectors.toList());
+
+        chatRoom.setUsers(updatedUsers); // 업데이트된 유저 목록 설정
+        chatRoomRepository.save(chatRoom);
     }
 }

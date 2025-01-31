@@ -10,4 +10,6 @@ import lombok.*;
 public class ChatRoomResponse {
     private Long roomId;
     private String name;
+    private Boolean isOpenChat;
+    private int userCount;
 }

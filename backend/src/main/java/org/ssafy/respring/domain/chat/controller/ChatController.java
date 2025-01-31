@@ -80,6 +80,8 @@ public class ChatController {
                 .map(chatRoom -> ChatRoomResponse.builder()
                         .roomId(chatRoom.getId())
                         .name(chatRoom.getName())
+                        .isOpenChat(chatRoom.isOpenChat())
+                        .userCount(chatRoom.getUsers().size())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -97,7 +99,8 @@ public class ChatController {
     @ResponseBody
     public ChatRoomResponse createRoomWithParams(
             @RequestParam String name,
-            @RequestParam List<String> userIds) {
+            @RequestParam List<String> userIds,
+            @RequestParam(required = false, defaultValue = "false") boolean isOpenChat) {
 
         System.out.println("Received Room Name: " + name);
         System.out.println("Received User IDs: " + userIds);
@@ -106,31 +109,44 @@ public class ChatController {
             throw new IllegalArgumentException("유효한 유저 ID 리스트를 제공해야 합니다.");
         }
 
-        ChatRoom chatRoom = chatService.createRoom(name, userIds);
+        ChatRoom chatRoom = chatService.createRoom(ChatRoomRequest.builder()
+                .name(name)
+                .userIds(userIds)
+                .isOpenChat(isOpenChat)
+                .build());
+
         return ChatRoomResponse.builder()
                 .roomId(chatRoom.getId())
                 .name(chatRoom.getName())
+                .isOpenChat(chatRoom.isOpenChat())
+                .userCount(chatRoom.getUsers().size())
                 .build();
     }
 
-    @PostMapping("/room/join")
+    @PostMapping("/chat/room/join")
+    @ResponseBody
     public ChatRoomResponse joinRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
         ChatRoom chatRoom = chatService.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다: " + roomId));
 
         // 사용자가 이미 참여한 경우 추가하지 않음
+        User user = new User();
+        user.setId(userId);
+
         boolean alreadyJoined = chatRoom.getUsers().stream()
-                .anyMatch(user -> user.getId().equals(userId));
+                .anyMatch(u -> u.getId().equals(userId));
 
         if (!alreadyJoined) {
-            User user = new User();
-            user.setId(userId);
-
             chatRoom.getUsers().add(user);
             chatService.saveChatRoom(chatRoom); // 변경 사항 저장
         }
 
-        return new ChatRoomResponse(chatRoom.getId(), chatRoom.getName());
+        return ChatRoomResponse.builder()
+                .roomId(chatRoom.getId())
+                .name(chatRoom.getName())
+                .isOpenChat(chatRoom.isOpenChat())
+                .userCount(chatRoom.getUsers().size()) // 🔹 유저 수 추가
+                .build();
     }
 
 
@@ -191,6 +207,32 @@ public class ChatController {
         }
         return chatRoom.getId();
     }
+
+    @Operation(summary = "사용자의 채팅방 목록 조회")
+    @GetMapping("/chat/myRooms")
+    @ResponseBody
+    public List<ChatRoomResponse> getMyRooms(@RequestParam UUID userId) {
+        List<ChatRoom> chatRooms = chatService.getUserRooms(userId);
+        return chatRooms.stream()
+                .map(chatRoom -> ChatRoomResponse.builder()
+                        .roomId(chatRoom.getId())
+                        .name(chatRoom.getName())
+                        .isOpenChat(chatRoom.isOpenChat())
+                        .userCount(chatRoom.getUsers().size()) // 🔹 유저 수 추가
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Operation(summary = "채팅방 나가기", description = "사용자가 채팅방을 나갑니다.")
+    @PostMapping("/chat/room/leave")
+    @ResponseBody
+    public void leaveRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
+        ChatRoom chatRoom = chatService.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다: " + roomId));
+
+        chatService.removeUserFromRoom(chatRoom, userId);
+    }
+
 
 }
 
