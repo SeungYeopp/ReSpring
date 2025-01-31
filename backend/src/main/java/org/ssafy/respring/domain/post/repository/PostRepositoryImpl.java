@@ -1,5 +1,6 @@
 package org.ssafy.respring.domain.post.repository;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
@@ -7,6 +8,7 @@ import org.ssafy.respring.domain.post.vo.Category;
 import org.ssafy.respring.domain.post.vo.Post;
 import org.ssafy.respring.domain.post.vo.QPost;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -39,6 +41,26 @@ public class PostRepositoryImpl implements PostRepositoryQuerydsl {
 
         return queryFactory.selectFrom(post)
                 .where(post.category.eq(categoryEnum))
+                .fetch();
+    }
+
+    @Override
+    public List<Post> findByCursor(Long lastId, int limit) {
+        BooleanExpression cursorCondition = (lastId != null) ? post.id.lt(lastId) : null;
+
+        return queryFactory.selectFrom(post)
+                .where(cursorCondition)
+                .orderBy(post.id.desc()) // 최신 포스트부터 가져오기
+                .limit(limit)
+                .fetch();
+    }
+
+    @Override
+    public List<Post> findTop3ByLikesInPastWeek(LocalDateTime oneWeekAgo) {
+        return queryFactory.selectFrom(post)
+                .where(post.createdAt.after(oneWeekAgo))
+                .orderBy(post.likes.desc())
+                .limit(3)
                 .fetch();
     }
 

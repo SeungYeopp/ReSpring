@@ -9,14 +9,31 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
-
   config:
     import: optional:file:.env[.properties]
+
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    mongodb:
+#      host: 127.0.0.1
+#      port: 27017
+      # authentication-database: admin
+      database: ${MONGODB_DATABASE}
+      uri: ${MONGODB_URI}
+
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o-mini # gpt-4o-mini
+          temperature: 0.7
 
   jpa:
     hibernate:
@@ -37,4 +54,16 @@ logging:
             pooling: ERROR
 
 file:
-  upload-dir: C:/uploads
+  upload-dir: ${FILE_UPLOAD_DIR:${user.home}/uploads}
+  # upload-dir: C:/uploads
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  endpoint:
+    health:
+      show-details: always
+
