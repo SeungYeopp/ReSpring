@@ -121,7 +121,7 @@ export default function WritePage() {
             placeholder="내용을 입력해주세요"
             value={formData.content}
             onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
-            className="min-h-[200px] border-[#618264]"
+            className="min-h-[300px] border-[#618264]"
           />
 
           {/* 이미지 선택 그리드 */}
