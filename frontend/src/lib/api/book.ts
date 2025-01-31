@@ -1,30 +1,14 @@
 // 이벤트 관련 API를 호출하는 함수의 모음.
 import axiosAPI from "./axios";
 
+
 export interface BookPostDto{
     userId : string,
     title : string,
     content : string,
-    tag : string,
+    tag : string[],
     storyIds : number[],
 }
-
-/*
-{
-  "id": "679c72b62649ae37363ce1b0",
-  "userId": "307e9786-df87-11ef-925c-d4f32d1471a6",
-  "title": "제목제목",
-  "content": "제목제목",
-  "coverImg": null,
-  "tag": "제목제목",
-  "likes": 0,
-  "view": 0,
-  "createdAt": "2025-01-31T15:50:30.792",
-  "updatedAt": "2025-01-31T15:50:30.792",
-  "storyIds": [],
-  "imageUrls": []
-}
- */
 
 export interface Book{
     id : string,
@@ -32,7 +16,7 @@ export interface Book{
     title : string,
     content : string,
     coverImg : string,
-    tag : string,
+    tag : string[],
     likes : number,
     view : number,
     createdAt : Date,
@@ -45,9 +29,9 @@ export const makeBook = async (
     userId : string,
     title : string,
     content : string,
-    tag: string,
+    tag: string[],
     storyIds : number[],
-    images : File[]
+    coverImg : File
 ) : Promise<string> => {
     try{
         const formData = new FormData();
@@ -56,11 +40,8 @@ export const makeBook = async (
         ], {type : 'application/json'}
         ));
         
-        images.forEach((image) => {
-            formData.append('images', image);
-        })
+        formData.append('coverImg', coverImg);
         
-
         const response = await axiosAPI.post('/books', formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
         return response.data;
