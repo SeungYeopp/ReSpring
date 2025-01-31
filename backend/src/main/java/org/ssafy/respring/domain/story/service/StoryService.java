@@ -46,6 +46,10 @@ public class StoryService {
         Event event = eventRepository.findById(requestDto.getEventId())
                 .orElseThrow(() -> new IllegalArgumentException("Event not found with id: " + requestDto.getEventId()));
 
+        if (!event.getUser().getId().equals(requestDto.getUserId())) {
+            throw new IllegalArgumentException("You are not allowed to access this event.");
+        }
+
         Story story = new Story();
         story.setTitle(requestDto.getTitle());
         story.setContent(requestDto.getContent());
@@ -93,18 +97,22 @@ public class StoryService {
     public void updateStory(Long storyId, StoryUpdateRequestDto requestDto, List<MultipartFile> imageFiles) {
         Story story = storyRepository.findById(storyId)
                 .orElseThrow(() -> new IllegalArgumentException("Story not found - id: " + storyId));
-        story.setTitle(requestDto.getTitle());
-        story.setContent(requestDto.getContent());
+
+        if (!story.getUser().getId().equals(requestDto.getUserId())) {
+            throw new IllegalArgumentException("You are not allowed to delete this story.");
+        }
 
         Event event = eventRepository.findById(requestDto.getEventId())
                 .orElseThrow(() -> new IllegalArgumentException("Event not found with id: " + requestDto.getEventId()));
-        story.setEvent(event);
-        System.out.println(event.getUser().getId() +", "+ requestDto.getUserId());
+
         // 예외 처리) 유저가 다른 유저의 이벤트를 골랐을 경우
         if (!event.getUser().getId().equals(requestDto.getUserId())) {
-
-            throw new IllegalArgumentException("You are not authorized to modify this story.");
+            throw new IllegalArgumentException("You are not allowed to select this event.");
         }
+
+        story.setTitle(requestDto.getTitle());
+        story.setContent(requestDto.getContent());
+        story.setEvent(event);
 
         // 특정 이미지 삭제
         List<Long> deleteImageIds = requestDto.getDeleteImageIds();
@@ -164,9 +172,13 @@ public class StoryService {
         }
     }
 
-    public void deleteStory(Long storyId) {
+    public void deleteStory(Long storyId, UUID userId) {
         Story story = storyRepository.findById(storyId)
                 .orElseThrow(()-> new IllegalArgumentException("Story not found - id: "+ storyId));
+
+        if (!story.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("You are not allowed to delete this Story");
+        }
 
         // 이미지 파일 및 DB 삭제
         List<Image> images = story.getImages();
@@ -188,9 +200,14 @@ public class StoryService {
                 .collect(Collectors.toList());
     }
 
-    public StoryResponseDto getStoryDetail(Long storyId) {
+    public StoryResponseDto getStoryDetail(Long storyId, UUID userId) {
         Story story = storyRepository.findById(storyId)
                 .orElseThrow(() -> new IllegalArgumentException("Story with ID " + storyId + " does not exist."));
+
+        if (!story.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("You are not allowed to view this Story");
+        }
+
         return toResponseDto(story);
     }
 
