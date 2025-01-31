@@ -28,4 +28,21 @@ public class Book {
 
     private List<Long> storyIds; // MySQL에서 관리되는 Story ID 리스트
 
+    private Set<UUID> likedUsers = new HashSet<>();
+
+    // 좋아요 추가/취소 로직
+    public boolean toggleLike(UUID userId) {
+        boolean isLiked;
+
+        if (likedUsers.remove(userId)) {
+            isLiked = false; // 좋아요 취소됨
+        } else {
+            likedUsers.add(userId);
+            isLiked = true; // 좋아요 추가됨
+        }
+
+        likes = (long) likedUsers.size(); // likes 값을 likedUsers 크기와 동기화
+        return isLiked;
+    }
+
 }

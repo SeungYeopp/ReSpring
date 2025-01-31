@@ -143,6 +143,14 @@ public class BookService {
 				.collect(Collectors.toList());
 	}
 
+	public boolean toggleLike(String bookId, UUID userId) {
+		Book book = bookRepository.findById(bookId)
+				.orElseThrow(() -> new IllegalArgumentException("Book not found with id: " + bookId));
+
+		boolean isLiked = book.toggleLike(userId); // 좋아요 토글
+		bookRepository.save(book);
+		return isLiked;
+	}
 
 	private BookResponseDto toResponseDto(Book book) {
 		return new BookResponseDto(

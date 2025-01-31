@@ -11,7 +11,6 @@ import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
 import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
 import org.ssafy.respring.domain.book.service.BookService;
-import org.ssafy.respring.domain.book.vo.Book;
 
 import java.util.List;
 import java.util.UUID;
@@ -71,5 +70,14 @@ public class BookController {
 	public ResponseEntity<BookResponseDto> getBookDetail(
 			@Parameter(description = "봄날의 서 ID") @PathVariable String book_id) {
 		return ResponseEntity.ok(bookService.getBookDetail(book_id));
+	}
+
+	@PatchMapping("/likes/{book_id}")
+	@Operation(summary = "좋아요 추가/취소", description = "특정 포스트에 좋아요를 추가하거나 취소합니다.")
+	public ResponseEntity<String> toggleLike(
+			@Parameter(description = "좋아요를 추가/취소할 자서전 ID", example = "1") @PathVariable String book_id,
+			@Parameter(description = "좋아요를 누른 사용자 UUID", example = "2c85e3f3-da0a-11ef-bb99-28c5d21f3483") @RequestParam UUID userId) {
+		boolean isLiked = bookService.toggleLike(book_id, userId);
+		return ResponseEntity.ok(isLiked ? "Liked" : "Unliked");
 	}
 }
