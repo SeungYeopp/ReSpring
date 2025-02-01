@@ -44,9 +44,9 @@ export const makeBook = async (
         const response = await axiosAPI.post('/books', formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
         return response.data;
-    }catch(error){
+    }catch(error : any){
         console.error('makeBook 에러 발생!', error);
-        throw new Error('makeBook 에러 발생!');
+        throw new Error(error.response?.data?.message ||'makeBook 에러 발생!');
     }
 }
 
@@ -64,9 +64,9 @@ export const getBookById = async (bookId : string) : Promise<Book>=> {
         console.log(bookdata)
 
         return bookdata;
-    }catch(error){
+    }catch(error : any){
         console.error('getBookById 에러', error);
-        throw new Error('getBookById 에러');
+        throw new Error(error.response?.data?.message ||'getBookById 에러');
     }
 }
 
@@ -95,8 +95,8 @@ export const updateBook = async (
                 console.error(`updateBook 에러 발생 봄날의 서 Id : ${bookId}, 유저 Id : ${userId}`);
                 return false;
             }
-        }catch(error){
-            throw new Error(`updateBook 에러 발생 봄날의 서 Id : ${bookId}, 유저 Id : ${userId}`);
+        }catch(error : any){
+            throw new Error(error.response?.data?.message ||`updateBook 에러 발생 봄날의 서 Id : ${bookId}, 유저 Id : ${userId}`);
         }
 }
 
@@ -110,8 +110,8 @@ export const deleteBook = async (bookId : string, userId : string) : Promise<boo
             console.error(`deleteBook 에러 발생, 코드 : ${response.status}, bookId : ${bookId}`);
             return false;
         }
-    }catch(error){
-        throw new Error(`deleteBook 에러 발생, bookId : ${bookId}`)
+    }catch(error : any){
+        throw new Error(error.response?.data?.message || `deleteBook 에러 발생, bookId : ${bookId}`)
     }
 }
 
@@ -120,7 +120,16 @@ export const likeOrUnlikeBook = async(bookId : string, userId : string) : Promis
         const response = await axiosAPI.patch(`/books/likes/${bookId}?userId=${userId}`)
 
         return response.data; // Liked 또는 Unliked가 string 형식으로 반환됨.
-    }catch(error){
-        throw new Error(`likeOrUnlikeBook 에러 발생, bookID : ${bookId}`);
+    }catch(error : any){
+        throw new Error(error.response?.data?.message ||`likeOrUnlikeBook 에러 발생, bookID : ${bookId}`);
+    }
+}
+
+export const getTopThreeWeeklyBooks = async() : Promise<Book[]> => {
+    try{
+        const response = await axiosAPI.get('/books/weeklyTop3');
+        return response.data;
+    }catch(error: any){
+        throw new Error(error.response?.data?.message || 'getTopThreeWeeklyBooks 함수 API 호출에서 오류가 발생했습니다.');
     }
 }
