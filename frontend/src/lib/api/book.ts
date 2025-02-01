@@ -1,4 +1,5 @@
 // 이벤트 관련 API를 호출하는 함수의 모음.
+import { StringToBoolean } from "class-variance-authority/types";
 import axiosAPI from "./axios";
 
 export interface BookPostDto{
@@ -111,5 +112,15 @@ export const deleteBook = async (bookId : string, userId : string) : Promise<boo
         }
     }catch(error){
         throw new Error(`deleteBook 에러 발생, bookId : ${bookId}`)
+    }
+}
+
+export const likeOrUnlikeBook = async(bookId : string, userId : string) : Promise<string> => {
+    try{
+        const response = await axiosAPI.patch(`/books/likes/${bookId}?userId=${userId}`)
+
+        return response.data; // Liked 또는 Unliked가 string 형식으로 반환됨.
+    }catch(error){
+        throw new Error(`likeOrUnlikeBook 에러 발생, bookID : ${bookId}`);
     }
 }
