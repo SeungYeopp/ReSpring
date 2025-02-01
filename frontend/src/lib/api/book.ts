@@ -22,7 +22,7 @@ export interface Book{
     createdAt : Date,
     updatedAt : Date,
     storyIds : number[],
-    imagesUrls : string[]
+    imageUrls : string[]
 }
 
 export const makeBook = async (
@@ -60,6 +60,8 @@ export const getBookById = async (bookId : string) : Promise<Book>=> {
             createdAt : new Date(response.data.createdAt),
             updatedAt : new Date(response.data.updatedAt)
         }
+
+        console.log(bookdata)
 
         return bookdata;
     }catch(error){
