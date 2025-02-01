@@ -18,7 +18,7 @@ export function Reader({ textData }: ReaderProps) {
   return (
     <div
       style={{ fontSize: `${fontSize}px` }} // 폰트 크기 적용
-      className="max-w-2xl mx-auto p-4"
+      className="max-w-2xl mx-auto"
     >
       {pages[currentPage] ? <div dangerouslySetInnerHTML={{ __html: pages[currentPage] }} /> : <div>해당 페이지가 없습니다.</div>}
     </div>
