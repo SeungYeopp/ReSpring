@@ -150,6 +150,16 @@ export const getMyBooks = async(userId : string) : Promise<Book[]> => {
 
         return response.data;
     }catch(error : any){
-        throw new Error(error.response?.data?.message || 'getAllBooksByUserId 함수 API 호출에서 오류가 발생했습니다.');
+        throw new Error(error.response?.data?.message || 'getMyBooks 함수 API 호출에서 오류가 발생했습니다.');
+    }
+}
+
+export const getAllBooks = async () : Promise<Book[]> => {
+    try{
+        const response = await axiosAPI.get('/books/all');
+
+        return response.data;
+    }catch(error : any){
+        throw new Error(error.response?.data?.message || 'getAllBooks 함수 API 호출에서 오류가 발생했습니다.');
     }
 }
