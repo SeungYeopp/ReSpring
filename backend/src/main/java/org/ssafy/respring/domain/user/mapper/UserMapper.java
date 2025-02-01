@@ -9,9 +9,10 @@ import org.ssafy.respring.domain.user.vo.User;
 public class UserMapper {
     // 회원가입으로 유저 객체 생성
     public User dtoToEntity(SignUpRequestDto request) {
-        return new User(request.getPassword(),
+        return new User(
                 request.getUserNickname(),
-                request.getEmail()
+                request.getEmail(),
+                request.getPassword()
         );
     }
 
@@ -21,4 +22,5 @@ public class UserMapper {
                 user.getId(),
                 user.getUserNickname()
         );
-    }}
+    }
+}

@@ -1,8 +1,8 @@
 package org.ssafy.respring.domain.user.dto.request;
 
 public class LoginRequestDto {
-    private String email; //유저 닉네임
-    private String password; //유저 패스워드
+    private String email;
+    private String password;
 
     public LoginRequestDto() {
         // TODO Auto-generated constructor stub
