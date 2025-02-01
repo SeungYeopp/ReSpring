@@ -55,7 +55,7 @@ export interface Book{
                     <h4>받은 좋아요 수 : {book.likes}</h4>
                     <h4>조회수 : {book.view}</h4>
                     <h4>생성 날짜 : {book.createdAt.toLocaleString()}</h4>
-                    <h4>생성 날짜 : {book.createdAt.toLocaleString()}</h4>
+                    <h4>수정 날짜 : {book.updatedAt.toLocaleString()}</h4>
                     <h4>봄날의 서에 담긴 이벤트 정보들 : </h4>
                     {book.storyIds.map((id, index) => (
                         <span key={id}>

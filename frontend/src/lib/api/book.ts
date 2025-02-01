@@ -1,7 +1,6 @@
 // 이벤트 관련 API를 호출하는 함수의 모음.
 import axiosAPI from "./axios";
 
-
 export interface BookPostDto{
     userId : string,
     title : string,
@@ -68,4 +67,34 @@ export const getBookById = async (bookId : string) : Promise<Book>=> {
         console.error('getBookById 에러', error);
         throw new Error('getBookById 에러');
     }
+}
+
+export const updateBook = async (
+    bookId : string, 
+    userId : string, 
+    title : string, 
+    content : string, 
+    tag : string[], 
+    storyIds : number[], 
+    image : File) : Promise<boolean> => {
+        try{
+            const formData = new FormData();
+            formData.append('requestDto', new Blob([
+                JSON.stringify({title, content, tag, storyIds})
+            ], {type : 'application/json'}
+            ));
+
+            formData.append('표지 이미지', image);
+
+            const response = await axiosAPI.put(`/books/${bookId}`, formData, {headers : {'Content-Type': 'multipart/form-data', 'X-User-Id': `${userId}`}});
+
+            if(response.status === 200){
+                return true;
+            }else{
+                console.error(`updateBook 에러 발생 봄날의 서 Id : ${bookId}, 유저 Id : ${userId}`);
+                return false;
+            }
+        }catch(error){
+            throw new Error(`updateBook 에러 발생 봄날의 서 Id : ${bookId}, 유저 Id : ${userId}`);
+        }
 }
