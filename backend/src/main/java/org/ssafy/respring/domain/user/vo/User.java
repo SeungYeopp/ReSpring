@@ -1,12 +1,11 @@
 package org.ssafy.respring.domain.user.vo;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.ssafy.respring.domain.chat.vo.ChatMessage;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -27,4 +26,7 @@ public class User {
     private String password;
     private String profileImage;
     private String socialId;
+
+    @OneToMany(mappedBy = "user")
+    private List<ChatMessage> messages;
 }

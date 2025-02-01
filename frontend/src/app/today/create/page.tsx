@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "../components/ui/spinner";
 import { createPost, type CreatePostDto } from "@/lib/api/today";
+import { ArrowLeft } from "lucide-react";
 
 const MAX_IMAGES = 6; // 최대 이미지 개수
 
@@ -88,18 +89,18 @@ export default function WritePage() {
   return (
     <main className="min-h-screen bg-background">
       {/* 헤더 */}
-      <header className="fixed top-0 left-0 right-0 flex items-center justify-between p-4 bg-background border-b z-10">
-        <Button variant="ghost" className="font-medium" onClick={() => router.back()}>
-          이전
-        </Button>
-        <h1 className="text-lg font-medium">새로운 글 작성</h1>
-        <Button disabled={isSubmitting} onClick={handleSubmit} className="bg-[#618264] hover:bg-[#618264]/90">
-          등록
-        </Button>
-      </header>
 
       {/* 메인 컨텐츠 */}
-      <div className="pt-16 pb-20 px-4">
+      <div className="px-4">
+        <header className="top-0 left-0 right-0 flex items-center justify-between p-4 bg-background border-b z-10">
+          <Button variant="ghost" className="font-medium" onClick={() => router.back()}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg font-medium">새로운 글 작성</h1>
+          <Button disabled={isSubmitting} onClick={handleSubmit} className="bg-[#618264] hover:bg-[#618264]/90">
+            등록
+          </Button>
+        </header>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 카테고리 선택 */}
           <Select value={formData.category} onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}>
@@ -108,9 +109,7 @@ export default function WritePage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="INFORMATION_SHARING">정보 공유</SelectItem>
-              <SelectItem value="CAREER">커리어</SelectItem>
-              <SelectItem value="LIFE">라이프</SelectItem>
-              <SelectItem value="HOBBY">취미</SelectItem>
+              <SelectItem value="CAREER">고민/질문</SelectItem>
             </SelectContent>
           </Select>
 
@@ -122,7 +121,7 @@ export default function WritePage() {
             placeholder="내용을 입력해주세요"
             value={formData.content}
             onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
-            className="min-h-[200px] border-[#618264]"
+            className="min-h-[300px] border-[#618264]"
           />
 
           {/* 이미지 선택 그리드 */}
