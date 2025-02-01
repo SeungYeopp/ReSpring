@@ -4,21 +4,25 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
-public class ChallengeResponseDto {
+@Builder
+public class ChallengeDetailResponseDto {
     private Long id;
     private String title;
     private String description;
     private String image;
-    private LocalDateTime registerDate;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Set<String> tags;
+    private Long participantCount;
     private Long likes;
     private Long views;
-    private Long participantCount;
-    private UUID ownerId; // 챌린지 생성자 정보 포함
+    private boolean isSuccessToday;
+    private int longestStreak;  // ✅ 연속 성공 일수
+    private int currentStreak;  // ✅ 현재 연속 성공 일수
+    private double successRate; // ✅ 성공률
 }

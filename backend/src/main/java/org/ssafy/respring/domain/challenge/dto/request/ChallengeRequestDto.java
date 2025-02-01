@@ -2,8 +2,10 @@ package org.ssafy.respring.domain.challenge.dto.request;
 
 import lombok.*;
 
-import java.time.LocalDate;
+
+import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -13,8 +15,8 @@ import java.util.Set;
 public class ChallengeRequestDto {
     private String title;
     private String description;
-    private String image;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
     private Set<String> tags;
+    private UUID ownerId;
 }

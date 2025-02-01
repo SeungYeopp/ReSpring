@@ -1,15 +1,14 @@
 package org.ssafy.respring.domain.challenge.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import org.ssafy.respring.domain.challenge.vo.Records;
+import org.ssafy.respring.domain.user.vo.User;
+import org.ssafy.respring.domain.challenge.vo.Challenge;
 
-import java.util.List;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.Optional;
 
-@Repository
 public interface RecordsRepository extends JpaRepository<Records, Long> {
-    List<Records> findByUserId(UUID userId);
-    List<Records> findByChallengeId(Long challengeId);
-    boolean existsByUserIdAndChallengeId(UUID userId, Long challengeId);
+    Optional<Records> findByUserAndChallengeAndStartDateAndEndDate(User user, Challenge challenge, LocalDate startDate, LocalDate endDate);
+    Optional<Records> findTopByUserAndChallengeOrderByStartDateDesc(User user, Challenge challenge);
 }
