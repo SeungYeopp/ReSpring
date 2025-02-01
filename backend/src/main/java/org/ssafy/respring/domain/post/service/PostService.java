@@ -1,10 +1,13 @@
 package org.ssafy.respring.domain.post.service;
 
+import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
+import org.ssafy.respring.domain.comment.vo.Comment;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
 import org.ssafy.respring.domain.image.repository.ImageRepository;
 import org.ssafy.respring.domain.image.vo.Image;
@@ -81,9 +84,13 @@ public class PostService {
     }
 
     public PostResponseDto getPost(Long id) {
-        return postRepository.findById(id)
-                .map(this::toResponseDto)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + id));
+        Post post = postRepository.findPostWithComments(id); // ✅ QueryDSL에서 Post + 댓글 함께 조회
+
+        if (post == null) {
+            throw new IllegalArgumentException("Post not found with id: " + id);
+        }
+
+        return toResponseDto(post); // ✅ Post 객체를 DTO로 변환
     }
 
     public List<PostResponseDto> getAllPosts() {
@@ -224,9 +231,14 @@ public class PostService {
 
     public List<PostResponseDto> getPopularPosts() {
         LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
-        return postRepository.findTop3ByLikesInPastWeek(oneWeekAgo)
-                .stream()
-                .map(this::toResponseDto)
+        List<Tuple> results = postRepository.findTop3ByLikesInPastWeekWithComments(oneWeekAgo);
+
+        return results.stream()
+                .map(tuple -> {
+                    Post post = tuple.get(0, Post.class);
+                    Long commentCount = tuple.get(1, Long.class);
+                    return toResponseDto(post);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -240,12 +252,29 @@ public class PostService {
         return isLiked;
     }
 
+    public boolean isPostLikedByUser(Long postId, UUID userId) {
+        return postRepository.isPostLikedByUser(postId, userId);
+    }
+
     private PostResponseDto toResponseDto(Post post) {
 
         List<ImageResponseDTO> imageDtos = post.getImages().stream()
                 .map(image -> new ImageResponseDTO(image.getImageId(), image.getImageUrl()))
                 .collect(Collectors.toList());
 
+        List<CommentResponseDto> commentDtos = post.getComments().stream()
+                .map(comment -> new CommentResponseDto(
+                        comment.getId(),
+                        comment.getContent(),
+                        comment.getUser().getUsername(), // ✅ username 직접 추출
+                        comment.getCreatedAt(),
+                        comment.getUpdatedAt(),
+                        comment.getParent() != null ? comment.getParent().getId() : null // ✅ 부모 댓글 ID 설정
+                ))
+                .collect(Collectors.toList());
+
+
+        int commentCount = post.getComments() != null ? post.getComments().size() : 0;
 
         return new PostResponseDto(
                 post.getId(),
@@ -257,7 +286,9 @@ public class PostService {
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getLikes(),
-                imageDtos
+                imageDtos,
+                commentCount,
+                commentDtos
         );
     }
 }
