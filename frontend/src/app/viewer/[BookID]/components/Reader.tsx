@@ -2,22 +2,25 @@
 
 import React from "react";
 import { useDynamicPages } from "../hooks/useDynamicPages";
+import { usePageContext } from "../context/PageContext"; // 페이지 이동(현재 페이지) 관련
+import { useViewerSettings } from "../context/ViewerSettingsContext"; // 테마/폰트
+import { cn } from "@/lib/utils"; // shadCN 유틸 (optional)
 
 interface ReaderProps {
   textData: string;
-  currentPage: number; // ✅ 페이지 번호를 필수로 받도록 설정
 }
 
-export function Reader({ textData, currentPage }: ReaderProps) {
+export function Reader({ textData }: ReaderProps) {
   const { pages } = useDynamicPages(textData);
+  const { currentPage } = usePageContext();
+  const { fontSize } = useViewerSettings();
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      {pages[currentPage] ? (
-        <div dangerouslySetInnerHTML={{ __html: pages[currentPage] }} />
-      ) : (
-        <div>해당 페이지가 없습니다.</div>
-      )}
+    <div
+      style={{ fontSize: `${fontSize}px` }} // 폰트 크기 적용
+      className="max-w-2xl mx-auto p-4"
+    >
+      {pages[currentPage] ? <div dangerouslySetInnerHTML={{ __html: pages[currentPage] }} /> : <div>해당 페이지가 없습니다.</div>}
     </div>
   );
 }

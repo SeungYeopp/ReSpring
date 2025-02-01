@@ -6,9 +6,11 @@
  */
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useViewerSettings } from "../../context/ViewerSettingsContext";
 
 export function TopToolbar() {
   const router = useRouter();
+  const { theme } = useViewerSettings(); // ✅ 테마 가져오기
 
   return (
     <div className="fixed top-0 left-0 w-full h-12 px-4 flex items-center justify-between bg-white shadow z-50">
@@ -21,9 +23,7 @@ export function TopToolbar() {
       <div className="font-bold">책 제목(임시)</div>
 
       {/* 설정 버튼 (아직 동작은 없음) */}
-      <button className="text-sm text-gray-600">
-        설정
-      </button>
+      <button className="text-sm text-gray-600">설정</button>
     </div>
   );
 }
