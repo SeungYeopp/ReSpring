@@ -163,3 +163,26 @@ export const getAllBooks = async () : Promise<Book[]> => {
         throw new Error(error.response?.data?.message || 'getAllBooks 함수 API 호출에서 오류가 발생했습니다.');
     }
 }
+
+export const getAllBooksSorted = async (sortFields:string[], directions:string[]) : Promise<Book[]> => {
+    try{
+        let url = '/books/all/sorted?';
+        
+        for(let i = 0;i<sortFields.length;i++){
+            url += `sortFields=${sortFields[i]}&`
+        }
+
+        for(let i = 0;i<directions.length;i++){
+            url += `directions=${directions[i]}`
+
+            if(i !== directions.length-1)
+                url += '&';
+        }
+
+        const response = await axiosAPI.get(url);
+
+        return response.data;
+    }catch(error : any){
+        throw new Error(error.response?.data?.message || 'getAllBooks 함수 API 호출에서 오류가 발생했습니다.');
+    }
+}
