@@ -98,3 +98,18 @@ export const updateBook = async (
             throw new Error(`updateBook 에러 발생 봄날의 서 Id : ${bookId}, 유저 Id : ${userId}`);
         }
 }
+
+export const deleteBook = async (bookId : string, userId : string) : Promise<boolean>=> {
+    try{
+        const response = await axiosAPI.delete(`/books/${bookId}`, {headers : {'X-User-Id' : `${userId}`}})
+
+        if(response.status === 200 || response.status === 204){
+            return true;
+        }else{
+            console.error(`deleteBook 에러 발생, 코드 : ${response.status}, bookId : ${bookId}`);
+            return false;
+        }
+    }catch(error){
+        throw new Error(`deleteBook 에러 발생, bookId : ${bookId}`)
+    }
+}
