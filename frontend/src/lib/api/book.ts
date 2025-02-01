@@ -133,3 +133,14 @@ export const getTopThreeWeeklyBooks = async() : Promise<Book[]> => {
         throw new Error(error.response?.data?.message || 'getTopThreeWeeklyBooks 함수 API 호출에서 오류가 발생했습니다.');
     }
 }
+
+export const getAllBooksByUserId = async(userId : string) : Promise<Book[]> => {
+    try{
+        const response = await axiosAPI.get(`/books/user/${userId}`);
+
+        return response.data;
+    }catch(error : any){
+        throw new Error(error.response?.data?.message || 'getAllBooksByUserId 함수 API 호출에서 오류가 발생했습니다.');
+    }
+}
+
