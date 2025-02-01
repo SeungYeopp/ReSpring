@@ -25,5 +25,12 @@ public class Salt {
         this.salt = salt;
     }
 
+    public String getSalt() {
+        return salt;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
 }
 
