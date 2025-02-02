@@ -1,17 +1,23 @@
 # 1. Node.js를 사용한 빌드 단계
 FROM node:18-alpine AS build
-
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm install
+
 COPY . .
 RUN npm run build
 
-# 2. Nginx를 사용한 배포 단계
-FROM nginx:stable-alpine AS production
+FROM node:18-alpine AS production
+WORKDIR /app
 
-WORKDIR /usr/share/nginx/html
-COPY --from=build /app/.next /usr/share/nginx/html
-COPY public /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/package.json /app/package.json
+COPY --from=build /app/node_modules /app/node_modules
+COPY --from=build /app/.next /app/.next
+COPY --from=build /app/public /app/public
+
+ENV NODE_ENV=production
+
 EXPOSE 3000
+
+CMD ["npm", "run", "start"]
