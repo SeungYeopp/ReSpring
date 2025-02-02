@@ -107,6 +107,9 @@ services:
 networks:
   project-network:
     driver: bridge
+  jenkins-test-network:
+    driver: bridge
+
 
 volumes:
   db_data:

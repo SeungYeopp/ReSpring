@@ -2,7 +2,6 @@ pipeline {
     agent any
     environment {
         ENV_FILE = credentials('project-env')
-        TEST_NETWORK = "jenkins-test-network"
     }
     tools {
         dockerTool 'DefaultDocker'
@@ -13,13 +12,6 @@ pipeline {
                 script {
                     sh 'cp $ENV_FILE ./backend/.env'
                     sh 'cp $ENV_FILE ./frontend/.env'
-                }
-            }
-        }
-        stage('Create Test Network') {
-            steps {
-                script {
-                    sh "docker network create ${TEST_NETWORK} || true"
                 }
             }
         }
@@ -48,8 +40,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    docker-compose down || true
-                    docker-compose up -d --build --network=${TEST_NETWORK}
+                    docker-compose up -d --build
                     '''
                 }
             }
@@ -61,11 +52,14 @@ pipeline {
                 }
             }
         }
-        stage('Cleanup Test Network') {
-            steps {
-                script {
-                    sh "docker network rm ${TEST_NETWORK} || true"
-                }
+    }
+    post {
+        always {
+            script {
+                sh '''
+                echo "🛑 Cleaning up test containers..."
+                docker-compose down || true
+                '''
             }
         }
     }
