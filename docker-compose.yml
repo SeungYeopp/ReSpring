@@ -65,6 +65,7 @@ services:
       - "50001:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - project-network
 
