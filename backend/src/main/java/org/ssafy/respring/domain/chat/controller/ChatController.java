@@ -163,14 +163,14 @@ public class ChatController {
     @Operation(summary = "메시지 삭제", description = "특정 메시지를 삭제합니다.")
     @DeleteMapping("/chat/message/{messageId}")
     @ResponseBody
-    public void deleteMessage(@PathVariable Long messageId, @RequestParam UUID userId) {
+    public void deleteMessage(@PathVariable String messageId, @RequestParam UUID userId) {
         chatService.deleteMessage(messageId, userId);
     }
 
     @Operation(summary = "메시지 읽음 처리", description = "특정 메시지를 읽음 처리합니다.")
     @PostMapping("/chat/message/{messageId}/read")
     @ResponseBody
-    public void markMessageAsRead(@PathVariable Long messageId) {
+    public void markMessageAsRead(@PathVariable String messageId) {
         chatService.markMessageAsRead(messageId);
     }
 

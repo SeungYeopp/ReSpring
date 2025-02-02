@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.chat.dto.request.ChatRoomRequest;
 import org.ssafy.respring.domain.chat.dto.response.ChatMessageResponse;
-import org.ssafy.respring.domain.chat.repository.ChatMessageRepository;
+import org.ssafy.respring.domain.chat.repository.MongoChatMessageRepository;
 import org.ssafy.respring.domain.chat.repository.ChatRoomRepository;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class ChatService {
 
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatMessageRepository chatMessageRepository;
+    private final MongoChatMessageRepository chatMessageRepository;
 
     private final Path fileStoragePath = Paths.get("uploads");
 
@@ -89,19 +89,19 @@ public class ChatService {
 
 
     public ChatMessageResponse saveMessage(Long roomId, UUID userId, String receiver, String content) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Chat room not found with id: " + roomId));
-        User user = new User();
-        user.setId(userId);
+        // MySQL에서 ChatRoom 존재 여부 확인
+        chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat room not found: " + roomId));
+
         ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
-                .sender(user.getUserNickname())
+                .sender(userId.toString())
                 .receiver(receiver)
                 .content(content)
                 .timestamp(LocalDateTime.now())
                 .read(false)
-                .chatRoom(chatRoom)
-                .user(user)
+                .chatRoomId(roomId) // MySQL의 ChatRoom과 연결
                 .build());
+
         return ChatMessageResponse.builder()
                 .sender(message.getSender())
                 .receiver(message.getReceiver())
@@ -110,6 +110,7 @@ public class ChatService {
                 .timestamp(message.getTimestamp())
                 .build();
     }
+
 
     public ChatMessage saveFileMessage(Long roomId, UUID userId, MultipartFile file) throws IOException {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
@@ -130,25 +131,8 @@ public class ChatService {
                 .fileUrl(targetPath.toString())
                 .timestamp(LocalDateTime.now())
                 .read(false)
-                .chatRoom(chatRoom)
-                .user(user)
+                .chatRoomId(chatRoom.getId())
                 .build());
-    }
-
-    public void deleteMessage(Long messageId, UUID userId) {
-        ChatMessage message = chatMessageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("Message not found"));
-        if (!message.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Cannot delete another user's message");
-        }
-        chatMessageRepository.delete(message);
-    }
-
-    public void markMessageAsRead(Long messageId) {
-        ChatMessage message = chatMessageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("Message not found"));
-        message.setRead(true);
-        chatMessageRepository.save(message);
     }
 
     public List<ChatMessage> getMessages(Long roomId) {
@@ -158,6 +142,29 @@ public class ChatService {
     public List<ChatMessage> searchMessages(Long roomId, String keyword) {
         return chatMessageRepository.findByContentContainingAndChatRoomId(keyword, roomId);
     }
+
+    public void deleteMessage(String messageId, UUID userId) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found"));
+
+        if (!message.getSender().equals(userId.toString())) {
+            throw new IllegalArgumentException("Cannot delete another user's message");
+        }
+
+        chatMessageRepository.delete(message);
+    }
+
+    public void markMessageAsRead(String messageId) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found"));
+
+        message.setRead(true);
+        chatMessageRepository.save(message);
+    }
+
+
+
+
 
     public List<ChatRoom> getUserRooms(UUID userId) {
         return chatRoomRepository.findRoomsByUserId(userId);
