@@ -21,6 +21,7 @@ import org.ssafy.respring.domain.chat.dto.response.ChatRoomResponse;
 import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
+import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.io.IOException;
@@ -34,6 +35,7 @@ public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
+    private final UserRepository userRepository;
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(ChatMessageRequest messageRequest) {
@@ -126,27 +128,7 @@ public class ChatController {
     @PostMapping("/chat/room/join")
     @ResponseBody
     public ChatRoomResponse joinRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
-        ChatRoom chatRoom = chatService.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다: " + roomId));
-
-        // 사용자가 이미 참여한 경우 추가하지 않음
-        User user = new User();
-        user.setId(userId);
-
-        boolean alreadyJoined = chatRoom.getUsers().stream()
-                .anyMatch(u -> u.getId().equals(userId));
-
-        if (!alreadyJoined) {
-            chatRoom.getUsers().add(user);
-            chatService.saveChatRoom(chatRoom); // 변경 사항 저장
-        }
-
-        return ChatRoomResponse.builder()
-                .roomId(chatRoom.getId())
-                .name(chatRoom.getName())
-                .isOpenChat(chatRoom.isOpenChat())
-                .userCount(chatRoom.getUsers().size()) // 🔹 유저 수 추가
-                .build();
+        return chatService.joinRoom(roomId, userId);
     }
 
 
@@ -227,10 +209,7 @@ public class ChatController {
     @PostMapping("/chat/room/leave")
     @ResponseBody
     public void leaveRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
-        ChatRoom chatRoom = chatService.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다: " + roomId));
-
-        chatService.removeUserFromRoom(chatRoom, userId);
+        chatService.leaveRoom(roomId, userId);
     }
 
 

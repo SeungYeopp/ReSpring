@@ -7,6 +7,7 @@ import org.ssafy.respring.domain.challenge.repository.RecordsRepository;
 import org.ssafy.respring.domain.challenge.repository.ChallengeRepository;
 import org.ssafy.respring.domain.challenge.vo.Records;
 import org.ssafy.respring.domain.challenge.vo.Challenge;
+import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDate;
@@ -19,11 +20,13 @@ import java.util.UUID;
 public class RecordsService {
     private final RecordsRepository recordsRepository;
     private final ChallengeRepository challengeRepository;
+    private final UserRepository userRepository;
 
     // ✅ 챌린지 성공 여부 기록 (날짜 변경 시 isSuccess 초기화)
     public void recordChallenge(UUID userId, Long challengeId, boolean isSuccess) {
-        User user = new User();
-        user.setId(userId);
+        // 🔹 User 엔티티 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
         Challenge challenge = challengeRepository.findById(challengeId)
                 .orElseThrow(() -> new RuntimeException("Challenge not found"));
