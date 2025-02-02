@@ -2,6 +2,8 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-RUN usermod -aG root jenkins
+RUN groupadd -g 122 docker
+
+RUN usermod -aG docker jenkins
 
 USER jenkins
