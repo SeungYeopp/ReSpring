@@ -2,6 +2,8 @@ package org.ssafy.respring.domain.user.vo;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.ssafy.respring.domain.challenge.vo.Challenge;
+import org.ssafy.respring.domain.challenge.vo.UserChallenge;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
 
 import java.time.LocalDateTime;
@@ -29,4 +31,12 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<ChatMessage> messages;
+
+    // 내가 만든 챌린지 (1:N)
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Challenge> createdChallenges;
+
+    // 내가 참가한 챌린지 (N:M)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserChallenge> joinedChallenges;
 }
