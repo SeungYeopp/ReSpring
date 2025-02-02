@@ -130,7 +130,7 @@ public class CommentService {
         return new CommentResponseDto(
                 comment.getId(),
                 content,
-                comment.getUser().getUsername(),
+                comment.getUser().getUserNickname(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getParent() != null ? comment.getParent().getId() : null

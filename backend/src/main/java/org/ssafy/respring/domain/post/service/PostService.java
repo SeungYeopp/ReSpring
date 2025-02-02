@@ -266,7 +266,7 @@ public class PostService {
                 .map(comment -> new CommentResponseDto(
                         comment.getId(),
                         comment.getContent(),
-                        comment.getUser().getUsername(), // ✅ username 직접 추출
+                        comment.getUser().getUserNickname(), // ✅ username 직접 추출
                         comment.getCreatedAt(),
                         comment.getUpdatedAt(),
                         comment.getParent() != null ? comment.getParent().getId() : null // ✅ 부모 댓글 ID 설정
@@ -282,7 +282,7 @@ public class PostService {
                 post.getContent(),
                 post.getCategory(),
                 post.getUser().getId(),
-                post.getUser().getUsername(),
+                post.getUser().getUserNickname(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getLikes(),
