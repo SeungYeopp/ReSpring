@@ -94,7 +94,7 @@ public class ChatService {
         User user = new User();
         user.setId(userId);
         ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
-                .sender(user.getUsername())
+                .sender(user.getUserNickname())
                 .receiver(receiver)
                 .content(content)
                 .timestamp(LocalDateTime.now())
@@ -126,7 +126,7 @@ public class ChatService {
         Files.copy(file.getInputStream(), targetPath);
 
         return chatMessageRepository.save(ChatMessage.builder()
-                .sender(user.getUsername())
+                .sender(user.getUserNickname())
                 .fileUrl(targetPath.toString())
                 .timestamp(LocalDateTime.now())
                 .read(false)

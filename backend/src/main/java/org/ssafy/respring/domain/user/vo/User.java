@@ -19,7 +19,7 @@ public class User {
     @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
-    private String username;
+    private String userNickname;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -39,4 +39,25 @@ public class User {
     // 내가 참가한 챌린지 (N:M)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChallenge> joinedChallenges;
+
+    public User(String userNickname, String email, String password) {
+        super();
+        this.userNickname = userNickname;
+        this.createdAt = LocalDateTime.now();
+        this.email = email;
+        this.password = password;
+    }
+
+    public User() {
+
+    }
+
+    public UUID getUserId() {
+        return id;
+    }
+
+    public void changePassword(String encryptedPassword) {
+        this.password = encryptedPassword;
+    }
+
 }
