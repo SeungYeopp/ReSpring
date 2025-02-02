@@ -15,6 +15,14 @@ pipeline {
                 }
             }
         }
+        stage('Check .env') {
+            steps {
+                script {
+                    sh 'cat ./backend/.env || echo ".env file not found in backend"'
+                    sh 'cat ./frontend/.env || echo ".env file not found in frontend"'
+                }
+            }
+        }
         stage('Backend Build') {
             steps {
                 dir('backend') {
@@ -40,9 +48,16 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    docker-compose down || true
-                    docker-compose up -d --build
+                    docker-compose --env-file ./backend/.env down || true
+                    docker-compose --env-file ./backend/.env up -d --build
                     '''
+                }
+            }
+        }
+        stage('Check Running Containers') {
+            steps {
+                script {
+                    sh 'docker ps -a'
                 }
             }
         }
