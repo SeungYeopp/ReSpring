@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   backend:
     build:
@@ -58,16 +56,15 @@ services:
     build:
       context: ./jenkins
       dockerfile: Dockerfile
-    container_name: jenkins
     user: root
     ports:
       - "8081:8080"
       - "50001:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - project-network
-
 
   nginx:
     image: nginx:latest
@@ -92,9 +89,6 @@ services:
 
   mongo-db:
     image: mongo:latest
-    container_name: mongo-db
-    ports:
-      - "27017:27017"
     volumes:
       - mongo_data:/data/db
     healthcheck:
@@ -110,6 +104,7 @@ services:
 networks:
   project-network:
     driver: bridge
+
 
 volumes:
   db_data:
