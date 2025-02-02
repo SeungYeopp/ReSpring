@@ -92,8 +92,6 @@ services:
 
   mongo-db:
     image: mongo:latest
-    ports:
-      - "27018:27017"
     volumes:
       - mongo_data:/data/db
     healthcheck:
