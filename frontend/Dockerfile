@@ -14,4 +14,4 @@ WORKDIR /usr/share/nginx/html
 COPY --from=build /app/.next /usr/share/nginx/html
 COPY public /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 3000
+EXPOSE 80
