@@ -67,7 +67,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - project-network
-
+      - jenkins-test-network
 
   nginx:
     image: nginx:latest

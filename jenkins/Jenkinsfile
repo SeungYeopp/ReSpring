@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         ENV_FILE = credentials('project-env')
+        TEST_NETWORK = "jenkins-test-network"
     }
     tools {
         dockerTool 'DefaultDocker'
@@ -15,11 +16,10 @@ pipeline {
                 }
             }
         }
-        stage('Check .env') {
+        stage('Create Test Network') {
             steps {
                 script {
-                    sh 'cat ./backend/.env || echo ".env file not found in backend"'
-                    sh 'cat ./frontend/.env || echo ".env file not found in frontend"'
+                    sh "docker network create ${TEST_NETWORK} || true"
                 }
             }
         }
@@ -44,12 +44,12 @@ pipeline {
                 }
             }
         }
-        stage('Docker Compose') {
+        stage('Docker Compose (Test)') {
             steps {
                 script {
                     sh '''
-                    docker-compose --env-file ./backend/.env down || true
-                    docker-compose --env-file ./backend/.env up -d --build
+                    docker-compose down || true
+                    docker-compose up -d --build --network=${TEST_NETWORK}
                     '''
                 }
             }
@@ -58,6 +58,13 @@ pipeline {
             steps {
                 script {
                     sh 'docker ps -a'
+                }
+            }
+        }
+        stage('Cleanup Test Network') {
+            steps {
+                script {
+                    sh "docker network rm ${TEST_NETWORK} || true"
                 }
             }
         }
