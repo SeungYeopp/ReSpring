@@ -43,8 +43,6 @@ export const login = async (email : string, password : string) : Promise<boolean
 
         const response = await axiosAPI.post('/user/login', formData);
 
-        console.log(response);
-
         if(response.status === 200 || response.status === 201 || response.status === 204)
             return true;
         else{
@@ -63,8 +61,6 @@ export const login = async (email : string, password : string) : Promise<boolean
 export const getSessionInfo = async () : Promise<SessionInfo> => {
     try{
         const response = await axiosAPI.get('/user/session');
-
-        console.log(response)
 
         return response.data as SessionInfo;
     }catch(error : any){
