@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook } from "@/lib/api";
 
 export default function CreateBook() {
@@ -15,6 +15,21 @@ export default function CreateBook() {
   const [bookCoverImg, setBookCoverImg] = useState<File>();
   const [compiledBook, setCompiledBook] = useState<CompiledBook>();
   const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<string>("");
+
+  const [prevBtnStyle, setPrevBtnStyle] = useState<string>("opacity-0 pointer-events-none text-brand border-2 border-brand rounded-md font-semibold");
+  // ui
+  useEffect(() => {
+    const handleChangeStep = () => {
+      if(step === 1){
+        setPrevBtnStyle("opacity-0 pointer-events-none text-brand border-2 border-brand rounded-md font-semibold");
+      }else{
+        setPrevBtnStyle("text-brand border-2 border-brand rounded-md font-semibold px-2 py-1");
+      }
+    }
+
+    handleChangeStep();
+  }, [step]);
+
 
   const handleStoriesGet = async () => {
     try{
@@ -117,7 +132,16 @@ export default function CreateBook() {
   }
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center justify-center">
+      <div className="w-full flex items-center justify-between bg-white p-4">
+        <button className={prevBtnStyle} onClick={() => setStep(step - 1)}>
+          이전
+        </button>
+        <span className="text-lg font-bold">{step === 1 ? "글조각 선택하기" : step === 2 ? "봄날의 서 쓰기" : step === 3 ? "표지 선택" : "미리보기"}</span>
+        <button className="text-white bg-brand-dark border-2 border-brand-dark rounded-md font-semibold px-2 py-1" onClick={() => (step === 1 ? handleMakeAIContent() : (step === 4 ? handleSubmit() : setStep(step + 1)))} disabled={step === 4 && !compiledBook}>
+          {step === 1 ? "AI로 엮기" : step === 4 ? "봄날의 서 만들기" : "다음"}
+        </button>
+      </div>
       <div>
         {step === 1 && 
           <div>
