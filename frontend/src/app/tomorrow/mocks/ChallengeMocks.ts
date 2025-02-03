@@ -1,96 +1,27 @@
-import type { Challenge, UserChallenge } from "../types/challenge";
+// src/app/tomorrow/mocks/ChallengeMocks.ts
+import { Challenge } from "@/app/tomorrow/types/challenge";
 
-export const mockChallenges: Challenge[] = [
+const mockChallenges: Challenge[] = [
   {
-    challenge_id: 1,
-    title: "30일 글쓰기 도전",
-    description: "매일 30분씩 글을 써보세요. 작은 습관이 큰 변화를 만듭니다!",
-    cover_img: "/placeholder.webp",
-    created_at: "2024-02-15T10:30:00Z",
-    created_by: "user123",
-    like: 150,
-    view: 1200,
-    participants: 75,
-    tags: ["글쓰기", "습관형성", "자기계발"],
+    id: 1,
+    title: "30일 독서 챌린지",
+    description: "매일 30분 독서를 목표로 하는 챌린지입니다.",
+    image: "http://example.com/images/challenge1.jpg",
+    registerDate: "2024-01-30T10:00:00",
+    likes: 12,
+    views: 150,
+    participantCount: 30,
   },
   {
-    challenge_id: 2,
-    title: "아침 운동 습관 만들기",
-    description: "매일 아침 15분 스트레칭으로 하루를 활기차게 시작하세요.",
-    cover_img: "/placeholder.webp",
-    created_at: "2024-02-20T14:45:00Z",
-    created_by: "user456",
-    like: 89,
-    view: 750,
-    participants: 42,
-    tags: ["운동", "아침루틴", "건강"],
-  },
-  {
-    challenge_id: 3,
-    title: "독서 챌린지",
-    description: "한 달 동안 매일 30분씩 책 읽기",
-    cover_img: "/placeholder.webp",
-    created_at: "2024-03-01T09:00:00Z",
-    created_by: "bookworm123",
-    like: 120,
-    view: 980,
-    participants: 63,
-    tags: ["독서", "자기계발", "지식"],
-  },
-  {
-    challenge_id: 4,
-    title: "명상 습관 만들기",
-    description: "하루 10분 명상으로 마음의 평화 찾기",
-    cover_img: "/placeholder.webp",
-    created_at: "2024-03-05T16:30:00Z",
-    created_by: "zenmaster",
-    like: 67,
-    view: 480,
-    participants: 31,
-    tags: ["명상", "마음챙김", "스트레스 관리"],
+    id: 2,
+    title: "매일 1만 보 걷기",
+    description: "하루 1만 보 이상 걷기를 목표로 하는 챌린지입니다.",
+    image: "http://example.com/images/challenge2.jpg",
+    registerDate: "2024-02-01T10:00:00",
+    likes: 25,
+    views: 200,
+    participantCount: 45,
   },
 ];
 
-export const mockUserChallenges: UserChallenge[] = [
-  {
-    challenge_id: 1,
-    title: "30일 글쓰기 도전",
-    description: "매일 30분씩 글을 써보세요. 작은 습관이 큰 변화를 만듭니다!",
-    start_date: "2024-03-01T00:00:00Z",
-    end_date: "2024-03-30T23:59:59Z",
-  },
-  {
-    challenge_id: 2,
-    title: "아침 운동 습관 만들기",
-    description: "매일 아침 15분 스트레칭으로 하루를 활기차게 시작하세요.",
-    start_date: "2024-03-05T00:00:00Z",
-    end_date: null,
-  },
-];
-
-export const mockFollowedChallenges: Challenge[] = [
-  {
-    challenge_id: 3,
-    title: "독서 챌린지",
-    description: "한 달 동안 매일 30분씩 책 읽기",
-    cover_img: "/placeholder.webp",
-    created_at: "2024-03-01T09:00:00Z",
-    created_by: "bookworm123",
-    like: 45,
-    view: 320,
-    participants: 25,
-    tags: ["독서", "자기계발", "지식"],
-  },
-  {
-    challenge_id: 4,
-    title: "명상 습관 만들기",
-    description: "하루 10분 명상으로 마음의 평화 찾기",
-    cover_img: "/placeholder.webp",
-    created_at: "2024-03-05T16:30:00Z",
-    created_by: "zenmaster",
-    like: 67,
-    view: 480,
-    participants: 35,
-    tags: ["명상", "마음챙김", "스트레스 관리"],
-  },
-];
+export default mockChallenges;
