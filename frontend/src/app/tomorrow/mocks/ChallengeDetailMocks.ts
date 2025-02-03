@@ -4,7 +4,7 @@ import { ChallengeDetail } from "@/app/tomorrow/types/challenge";
 const mockChallengeDetail: ChallengeDetail = {
   id: 1,
   title: "30일 독서 챌린지",
-  description: "매일 30분 독서를 목표로 하는 챌린지입니다.",
+  description: "매일 30분 독서를 목표로 하는 챌린지입니다. 김민철 바보",
   image: "http://example.com/images/challenge1.jpg",
   registerDate: "2024-01-30T10:00:00",
   startDate: "2024-02-01T00:00:00",

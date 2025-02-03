@@ -1,4 +1,3 @@
-// src/app/tomorrow/mocks/SubscribedUsersMock.ts
 import { SubscribedUser } from "@/app/tomorrow/types/challenge";
 
 const mockSubscribedUsers: SubscribedUser[] = [
@@ -15,6 +14,27 @@ const mockSubscribedUsers: SubscribedUser[] = [
     email: "techguru@example.com",
     profileImage: "https://example.com/profile2.jpg",
     createdAt: "2023-11-05T10:15:00",
+  },
+  {
+    id: "c34d9e5f-d887-11ef-b310-d4f32d147183",
+    nickname: "코딩러버",
+    email: "coderlover@example.com",
+    profileImage: "https://example.com/profile3.jpg",
+    createdAt: "2024-01-12T11:45:00",
+  },
+  {
+    id: "d45eaf6a-d887-11ef-b310-d4f32d147183",
+    nickname: "문제해결사",
+    email: "solver@example.com",
+    profileImage: "https://example.com/profile4.jpg",
+    createdAt: "2024-02-02T09:20:00",
+  },
+  {
+    id: "e56fb07b-d887-11ef-b310-d4f32d147183",
+    nickname: "아이디어뱅크",
+    email: "ideabank@example.com",
+    profileImage: "https://example.com/profile5.jpg",
+    createdAt: "2024-03-08T16:10:00",
   },
 ];
 

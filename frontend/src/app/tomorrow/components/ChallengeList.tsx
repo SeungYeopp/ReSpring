@@ -1,54 +1,39 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { GridChallengeCard } from "./GridChallengeCard";
 import SortButton from "./SortButton";
-import { fetchChallenges } from "@/lib/api";
-import type { Challenge, SortOption } from "../types/challenge";
+import { Challenge, SortOption } from "../types/challenge"; // 타입 가져오기
 import { List } from "lucide-react";
 
-export default function ChallengeList() {
+interface ChallengeListProps {
+  challenges: Challenge[];
+}
+
+export default function ChallengeList({ challenges }: ChallengeListProps) {
   const [currentSort, setCurrentSort] = useState<SortOption>("recent");
-  const [allChallenges, setAllChallenges] = useState<Challenge[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const loadAllChallenges = async () => {
-      setIsLoading(true);
-      try {
-        const data = await fetchChallenges(1, 1000); // 모든 챌린지를 한 번에 가져옵니다.
-        setAllChallenges(data.data);
-      } catch (error) {
-        console.error("Failed to load challenges:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadAllChallenges();
-  }, []);
 
   const sortedChallenges = useMemo(() => {
-    return [...allChallenges].sort((a, b) => {
+    return [...challenges].sort((a, b) => {
       switch (currentSort) {
         case "likes":
-          return b.like - a.like;
+          return b.likes - a.likes;
         case "views":
-          return b.view - a.view;
+          return b.views - a.views;
         case "participants":
-          return b.participants - a.participants;
+          return b.participantCount - a.participantCount;
         case "recent":
         default:
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return new Date(b.registerDate).getTime() - new Date(a.registerDate).getTime();
       }
     });
-  }, [allChallenges, currentSort]);
+  }, [challenges, currentSort]);
 
   const handleSortChange = (sort: SortOption) => {
     setCurrentSort(sort);
   };
 
-  if (allChallenges.length === 0 && !isLoading) {
+  if (challenges.length === 0) {
     return <div className="text-center py-4">현재 진행 중인 챌린지가 없습니다.</div>;
   }
 
@@ -61,25 +46,21 @@ export default function ChallengeList() {
         </div>
         <SortButton currentSort={currentSort} onSortChange={handleSortChange} />
       </div>
-      {isLoading ? (
-        <div className="text-center py-4">로딩 중...</div>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-          {sortedChallenges.map((challenge) => (
-            <GridChallengeCard
-              key={challenge.challenge_id}
-              id={challenge.challenge_id}
-              title={challenge.title}
-              description={challenge.description}
-              image={challenge.cover_img}
-              like={challenge.like}
-              view={challenge.view}
-              participants={challenge.participants}
-              tags={challenge.tags}
-            />
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+        {sortedChallenges.map((challenge) => (
+          <GridChallengeCard
+            key={challenge.id}
+            id={challenge.id}
+            title={challenge.title}
+            description={challenge.description}
+            image={challenge.image}
+            like={challenge.likes}
+            view={challenge.views}
+            participants={challenge.participantCount}
+            tags={[]} // Challenge에는 태그 없음. ChallengeDetail에 있음.
+          />
+        ))}
+      </div>
     </div>
   );
 }

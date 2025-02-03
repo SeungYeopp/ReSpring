@@ -1,65 +1,79 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { SliderChallengeCard } from "./SliderChallengeCard";
-import { fetchUserChallenges } from "../../../lib/api";
-import type { UserChallenge } from "../types/challenge";
+import type { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
+import type { CarouselApi } from "@/components/ui/carousel";
 
-export default function MyChallenges() {
-  const [challenges, setChallenges] = useState<UserChallenge[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface MyChallengesProps {
+  challenges: ParticipatedChallenge[];
+}
+
+export default function MyChallenges({ challenges }: MyChallengesProps) {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+
+  const onSelect = useCallback(() => {
+    if (!api) return;
+    setCurrent(api.selectedScrollSnap());
+  }, [api]);
 
   useEffect(() => {
-    const loadChallenges = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetchUserChallenges();
-        setChallenges(response.data);
-      } catch (error) {
-        console.error("Error loading user challenges:", error);
-        // 에러 처리 로직 추가 (예: 토스트 메시지 표시)
-      } finally {
-        setIsLoading(false);
-      }
+    if (!api) return;
+
+    api.on("select", onSelect);
+
+    // 5초마다 다음 슬라이드로 이동
+    const autoplayInterval = setInterval(() => {
+      api.scrollNext();
+    }, 5000);
+
+    return () => {
+      api.off("select", onSelect);
+      clearInterval(autoplayInterval);
     };
+  }, [api, onSelect]);
 
-    loadChallenges();
-  }, []);
-
-  if (isLoading) {
-    return <div>로딩 중...</div>;
-  }
-
-  if (challenges.length === 0 && !isLoading) {
-    return <div>참여 중인 도전이 없습니다.</div>;
+  if (challenges.length === 0) {
+    return <div className="text-center text-gray-500">참여 중인 도전이 없습니다.</div>;
   }
 
   return (
-    <Carousel
-      opts={{
-        align: "start",
-      }}
-      className="w-full"
-    >
-      <CarouselContent>
-        {Array.isArray(challenges) &&
-          challenges.map((challenge, index) => (
-            <CarouselItem key={challenge.challenge_id} className="md:basis-1/2 lg:basis-1/3">
-              <div className="p-1">
-                <SliderChallengeCard
-                  id={challenge.challenge_id}
-                  image="/placeholder.webp" // You might want to add an image field to the API response
-                  title={challenge.title}
-                  description={challenge.description}
-                  tags={["도전", "습관"]} // You might want to add a tags field to the API response
-                />
-              </div>
-            </CarouselItem>
-          ))}
-      </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
-    </Carousel>
+    <div className="relative">
+      <Carousel
+        opts={{
+          align: "start",
+          loop: true, // 무한 루프 활성화
+        }}
+        className="w-full"
+        setApi={setApi}
+      >
+        <CarouselContent>
+          {Array.isArray(challenges) &&
+            challenges.map((challenge) => (
+              <CarouselItem key={challenge.id} className="md:basis-1/2 lg:basis-1/3">
+                <div className="p-1">
+                  <SliderChallengeCard id={challenge.id} image={challenge.image || "/placeholder.webp"} title={challenge.title} description={challenge.registerDate} tags={challenge.tags} />
+                </div>
+              </CarouselItem>
+            ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+
+      {/* 점 인디케이터 추가 */}
+      <div className="flex justify-center mt-4">
+        {challenges.map((_, index) => (
+          <button
+            key={index}
+            className={`h-2 w-2 rounded-full mx-1 ${current === index ? "bg-blue-500" : "bg-gray-300"}`}
+            onClick={() => api?.scrollTo(index)}
+            aria-label={`슬라이드 ${index + 1}로 이동`}
+          />
+        ))}
+      </div>
+    </div>
   );
 }

@@ -80,3 +80,14 @@ export interface SubscribedUserChallenge {
   ownerId: string;
   ownerName: string;
 }
+
+// 정렬 옵션 타입 추가
+export type SortOption = "likes" | "views" | "participants" | "recent";
+
+// 정렬 옵션 배열 추가 ✅
+export const sortOptions: { label: string; value: SortOption }[] = [
+  { label: "인기순", value: "likes" },
+  { label: "조회순", value: "views" },
+  { label: "참가자순", value: "participants" },
+  { label: "최신순", value: "recent" },
+];

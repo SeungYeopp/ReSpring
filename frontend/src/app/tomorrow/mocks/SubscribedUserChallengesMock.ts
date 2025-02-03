@@ -1,4 +1,3 @@
-// src/app/tomorrow/mocks/SubscribedUserChallengesMock.ts
 import { SubscribedUserChallenge } from "@/app/tomorrow/types/challenge";
 
 const mockSubscribedUserChallenges: SubscribedUserChallenge[] = [
@@ -25,6 +24,30 @@ const mockSubscribedUserChallenges: SubscribedUserChallenge[] = [
     participantCount: 15,
     ownerId: "a12b7c3d-d887-11ef-b310-d4f32d147183",
     ownerName: "김철수",
+  },
+  {
+    challengeId: 204,
+    title: "홈트레이닝 챌린지",
+    description: "집에서 간단한 운동으로 건강 유지하기",
+    image: "https://example.com/challenge3.jpg",
+    registerDate: "2024-02-05T10:00:00",
+    likes: 65,
+    views: 280,
+    participantCount: 18,
+    ownerId: "c34d8e9f-d887-11ef-b310-d4f32d147183",
+    ownerName: "박민수",
+  },
+  {
+    challengeId: 205,
+    title: "비건 식단 챌린지",
+    description: "매일 비건 식단으로 건강 관리하기",
+    image: "https://example.com/challenge4.jpg",
+    registerDate: "2024-02-20T14:30:00",
+    likes: 90,
+    views: 350,
+    participantCount: 22,
+    ownerId: "d45e9fa0-d887-11ef-b310-d4f32d147183",
+    ownerName: "최수진",
   },
 ];
 
