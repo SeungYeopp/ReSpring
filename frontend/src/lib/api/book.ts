@@ -262,8 +262,6 @@ export const compileBookByAIMock = (content : string) : CompiledBook => {
     // json, ``` 등 chatgpt가 생성한 불필요한 단어들 제거.
     const cleanedData = resData.replaceAll("json","").replaceAll('```', "").replaceAll("\n","").replaceAll("  ", "");
 
-    console.log(cleanedData);
-
     // JSON 형식으로 파싱.
     const jsonedData = JSON.parse(cleanedData);
 

@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getAllStories, Story } from "@/lib/api";
-import { makeBook } from "@/lib/api";
-import { Tags } from "lucide-react";
+import { useState } from "react";
+import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook } from "@/lib/api";
 
 export default function CreateBook() {
   const [userId, setUserId] = useState<string>("");
@@ -13,20 +11,10 @@ export default function CreateBook() {
 
   const [msg, setMsg] = useState<string>("...");
 
-  /*
-  export interface BookPostDto{
-    userId : string,
-    title : string,
-    content : string,
-    tag : string[],
-    storyIds : number[],
-}
-  */
-  const [bookTitle, setBookTitle] = useState<string>("");
-  const [bookContent, setBookContent] = useState<string>("");
   const [bookTags, setBookTags] = useState<string[]>([]);
-  const [bookStoryIds, setBookStoryIds] = useState<number[]>([]);
   const [bookCoverImg, setBookCoverImg] = useState<File>();
+  const [compiledBook, setCompiledBook] = useState<CompiledBook>();
+  const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<string>("");
 
   const handleStoriesGet = async () => {
     try{
@@ -63,12 +51,69 @@ export default function CreateBook() {
 
   const handleSubmit = async () => {
     try{
-      const result = await makeBook(userId, bookTitle, bookContent, bookTags, selectedStorieIds, bookCoverImg!);
+      // 봄날의 서를 생성할 떄는 제목과 내용만 받는다. 따라서 내용 부분은 각 챕터를 json 형식으로 만들어서 보낸다!
+      const jsonifiedBookContent = JSON.stringify(compiledBook!.chapters);
 
-      console.log("만들어진 봄날의 서 ID", result);
+      const result = await makeBook(userId, compiledBook!.title, jsonifiedBookContent, bookTags, selectedStorieIds, bookCoverImg!);
+
+      setGeneratedCompiledBookId(result);
     }catch(error : any){
       console.error(error);
     }
+  }
+  
+  // AI 생성 버튼을 누르면 
+  const handleMakeAIContent = async () => {
+    try{
+      // 선택된 글 조각들 내용 합치기.
+      const selectedStories = stories.filter((story) => (selectedStorieIds.includes(story.id)));
+      let joinStories = "";
+      for(let i = 0;i<selectedStories.length;i++){
+        joinStories += selectedStories[i].content;
+      }
+  
+      // 글 조각 합친 것들 AI로 생성.
+      const compiledBook : CompiledBook = await compileBookByAIMock(joinStories);
+  
+      setCompiledBook(compiledBook);
+      setStep(step + 1);
+    }catch(error){
+      console.error(error);
+    }
+  }
+
+  const handleBookTitleChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+    const newCompiledBook = {...compiledBook, title : e.target.value} as CompiledBook;
+
+    setCompiledBook(newCompiledBook);
+  }
+
+  const handleChapterTitleChange = (chapterIdx : number, value : string) => {
+    let changedChapters = compiledBook!.chapters;
+
+    for(let i=0;i<changedChapters!.length;i++){
+      if(chapterIdx == i){
+        changedChapters[i].chapterTitle = value;
+      }
+    }
+
+    const newCompiledBook = {...compiledBook, chapters : changedChapters} as CompiledBook;
+
+    setCompiledBook(newCompiledBook);
+  }
+
+  const handleChapterContentChange = (chapterIdx : number, value : string) => {
+    let changedChapters = compiledBook!.chapters;
+
+    for(let i=0;i<changedChapters!.length;i++){
+      if(chapterIdx == i){
+        changedChapters[i].content = value;
+      }
+    }
+
+    const newCompiledBook = {...compiledBook, chapters : changedChapters} as CompiledBook;
+
+    setCompiledBook(newCompiledBook);
   }
 
   return (
@@ -77,8 +122,9 @@ export default function CreateBook() {
         {step === 1 && 
           <div>
             글조각 선택하기
-            <button className="bg-brand" onClick={() => setStep(step + 1)}>
-              다음
+            {/*AI 사용, 편찬 내용 넘겨주기.*/}
+            <button className="bg-brand" onClick={handleMakeAIContent}>
+              AI 편찬
             </button>
           </div>
         }
@@ -143,13 +189,19 @@ export default function CreateBook() {
         {step === 2 && (
           <div>
             <label>제목</label>
-            <input type="text" value={bookTitle} onChange={(e) => setBookTitle(e.target.value)}/>
+            <input type="text" value={compiledBook?.title} onChange={handleBookTitleChange}/>
             <br/>
             <label>태그 입력</label>
             <input placeholder="예: 청춘, 마지막, 퇴직" value={bookTags} onChange={handleTags}/>
             <br/>
-            <label>내용</label>
-            <textarea rows={4} value={bookContent} onChange={(e) => setBookContent(e.target.value)}/>
+            {compiledBook?.chapters.map((chapter, chapterIdx) => (
+              <div key={chapterIdx}>
+                <label>챕터 {chapterIdx + 1} 제목 : </label>
+                <input value={chapter.chapterTitle} onChange={(event) => (handleChapterTitleChange(chapterIdx, event.target.value))}></input>
+                <label>챕터 내용</label>
+                <textarea rows={3} value={chapter.content} onChange={(event) => (handleChapterContentChange(chapterIdx, event.target.value))}></textarea>
+              </div>
+            ))}
           </div>
         )}
 
@@ -157,6 +209,12 @@ export default function CreateBook() {
           <div>
             <label>표지 이미지 선택</label>
             <input type="file" accept="image/*"onChange={handleImageUpload}/>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div>
+            <h1>생성된 봄날의 서 ID : {generatedCompiledBookId}</h1>
           </div>
         )}
       </div>
