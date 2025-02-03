@@ -143,53 +143,6 @@ export default function CreateBook() {
         </button>
       </div>
       <div>
-        {step === 1 && 
-          <div>
-            글조각 선택하기
-            {/*AI 사용, 편찬 내용 넘겨주기.*/}
-            <button className="bg-brand" onClick={handleMakeAIContent}>
-              AI 편찬
-            </button>
-          </div>
-        }
-
-        {step === 2 && 
-          <div>
-            <button className="bg-brand" onClick={() => setStep(step - 1)}>
-              이전
-            </button>
-            봄날의 서 쓰기
-            <button className="bg-brand" onClick={() => setStep(step + 1)}>
-              다음
-            </button>
-          </div>
-        }
-
-        {step === 3 && 
-          <div>
-            <button className="bg-brand" onClick={() => setStep(step - 1)}>
-              이전
-            </button>
-            표지 선택
-            <button className="bg-brand" onClick={() => setStep(step + 1)}>
-              다음
-            </button>
-          </div>
-        }
-
-        {step === 4 && 
-          <div>
-            <button className="bg-brand" onClick={() => setStep(step - 1)}>
-              이전
-            </button>
-            미리보기
-            <button className="bg-brand" onClick={handleSubmit}>
-              편찬
-            </button>
-          </div>
-        }
-      </div>
-      <div>
         {step === 1 && (
           <div>
             <label>사용자 ID 입력 : </label>
@@ -238,6 +191,7 @@ export default function CreateBook() {
 
         {step === 4 && (
           <div>
+            {/* 봄날의 서 뷰어 미리보기로 보여줘야 한다. */}
             <h1>생성된 봄날의 서 ID : {generatedCompiledBookId}</h1>
           </div>
         )}
