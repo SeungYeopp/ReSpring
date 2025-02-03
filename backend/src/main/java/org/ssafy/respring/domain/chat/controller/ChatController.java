@@ -132,36 +132,36 @@ public class ChatController {
     }
 
 
-    @Operation(summary = "파일 업로드", description = "채팅 메시지에 파일을 업로드합니다.")
-    @PostMapping("/chat/upload")
-    @ResponseBody
-    public ChatMessage uploadFile(
-            @RequestParam Long roomId,
-            @RequestParam UUID userId,
-            @RequestParam MultipartFile file) throws IOException {
-        return chatService.saveFileMessage(roomId, userId, file);
-    }
+//    @Operation(summary = "파일 업로드", description = "채팅 메시지에 파일을 업로드합니다.")
+//    @PostMapping("/chat/upload")
+//    @ResponseBody
+//    public ChatMessage uploadFile(
+//            @RequestParam Long roomId,
+//            @RequestParam UUID userId,
+//            @RequestParam MultipartFile file) throws IOException {
+//        return chatService.saveFileMessage(roomId, userId, file);
+//    }
 
-    @Operation(summary = "메시지 삭제", description = "특정 메시지를 삭제합니다.")
-    @DeleteMapping("/chat/message/{messageId}")
-    @ResponseBody
-    public void deleteMessage(@PathVariable String messageId, @RequestParam UUID userId) {
-        chatService.deleteMessage(messageId, userId);
-    }
-
-    @Operation(summary = "메시지 읽음 처리", description = "특정 메시지를 읽음 처리합니다.")
-    @PostMapping("/chat/message/{messageId}/read")
-    @ResponseBody
-    public void markMessageAsRead(@PathVariable String messageId) {
-        chatService.markMessageAsRead(messageId);
-    }
-
-    @Operation(summary = "메시지 검색", description = "키워드를 사용하여 채팅 메시지를 검색합니다.")
-    @GetMapping("/chat/messages/{roomId}/search")
-    @ResponseBody
-    public List<ChatMessage> searchMessages(@PathVariable Long roomId, @RequestParam String keyword) {
-        return chatService.searchMessages(roomId, keyword);
-    }
+//    @Operation(summary = "메시지 삭제", description = "특정 메시지를 삭제합니다.")
+//    @DeleteMapping("/chat/message/{messageId}")
+//    @ResponseBody
+//    public void deleteMessage(@PathVariable String messageId, @RequestParam UUID userId) {
+//        chatService.deleteMessage(messageId, userId);
+//    }
+//
+//    @Operation(summary = "메시지 읽음 처리", description = "특정 메시지를 읽음 처리합니다.")
+//    @PostMapping("/chat/message/{messageId}/read")
+//    @ResponseBody
+//    public void markMessageAsRead(@PathVariable String messageId) {
+//        chatService.markMessageAsRead(messageId);
+//    }
+//
+//    @Operation(summary = "메시지 검색", description = "키워드를 사용하여 채팅 메시지를 검색합니다.")
+//    @GetMapping("/chat/messages/{roomId}/search")
+//    @ResponseBody
+//    public List<ChatMessage> searchMessages(@PathVariable Long roomId, @RequestParam String keyword) {
+//        return chatService.searchMessages(roomId, keyword);
+//    }
 
     @Operation(summary = "채팅 메시지 조회", description = "특정 채팅방의 모든 메시지를 조회합니다.")
     @GetMapping("/chat/messages/{roomId}")
@@ -179,16 +179,16 @@ public class ChatController {
                 .collect(Collectors.toList());
     }
 
-    @Operation(summary = "방 이름으로 Room ID 조회", description = "특정 방 이름에 해당하는 Room ID를 반환합니다.")
-    @GetMapping("/chat/room/findByName")
-    @ResponseBody
-    public Long getRoomIdByName(@RequestParam String name) {
-        ChatRoom chatRoom = chatService.findRoomByName(name);
-        if (chatRoom == null) {
-            throw new IllegalArgumentException("해당 이름의 방이 존재하지 않습니다: " + name);
-        }
-        return chatRoom.getId();
-    }
+//    @Operation(summary = "방 이름으로 Room ID 조회", description = "특정 방 이름에 해당하는 Room ID를 반환합니다.")
+//    @GetMapping("/chat/room/findByName")
+//    @ResponseBody
+//    public Long getRoomIdByName(@RequestParam String name) {
+//        ChatRoom chatRoom = chatService.findRoomByName(name);
+//        if (chatRoom == null) {
+//            throw new IllegalArgumentException("해당 이름의 방이 존재하지 않습니다: " + name);
+//        }
+//        return chatRoom.getId();
+//    }
 
     @Operation(summary = "사용자의 채팅방 목록 조회")
     @GetMapping("/chat/myRooms")
