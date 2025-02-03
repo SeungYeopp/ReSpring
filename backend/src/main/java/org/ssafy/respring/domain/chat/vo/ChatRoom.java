@@ -22,9 +22,6 @@ public class ChatRoom {
 
     private boolean isOpenChat = false;
 
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatMessage> messages;
-
     @ManyToMany
     @JoinTable(
             name = "chat_room_users",

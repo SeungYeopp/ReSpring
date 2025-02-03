@@ -9,6 +9,7 @@ import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.comment.repository.CommentRepository;
 import org.ssafy.respring.domain.comment.vo.Comment;
 import org.ssafy.respring.domain.post.vo.Post;
+import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CommentService {
     private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
 
     public List<CommentResponseDto> getMyPostComments(UUID userId) {
         return commentRepository.findByUserIdAndPostNotNull(userId)
@@ -31,8 +33,8 @@ public class CommentService {
     @Transactional
     public CommentResponseDto createComment(CommentRequestDto dto) {
         // 1. 유저 설정
-        User user = new User();
-        user.setId(dto.getUserId());
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + dto.getUserId()));
 
         // 2. 댓글 객체 생성
         Comment comment = new Comment();

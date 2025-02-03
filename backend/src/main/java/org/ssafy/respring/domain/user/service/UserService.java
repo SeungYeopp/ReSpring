@@ -14,6 +14,8 @@ import org.ssafy.respring.domain.user.vo.User;
 import org.ssafy.respring.util.OpenCrypt;
 import org.ssafy.respring.domain.user.dto.response.LoginResponseDto;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -53,5 +55,9 @@ public class UserService {
         }
 
         return new LoginResponseDto(loginUser.getUserId(),loginUser.getUserNickname());
+    }
+    //DB 테스트용 코드입니다
+    public List<User> findAllUser(){
+        return userRepository.findAll();
     }
 }
