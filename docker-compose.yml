@@ -36,13 +36,16 @@ services:
 
   db:
     image: mysql:8.0
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_HOST: "%"
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}" ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -89,10 +92,16 @@ services:
 
   mongo-db:
     image: mongo:latest
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE}
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })" ]
+      test: [ "CMD", "mongosh", "-u", "${MONGODB_USER}", "-p", "${MONGODB_PASSWORD}", "--authenticationDatabase", "${MONGODB_DATABASE}", "--eval", "db.runCommand({ ping: 1 })" ]
       interval: 10s
       timeout: 5s
       retries: 3
