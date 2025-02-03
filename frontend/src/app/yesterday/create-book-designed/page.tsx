@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook } from "@/lib/api";
+import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook, getSessionInfo } from "@/lib/api";
 
 export default function CreateBook() {
   const [userId, setUserId] = useState<string>("");
@@ -21,15 +21,30 @@ export default function CreateBook() {
   useEffect(() => {
     const handleChangeStep = () => {
       if(step === 1){
-        setPrevBtnStyle("opacity-0 pointer-events-none text-brand border-2 border-brand rounded-md font-semibold");
+        setPrevBtnStyle("opacity-0 pointer-events-none text-brand border-2 border-brand rounded-md font-semibold"); // 버튼 안보이게
       }else{
-        setPrevBtnStyle("text-brand border-2 border-brand rounded-md font-semibold px-2 py-1");
+        setPrevBtnStyle("text-brand border-2 border-brand rounded-md font-semibold px-2 py-1"); // 버튼 보이게
       }
     }
 
     handleChangeStep();
   }, [step]);
 
+  // 페이지가 처음 마운트 될 때.. userID를 getSessionID를 통해 받아온다.
+  useEffect(() => {
+    const handleGetSessionInfo = async () => {
+      try{
+        const sessionResult = await getSessionInfo();
+
+        console.log(sessionResult.userId);
+        setUserId(sessionResult.userId);
+      }catch(error){
+        console.error(error);
+      }
+    }
+
+    handleGetSessionInfo();
+  }, []);
 
   const handleStoriesGet = async () => {
     try{
@@ -145,8 +160,6 @@ export default function CreateBook() {
       <div>
         {step === 1 && (
           <div>
-            <label>사용자 ID 입력 : </label>
-            <input value = {userId} onChange={(e) => (setUserId(e.target.value))}></input>
             <label>글 조각 ID 입력 여러 개 (예시 : "1, 3, 4") : </label>
             <input onChange={handleSelectedStories}></input>
             <button className="bg-brand" onClick={handleStoriesGet}>글 조각 가져오기</button>
