@@ -13,6 +13,7 @@ import org.ssafy.respring.domain.challenge.repository.ChallengeRepository;
 import org.ssafy.respring.domain.challenge.repository.RecordsRepository;
 import org.ssafy.respring.domain.challenge.repository.UserChallengeRepository;
 import org.ssafy.respring.domain.challenge.vo.*;
+import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.io.File;
@@ -32,6 +33,7 @@ public class ChallengeService {
     private final UserChallengeRepository userChallengeRepository;
     private final ChallengeLikesRepository challengeLikesRepository;
     private final RecordsRepository recordsRepository;
+    private final UserRepository userRepository;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -125,8 +127,9 @@ public class ChallengeService {
         Challenge challenge = challengeRepository.findById(challengeId)
                 .orElseThrow(() -> new IllegalArgumentException("챌린지를 찾을 수 없습니다."));
 
-        User user = new User();
-        user.setId(userId);
+        // 🔹 User 엔티티 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
         LocalDate startDate = challenge.getStartDate().toLocalDate();
         LocalDate endDate = challenge.getEndDate().toLocalDate();
@@ -181,8 +184,9 @@ public class ChallengeService {
 
     // 챌린지 참가 (N:M 관계 추가)
     public void joinChallenge(UUID userId, Long challengeId) {
-        User user = new User();
-        user.setId(userId);
+        // 🔹 User 엔티티 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
         Challenge challenge = challengeRepository.findById(challengeId)
                 .orElseThrow(() -> new RuntimeException("Challenge not found"));
@@ -206,8 +210,9 @@ public class ChallengeService {
 
     // ✅ 챌린지 나가기 기능
     public void leaveChallenge(UUID userId, Long challengeId) {
-        User user = new User();
-        user.setId(userId);
+        // 🔹 User 엔티티 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
         Challenge challenge = challengeRepository.findById(challengeId)
                 .orElseThrow(() -> new RuntimeException("Challenge not found"));
@@ -233,8 +238,9 @@ public class ChallengeService {
 
     // ✅ 좋아요(Toggle) 기능
     public void toggleLike(UUID userId, Long challengeId) {
-        User user = new User();
-        user.setId(userId);
+        // 🔹 User 엔티티 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
         Challenge challenge = challengeRepository.findById(challengeId)
                 .orElseThrow(() -> new RuntimeException("Challenge not found"));
@@ -260,8 +266,9 @@ public class ChallengeService {
 
     // ✅ 내가 참여한 챌린지 목록 조회 (태그 개수 & 현재 연속 도전 포함)
     public List<ChallengeMyListResponseDto> getParticipatedChallenges(UUID userId) {
-        User user = new User();
-        user.setId(userId);
+        // 🔹 User 엔티티 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
         return userChallengeRepository.findByUser(user).stream()
                 .map(UserChallenge::getChallenge) // UserChallenge에서 Challenge 가져오기

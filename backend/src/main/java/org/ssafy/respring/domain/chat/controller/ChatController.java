@@ -21,6 +21,7 @@ import org.ssafy.respring.domain.chat.dto.response.ChatRoomResponse;
 import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
+import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.io.IOException;
@@ -34,6 +35,7 @@ public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
+    private final UserRepository userRepository;
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(ChatMessageRequest messageRequest) {
@@ -126,27 +128,7 @@ public class ChatController {
     @PostMapping("/chat/room/join")
     @ResponseBody
     public ChatRoomResponse joinRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
-        ChatRoom chatRoom = chatService.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다: " + roomId));
-
-        // 사용자가 이미 참여한 경우 추가하지 않음
-        User user = new User();
-        user.setId(userId);
-
-        boolean alreadyJoined = chatRoom.getUsers().stream()
-                .anyMatch(u -> u.getId().equals(userId));
-
-        if (!alreadyJoined) {
-            chatRoom.getUsers().add(user);
-            chatService.saveChatRoom(chatRoom); // 변경 사항 저장
-        }
-
-        return ChatRoomResponse.builder()
-                .roomId(chatRoom.getId())
-                .name(chatRoom.getName())
-                .isOpenChat(chatRoom.isOpenChat())
-                .userCount(chatRoom.getUsers().size()) // 🔹 유저 수 추가
-                .build();
+        return chatService.joinRoom(roomId, userId);
     }
 
 
@@ -163,14 +145,14 @@ public class ChatController {
     @Operation(summary = "메시지 삭제", description = "특정 메시지를 삭제합니다.")
     @DeleteMapping("/chat/message/{messageId}")
     @ResponseBody
-    public void deleteMessage(@PathVariable Long messageId, @RequestParam UUID userId) {
+    public void deleteMessage(@PathVariable String messageId, @RequestParam UUID userId) {
         chatService.deleteMessage(messageId, userId);
     }
 
     @Operation(summary = "메시지 읽음 처리", description = "특정 메시지를 읽음 처리합니다.")
     @PostMapping("/chat/message/{messageId}/read")
     @ResponseBody
-    public void markMessageAsRead(@PathVariable Long messageId) {
+    public void markMessageAsRead(@PathVariable String messageId) {
         chatService.markMessageAsRead(messageId);
     }
 
@@ -227,10 +209,7 @@ public class ChatController {
     @PostMapping("/chat/room/leave")
     @ResponseBody
     public void leaveRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
-        ChatRoom chatRoom = chatService.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다: " + roomId));
-
-        chatService.removeUserFromRoom(chatRoom, userId);
+        chatService.leaveRoom(roomId, userId);
     }
 
 
