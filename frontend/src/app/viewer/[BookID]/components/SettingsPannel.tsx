@@ -79,9 +79,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         </div>
 
         {/* 닫기 버튼 */}
-        <button onClick={onClose} className="absolute top-2 right-2 px-3 py-1 rounded bg-gray-300 text-black">
+        {/* <button onClick={onClose} className="absolute top-2 right-2 px-3 py-1 rounded bg-gray-300 text-black">
           ✕
-        </button>
+        </button> */}
       </div>
     </>
   );
