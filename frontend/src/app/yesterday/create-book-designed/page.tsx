@@ -32,29 +32,22 @@ export default function CreateBook() {
 
   // 페이지가 처음 마운트 될 때.. userID를 getSessionID를 통해 받아온다.
   useEffect(() => {
-    const handleGetSessionInfo = async () => {
+    const handleInitialSetting = async () => {
       try{
         const sessionResult = await getSessionInfo();
 
-        console.log(sessionResult.userId);
         setUserId(sessionResult.userId);
+
+        const storiesResult = await getAllStories(sessionResult.userId);
+
+        setStories(storiesResult);
       }catch(error){
         console.error(error);
       }
     }
 
-    handleGetSessionInfo();
+    handleInitialSetting();
   }, []);
-
-  const handleStoriesGet = async () => {
-    try{
-      const result = await getAllStories(userId);
-
-      setStories(result);
-    }catch(error){
-      setMsg('에러 발생' + error);
-    }
-  }
 
   const handleTags = (event : React.ChangeEvent<HTMLInputElement>) => {
     const tagParsed = event.target.value.split(',').map((tag) => tag.trim());
@@ -162,7 +155,6 @@ export default function CreateBook() {
           <div>
             <label>글 조각 ID 입력 여러 개 (예시 : "1, 3, 4") : </label>
             <input onChange={handleSelectedStories}></input>
-            <button className="bg-brand" onClick={handleStoriesGet}>글 조각 가져오기</button>
             {stories && (<div>
               {stories.map((story, idx) => (
                 <div key={idx}>
