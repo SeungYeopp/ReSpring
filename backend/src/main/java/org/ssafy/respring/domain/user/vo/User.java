@@ -29,8 +29,6 @@ public class User {
     private String profileImage;
     private String socialId;
 
-    @OneToMany(mappedBy = "user")
-    private List<ChatMessage> messages;
 
     // 내가 만든 챌린지 (1:N)
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
