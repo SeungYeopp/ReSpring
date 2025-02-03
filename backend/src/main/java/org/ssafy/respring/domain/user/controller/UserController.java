@@ -6,16 +6,15 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.ssafy.respring.domain.user.dto.request.LoginRequestDto;
 import org.ssafy.respring.domain.user.dto.request.SignUpRequestDto;
 import org.ssafy.respring.domain.user.dto.response.LoginResponseDto;
 import org.ssafy.respring.domain.user.service.UserService;
+import org.ssafy.respring.domain.user.vo.User;
 
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
@@ -44,6 +43,34 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @GetMapping("/session")
+    public ResponseEntity<Map<String, Object>> getSessionInfo(HttpSession session) {
 
+        UUID userId = (UUID) session.getAttribute("userId");
+        String userNickname = (String) session.getAttribute("userNickname");
 
+        System.out.println(session.getId());
+
+        Map<String, Object> sessionInfo = new HashMap<>();
+        sessionInfo.put("userId", userId);
+        sessionInfo.put("userNickname", userNickname);
+        return ResponseEntity.status(HttpStatus.OK).body(sessionInfo);
+    }
+    //DB 확인용 테스트 코드입니다
+    @GetMapping("/alluser")
+    public ResponseEntity<List<String>> getAllUser() {
+        List<User> list =userService.findAllUser();
+
+        List<String> nicknames = list.stream()
+                .map(User::getUserNickname)
+                .toList();
+
+        return ResponseEntity.status(HttpStatus.OK).body(nicknames);
+
+    }
 }
+
+
+
+
+
