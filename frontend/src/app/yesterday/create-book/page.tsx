@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { getAllStories, Story } from "@/lib/api";
+import { makeBook } from "@/lib/api";
 import { Tags } from "lucide-react";
 
 export default function CreateBook() {
   const [userId, setUserId] = useState<string>("");
   const [stories, setStories] = useState<Story[]>([]);
-  const [selectedStories, setSelectedStories] = useState<Story[]>([]);
+  const [selectedStorieIds, setSelectedStorieIds] = useState<number[]>([]);
   const [step, setStep] = useState(1);
 
   const [msg, setMsg] = useState<string>("...");
@@ -39,7 +40,7 @@ export default function CreateBook() {
 
   const handleTags = (event : React.ChangeEvent<HTMLInputElement>) => {
     const tagParsed = event.target.value.split(',').map((tag) => tag.trim());
-    
+
     setBookTags(tagParsed);
   }
 
@@ -51,8 +52,23 @@ export default function CreateBook() {
     }
   }
 
-  const handleSubmit = () => {
-    alert("봄날의 서 제작 완료!");
+  const handleSelectedStories = (event : React.ChangeEvent<HTMLInputElement>) => {
+    const unparsed = event.target.value;
+    
+    // 선택한 스토리 ID 배열..
+    const parsedIds = unparsed.split(",").map((token) => (token.trim())).map((token) => parseInt(token, 10));
+
+    setSelectedStorieIds(parsedIds);
+  }
+
+  const handleSubmit = async () => {
+    try{
+      const result = await makeBook(userId, bookTitle, bookContent, bookTags, selectedStorieIds, bookCoverImg!);
+
+      console.log("만들어진 봄날의 서 ID", result);
+    }catch(error : any){
+      console.error(error);
+    }
   }
 
   return (
@@ -108,11 +124,13 @@ export default function CreateBook() {
           <div>
             <label>사용자 ID 입력 : </label>
             <input value = {userId} onChange={(e) => (setUserId(e.target.value))}></input>
+            <label>글 조각 ID 입력 여러 개 (예시 : "1, 3, 4") : </label>
+            <input onChange={handleSelectedStories}></input>
             <button className="bg-brand" onClick={handleStoriesGet}>글 조각 가져오기</button>
             {stories && (<div>
               {stories.map((story, idx) => (
                 <div key={idx}>
-                  <input type='checkbox' id={story.title}/>
+                  <div>{story.id}</div>
                   <div>{story.title}</div>
                   <div>{story.content}</div>
                 </div>
