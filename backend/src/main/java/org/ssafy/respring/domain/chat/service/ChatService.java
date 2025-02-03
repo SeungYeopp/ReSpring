@@ -3,6 +3,8 @@ package org.ssafy.respring.domain.chat.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.ssafy.respring.domain.challenge.repository.ChallengeRepository;
+import org.ssafy.respring.domain.challenge.vo.Challenge;
 import org.ssafy.respring.domain.chat.dto.request.ChatRoomRequest;
 import org.ssafy.respring.domain.chat.dto.response.ChatMessageResponse;
 import org.ssafy.respring.domain.chat.dto.response.ChatRoomResponse;
@@ -30,6 +32,7 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final MongoChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
+    private final ChallengeRepository challengeRepository;
 
     private final Path fileStoragePath = Paths.get("uploads");
 
@@ -90,9 +93,17 @@ public class ChatService {
 
 
     public ChatMessageResponse saveMessage(Long roomId, UUID userId, String receiver, String content) {
-        // MySQL에서 ChatRoom 존재 여부 확인
-        chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Chat room not found: " + roomId));
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+
+        // ✅ UUID 기반으로 챌린지 조회
+        Challenge challenge = challengeRepository.findByChatRoomUUID(chatRoom.getName())
+                .orElseThrow(() -> new IllegalArgumentException("해당 챌린지와 연결된 채팅방을 찾을 수 없습니다."));
+
+        // ✅ 챌린지가 종료되었는지 확인
+        if (challenge.getEndDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("챌린지가 종료되어 채팅을 보낼 수 없습니다.");
+        }
 
         ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
                 .sender(userId.toString())
@@ -200,5 +211,15 @@ public class ChatService {
                 .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
         chatRoom.getUsers().removeIf(user -> user.getId().equals(userId));
         chatRoomRepository.save(chatRoom);
+    }
+
+    public Optional<ChatRoom> findByName(String chatRoomUUID) {
+        return chatRoomRepository.findByName(chatRoomUUID);
+    }
+
+    public void deleteRoom(Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+        chatRoomRepository.delete(chatRoom);
     }
 }
