@@ -47,12 +47,12 @@ public class ChallengeController {
 
     @Operation(summary = "챌린지 상세 조회",
             description = "ID를 이용하여 특정 챌린지의 상세 정보를 조회합니다. (연속 성공 기간, 성공률 포함)")
-    @GetMapping("/{id}")
+    @GetMapping("/{challengeId}")
     public ResponseEntity<ChallengeDetailResponseDto> getChallengeDetail(
-            @PathVariable Long id,
+            @PathVariable Long challengeId,
             @RequestParam UUID userId // ✅ 현재 로그인한 사용자 ID 필요
     ) {
-        return ResponseEntity.ok(challengeService.getChallengeDetail(id, userId));
+        return ResponseEntity.ok(challengeService.getChallengeDetail(challengeId, userId));
     }
 
 //    @Operation(summary = "챌린지 삭제", description = "해당 챌린지를 만든 유저(owner)만 삭제할 수 있습니다.")
