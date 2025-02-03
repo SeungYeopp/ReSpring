@@ -10,17 +10,12 @@ import { useViewerSettings } from "./context/ViewerSettingsContext";
 import { usePageControls } from "./hooks/usePageControls"; // ✅ 페이지 이동 관련 훅
 import { useBookData } from "./hooks/useBookData"; // ✅ API 호출 훅 추가
 
-/** ✅ 패널 컴포넌트 추가 */
-import { SettingsPanel } from "./components/SettingsPannel";
-import { TableOfContents } from "./components/TableOfContents";
-import { CommentsPanel } from "./components/CommentsPanel";
-import { TTSPanel } from "./components/TTSPanel";
-
 interface ViewerPageProps {
   params: {
     BookID: string;
   };
 }
+
 export default function ViewerPage({ params }: ViewerPageProps) {
   const { BookID } = params;
   const { bookContent, isLoading } = useBookData(BookID); // ✅ API에서 책 데이터 가져오기
@@ -43,14 +38,15 @@ function MainLayout({ BookID, bookContent, isLoading }: { BookID: string; bookCo
 
   return (
     <main
-      className={`h-full min-h-screen transition-colors ${
+      className={`h-screen overflow-hidden transition-colors ${
         theme === "basic" ? "bg-white text-black" : theme === "gray" ? "bg-gray-800 text-white" : "bg-black text-white"
       }`}
     >
       {/* ✅ TopToolbar 자체적으로 상태 관리 */}
       <TopToolbar />
 
-      <div className="pt-14 pb-14 max-w-5xl mx-auto px-4 h-full min-h-[80vh] flex flex-col"> {/* ✅ 높이 확보 */}
+      {/* ✅ pt-14 유지 + Reader 높이 보정 */}
+      <div className="max-w-5xl mx-auto px-4 pt-14 h-[calc(100vh-56px)] flex flex-col overflow-hidden">
         <div className="text-gray-600 p-4">
           {/* <strong>현재 BookID:</strong> {BookID} */}
         </div>
@@ -59,7 +55,7 @@ function MainLayout({ BookID, bookContent, isLoading }: { BookID: string; bookCo
         {isLoading ? (
           <p className="text-gray-500 h-full flex items-center justify-center">📖 책 데이터를 불러오는 중...</p>
         ) : (
-          <Reader textData={bookContent} /> // ✅ 높이가 자동으로 반영됨
+          <Reader textData={bookContent} /> // ✅ Reader 내부에서도 높이 유지되도록 설정 필요
         )}
       </div>
 

@@ -40,7 +40,7 @@ export function Reader({ textData }: ReaderProps) {
       {/* ✅ 높이 보장 및 위쪽 정렬 */}
 
       <div className="text-right text-sm text-gray-500 mb-2">
-        페이지 {currentPage + 1} / {totalPages} {/* ✅ 현재 페이지 / 전체 페이지 표시 */}
+        {/* 페이지 {currentPage + 1} / {totalPages} ✅ 현재 페이지 / 전체 페이지 표시 */}
       </div>
 
       {/* 📌 실제 페이지 뷰 */}
