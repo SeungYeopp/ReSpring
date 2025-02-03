@@ -10,7 +10,9 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "salt")
+@Getter
 public class Salt {
+
     @Id
     @Column(columnDefinition = "BINARY(16)")
     private UUID userId;
@@ -25,12 +27,5 @@ public class Salt {
         this.salt = salt;
     }
 
-    public String getSalt() {
-        return salt;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
 }
 
