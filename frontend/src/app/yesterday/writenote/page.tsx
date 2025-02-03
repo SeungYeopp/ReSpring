@@ -2,23 +2,82 @@
 
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-
-const entries = [
-  { title: "1학년", subtitle: "1988년" },
-  { title: "2학년", subtitle: "1989년" },
-  { title: "3학년", subtitle: "1990년" },
-  { title: "4학년", subtitle: "1991년" },
-];
+import { getAllEvents } from "@/lib/api";
+import { makeStory } from "@/lib/api/story";  
+import SelectNote from "../components/SelectNote";
+import NoteEditor from "../components/NoteEditor";
+import AddEvent from "@/components/custom/AddEvent";
 
 export default function WriteNotePage() {
   const router = useRouter();
-  const handleBack = () => {
-    router.back();
+  const [selected, setSelected] = useState<number | null>(null);
+  const [selectedEventName, setSelectedEventName] = useState<string>("");
+  const [events, setEvents] = useState<
+    { id: number; eventName: string; occurredAt: string; category: string; display: boolean }[]
+  >([]);
+  const [stage, setStage] = useState<"select" | "editor">("select");
+  const [title, setTitle] = useState<string>("");
+  const [content, setContent] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const userId = "b3470d7d-ab19-4514-9abe-9c3ffaf0a616";
+
+  const fetchEvents = async () => {
+    try {
+      const fetchedEvents = await getAllEvents(userId);
+      const formattedEvents = fetchedEvents.map((event) => ({
+        id: event.id,
+        eventName: event.eventName,
+        occurredAt: new Date(event.occurredAt).toLocaleDateString(),
+        category: event.category,
+        display: event.display,
+      }));
+      setEvents(formattedEvents);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
   };
 
-  const [selected, setSelected] = useState<string | null>(null);
+  useEffect(() => {
+    fetchEvents();
+  }, [userId]);
+
+  const handleNext = async () => {
+    if (selected !== null) {
+      const event = events.find((event) => event.id === selected);
+      if (event) {
+        setSelectedEventName(event.eventName);
+      }
+    }
+
+    if (stage === "editor") {
+      setLoading(true);
+      try {
+        const storyId = await makeStory(userId, title, content, selected!, []);
+        router.push(`/stories/${storyId}`);
+      } catch (error) {
+        console.error("Error creating story:", error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setStage("editor");
+    }
+  };
+
+  const handleBack = () => {
+    if (stage === "editor") {
+      setStage("select");
+    } else {
+      router.back();
+    }
+  };
+
+  const handleEventAdded = () => {
+    fetchEvents();
+  };
 
   return (
     <div className="relative p-6">
@@ -29,49 +88,27 @@ export default function WriteNotePage() {
         >
           <ArrowLeft />
         </button>
-        <h1 className="text-2xl font-bold text-center flex-1">글조각 쓰기</h1>
-        <Button onClick={() => console.log("Next clicked")}>
-          다음
+        <h1 className="text-2xl font-bold text-center flex-1">
+          {stage === "select" ? "글조각 쓰기" : selectedEventName}
+        </h1>
+        <Button onClick={handleNext} disabled={loading}>
+          {stage === "select" ? "다음" : "저장"}
         </Button>
       </div>
 
-      <div className="flex flex-col space-y-2 p-4 mt-4">
-        {entries.map((entry) => (
-          <SelectableEntry
-            key={entry.title}
-            title={entry.title}
-            subtitle={entry.subtitle}
-            isSelected={selected === entry.title}
-            onClick={() => setSelected(entry.title)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SelectableEntry({
-  title,
-  subtitle,
-  isSelected,
-  onClick,
-}: {
-  title: string;
-  subtitle: string;
-  isSelected: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <div
-      onClick={onClick}
-      className={`w-full p-4 border rounded-md cursor-pointer transition flex justify-between items-center ${
-        isSelected ? "bg-green-500 text-white" : "bg-white hover:bg-gray-100"
-      }`}
-    >
-      <div className="flex flex-col">
-        <span className="text-sm text-gray-500">{subtitle}</span>
-      </div>
-      <span className="w-1/2 text-2xl font-bold text-left">{title}</span>
+      {stage === "select" ? (
+        <>
+          <SelectNote events={events} selected={selected} onSelect={setSelected} />
+          <AddEvent onEventAdded={handleEventAdded} />
+        </>
+      ) : (
+        <NoteEditor
+          title={title}
+          content={content}
+          onTitleChange={setTitle}
+          onContentChange={setContent}
+        />
+      )}
     </div>
   );
 }

@@ -12,8 +12,12 @@ export interface Event {
   display: boolean;
 }
 
-const AddEvent = () => {
-  const [userId, setUserId] = useState<string>("8804cbcb-df88-11ef-a027-8cb0e9dbb9cd");
+interface AddEventProps {
+  onEventAdded: () => void;
+}
+
+const AddEvent = ({ onEventAdded }: AddEventProps) => {
+  const [userId, setUserId] = useState<string>("b3470d7d-ab19-4514-9abe-9c3ffaf0a616");
   const [eventName, setEventName] = useState<string>("");
   const [date, setDate] = useState<Date | undefined>();
   const [category, setCategory] = useState<string>("");
@@ -35,6 +39,7 @@ const AddEvent = () => {
         display
       });
       setIsModalOpen(false);
+      onEventAdded();
     } catch (error) {
       console.log(error);
     }
