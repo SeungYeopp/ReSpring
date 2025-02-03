@@ -2,12 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook, getSessionInfo } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import Image from 'next/image'
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
 export default function CreateBook() {
   const [userId, setUserId] = useState<string>("");
   const [stories, setStories] = useState<Story[]>([]);
-  const [selectedStorieIds, setSelectedStorieIds] = useState<number[]>([]);
+  const [selectedStoryIds, setSelectedStoryIds] = useState<number[]>([]);
   const [step, setStep] = useState(1);
+  const [bookTag, setBookTag] = useState<string>("청춘");
 
   const [msg, setMsg] = useState<string>("...");
 
@@ -16,8 +20,11 @@ export default function CreateBook() {
   const [compiledBook, setCompiledBook] = useState<CompiledBook>();
   const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<string>("");
 
-  const [prevBtnStyle, setPrevBtnStyle] = useState<string>("opacity-0 pointer-events-none text-brand border-2 border-brand rounded-md font-semibold");
   // ui
+  const bookUrl = '/placeholder/gardening.jpg';
+  const availableTags = ["청춘", "마지막", "퇴직", "새로운 시작", "추억", "성장", "변화"];
+  const [prevBtnStyle, setPrevBtnStyle] = useState<string>("opacity-0 pointer-events-none text-brand border-2 border-brand rounded-md font-semibold");
+
   useEffect(() => {
     const handleChangeStep = () => {
       if(step === 1){
@@ -63,21 +70,12 @@ export default function CreateBook() {
     }
   }
 
-  const handleSelectedStories = (event : React.ChangeEvent<HTMLInputElement>) => {
-    const unparsed = event.target.value;
-    
-    // 선택한 스토리 ID 배열..
-    const parsedIds = unparsed.split(",").map((token) => (token.trim())).map((token) => parseInt(token, 10));
-
-    setSelectedStorieIds(parsedIds);
-  }
-
   const handleSubmit = async () => {
     try{
       // 봄날의 서를 생성할 떄는 제목과 내용만 받는다. 따라서 내용 부분은 각 챕터를 json 형식으로 만들어서 보낸다!
       const jsonifiedBookContent = JSON.stringify(compiledBook!.chapters);
 
-      const result = await makeBook(userId, compiledBook!.title, jsonifiedBookContent, bookTags, selectedStorieIds, bookCoverImg!);
+      const result = await makeBook(userId, compiledBook!.title, jsonifiedBookContent, [bookTag], selectedStoryIds, bookCoverImg!);
 
       setGeneratedCompiledBookId(result);
     }catch(error : any){
@@ -89,7 +87,9 @@ export default function CreateBook() {
   const handleMakeAIContent = async () => {
     try{
       // 선택된 글 조각들 내용 합치기.
-      const selectedStories = stories.filter((story) => (selectedStorieIds.includes(story.id)));
+      const selectedStories = stories.filter((story) => (selectedStoryIds.includes(story.id)));
+
+      console.log(selectedStories)
       let joinStories = "";
       for(let i = 0;i<selectedStories.length;i++){
         joinStories += selectedStories[i].content;
@@ -139,6 +139,13 @@ export default function CreateBook() {
     setCompiledBook(newCompiledBook);
   }
 
+  const toggleStorySelection = (storyId: number) => {
+    setSelectedStoryIds((prev) =>
+      prev.includes(storyId) ? prev.filter((id) => id !== storyId) : [...prev, storyId]
+    );
+  };
+  
+
   return (
     <div className="flex flex-col items-center justify-center">
       <div className="w-full flex items-center justify-between bg-white p-4">
@@ -151,41 +158,72 @@ export default function CreateBook() {
         </button>
       </div>
       <div>
-        {step === 1 && (
-          <div>
-            <label>글 조각 ID 입력 여러 개 (예시 : "1, 3, 4") : </label>
-            <input onChange={handleSelectedStories}></input>
-            {stories && (<div>
-              {stories.map((story, idx) => (
-                <div key={idx}>
-                  <div>{story.id}</div>
-                  <div>{story.title}</div>
-                  <div>{story.content}</div>
-                </div>
-              ))}
-            </div>)}
 
+        {step === 1 && (
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 gap-3">
+              {stories.map((story) => (
+                <Card
+                  key={story.id}
+                  className={`p-4 border ${
+                    selectedStoryIds.includes(story.id) ? "border-brand bg-brand/10" : "border-gray-300"
+                  } cursor-pointer transition-all`}
+                  onClick={() => toggleStorySelection(story.id)}
+                >
+                  <div className="flex items-center">
+                    <img src={bookUrl} className="h-[100px] w-[100px]" height={160} width={100} />
+                    <div className="px-5">
+                      <h3 className="text-lg font-bold">{story.title}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2">{story.content}</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
 
         {step === 2 && (
-          <div>
+          <div className="flex flex-col gap-4 p-4">
+            {/* 제목 입력 */}
             <label>제목</label>
-            <input type="text" value={compiledBook?.title} onChange={handleBookTitleChange}/>
-            <br/>
+            <input type="text" value={compiledBook?.title} onChange={handleBookTitleChange} className="border-brand border-2 rounded-sm"/>
+
+            {/* 태그 선택 */}
             <label>태그 입력</label>
-            <input placeholder="예: 청춘, 마지막, 퇴직" value={bookTags} onChange={handleTags}/>
-            <br/>
+            <Select onValueChange={setBookTag} value={bookTag}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="태그를 선택하세요" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableTags.map((tag) => (
+                  <SelectItem key={tag} value={tag}>
+                    {tag}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* 챕터 입력 */}
             {compiledBook?.chapters.map((chapter, chapterIdx) => (
-              <div key={chapterIdx}>
-                <label>챕터 {chapterIdx + 1} 제목 : </label>
-                <input value={chapter.chapterTitle} onChange={(event) => (handleChapterTitleChange(chapterIdx, event.target.value))}></input>
-                <label>챕터 내용</label>
-                <textarea rows={3} value={chapter.content} onChange={(event) => (handleChapterContentChange(chapterIdx, event.target.value))}></textarea>
-              </div>
+              <Card key={chapterIdx} className="p-4">
+                <div className="flex flex-col">
+                <input
+                  value={chapter.chapterTitle}
+                  onChange={(event) => handleChapterTitleChange(chapterIdx, event.target.value)}
+                />
+                
+                <textarea
+                  rows={3}
+                  value={chapter.content}
+                  onChange={(event) => handleChapterContentChange(chapterIdx, event.target.value)}
+                  />
+                </div>
+              </Card>
             ))}
           </div>
         )}
+
 
         {step === 3 && (
           <div>
