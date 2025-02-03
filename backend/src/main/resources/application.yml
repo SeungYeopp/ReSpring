@@ -20,9 +20,6 @@ spring:
 
   data:
     mongodb:
-#      host: 127.0.0.1
-#      port: 27017
-      # authentication-database: admin
       database: ${MONGODB_DATABASE}
       uri: ${MONGODB_URI}
 
@@ -42,8 +39,10 @@ spring:
     properties:
       hibernate.dialect: org.hibernate.dialect.MySQLDialect
 
-
-
+  elasticsearch:
+    uris: http://localhost:9200
+    username: elastic  # 기본 계정
+    password: changeme # 기본 비밀번호 (바꿀 것)
 
 logging:
   level:
@@ -55,8 +54,6 @@ logging:
 
 file:
   upload-dir: ${FILE_UPLOAD_DIR:${user.home}/uploads}
-  # upload-dir: C:/uploads
-
 
 management:
   endpoints:
