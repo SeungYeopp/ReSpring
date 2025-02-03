@@ -1,6 +1,7 @@
 package org.ssafy.respring.domain.book.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.ssafy.respring.domain.book.vo.Book;
@@ -22,11 +23,13 @@ public class BookIndexService {
         List<Book> books = mongoTemplate.findAll(Book.class, "book"); // MongoDB에서 데이터 가져오기
 
         for (Book book : books) {
-            esClient.index(i -> i
+            IndexRequest<Book> request = IndexRequest.of(i -> i
                     .index("books")
                     .id(book.getId())
                     .document(book)
             );
+
+            esClient.index(request);
         }
     }
 }
