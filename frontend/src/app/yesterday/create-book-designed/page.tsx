@@ -11,6 +11,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { Plus } from "lucide-react";
 
 export default function CreateBook() {
   const [userId, setUserId] = useState<string>("");
@@ -26,9 +27,18 @@ export default function CreateBook() {
   const [compiledBook, setCompiledBook] = useState<CompiledBook>();
   const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<string>("");
 
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   // ui
   const bookUrl = '/placeholder/gardening.jpg';
   const availableTags = ["청춘", "마지막", "퇴직", "새로운 시작", "추억", "성장", "변화"];
+
+  const coverImages = [
+    "/books/book1.jpg",
+    "/books/book1.jpg",
+    "/books/book1.jpg",
+  ];
+
   const [prevBtnStyle, setPrevBtnStyle] = useState<string>("opacity-0 pointer-events-none text-brand border-2 border-brand rounded-md font-semibold");
 
   useEffect(() => {
@@ -151,6 +161,9 @@ export default function CreateBook() {
     );
   };
   
+  const handleSelectImage = (image: string) => {
+    setSelectedImage(image);
+  };
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -236,9 +249,35 @@ export default function CreateBook() {
 
 
         {step === 3 && (
-          <div>
-            <label>표지 이미지 선택</label>
-            <input type="file" accept="image/*"onChange={handleImageUpload}/>
+          <div className="flex flex-wrap gap-4">
+            {coverImages.map((image, index) => (
+              <Card
+                key={index}
+                className={`w-24 h-24 cursor-pointer border-2 ${
+                  selectedImage === image ? "border-blue-500" : "border-gray-300"
+                }`}
+                onClick={() => handleSelectImage(image)}
+              >
+                <img src={image} alt={`표지 ${index + 1}`} className="w-full h-full object-cover rounded" />
+              </Card>
+            ))}
+
+            {/* 사용자 이미지 업로드 버튼 */}
+            <label className="w-24 h-24 flex items-center justify-center cursor-pointer border-2 border-dashed border-gray-300 rounded">
+              <Plus className="w-8 h-8 text-gray-400" />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    const fileURL = URL.createObjectURL(e.target.files[0]);
+                    setSelectedImage(fileURL);
+                    handleImageUpload(e);
+                  }
+                }}
+              />
+            </label>
           </div>
         )}
 
