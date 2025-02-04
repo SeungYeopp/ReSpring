@@ -136,7 +136,7 @@ public class ChallengeService {
 
         return challenges.stream()
                 .map(ch -> new ChallengeListResponseDto(
-                        ch.getId(), ch.getTitle(), ch.getDescription(), ch.getImage(), ch.getRegisterDate(), ch.getLikes(), ch.getViews(), ch.getParticipantCount()
+                        ch.getId(), ch.getTitle(), ch.getDescription(), ch.getImage(), ch.getRegisterDate(), ch.getLikes(), ch.getViews(), ch.getParticipantCount(), getChallengeStatus(ch)
                 ))
                 .collect(Collectors.toList());
     }
@@ -346,7 +346,7 @@ public class ChallengeService {
         return challengeRepository.findByTitleContainingIgnoreCase(keyword).stream()
                 .sorted((c1, c2) -> c2.getRegisterDate().compareTo(c1.getRegisterDate())) // 최신순 정렬
                 .map(ch -> new ChallengeListResponseDto(
-                        ch.getId(), ch.getTitle(), ch.getDescription(), ch.getImage(), ch.getRegisterDate(), ch.getLikes(), ch.getViews(), ch.getParticipantCount()
+                        ch.getId(), ch.getTitle(), ch.getDescription(), ch.getImage(), ch.getRegisterDate(), ch.getLikes(), ch.getViews(), ch.getParticipantCount(), getChallengeStatus(ch)
                 ))
                 .collect(Collectors.toList());
     }
@@ -403,6 +403,54 @@ public class ChallengeService {
                 participantIds // ✅ 참여자 UUID 목록
         );
     }
+
+    public List<ChallengeStatusResponseDto> getChallengesByStatus(ChallengeStatus status) {
+        LocalDateTime now = LocalDateTime.now();
+        List<Challenge> challenges;
+
+        switch (status) {
+            case UPCOMING:
+                challenges = challengeRepository.findByStartDateAfter(now);
+                break;
+            case ONGOING:
+                challenges = challengeRepository.findByStartDateBeforeAndEndDateAfter(now, now);
+                break;
+            case COMPLETED:
+                challenges = challengeRepository.findByEndDateBefore(now);
+                break;
+            default:
+                throw new IllegalArgumentException("잘못된 챌린지 상태입니다.");
+        }
+
+        return challenges.stream()
+                .map(ch -> ChallengeStatusResponseDto.builder()
+                        .id(ch.getId())
+                        .title(ch.getTitle())
+                        .description(ch.getDescription())
+                        .image(ch.getImage())
+                        .registerDate(ch.getRegisterDate())
+                        .startDate(ch.getStartDate())
+                        .endDate(ch.getEndDate())
+                        .status(getChallengeStatus(ch))
+                        .likes(ch.getLikes())
+                        .views(ch.getViews())
+                        .participantCount(ch.getParticipantCount())
+                        .chatRoomUUID(ch.getChatRoomUUID()) // ✅ 오픈채팅방 UUID 추가
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public ChallengeStatus getChallengeStatus(Challenge challenge) {
+        LocalDateTime now = LocalDateTime.now();
+        if (challenge.getStartDate().isAfter(now)) {
+            return ChallengeStatus.UPCOMING; // 시작 전
+        } else if (challenge.getEndDate().isAfter(now)) {
+            return ChallengeStatus.ONGOING; // 진행 중
+        } else {
+            return ChallengeStatus.COMPLETED; // 종료됨
+        }
+    }
+
 
     // 🆕 mapToDto 추가: Challenge -> ChallengeResponseDto 변환
     private ChallengeResponseDto mapToDto(Challenge challenge) {
