@@ -35,8 +35,8 @@ export default function CreateBook() {
 
   const coverImages = [
     "/books/book1.jpg",
-    "/books/book1.jpg",
-    "/books/book1.jpg",
+    "/books/book2.jpg",
+    "/books/book3.jpg",
   ];
 
   const [prevBtnStyle, setPrevBtnStyle] = useState<string>("opacity-0 pointer-events-none text-brand border-2 border-brand rounded-md font-semibold");
