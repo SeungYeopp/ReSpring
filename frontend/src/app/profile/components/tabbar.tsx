@@ -16,7 +16,7 @@ export const Tabbar = () => {
         <br />
         <TabsContent value="footsteps">
           <Footsteps />
-          <AddEvent />
+          <AddEvent onEventAdded={() => { console.log("Event added!"); }} />
         </TabsContent>
         <TabsContent value="sub-activities"></TabsContent>
         <TabsContent value="my-activities">
