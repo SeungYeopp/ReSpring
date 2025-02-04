@@ -44,4 +44,6 @@ public class Challenge {
     // 참가자 (N:M 관계 - UserChallenge 중간 테이블 활용)
     @OneToMany(mappedBy = "challenge", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChallenge> participants;
+
+    private String chatRoomUUID;
 }
