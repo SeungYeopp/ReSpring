@@ -16,6 +16,7 @@ import org.ssafy.respring.domain.post.dto.request.PostUpdateRequestDto;
 import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
 import org.ssafy.respring.domain.post.repository.PostRepository;
 import org.ssafy.respring.domain.post.vo.Post;
+import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.io.File;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 public class PostService {
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
+    private final UserRepository userRepository;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -44,8 +46,8 @@ public class PostService {
         post.setCategory(requestDto.getCategory());
         post.setLikes(0L);
 
-        User user = new User();
-        user.setId(requestDto.getUserId());
+        User user = userRepository.findById(requestDto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + requestDto.getUserId()));
         post.setUser(user);
 
         File uploadDirFolder = new File(uploadDir);
@@ -266,7 +268,7 @@ public class PostService {
                 .map(comment -> new CommentResponseDto(
                         comment.getId(),
                         comment.getContent(),
-                        comment.getUser().getUsername(), // ✅ username 직접 추출
+                        comment.getUser().getUserNickname(), // ✅ username 직접 추출
                         comment.getCreatedAt(),
                         comment.getUpdatedAt(),
                         comment.getParent() != null ? comment.getParent().getId() : null // ✅ 부모 댓글 ID 설정
@@ -282,7 +284,7 @@ public class PostService {
                 post.getContent(),
                 post.getCategory(),
                 post.getUser().getId(),
-                post.getUser().getUsername(),
+                post.getUser().getUserNickname(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getLikes(),

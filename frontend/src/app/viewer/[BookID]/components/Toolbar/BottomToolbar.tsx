@@ -1,21 +1,51 @@
 "use client";
-/**
- * 2단계: 간단한 하단 툴바 컴포넌트
- * - 프로그레스바, TTS, 댓글, 목차 버튼 정도만 가볍게 배치
- * - 아직 클릭 로직/프로그레스바 구현은 없음
- */
-import React from "react";
 
-export function BottomToolbar() {
+import { usePageContext } from "../../context/PageContext";
+import { useViewerSettings } from "../../context/ViewerSettingsContext";
+import { TableOfContents } from "../TableOfContents";
+import { CommentsPanel } from "../CommentsPanel";
+import { TTSPanel } from "../TTSPanel";
+
+interface BottomToolbarProps {
+  bookId: string; // ✅ bookId를 props로 받음
+}
+
+export function BottomToolbar({ bookId }: BottomToolbarProps) { // ✅ bookId를 props로 받음
+  const { currentPage, totalPages } = usePageContext();
+  const { theme } = useViewerSettings();
+
+  // ✅ 테마 스타일 지정
+  const themeClasses = {
+    basic: "bg-white text-black",
+    gray: "bg-gray-800 text-white",
+    dark: "bg-black text-white",
+  };
+
   return (
-    <div className="fixed bottom-0 left-0 w-full h-12 px-4 flex items-center justify-around bg-white shadow z-50">
-      {/* 임시 버튼들 */}
-      <button className="text-sm text-gray-600">듣기</button>
-      <button className="text-sm text-gray-600">댓글</button>
-      <button className="text-sm text-gray-600">목차</button>
+    <>
+      <div
+        className={`fixed bottom-0 left-0 w-full px-4 py-2 flex items-center justify-between shadow-lg z-50 transition-colors ${
+          themeClasses[theme as keyof typeof themeClasses]
+        }`}
+      >
+        {/* ✅ TTS 버튼 (왼쪽) */}
+        <div className="flex-1 flex justify-start">
+          <TTSPanel bookId={bookId} /> {/* ✅ bookId 전달 */}
+        </div>
 
-      {/* 임시 진행 상황 표시(숫자) */}
-      <span className="text-xs text-gray-500">0 / 0</span>
-    </div>
+        {/* ✅ 현재 페이지 / 전체 페이지 (가운데) */}
+        <div className="flex-1 flex justify-center">
+          <span className="text-sm font-semibold">
+            {currentPage + 1} / {totalPages}
+          </span>
+        </div>
+
+        {/* ✅ 댓글 & 목차 버튼 (오른쪽) */}
+        <div className="flex-1 flex justify-end gap-2">
+          <CommentsPanel />
+          <TableOfContents bookId={bookId} /> {/* ✅ bookId 전달 추가 */}
+          </div>
+      </div>
+    </>
   );
 }

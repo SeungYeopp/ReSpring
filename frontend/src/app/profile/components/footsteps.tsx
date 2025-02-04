@@ -32,26 +32,21 @@ const footstepsData: FootstepsItem[] = [
 ];
 
 const Footsteps: React.FC = () => {
-  const circleSize = 48; // Circle size (48px = 12rem)
-  const animationDuration = 2; // Duration for animations
+  const circleSize = 48;
+  const animationDuration = 2;
 
   return (
     <div className="relative pl-6">
-      {/* Container for circles and line */}
       <div className="relative">
-        {/* Line Connecting the Circles */}
         <div
           className="absolute left-[10%] top-0 w-[2px] bg-[#a46500]"
           style={{
-            height: `${footstepsData.length * (circleSize + 24)}px`, // Dynamically adjusting height based on items
-            animation: `lineExpand ${(footstepsData.length - 2) * animationDuration}s ease-out forwards`, // Line animation
+            height: `${footstepsData.length * (circleSize + 24)}px`,
+            animation: `lineExpand ${(footstepsData.length - 2) * animationDuration}s ease-out forwards`,
           }}
         />
-
-        {/* Map through items to display each circle */}
         {footstepsData.map((item, index) => {
-          // Calculate the dynamic delay based on the number of items
-          const delay = `${index * 0.5}s`; // Stagger the animation
+          const delay = `${index * 0.5}s`;
           return (
             <div
               key={item.id}
@@ -60,7 +55,6 @@ const Footsteps: React.FC = () => {
                 animation: `fadeInAndExpand ${animationDuration}s ease-out forwards ${delay}`,
               }}
             >
-              {/* Circle with animation */}
               <div
                 className={`w-12 h-12 rounded-full border-2 border-white ${
                   index === 0 ? 'bg-[#a46500]' : 'bg-[#dfeaa5]'
@@ -69,8 +63,6 @@ const Footsteps: React.FC = () => {
                   animation: `circleExpand ${animationDuration}s ease-out forwards ${delay}`,
                 }}
               ></div>
-
-              {/* Event Details */}
               <div
                 className="flex flex-col ml-8 opacity-0"
                 style={{
@@ -84,8 +76,6 @@ const Footsteps: React.FC = () => {
           );
         })}
       </div>
-
-      {/* Add styles for animations */}
       <style jsx global>{`
         @keyframes circleExpand {
           0% {

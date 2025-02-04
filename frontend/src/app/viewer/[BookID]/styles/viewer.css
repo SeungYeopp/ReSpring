@@ -1,0 +1,21 @@
+/* 기본 컨테이너 */
+.viewer-container {
+  @apply min-h-screen transition-colors duration-300;
+}
+
+/* 화면 크기에 따라 본문 최대 너비 조절 */
+.reader-container {
+  @apply max-w-3xl mx-auto px-4; /* 기본: 중간 크기 */
+}
+
+@media (max-width: 768px) {
+  .reader-container {
+    @apply max-w-lg px-2; /* 태블릿 */
+  }
+}
+
+@media (max-width: 480px) {
+  .reader-container {
+    @apply max-w-sm px-2 text-sm leading-6; /* 모바일: 더 작은 글씨 */
+  }
+}

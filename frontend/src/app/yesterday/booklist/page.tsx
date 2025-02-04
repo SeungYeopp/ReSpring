@@ -66,7 +66,10 @@ export default function BookList() {
               <div key={index} className="flex flex-col items-center mb-6">
                 <div className="flex justify-center gap-6 w-full">
                   {shelf.map((book, bookIndex) => (
-                    <div key={bookIndex}>
+                    <div key={bookIndex} className={`relative w-[${bookWidth}px] h-[${(bookWidth / 160) * 240}px] transform transition-transform duration-300 [transform:rotateY(0deg)] hover:[transform:rotateY(180deg)]`}>
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-white text-sm opacity-0 hover:opacity-100 transition-opacity duration-300 [transform:rotateY(180deg)]">
+                        Book {bookIndex + 1}
+                      </div>
                       <Image
                         src={book}
                         alt={`Book ${bookIndex}`}
@@ -77,7 +80,6 @@ export default function BookList() {
                     </div>
                   ))}
                 </div>
-
                 <Image src="/shelf.png" alt="Bookshelf" width={1909} height={152} />
               </div>
             ))}

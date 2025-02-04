@@ -21,6 +21,7 @@ import org.ssafy.respring.domain.chat.dto.response.ChatRoomResponse;
 import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
+import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.io.IOException;
@@ -34,6 +35,7 @@ public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
+    private final UserRepository userRepository;
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(ChatMessageRequest messageRequest) {
@@ -126,60 +128,40 @@ public class ChatController {
     @PostMapping("/chat/room/join")
     @ResponseBody
     public ChatRoomResponse joinRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
-        ChatRoom chatRoom = chatService.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다: " + roomId));
-
-        // 사용자가 이미 참여한 경우 추가하지 않음
-        User user = new User();
-        user.setId(userId);
-
-        boolean alreadyJoined = chatRoom.getUsers().stream()
-                .anyMatch(u -> u.getId().equals(userId));
-
-        if (!alreadyJoined) {
-            chatRoom.getUsers().add(user);
-            chatService.saveChatRoom(chatRoom); // 변경 사항 저장
-        }
-
-        return ChatRoomResponse.builder()
-                .roomId(chatRoom.getId())
-                .name(chatRoom.getName())
-                .isOpenChat(chatRoom.isOpenChat())
-                .userCount(chatRoom.getUsers().size()) // 🔹 유저 수 추가
-                .build();
+        return chatService.joinRoom(roomId, userId);
     }
 
 
-    @Operation(summary = "파일 업로드", description = "채팅 메시지에 파일을 업로드합니다.")
-    @PostMapping("/chat/upload")
-    @ResponseBody
-    public ChatMessage uploadFile(
-            @RequestParam Long roomId,
-            @RequestParam UUID userId,
-            @RequestParam MultipartFile file) throws IOException {
-        return chatService.saveFileMessage(roomId, userId, file);
-    }
+//    @Operation(summary = "파일 업로드", description = "채팅 메시지에 파일을 업로드합니다.")
+//    @PostMapping("/chat/upload")
+//    @ResponseBody
+//    public ChatMessage uploadFile(
+//            @RequestParam Long roomId,
+//            @RequestParam UUID userId,
+//            @RequestParam MultipartFile file) throws IOException {
+//        return chatService.saveFileMessage(roomId, userId, file);
+//    }
 
-    @Operation(summary = "메시지 삭제", description = "특정 메시지를 삭제합니다.")
-    @DeleteMapping("/chat/message/{messageId}")
-    @ResponseBody
-    public void deleteMessage(@PathVariable Long messageId, @RequestParam UUID userId) {
-        chatService.deleteMessage(messageId, userId);
-    }
-
-    @Operation(summary = "메시지 읽음 처리", description = "특정 메시지를 읽음 처리합니다.")
-    @PostMapping("/chat/message/{messageId}/read")
-    @ResponseBody
-    public void markMessageAsRead(@PathVariable Long messageId) {
-        chatService.markMessageAsRead(messageId);
-    }
-
-    @Operation(summary = "메시지 검색", description = "키워드를 사용하여 채팅 메시지를 검색합니다.")
-    @GetMapping("/chat/messages/{roomId}/search")
-    @ResponseBody
-    public List<ChatMessage> searchMessages(@PathVariable Long roomId, @RequestParam String keyword) {
-        return chatService.searchMessages(roomId, keyword);
-    }
+//    @Operation(summary = "메시지 삭제", description = "특정 메시지를 삭제합니다.")
+//    @DeleteMapping("/chat/message/{messageId}")
+//    @ResponseBody
+//    public void deleteMessage(@PathVariable String messageId, @RequestParam UUID userId) {
+//        chatService.deleteMessage(messageId, userId);
+//    }
+//
+//    @Operation(summary = "메시지 읽음 처리", description = "특정 메시지를 읽음 처리합니다.")
+//    @PostMapping("/chat/message/{messageId}/read")
+//    @ResponseBody
+//    public void markMessageAsRead(@PathVariable String messageId) {
+//        chatService.markMessageAsRead(messageId);
+//    }
+//
+//    @Operation(summary = "메시지 검색", description = "키워드를 사용하여 채팅 메시지를 검색합니다.")
+//    @GetMapping("/chat/messages/{roomId}/search")
+//    @ResponseBody
+//    public List<ChatMessage> searchMessages(@PathVariable Long roomId, @RequestParam String keyword) {
+//        return chatService.searchMessages(roomId, keyword);
+//    }
 
     @Operation(summary = "채팅 메시지 조회", description = "특정 채팅방의 모든 메시지를 조회합니다.")
     @GetMapping("/chat/messages/{roomId}")
@@ -197,16 +179,16 @@ public class ChatController {
                 .collect(Collectors.toList());
     }
 
-    @Operation(summary = "방 이름으로 Room ID 조회", description = "특정 방 이름에 해당하는 Room ID를 반환합니다.")
-    @GetMapping("/chat/room/findByName")
-    @ResponseBody
-    public Long getRoomIdByName(@RequestParam String name) {
-        ChatRoom chatRoom = chatService.findRoomByName(name);
-        if (chatRoom == null) {
-            throw new IllegalArgumentException("해당 이름의 방이 존재하지 않습니다: " + name);
-        }
-        return chatRoom.getId();
-    }
+//    @Operation(summary = "방 이름으로 Room ID 조회", description = "특정 방 이름에 해당하는 Room ID를 반환합니다.")
+//    @GetMapping("/chat/room/findByName")
+//    @ResponseBody
+//    public Long getRoomIdByName(@RequestParam String name) {
+//        ChatRoom chatRoom = chatService.findRoomByName(name);
+//        if (chatRoom == null) {
+//            throw new IllegalArgumentException("해당 이름의 방이 존재하지 않습니다: " + name);
+//        }
+//        return chatRoom.getId();
+//    }
 
     @Operation(summary = "사용자의 채팅방 목록 조회")
     @GetMapping("/chat/myRooms")
@@ -227,10 +209,7 @@ public class ChatController {
     @PostMapping("/chat/room/leave")
     @ResponseBody
     public void leaveRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
-        ChatRoom chatRoom = chatService.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다: " + roomId));
-
-        chatService.removeUserFromRoom(chatRoom, userId);
+        chatService.leaveRoom(roomId, userId);
     }
 
 

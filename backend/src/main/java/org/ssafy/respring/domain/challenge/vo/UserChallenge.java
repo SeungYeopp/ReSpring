@@ -1,19 +1,26 @@
 package org.ssafy.respring.domain.challenge.vo;
 
 import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
+import lombok.*;
+import org.ssafy.respring.domain.user.vo.User;
 
 @Entity
-@Table(name = "user_challenge")
-@IdClass(UserChallengeId.class)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserChallenge {
     @Id
-    private byte[] userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Id
-    private Long challengeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;  // 참가한 유저
 
-    @Column(name = "joined_at")
-    private LocalDateTime joinedAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "challenge_id")
+    private Challenge challenge;  // 참가한 챌린지
 }
+

@@ -1,6 +1,9 @@
+'use client';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/custom/TabGreen";
 import Footsteps from "./footsteps";
 import CommunityPosts from "./my-activities";
+import AddEvent from "@/components/custom/AddEvent";
 
 export const Tabbar = () => {
   return (
@@ -15,6 +18,7 @@ export const Tabbar = () => {
         <br />
         <TabsContent value="footsteps">
           <Footsteps />
+          <AddEvent onEventAdded={() => { console.log("Event added!"); }} />
         </TabsContent>
         <TabsContent value="sub-activities"></TabsContent>
         <TabsContent value="my-activities">
