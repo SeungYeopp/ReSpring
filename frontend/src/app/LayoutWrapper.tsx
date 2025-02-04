@@ -14,11 +14,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     <>
       {!isViewerPage && <TopNav />}
       {!isViewerPage && <Sidebar />}
-      
-      <main className={isViewerPage ? "pt-14 pb-16 md:py-4" : "md:ml-64 pt-14 pb-16 md:py-4"}>
-        {children}
-      </main>
-      
+      {/* viewer 패딩을 TopToolbar 사이즈에 맞게 조정 */}
+      <main className={isViewerPage ? "pt pb md:py-4" : "md:ml-64 pt-14 pb-16 md:py-4"}>{children}</main>
+
       {!isViewerPage && <BottomNav />}
     </>
   );
