@@ -77,7 +77,7 @@ export default function ChallengePage() {
         <section>
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center">
             <Users className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-[#96b23c]" />
-            팔로우한 사람의 도전
+            구독한 사람의 도전
           </h2>
           <FollowedChallenges challenges={followedChallenges} />
         </section>
