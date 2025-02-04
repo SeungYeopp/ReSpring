@@ -63,6 +63,18 @@ export default {
           text: "#638d3e", // 진한 초록색 텍스트
           accent: "#4a6d2e", // 보조 초록색
         },
+        chat: {
+          primary: {
+            DEFAULT: "#96b23c",
+            foreground: "hsl(var(--primary-foreground))",
+            light: "#a6c24c",
+            dark: "#638d3e",
+          },
+          secondary: {
+            DEFAULT: "#f0f4e6",
+            foreground: "#4a5568",
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

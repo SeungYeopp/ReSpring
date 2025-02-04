@@ -29,3 +29,6 @@ export * from "./book"
 
 // '유저' 관련 API 내보내기
 export * from "./user"
+
+// '채팅' 관련 API 내보내기
+export * from "./chat"
