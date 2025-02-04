@@ -12,6 +12,7 @@ import org.ssafy.respring.domain.challenge.dto.request.ChallengeUpdateRequestDto
 import org.ssafy.respring.domain.challenge.dto.response.*;
 import org.ssafy.respring.domain.challenge.service.ChallengeService;
 import org.ssafy.respring.domain.challenge.vo.ChallengeSortType;
+import org.ssafy.respring.domain.challenge.vo.ChallengeStatus;
 
 import java.io.IOException;
 import java.util.List;
@@ -111,6 +112,13 @@ public class ChallengeController {
     @GetMapping("/{challengeId}/participants")
     public ResponseEntity<ChallengeParticipantsResponseDto> getChallengeParticipants(@PathVariable Long challengeId) {
         return ResponseEntity.ok(challengeService.getChallengeParticipants(challengeId));
+    }
+
+    @Operation(summary = "챌린지 상태별 조회", description = "챌린지 상태(시작 전, 진행 중, 종료됨)에 따라 조회합니다.")
+    @GetMapping("/status")
+    public ResponseEntity<List<ChallengeStatusResponseDto>> getChallengesByStatus(
+            @RequestParam ChallengeStatus status) {
+        return ResponseEntity.ok(challengeService.getChallengesByStatus(status));
     }
 
 }

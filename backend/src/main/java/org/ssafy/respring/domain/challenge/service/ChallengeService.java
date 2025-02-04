@@ -13,6 +13,10 @@ import org.ssafy.respring.domain.challenge.repository.ChallengeRepository;
 import org.ssafy.respring.domain.challenge.repository.RecordsRepository;
 import org.ssafy.respring.domain.challenge.repository.UserChallengeRepository;
 import org.ssafy.respring.domain.challenge.vo.*;
+import org.ssafy.respring.domain.chat.dto.request.ChatRoomRequest;
+import org.ssafy.respring.domain.chat.repository.ChatRoomRepository;
+import org.ssafy.respring.domain.chat.service.ChatService;
+import org.ssafy.respring.domain.chat.vo.ChatRoom;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
@@ -34,6 +38,8 @@ public class ChallengeService {
     private final ChallengeLikesRepository challengeLikesRepository;
     private final RecordsRepository recordsRepository;
     private final UserRepository userRepository;
+    private final ChatService chatService;
+    private final ChatRoomRepository chatRoomRepository;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -70,6 +76,10 @@ public class ChallengeService {
         // 이미지 저장 후 URL 반환
         String imageUrl = saveImage(image);
 
+        // ✅ 챌린지 생성 시 UUID 생성
+        String chatRoomUUID = UUID.randomUUID().toString();
+
+
         Challenge challenge = Challenge.builder()
                 .title(challengeDto.getTitle())
                 .description(challengeDto.getDescription())
@@ -82,6 +92,7 @@ public class ChallengeService {
                 .likes(0L)
                 .views(0L)
                 .participantCount(1L)
+                .chatRoomUUID(chatRoomUUID)
                 .build();
 
         challengeRepository.save(challenge);
@@ -92,6 +103,15 @@ public class ChallengeService {
                 .build();
 
         userChallengeRepository.save(userChallenge);
+
+        // ✅ 챌린지 생성 시 UUID 기반 오픈채팅방 생성
+        ChatRoom chatRoom = chatService.createRoom(ChatRoomRequest.builder()
+                .name(chatRoomUUID) // ✅ UUID를 채팅방 이름으로 사용
+                .userIds(List.of(owner.getId().toString()))
+                .isOpenChat(true)
+                .build());
+        chatRoomRepository.save(chatRoom);
+
         return mapToDto(challenge);
     }
 
@@ -116,7 +136,7 @@ public class ChallengeService {
 
         return challenges.stream()
                 .map(ch -> new ChallengeListResponseDto(
-                        ch.getId(), ch.getTitle(), ch.getDescription(), ch.getImage(), ch.getRegisterDate(), ch.getLikes(), ch.getViews(), ch.getParticipantCount()
+                        ch.getId(), ch.getTitle(), ch.getDescription(), ch.getImage(), ch.getRegisterDate(), ch.getLikes(), ch.getViews(), ch.getParticipantCount(), getChallengeStatus(ch)
                 ))
                 .collect(Collectors.toList());
     }
@@ -184,12 +204,17 @@ public class ChallengeService {
 
     // 챌린지 참가 (N:M 관계 추가)
     public void joinChallenge(UUID userId, Long challengeId) {
+        Challenge challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new RuntimeException("Challenge not found"));
+
+        // ✅ 챌린지가 종료되었는지 확인
+        if (challenge.getEndDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("챌린지가 종료되어 참가할 수 없습니다.");
+        }
+
         // 🔹 User 엔티티 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
-
-        Challenge challenge = challengeRepository.findById(challengeId)
-                .orElseThrow(() -> new RuntimeException("Challenge not found"));
 
         // 이미 참가한 경우 방지
         boolean alreadyJoined = userChallengeRepository.findByUser(user).stream()
@@ -206,16 +231,25 @@ public class ChallengeService {
 
         userChallengeRepository.save(userChallenge);
         challenge.setParticipantCount(challenge.getParticipantCount() + 1);
+
+        // ✅ UUID 기반 채팅방 참가
+        Optional<ChatRoom> chatRoomOptional = chatService.findByName(challenge.getChatRoomUUID());
+        chatRoomOptional.ifPresent(chatRoom -> chatService.addUserToRoom(chatRoom.getId(), userId));
     }
 
     // ✅ 챌린지 나가기 기능
     public void leaveChallenge(UUID userId, Long challengeId) {
+        Challenge challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new RuntimeException("Challenge not found"));
+
+        // ✅ 챌린지가 종료되었는지 확인
+        if (challenge.getEndDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("챌린지가 종료되어 나갈 수 없습니다.");
+        }
+
         // 🔹 User 엔티티 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
-
-        Challenge challenge = challengeRepository.findById(challengeId)
-                .orElseThrow(() -> new RuntimeException("Challenge not found"));
 
         // 🔥 Owner는 챌린지를 나갈 수 없음
 //        if (challenge.getOwner().getId().equals(userId)) {
@@ -230,20 +264,32 @@ public class ChallengeService {
         userChallengeRepository.delete(userChallenge);
         challenge.setParticipantCount(challenge.getParticipantCount() - 1);
 
+        // ✅ UUID 기반 채팅방에서 나가기
+        Optional<ChatRoom> chatRoomOptional = chatService.findByName(challenge.getChatRoomUUID());
+        chatRoomOptional.ifPresent(chatRoom -> chatService.leaveRoom(chatRoom.getId(), userId));
         // 🔥 참가자가 0명이면 챌린지 자동 삭제
         if (challenge.getParticipantCount() == 0) {
             challengeRepository.delete(challenge);
+            // 🔥 챌린지 삭제 시 오픈채팅방도 삭제
+            chatRoomOptional.ifPresent(chatRoom -> chatService.deleteRoom(chatRoom.getId()));
         }
+
+
     }
 
     // ✅ 좋아요(Toggle) 기능
     public void toggleLike(UUID userId, Long challengeId) {
+        Challenge challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new RuntimeException("Challenge not found"));
+
+        // ✅ 챌린지가 종료되었는지 확인
+        if (challenge.getEndDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("챌린지가 종료되어 좋아요를 변경할 수 없습니다.");
+        }
+
         // 🔹 User 엔티티 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
-
-        Challenge challenge = challengeRepository.findById(challengeId)
-                .orElseThrow(() -> new RuntimeException("Challenge not found"));
 
         // 좋아요 여부 확인
         challengeLikesRepository.findByUserAndChallenge(user, challenge).ifPresentOrElse(
@@ -300,7 +346,7 @@ public class ChallengeService {
         return challengeRepository.findByTitleContainingIgnoreCase(keyword).stream()
                 .sorted((c1, c2) -> c2.getRegisterDate().compareTo(c1.getRegisterDate())) // 최신순 정렬
                 .map(ch -> new ChallengeListResponseDto(
-                        ch.getId(), ch.getTitle(), ch.getDescription(), ch.getImage(), ch.getRegisterDate(), ch.getLikes(), ch.getViews(), ch.getParticipantCount()
+                        ch.getId(), ch.getTitle(), ch.getDescription(), ch.getImage(), ch.getRegisterDate(), ch.getLikes(), ch.getViews(), ch.getParticipantCount(), getChallengeStatus(ch)
                 ))
                 .collect(Collectors.toList());
     }
@@ -309,6 +355,11 @@ public class ChallengeService {
     public ChallengeResponseDto updateChallenge(Long challengeId, ChallengeUpdateRequestDto updateDto, MultipartFile image) throws IOException {
         Challenge challenge = challengeRepository.findById(challengeId)
                 .orElseThrow(() -> new IllegalArgumentException("챌린지를 찾을 수 없습니다."));
+
+        // ✅ 챌린지가 종료되었는지 확인
+        if (challenge.getEndDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("챌린지가 종료되어 수정할 수 없습니다.");
+        }
 
         // ✅ Owner 검증
         if (!challenge.getOwner().getId().equals(updateDto.getOwnerId())) {
@@ -353,6 +404,52 @@ public class ChallengeService {
         );
     }
 
+    public List<ChallengeStatusResponseDto> getChallengesByStatus(ChallengeStatus status) {
+        LocalDateTime now = LocalDateTime.now();
+        List<Challenge> challenges;
+
+        switch (status) {
+            case UPCOMING:
+                challenges = challengeRepository.findByStartDateAfter(now);
+                break;
+            case ONGOING:
+                challenges = challengeRepository.findByStartDateBeforeAndEndDateAfter(now, now);
+                break;
+            case COMPLETED:
+                challenges = challengeRepository.findByEndDateBefore(now);
+                break;
+            default:
+                throw new IllegalArgumentException("잘못된 챌린지 상태입니다.");
+        }
+
+        return challenges.stream()
+                .map(ch -> ChallengeStatusResponseDto.builder()
+                        .id(ch.getId())
+                        .title(ch.getTitle())
+                        .description(ch.getDescription())
+                        .image(ch.getImage())
+                        .registerDate(ch.getRegisterDate())
+                        .startDate(ch.getStartDate())
+                        .endDate(ch.getEndDate())
+                        .status(getChallengeStatus(ch))
+                        .likes(ch.getLikes())
+                        .views(ch.getViews())
+                        .participantCount(ch.getParticipantCount())
+                        .chatRoomUUID(ch.getChatRoomUUID()) // ✅ 오픈채팅방 UUID 추가
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public ChallengeStatus getChallengeStatus(Challenge challenge) {
+        LocalDateTime now = LocalDateTime.now();
+        if (challenge.getStartDate().isAfter(now)) {
+            return ChallengeStatus.UPCOMING; // 시작 전
+        } else if (challenge.getEndDate().isAfter(now)) {
+            return ChallengeStatus.ONGOING; // 진행 중
+        } else {
+            return ChallengeStatus.COMPLETED; // 종료됨
+        }
+    }
 
 
     // 🆕 mapToDto 추가: Challenge -> ChallengeResponseDto 변환
@@ -369,7 +466,8 @@ public class ChallengeService {
                 challenge.getLikes(),
                 challenge.getViews(),
                 challenge.getParticipantCount(),
-                challenge.getOwner().getId() // ownerId 추가
+                challenge.getOwner().getId(),
+                challenge.getChatRoomUUID()
         );
     }
 }
