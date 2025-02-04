@@ -173,9 +173,9 @@ export default function CreateBook() {
         <button className={prevBtnStyle} onClick={() => setStep(step - 1)}>
           이전
         </button>
-        <span className="text-lg font-bold">{step === 1 ? "글조각 선택하기" : step === 2 ? "봄날의 서 쓰기" : step === 3 ? "표지 선택" : "미리보기"}</span>
+        <span className="text-lg font-bold">{step === 1 ? "글조각 선택하기" : step === 2 ? "미리 보기" : step === 3 ? "봄날의 서 수정하기" : "봄날의 서 표지 선택"}</span>
         <button className="text-white bg-brand-dark border-2 border-brand-dark rounded-md font-semibold px-2 py-1" onClick={() => (step === 1 ? handleMakeAIContent() : (step === 4 ? handleSubmit() : setStep(step + 1)))} disabled={step === 4 && !compiledBook}>
-          {step === 1 ? "AI로 엮기" : step === 4 ? "봄날의 서 만들기" : "다음"}
+          {step === 1 ? "AI로 엮기" : step === 4 ? "편찬" : step === 2 ? "수정" : "다음"}
         </button>
       </div>
       <div className="w-5/6">
@@ -204,6 +204,13 @@ export default function CreateBook() {
         )}
 
         {step === 2 && (
+          <div className="flex items-center justify-center">
+            {/*<ViewerPage params={{ BookID: "1" }}/>*/}
+            <img src='/placeholder/viewer_screenshot2.jpg' width={350} />
+          </div>
+        )}
+
+        {step === 3 && (
           <div className="flex flex-col gap-4 p-4">
             {/* 제목 입력 */}
             <label>제목</label>
@@ -249,9 +256,8 @@ export default function CreateBook() {
           </div>
         )}
 
-
-        {step === 3 && (
-          <div className="flex flex-wrap gap-4">
+        {step === 4 && (
+          <div className="flex items-center justify-center flex-wrap gap-4">
             {coverImages.map((image, index) => (
               <Card
                 key={index}
@@ -280,13 +286,6 @@ export default function CreateBook() {
                 }}
               />
             </label>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="flex items-center justify-center">
-            {/*<ViewerPage params={{ BookID: "1" }}/>*/}
-            <img src='/placeholder/viewer_screenshot2.jpg' width={350} />
           </div>
         )}
       </div>
