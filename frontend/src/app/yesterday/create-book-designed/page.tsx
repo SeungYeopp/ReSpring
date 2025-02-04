@@ -255,8 +255,8 @@ export default function CreateBook() {
             {coverImages.map((image, index) => (
               <Card
                 key={index}
-                className={`w-24 h-24 cursor-pointer border-2 ${
-                  selectedImage === image ? "border-blue-500" : "border-gray-300"
+                className={`w-40 h-60 cursor-pointer border-2 ${
+                  selectedImage === image ? "border-brand-dark" : "border-gray-300"
                 }`}
                 onClick={() => handleSelectImage(image)}
               >
@@ -265,7 +265,7 @@ export default function CreateBook() {
             ))}
 
             {/* 사용자 이미지 업로드 버튼 */}
-            <label className="w-24 h-24 flex items-center justify-center cursor-pointer border-2 border-dashed border-gray-300 rounded">
+            <label className="w-40 h-60 flex items-center justify-center cursor-pointer border-2 border-dashed border-gray-300 rounded">
               <Plus className="w-8 h-8 text-gray-400" />
               <input
                 type="file"
@@ -284,8 +284,9 @@ export default function CreateBook() {
         )}
 
         {step === 4 && (
-          <div>
-            <ViewerPage params={{ BookID: "1" }}/>
+          <div className="flex items-center justify-center">
+            {/*<ViewerPage params={{ BookID: "1" }}/>*/}
+            <img src='/placeholder/viewer_screenshot2.jpg' width={350} />
           </div>
         )}
       </div>
