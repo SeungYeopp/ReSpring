@@ -10,7 +10,9 @@ export interface Challenge {
   likes: number;
   views: number;
   participantCount: number;
+  status: "ONGOING" | "COMPLETED"; // 📌 추가된 필드
 }
+
 
 // 📌 2. 챌린지 상세 정보
 export interface ChallengeDetail extends Challenge {
