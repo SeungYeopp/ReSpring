@@ -2,13 +2,16 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
+import { ReactNode } from "react";
+
 interface SliderChallengeCardProps {
   id: number;
   title: string;
-  description: string;
+  description: string | ReactNode; // 🔹 JSX 요소도 받을 수 있도록 변경
   tags: string[];
   image: string;
 }
+
 
 export function SliderChallengeCard({ id, title, description, tags = [], image = "/placeholder.webp" }: SliderChallengeCardProps) {
   const router = useRouter();

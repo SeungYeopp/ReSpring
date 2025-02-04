@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { SliderChallengeCard } from "./SliderChallengeCard";
+import { Calendar } from "lucide-react";
 import type { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
 import type { CarouselApi } from "@/components/ui/carousel";
 
@@ -54,7 +55,18 @@ export default function MyChallenges({ challenges }: MyChallengesProps) {
             challenges.map((challenge) => (
               <CarouselItem key={challenge.id} className="md:basis-1/2 lg:basis-1/3">
                 <div className="p-1">
-                  <SliderChallengeCard id={challenge.id} image={challenge.image || "/placeholder.webp"} title={challenge.title} description={challenge.registerDate} tags={challenge.tags} />
+                  <SliderChallengeCard
+                    id={challenge.id}
+                    image={challenge.image || "/placeholder.webp"}
+                    title={challenge.title}
+                    description={
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar size={16} />
+                        {new Date(challenge.registerDate).toLocaleDateString()}
+                      </div>
+                    }
+                    tags={challenge.tags}
+                  />
                 </div>
               </CarouselItem>
             ))}
