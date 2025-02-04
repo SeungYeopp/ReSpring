@@ -37,7 +37,13 @@ export default function CommunityPosts() {
 
   const VALID_CATEGORIES: Category[] = ["전체", "고민/질문", "INFORMATION_SHARING"];
 
-  // ✅ 카테고리별 색상 함수 (내부 정의)
+  // ✅ 랜덤 이미지 생성 함수 (이제 PostList에 props로 전달)
+  const getRandomImage = () => {
+    const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
+    return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
+  };
+
+  // ✅ 카테고리별 색상 함수
   const getCategoryColor = (category: Category): string => {
     switch (category) {
       case "전체":
@@ -96,8 +102,8 @@ export default function CommunityPosts() {
         </TabsList>
       </Tabs>
 
-      {/* 🔹 게시물 목록 */}
-      <PostList posts={posts} getCategoryColor={getCategoryColor} />
+      {/* 🔹 게시물 목록 (getRandomImage를 props로 전달) */}
+      <PostList posts={posts} getCategoryColor={getCategoryColor} getRandomImage={getRandomImage} />
 
       {/* 🔹 로딩, 에러, 게시물 없음 표시 */}
       {isLoading && <p className="text-center py-4">게시물을 불러오는 중...</p>}
@@ -115,7 +121,15 @@ export default function CommunityPosts() {
  * - 게시물 목록을 렌더링
  * - 각 게시물 카드를 클릭하면 상세 페이지(`/today/[id]`)로 이동
  */
-function PostList({ posts, getCategoryColor }: { posts: Post[]; getCategoryColor: (category: Category) => string }) {
+function PostList({
+  posts,
+  getCategoryColor,
+  getRandomImage, // ✅ getRandomImage props 추가
+}: {
+  posts: Post[];
+  getCategoryColor: (category: Category) => string;
+  getRandomImage: () => string;
+}) {
   return (
     <div className="space-y-3">
       {posts.map((post) => (
@@ -126,18 +140,31 @@ function PostList({ posts, getCategoryColor }: { posts: Post[]; getCategoryColor
                 <div className="flex items-center space-x-3">
                   <Avatar>
                     <AvatarFallback>{post.userName[0]}</AvatarFallback>
-                    <AvatarImage src="" alt={post.userName} />
+                    {/* ✅ 프로필 아바타 랜덤 이미지 적용 */}
+                    <AvatarImage src={getRandomImage()} alt={post.userName} />
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">{post.userName}</p>
-                    <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
+                    </p>
                   </div>
                 </div>
                 {/* ✅ 카테고리별 배지 색상 적용 */}
-                <Badge className={`text-xs px-2 py-1 rounded-lg shadow-sm ${getCategoryColor(post.category)}`}>{post.category}</Badge>
+                <Badge className={`text-xs px-2 py-1 rounded-lg shadow-sm ${getCategoryColor(post.category)}`}>
+                  {post.category}
+                </Badge>
               </div>
               <h3 className="font-bold text-sm mb-1">{post.title}</h3>
               <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{post.content}</p>
+              {/* ✅ 게시물 이미지 랜덤 적용 */}
+              {post.images.length > 0 && (
+                <img
+                  src={post.images[0]} // 첫 번째 이미지만 표시
+                  alt="게시물 이미지"
+                  className="w-full h-40 object-cover rounded-lg mt-2"
+                />
+              )}
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Heart className="w-3 h-3" /> {post.likes}

@@ -125,7 +125,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
             </Button>
             <div className="flex gap-2 flex-1">
               <Avatar className="h-10 w-10">
-                <AvatarImage src="/placeholder.svg" />
+                <AvatarImage src="/corgis/placeholder1.jpg" />
                 <AvatarFallback>{post.userName[0]}</AvatarFallback>
               </Avatar>
               <div>
