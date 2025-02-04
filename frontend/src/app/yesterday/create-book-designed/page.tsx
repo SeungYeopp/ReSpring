@@ -157,8 +157,7 @@ export default function CreateBook() {
           {step === 1 ? "AI로 엮기" : step === 4 ? "봄날의 서 만들기" : "다음"}
         </button>
       </div>
-      <div>
-
+      <div className="w-5/6">
         {step === 1 && (
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-1 gap-3">
@@ -171,7 +170,7 @@ export default function CreateBook() {
                   onClick={() => toggleStorySelection(story.id)}
                 >
                   <div className="flex items-center">
-                    <img src={bookUrl} className="h-[100px] w-[100px]" height={160} width={100} />
+                    <img src={bookUrl} className="h-[100px] w-[100px] rounded-md" height={160} width={100} />
                     <div className="px-5">
                       <h3 className="text-lg font-bold">{story.title}</h3>
                       <p className="text-sm text-gray-600 line-clamp-2">{story.content}</p>
@@ -208,16 +207,16 @@ export default function CreateBook() {
             {compiledBook?.chapters.map((chapter, chapterIdx) => (
               <Card key={chapterIdx} className="p-4">
                 <div className="flex flex-col">
-                <input
-                  value={chapter.chapterTitle}
-                  onChange={(event) => handleChapterTitleChange(chapterIdx, event.target.value)}
-                />
-                
-                <textarea
-                  rows={3}
-                  value={chapter.content}
-                  onChange={(event) => handleChapterContentChange(chapterIdx, event.target.value)}
+                  <input
+                    value={chapter.chapterTitle}
+                    onChange={(event) => handleChapterTitleChange(chapterIdx, event.target.value)}
                   />
+                  
+                  <textarea
+                    rows={3}
+                    value={chapter.content}
+                    onChange={(event) => handleChapterContentChange(chapterIdx, event.target.value)}
+                    />
                 </div>
               </Card>
             ))}
