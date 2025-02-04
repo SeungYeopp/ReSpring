@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.ssafy.respring.domain.user.vo.User;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -22,11 +24,10 @@ public class ChatRoom {
 
     private boolean isOpenChat = false;
 
-    @ManyToMany
-    @JoinTable(
-            name = "chat_room_users",
-            joinColumns = @JoinColumn(name = "room_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<User> users;
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChatRoomUser> chatRoomUsers = new ArrayList<>(); // ✅ 초기화 추가
+
+    public List<User> getUsers() {
+        return chatRoomUsers != null ? chatRoomUsers.stream().map(ChatRoomUser::getUser).collect(Collectors.toList()) : new ArrayList<>();
+    }
 }

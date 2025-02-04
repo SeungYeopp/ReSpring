@@ -46,26 +46,11 @@ public class ChatController {
                 messageRequest.getContent()
         );
 
-        // 1:1 채팅인 경우
-        if (messageRequest.getReceiver() != null) {
-            // 송신자와 수신자에게만 메시지 전달
-            messagingTemplate.convertAndSendToUser(
-                    messageRequest.getUserId().toString(),
-                    "/queue/private-messages",
-                    response
-            );
-            messagingTemplate.convertAndSendToUser(
-                    messageRequest.getReceiver(),
-                    "/queue/private-messages",
-                    response
-            );
-        } else {
-            // 오픈 채팅방의 경우 모든 클라이언트에 메시지 브로드캐스트
-            messagingTemplate.convertAndSend(
-                    "/topic/messages/" + messageRequest.getRoomId(),
-                    response
-            );
-        }
+        messagingTemplate.convertAndSend(
+                "/topic/messages/" + messageRequest.getRoomId(),
+                response
+        );
+
     }
 
     @Operation(summary = "채팅방 리스트 조회", description = "현재 존재하는 모든 채팅방의 리스트를 조회합니다.")
@@ -211,6 +196,20 @@ public class ChatController {
     public void leaveRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
         chatService.leaveRoom(roomId, userId);
     }
+
+    @Operation(summary = "1:1 채팅방 조회 또는 생성", description = "두 사용자의 1:1 채팅방을 찾고 없으면 생성합니다.")
+    @GetMapping("/chat/private")
+    @ResponseBody
+    public ChatRoomResponse getOrJoinPrivateRoom(@RequestParam UUID user1, @RequestParam UUID user2) {
+        ChatRoom chatRoom = chatService.getOrJoinPrivateRoom(user1, user2);
+        return ChatRoomResponse.builder()
+                .roomId(chatRoom.getId())
+                .name(chatRoom.getName())
+                .isOpenChat(false) // 1:1 채팅방은 비공개
+                .userCount(chatRoom.getUsers().size())
+                .build();
+    }
+
 
 
 }
