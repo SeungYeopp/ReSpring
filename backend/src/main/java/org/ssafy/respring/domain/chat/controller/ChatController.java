@@ -202,12 +202,12 @@ public class ChatController {
     @ResponseBody
     public ChatRoomResponse getOrJoinPrivateRoom(@RequestParam UUID user1, @RequestParam UUID user2) {
         ChatRoom chatRoom = chatService.getOrJoinPrivateRoom(user1, user2);
-        return ChatRoomResponse.builder()
-                .roomId(chatRoom.getId())
-                .name(chatRoom.getName())
-                .isOpenChat(false) // 1:1 채팅방은 비공개
-                .userCount(chatRoom.getUsers().size())
-                .build();
+        ChatRoomResponse response = ChatRoomResponse.from(chatRoom);
+
+        // ✅ WebSocket을 통해 상대방에게 새로운 채팅방 정보 전송
+        messagingTemplate.convertAndSend("/topic/newRoom/" + user2, response);
+
+        return response;
     }
 
 

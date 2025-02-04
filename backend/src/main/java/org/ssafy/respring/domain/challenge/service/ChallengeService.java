@@ -2,6 +2,7 @@ package org.ssafy.respring.domain.challenge.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +44,7 @@ public class ChallengeService {
     private final ChatService chatService;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomUserRepository chatRoomUserRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -257,6 +259,9 @@ public class ChallengeService {
                 System.out.println("✅ 새로운 채팅방 참가 기록 추가됨");
             }
         });
+
+        // ✅ WebSocket 이벤트 전송 → 참가자 UI 즉시 갱신
+        messagingTemplate.convertAndSend("/topic/newOpenChatRoom/" + userId, challenge.getChatRoomUUID());
     }
 
 
@@ -291,6 +296,10 @@ public class ChallengeService {
         // ✅ UUID 기반 채팅방에서 나가기
         Optional<ChatRoom> chatRoomOptional = chatService.findByName(challenge.getChatRoomUUID());
         chatRoomOptional.ifPresent(chatRoom -> chatService.leaveRoom(chatRoom.getId(), userId));
+
+        // ✅ WebSocket 이벤트 전송 → 챌린지 리스트 즉시 갱신
+        messagingTemplate.convertAndSend("/topic/updateChallengeList/" + userId, challenge.getId());
+
         // 🔥 참가자가 0명이면 챌린지 자동 삭제
         if (challenge.getParticipantCount() == 0) {
             challengeRepository.delete(challenge);
