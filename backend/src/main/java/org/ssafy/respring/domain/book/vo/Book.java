@@ -16,16 +16,18 @@ import java.util.*;
 public class Book {
     @Id
     private String id; // MongoDB는 기본적으로 ObjectId 사용
+
     private UUID userId;
     private String title;
     private String content;
     private String coverImg;
-    private List<String> tag;
-    private Long likes;
-    private Long view;
+    private Set<String> tags;
+    private Long likeCount;
+    private Long viewCount;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<Long> storyIds; // MySQL에서 관리되는 Story ID 리스트
+    private Set<Long> storyIds; // MySQL에서 관리되는 Story ID 리스트
     private Set<UUID> likedUsers = new HashSet<>();
 
     // 좋아요 추가/취소 로직
@@ -39,11 +41,11 @@ public class Book {
             isLiked = true; // 좋아요 추가됨
         }
 
-        likes = (long) likedUsers.size(); // likes 값을 likedUsers 크기와 동기화
+        likeCount = (long) likedUsers.size(); // likes 값을 likedUsers 크기와 동기화
         return isLiked;
     }
 
     public void increaseView() {
-        this.view = (this.view == null) ? 1 : this.view + 1;
+        this.viewCount = (this.viewCount == null) ? 1 : this.viewCount + 1;
     }
 }

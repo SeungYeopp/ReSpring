@@ -20,9 +20,6 @@ spring:
 
   data:
     mongodb:
-#      host: 127.0.0.1
-#      port: 27017
-      # authentication-database: admin
       database: ${MONGODB_DATABASE}
       uri: ${MONGODB_URI}
 
@@ -63,8 +60,6 @@ logging:
 
 file:
   upload-dir: ${FILE_UPLOAD_DIR:${user.home}/uploads}
-  # upload-dir: C:/uploads
-
 
 management:
   endpoints:

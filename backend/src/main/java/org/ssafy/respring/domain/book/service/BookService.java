@@ -1,5 +1,6 @@
 package org.ssafy.respring.domain.book.service;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +12,7 @@ import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
 import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
 import org.ssafy.respring.domain.book.repository.MongoBookRepository;
+import org.ssafy.respring.domain.book.util.BookMapper;
 import org.ssafy.respring.domain.book.vo.Book;
 
 import org.ssafy.respring.domain.image.vo.Image;
@@ -29,6 +31,8 @@ public class BookService {
 	private final MongoBookRepository bookRepository;
 	private final StoryRepository storyRepository;
 	// private final UserRepository userRepository;
+	private final BookMapper bookMapper;
+	private final ElasticsearchClient esClient;
 
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -42,9 +46,9 @@ public class BookService {
 		book.setTitle(requestDto.getTitle());
 		book.setContent(requestDto.getContent());
 
-		book.setTag(requestDto.getTag());
-		book.setLikes(0L);
-		book.setView(0L);
+		book.setTags(requestDto.getTags());
+		book.setLikeCount(0L);
+		book.setViewCount(0L);
 		book.setCoverImg(saveCoverImage(coverImg));
 
 		book.setCreatedAt(LocalDateTime.now());
@@ -52,6 +56,14 @@ public class BookService {
 		book.setStoryIds(requestDto.getStoryIds());
 
 		bookRepository.save(book);
+
+		// Elasticsearch에 인덱싱
+		try {
+			esClient.index(i -> i.index("books").id(book.getId()).document(book));
+		} catch (IOException e) {
+			throw new RuntimeException("Elasticsearch 인덱싱 실패", e);
+		}
+
 		return book.getId();
 	}
 
@@ -75,13 +87,20 @@ public class BookService {
 
 		book.setTitle(requestDto.getTitle());
 		book.setContent(requestDto.getContent());
-		book.setTag(requestDto.getTag());
+		book.setTags(requestDto.getTags());
 		book.setCoverImg(saveCoverImage(coverImg));
 
 		book.setStoryIds(requestDto.getStoryIds());
 		book.setUpdatedAt(LocalDateTime.now());
 
 		bookRepository.save(book);
+
+		// Elasticsearch에도 데이터 업데이트
+		try {
+			esClient.index(i -> i.index("books").id(book.getId()).document(book));
+		} catch (IOException e) {
+			throw new RuntimeException("Elasticsearch 업데이트 실패", e);
+		}
 	}
 
 	private String saveCoverImage(MultipartFile coverImg) {
@@ -112,14 +131,14 @@ public class BookService {
 		Sort sort = Sort.by(Sort.Order.desc("likes")); // 좋아요 내림차순 정렬
 		return bookRepository.findAll(sort)
 				.stream()
-				.map(this::toResponseDto)
+				.map(bookMapper::toResponseDto)
 				.collect(Collectors.toList());
 	}
 
 	public List<BookResponseDto> getBooksByUser(UUID userId) {
 		return bookRepository.findByUserId(userId)
 		  .stream()
-		  .map(this::toResponseDto)
+		  .map(bookMapper::toResponseDto)
 		  .collect(Collectors.toList());
 	}
 
@@ -130,7 +149,7 @@ public class BookService {
 		book.increaseView();		// 조회수 + 1
 		bookRepository.save(book);	// 조회수 업데이트 반영
 		
-		return toResponseDto(book);
+		return bookMapper.toResponseDto(book);
 	}
 
 	public void deleteBook(String bookId, UUID userId) {
@@ -142,6 +161,13 @@ public class BookService {
 		}
 
 		bookRepository.deleteById(bookId);
+
+		// Elasticsearch에서도 삭제
+		try {
+			esClient.delete(d -> d.index("books").id(bookId));
+		} catch (IOException e) {
+			throw new RuntimeException("Elasticsearch 삭제 실패", e);
+		}
 	}
 
 	private List<String> getImagesFromStories(List<Long> storyIds) {
@@ -171,7 +197,7 @@ public class BookService {
 
 		return bookRepository.findTop3ByCreatedAtAfter(oneWeekAgo, pageable)
 				.stream()
-				.map(this::toResponseDto)
+				.map(bookMapper::toResponseDto)
 				.collect(Collectors.toList());
 	}
 
@@ -180,7 +206,7 @@ public class BookService {
 		Sort sort = buildSort(sortFields, directions);
 		return bookRepository.findAll(sort)
 				.stream()
-				.map(this::toResponseDto)
+				.map(bookMapper::toResponseDto)
 				.collect(Collectors.toList());
 	}
 
@@ -200,22 +226,5 @@ public class BookService {
 		}
 
 		return sort;
-	}
-
-	private BookResponseDto toResponseDto(Book book) {
-		return new BookResponseDto(
-		  book.getId(),
-		  book.getUserId(),
-		  book.getTitle(),
-		  book.getContent(),
-		  book.getCoverImg(),
-		  book.getTag(),
-		  book.getLikes(),
-		  book.getView(),
-		  book.getCreatedAt(),
-		  book.getUpdatedAt(),
-		  book.getStoryIds(),
-		  getImagesFromStories(book.getStoryIds())
-		);
 	}
 }
