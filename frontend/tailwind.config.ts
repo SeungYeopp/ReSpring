@@ -57,6 +57,12 @@ export default {
           DEFAULT: "#96b23c",
           dark: "#638d3e",
         },
+        // ✅ 스플래시 스크린 색상 추가
+        splash: {
+          background: "#e8f3d6", // 연한 초록색 배경
+          text: "#638d3e", // 진한 초록색 텍스트
+          accent: "#4a6d2e", // 보조 초록색
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
