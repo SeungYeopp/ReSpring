@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 import type { Post } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -12,6 +12,12 @@ import { ko } from "date-fns/locale";
 interface FollowedPostsProps {
   posts: Post[];
 }
+
+// ✅ 랜덤 프로필 이미지 생성 함수
+const getRandomImage = () => {
+  const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
+  return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
+};
 
 export default function FollowedPosts({ posts }: FollowedPostsProps) {
   // ✅ 카테고리별 색상 함수 (내부에서 정의)
@@ -38,14 +44,20 @@ export default function FollowedPosts({ posts }: FollowedPostsProps) {
                 <div className="flex items-center space-x-3">
                   <Avatar>
                     <AvatarFallback>{post.userName[0]}</AvatarFallback>
+                    {/* ✅ 랜덤 프로필 이미지 적용 */}
+                    <AvatarImage src={getRandomImage()} alt={post.userName} />
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">{post.userName}</p>
-                    <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
+                    </p>
                   </div>
                 </div>
                 {/* ✅ 카테고리별 배지 색상 적용 */}
-                <Badge className={`text-xs px-2 py-1 rounded-lg shadow-sm ${getCategoryColor(post.category)}`}>{post.category}</Badge>
+                <Badge className={`text-xs px-2 py-1 rounded-lg shadow-sm ${getCategoryColor(post.category)}`}>
+                  {post.category}
+                </Badge>
               </div>
               <h3 className="font-bold text-sm mb-1">{post.title}</h3>
               <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{post.content}</p>

@@ -1,5 +1,13 @@
-// src/app/today/mocks/posts.ts (예시 경로)
-import type { Post } from "@/lib/api/today"; // 경로는 실제 프로젝트 구조에 맞게 조정하세요.
+// src/app/today/mocks/posts.ts
+import type { Post } from "@/lib/api/today";
+
+// ✅ 랜덤 이미지 생성 함수
+const getRandomImage = () => {
+  const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
+  return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
+};
+
+
 
 // 인기 게시글 목데이터 (예: popularPosts)
 export const popularPosts: Post[] = [
@@ -14,7 +22,7 @@ export const popularPosts: Post[] = [
     createdAt: "2024-01-24T12:00:00Z",
     updatedAt: "2024-01-24T12:30:00Z",
     likes: 156,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 2,
@@ -26,7 +34,7 @@ export const popularPosts: Post[] = [
     createdAt: "2024-01-23T15:30:00Z",
     updatedAt: "2024-01-23T15:40:00Z",
     likes: 134,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 3,
@@ -38,7 +46,7 @@ export const popularPosts: Post[] = [
     createdAt: "2024-01-22T09:45:00Z",
     updatedAt: "2024-01-22T10:00:00Z",
     likes: 201,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 4,
@@ -51,7 +59,7 @@ export const popularPosts: Post[] = [
     createdAt: "2024-01-21T18:20:00Z",
     updatedAt: "2024-01-21T18:50:00Z",
     likes: 189,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 5,
@@ -63,7 +71,7 @@ export const popularPosts: Post[] = [
     createdAt: "2024-01-20T11:10:00Z",
     updatedAt: "2024-01-20T11:20:00Z",
     likes: 228,
-    images: [],
+    images: [getRandomImage()],
   },
 ];
 
@@ -79,7 +87,7 @@ export const posts: Post[] = [
     createdAt: "2024-01-24T10:00:00Z",
     updatedAt: "2024-01-24T10:15:00Z",
     likes: 45,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 7,
@@ -91,7 +99,7 @@ export const posts: Post[] = [
     createdAt: "2024-01-23T14:30:00Z",
     updatedAt: "2024-01-23T14:45:00Z",
     likes: 67,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 8,
@@ -103,7 +111,7 @@ export const posts: Post[] = [
     createdAt: "2024-01-22T16:45:00Z",
     updatedAt: "2024-01-22T16:50:00Z",
     likes: 39,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 9,
@@ -115,7 +123,7 @@ export const posts: Post[] = [
     createdAt: "2024-01-21T09:15:00Z",
     updatedAt: "2024-01-21T09:30:00Z",
     likes: 52,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 10,
@@ -127,7 +135,7 @@ export const posts: Post[] = [
     createdAt: "2024-01-20T13:40:00Z",
     updatedAt: "2024-01-20T14:00:00Z",
     likes: 88,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 11,
@@ -139,7 +147,7 @@ export const posts: Post[] = [
     createdAt: "2024-01-19T11:20:00Z",
     updatedAt: "2024-01-19T11:45:00Z",
     likes: 76,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 12,
@@ -151,7 +159,7 @@ export const posts: Post[] = [
     createdAt: "2024-01-18T17:50:00Z",
     updatedAt: "2024-01-18T18:00:00Z",
     likes: 104,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 13,
@@ -163,7 +171,7 @@ export const posts: Post[] = [
     createdAt: "2024-01-17T10:30:00Z",
     updatedAt: "2024-01-17T10:45:00Z",
     likes: 92,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 14,
@@ -176,7 +184,7 @@ export const posts: Post[] = [
     createdAt: "2024-01-16T14:15:00Z",
     updatedAt: "2024-01-16T14:45:00Z",
     likes: 118,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 15,
@@ -188,7 +196,7 @@ export const posts: Post[] = [
     createdAt: "2024-01-15T16:40:00Z",
     updatedAt: "2024-01-15T17:00:00Z",
     likes: 86,
-    images: [],
+    images: [getRandomImage()],
   },
 ];
 
@@ -206,7 +214,7 @@ export const followedPosts: Post[] = [
     createdAt: "2024-01-24T12:00:00Z",
     updatedAt: "2024-01-24T12:30:00Z",
     likes: 75,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 32,
@@ -218,7 +226,7 @@ export const followedPosts: Post[] = [
     createdAt: "2024-01-23T14:10:00Z",
     updatedAt: "2024-01-23T14:40:00Z",
     likes: 59,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 33,
@@ -230,7 +238,7 @@ export const followedPosts: Post[] = [
     createdAt: "2024-01-22T09:00:00Z",
     updatedAt: "2024-01-22T09:30:00Z",
     likes: 80,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 34,
@@ -242,7 +250,7 @@ export const followedPosts: Post[] = [
     createdAt: "2024-01-21T16:50:00Z",
     updatedAt: "2024-01-21T17:20:00Z",
     likes: 91,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 35,
@@ -254,7 +262,7 @@ export const followedPosts: Post[] = [
     createdAt: "2024-01-20T12:20:00Z",
     updatedAt: "2024-01-20T12:40:00Z",
     likes: 47,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 36,
@@ -266,7 +274,7 @@ export const followedPosts: Post[] = [
     createdAt: "2024-01-19T14:00:00Z",
     updatedAt: "2024-01-19T14:30:00Z",
     likes: 120,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 37,
@@ -278,7 +286,7 @@ export const followedPosts: Post[] = [
     createdAt: "2024-01-18T09:15:00Z",
     updatedAt: "2024-01-18T09:30:00Z",
     likes: 66,
-    images: [],
+    images: [getRandomImage()],
   },
 
   // ✅ "INFORMATION_SHARING" 카테고리 (10개)
@@ -292,7 +300,7 @@ export const followedPosts: Post[] = [
     createdAt: "2024-01-17T08:00:00Z",
     updatedAt: "2024-01-17T08:20:00Z",
     likes: 110,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 42,
@@ -304,7 +312,7 @@ export const followedPosts: Post[] = [
     createdAt: "2024-01-16T10:30:00Z",
     updatedAt: "2024-01-16T10:50:00Z",
     likes: 96,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 43,
@@ -316,7 +324,7 @@ export const followedPosts: Post[] = [
     createdAt: "2024-01-15T14:50:00Z",
     updatedAt: "2024-01-15T15:10:00Z",
     likes: 121,
-    images: [],
+    images: [getRandomImage()],
   },
   {
     id: 44,
@@ -328,6 +336,6 @@ export const followedPosts: Post[] = [
     createdAt: "2024-01-14T17:25:00Z",
     updatedAt: "2024-01-14T17:50:00Z",
     likes: 87,
-    images: [],
+    images: [getRandomImage()],
   },
 ];
