@@ -62,7 +62,7 @@ export default function FollowedChallenges({ challenges }: FollowedChallengesPro
   }, []);
 
   if (challenges.length === 0) {
-    return <div className="text-center text-gray-500">팔로우한 도전이 없습니다.</div>;
+    return <div className="text-center text-gray-500">구독한 사람들이 도전을 진행하고 있지 않습니다....</div>;
   }
 
   return (

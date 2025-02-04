@@ -2,13 +2,16 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
+import { ReactNode } from "react";
+
 interface SliderChallengeCardProps {
   id: number;
   title: string;
-  description: string;
+  description: string | ReactNode; // 🔹 JSX 요소도 받을 수 있도록 변경
   tags: string[];
   image: string;
 }
+
 
 export function SliderChallengeCard({ id, title, description, tags = [], image = "/placeholder.webp" }: SliderChallengeCardProps) {
   const router = useRouter();
@@ -39,7 +42,7 @@ export function SliderChallengeCard({ id, title, description, tags = [], image =
               ))}
             </div>
             <Button variant="default" className="bg-[#96b23c] hover:bg-[#638d3e] text-white px-2 sm:px-3 py-1 sm:py-1.5 h-auto rounded-full text-xs sm:text-sm font-medium shadow-sm flex-shrink-0">
-              이어하기
+              자세히 보기
             </Button>
           </div>
         </div>

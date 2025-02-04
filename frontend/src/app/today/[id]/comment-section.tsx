@@ -11,7 +11,6 @@ import { Loader2 } from "lucide-react";
 
 interface CommentSectionProps {
   postId: number;
-  onCommentCountChange: (count: number) => void;
   isLoggedIn: boolean;
 }
 
@@ -19,18 +18,30 @@ interface CommentWithReplies extends Comment {
   replies?: Comment[];
 }
 
-export function CommentSection({ postId, onCommentCountChange, isLoggedIn }: CommentSectionProps) {
+/** ✅ 랜덤 프로필 이미지 생성 함수 */
+const getRandomImage = () => {
+  const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
+  return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
+};
+
+export function CommentSection({ postId, isLoggedIn }: CommentSectionProps) {
   const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [replyTo, setReplyTo] = useState<{ id: number; username: string } | null>(null);
   const { login } = useAuth();
   const [hasMore, setHasMore] = useState(true);
+  const [commentCount, setCommentCount] = useState(0); // ✅ 내부 상태 관리
 
   useEffect(() => {
     loadComments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
+
+  // ✅ 댓글 개수가 변경될 때 내부 상태 업데이트
+  useEffect(() => {
+    setCommentCount(comments.length);
+  }, [comments.length]);
 
   async function loadComments() {
     if (isLoading || !hasMore) return;
@@ -46,9 +57,8 @@ export function CommentSection({ postId, onCommentCountChange, isLoggedIn }: Com
           };
         })
       );
-      setComments((prev) => [...prev, ...commentsWithReplies]);
+      setComments(commentsWithReplies);
       setHasMore(commentsWithReplies.length > 0);
-      onCommentCountChange(commentsWithReplies.length);
     } catch (error) {
       console.error("댓글을 불러오는데 실패했습니다:", error);
     } finally {
@@ -65,16 +75,15 @@ export function CommentSection({ postId, onCommentCountChange, isLoggedIn }: Com
       const comment = await todayAPI.createComment(postId, newComment, "test-user-id", replyTo?.id || null);
 
       if (replyTo) {
-        // 대댓글을 단 경우, 해당 댓글의 replies 배열에 새 댓글 추가
-        setComments((prev) => prev.map((c) => (c.id === replyTo.id ? { ...c, replies: [...(c.replies || []), comment] } : c)));
+        setComments((prev) =>
+          prev.map((c) => (c.id === replyTo.id ? { ...c, replies: [...(c.replies || []), comment] } : c))
+        );
       } else {
-        // 일반 댓글을 단 경우, 맨 앞에 새 댓글 추가
         setComments((prev) => [{ ...comment, replies: [] }, ...prev]);
       }
 
       setNewComment("");
       setReplyTo(null);
-      onCommentCountChange(comments.length + 1);
     } catch (error) {
       console.error("댓글 작성에 실패했습니다:", error);
     } finally {
@@ -82,12 +91,12 @@ export function CommentSection({ postId, onCommentCountChange, isLoggedIn }: Com
     }
   }
 
-  // 개별 댓글 렌더링 컴포넌트
+  // ✅ 개별 댓글 렌더링 컴포넌트
   function CommentItem({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) {
     return (
       <div className={`flex gap-3 ${isReply ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4' : ""}`}>
         <Avatar className="h-7 w-7 flex-shrink-0">
-          <AvatarImage src="/placeholder.svg" />
+          <AvatarImage src={getRandomImage()} alt={comment.username} />
           <AvatarFallback>{comment.username[0]}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
@@ -122,8 +131,12 @@ export function CommentSection({ postId, onCommentCountChange, isLoggedIn }: Com
 
   return (
     <div className="relative">
+      {/* 댓글 개수 표시 */}
+      <div className="text-sm text-gray-600 font-medium mb-4">
+        총 {commentCount}개의 댓글
+      </div>
+
       {/* 댓글 목록 */}
-      {/* mb-24(6rem) 정도의 여백을 주어, 모바일에서 폼이 fixed 될 때 겹치지 않도록 함 */}
       <div className="space-y-6">
         {comments.map((comment) => (
           <div key={comment.id} className="space-y-4">
@@ -146,14 +159,8 @@ export function CommentSection({ postId, onCommentCountChange, isLoggedIn }: Com
         )}
       </div>
 
-      {/* 하단 고정 입력 폼 (모바일), 데스크톱에서는 static으로 보이도록 md:를 적용 */}
-      <div
-        className="
-          fixed bottom-16 left-0 w-full 
-          p-4 bg-white border-t 
-          md:static md:border-none md:bg-transparent
-        "
-      >
+      {/* 하단 입력 폼 */}
+      <div className="fixed bottom-16 left-0 w-full p-4 bg-white border-t md:static md:border-none md:bg-transparent">
         {isLoggedIn ? (
           <form onSubmit={handleSubmit} className="flex flex-col gap-2">
             {replyTo && (
