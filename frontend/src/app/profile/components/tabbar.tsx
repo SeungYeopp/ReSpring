@@ -1,3 +1,5 @@
+'use client';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/custom/TabGreen";
 import Footsteps from "./footsteps";
 import CommunityPosts from "./my-activities";
