@@ -11,4 +11,5 @@ import java.util.List;
 public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
     // ✅ 제목에 특정 키워드가 포함된 챌린지 검색 (대소문자 구분 없음)
     List<Challenge> findByTitleContainingIgnoreCase(String keyword);
+    List<Challenge> findByOwnerIn(List<User> users); // ✅ 구독한 사용자의 챌린지 조회
 }
