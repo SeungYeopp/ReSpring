@@ -5,6 +5,12 @@ import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook, getS
 import { Card } from "@/components/ui/card";
 import Image from 'next/image'
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 export default function CreateBook() {
   const [userId, setUserId] = useState<string>("");
@@ -204,22 +210,27 @@ export default function CreateBook() {
             </Select>
 
             {/* 챕터 입력 */}
-            {compiledBook?.chapters.map((chapter, chapterIdx) => (
-              <Card key={chapterIdx} className="p-4">
-                <div className="flex flex-col">
-                  <input
-                    value={chapter.chapterTitle}
-                    onChange={(event) => handleChapterTitleChange(chapterIdx, event.target.value)}
-                  />
-                  
+            <Accordion type="multiple" className="w-full">
+              {compiledBook?.chapters.map((chapter, chapterIdx) => (
+                <AccordionItem value={`item-${chapterIdx}`}>
+                  <AccordionTrigger>
+                    <input
+                      value={chapter.chapterTitle}
+                      onChange={(event) => handleChapterTitleChange(chapterIdx, event.target.value)}
+                      className="w-full"
+                    />
+                  </AccordionTrigger>
+                  <AccordionContent>
                   <textarea
                     rows={3}
                     value={chapter.content}
                     onChange={(event) => handleChapterContentChange(chapterIdx, event.target.value)}
+                    className="w-full"
                     />
-                </div>
-              </Card>
-            ))}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         )}
 
