@@ -12,6 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Plus } from "lucide-react";
+import ViewerPage from "@/app/viewer/[BookID]/page"
 
 export default function CreateBook() {
   const [userId, setUserId] = useState<string>("");
@@ -93,6 +94,7 @@ export default function CreateBook() {
 
       const result = await makeBook(userId, compiledBook!.title, jsonifiedBookContent, [bookTag], selectedStoryIds, bookCoverImg!);
 
+      console.log('생성된 봄날의 서 ID', result);
       setGeneratedCompiledBookId(result);
     }catch(error : any){
       console.error(error);
@@ -235,7 +237,7 @@ export default function CreateBook() {
                   </AccordionTrigger>
                   <AccordionContent>
                   <textarea
-                    rows={3}
+                    rows={5}
                     value={chapter.content}
                     onChange={(event) => handleChapterContentChange(chapterIdx, event.target.value)}
                     className="w-full"
@@ -283,8 +285,7 @@ export default function CreateBook() {
 
         {step === 4 && (
           <div>
-            {/* 봄날의 서 뷰어 미리보기로 보여줘야 한다. */}
-            <h1>생성된 봄날의 서 ID : {generatedCompiledBookId}</h1>
+            <ViewerPage params={{ BookID: "1" }}/>
           </div>
         )}
       </div>
