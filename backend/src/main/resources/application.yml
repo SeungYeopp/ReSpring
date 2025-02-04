@@ -40,9 +40,10 @@ spring:
       hibernate.dialect: org.hibernate.dialect.MySQLDialect
 
   elasticsearch:
-    uris: http://localhost:9200
-    username: elastic  # 기본 계정
-    password: ${ELASTICSEARCH_PASSWORD} # 기본 비밀번호 (바꿀 것)
+    uris: ${ELASTICSEARCH_URI}
+    username: ${ELASTICSEARCH_USERNAME}
+    password: ${ELASTICSEARCH_PASSWORD}
+
 
 logging:
   level:
