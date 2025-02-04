@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
@@ -15,14 +16,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class BookSearchService {
     private final ElasticsearchClient esClient;
     private final BookMapper bookMapper;
-
-    public BookSearchService(ElasticsearchClient esClient, BookMapper bookMapper) {
-        this.esClient = esClient;
-        this.bookMapper = bookMapper;
-    }
 
     public List<BookResponseDto> searchByTitle(String keyword) throws IOException {
         SearchRequest searchRequest = SearchRequest.of(s -> s

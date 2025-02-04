@@ -42,7 +42,7 @@ spring:
   elasticsearch:
     uris: http://localhost:9200
     username: elastic  # 기본 계정
-    password: changeme # 기본 비밀번호 (바꿀 것)
+    password: ${ELASTICSEARCH_PASSWORD} # 기본 비밀번호 (바꿀 것)
 
 logging:
   level:
