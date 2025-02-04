@@ -175,7 +175,7 @@ export default function CreateBook() {
         </button>
         <span className="text-lg font-bold">{step === 1 ? "글조각 선택하기" : step === 2 ? "미리 보기" : step === 3 ? "봄날의 서 수정하기" : "봄날의 서 표지 선택"}</span>
         <button className="text-white bg-brand-dark border-2 border-brand-dark rounded-md font-semibold px-2 py-1" onClick={() => (step === 1 ? handleMakeAIContent() : (step === 4 ? handleSubmit() : setStep(step + 1)))} disabled={step === 4 && !compiledBook}>
-          {step === 1 ? "AI로 엮기" : step === 4 ? "편찬" : step === 2 ? "수정" : "다음"}
+          {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : step === 2 ? "수정" : "다음"}
         </button>
       </div>
       <div className="w-5/6">
