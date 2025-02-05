@@ -50,7 +50,6 @@ export default function ChallengeList({ challenges }: ChallengeListProps) {
             description={challenge.description}
             image={challenge.image}
             like={challenge.likes}
-            view={challenge.views}
             participants={challenge.participantCount}
             tags={[]} // Challenge에는 태그 없음. ChallengeDetail에 있음.
             status={challenge.status} // ✅ status 추가

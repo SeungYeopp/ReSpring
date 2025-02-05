@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Heart, Users } from "lucide-react"; // ✅ Lucide 아이콘 추가
 
 interface GridChallengeCardProps {
   id: number;
@@ -8,7 +10,6 @@ interface GridChallengeCardProps {
   description: string;
   image: string;
   like: number;
-  view: number;
   participants: number;
   tags: string[];
   status: "UPCOMING" | "ONGOING" | "ENDED"; // ✅ 챌린지 상태 추가
@@ -20,10 +21,9 @@ export function GridChallengeCard({
   description,
   image,
   like,
-  view,
   participants,
   tags,
-  status, // ✅ 추가
+  status, // ✅ 상태 추가
 }: GridChallengeCardProps) {
   const router = useRouter();
 
@@ -54,6 +54,7 @@ export function GridChallengeCard({
         <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2 line-clamp-1">{title}</h3>
         <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-2">{description}</p>
 
+        {/* ✅ 태그 표시 */}
         <div className="flex flex-wrap gap-1 mb-2">
           {tags.slice(0, 2).map((tag, index) => (
             <span key={index} className="px-2 py-0.5 bg-gray-100 rounded-full text-xs text-gray-600">
@@ -62,10 +63,27 @@ export function GridChallengeCard({
           ))}
         </div>
 
-        <div className="flex justify-between text-xs text-gray-500 mt-2">
-          <span>좋아요 {like}</span>
-          <span>조회수 {view}</span>
-          <span>참여자 {participants}</span>
+        {/* ✅ 좋아요 & 참여자 수 (아이콘 적용) */}
+        <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
+          <div className="flex items-center gap-1">
+            <Heart className="w-4 h-4 text-red-500" />
+            <span>{like}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Users className="w-4 h-4 text-blue-500" />
+            <span>{participants}</span>
+          </div>
+        </div>
+
+        {/* ✅ 챌린지 상태에 따른 버튼 추가 */}
+        <div className="mt-3">
+          {status === "ONGOING" ? (
+            <Button className="w-full bg-green-500 hover:bg-green-700 text-white">이어하기</Button>
+          ) : status === "UPCOMING" ? (
+            <Button className="w-full bg-blue-500 hover:bg-blue-700 text-white">참여하기</Button>
+          ) : (
+            <Button disabled className="w-full bg-gray-400 text-white">종료됨</Button>
+          )}
         </div>
       </div>
     </Card>
