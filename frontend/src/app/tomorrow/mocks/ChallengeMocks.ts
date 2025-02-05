@@ -16,6 +16,7 @@ const mockChallenges: Challenge[] = [
     likes: 12,
     views: 150,
     participantCount: 30,
+    status: "ONGOING", // ✅ 추가된 부분
   },
   {
     id: 2,
@@ -26,6 +27,7 @@ const mockChallenges: Challenge[] = [
     likes: 25,
     views: 200,
     participantCount: 45,
+    status: "ONGOING", // ✅ 추가된 부분
   },
   {
     id: 3,
@@ -36,6 +38,7 @@ const mockChallenges: Challenge[] = [
     likes: 20,
     views: 220,
     participantCount: 45,
+    status: "ONGOING", // ✅ 추가된 부분
   },
   {
     id: 4,
@@ -46,6 +49,7 @@ const mockChallenges: Challenge[] = [
     likes: 35,
     views: 300,
     participantCount: 60,
+    status: "ONGOING", // ✅ 추가된 부분
   },
   {
     id: 5,
@@ -56,6 +60,7 @@ const mockChallenges: Challenge[] = [
     likes: 50,
     views: 500,
     participantCount: 80,
+    status: "ONGOING", // ✅ 추가된 부분
   },
   {
     id: 6,
@@ -66,6 +71,7 @@ const mockChallenges: Challenge[] = [
     likes: 40,
     views: 350,
     participantCount: 100,
+    status: "ONGOING", // ✅ 추가된 부분
   },
   {
     id: 7,
@@ -76,6 +82,7 @@ const mockChallenges: Challenge[] = [
     likes: 18,
     views: 180,
     participantCount: 55,
+    status: "ONGOING", // ✅ 추가된 부분
   },
   {
     id: 8,
@@ -86,6 +93,7 @@ const mockChallenges: Challenge[] = [
     likes: 22,
     views: 210,
     participantCount: 65,
+    status: "ONGOING", // ✅ 추가된 부분
   },
   {
     id: 9,
@@ -96,6 +104,7 @@ const mockChallenges: Challenge[] = [
     likes: 30,
     views: 270,
     participantCount: 70,
+    status: "ONGOING", // ✅ 추가된 부분
   },
   {
     id: 10,
@@ -106,6 +115,7 @@ const mockChallenges: Challenge[] = [
     likes: 15,
     views: 160,
     participantCount: 40,
+    status: "ONGOING", // ✅ 추가된 부분
   },
 ];
 
