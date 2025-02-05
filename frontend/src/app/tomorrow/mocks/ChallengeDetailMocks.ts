@@ -17,6 +17,8 @@ const mockChallengeDetail: ChallengeDetail = {
   longestStreak: 15,
   currentStreak: 5,
   successRate: 90.5,
+  status: "ONGOING", // ✅ 여기에 `status` 추가!
+
 };
 
 export default mockChallengeDetail;
