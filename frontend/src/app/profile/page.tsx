@@ -31,7 +31,6 @@ export default function ProfilePage() {
             <div className="flex">
              <img src="/verified.svg" alt="Verified Badge" className="w-[48px]" />
              <img src="/verified.svg" alt="Verified Badge" className="w-[48px]" />
-             <img src="/verified.svg" alt="Verified Badge" className="w-[48px]" />
             </div>
           </div>
         </div>
@@ -40,7 +39,7 @@ export default function ProfilePage() {
         <Me />
       </div>
       <div className="flex justify-center items-center w-full">
-        <Others />
+        {/* <Others /> */}
       </div>
       <StatSummary />
       <br />
