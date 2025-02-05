@@ -15,7 +15,7 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class BookIndexServiceTest {
+class  BookIndexServiceTest {
     private ElasticsearchClient esClient;
     private MongoTemplate mongoTemplate;
     private BookIndexService bookIndexService;

@@ -23,6 +23,7 @@ import org.ssafy.respring.domain.book.util.BookMapper;
 import org.ssafy.respring.domain.book.vo.Book;
 
 import org.ssafy.respring.domain.book.vo.BookInfo;
+import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.story.repository.StoryRepository;
@@ -83,7 +84,7 @@ public class BookService {
 	}
 
 	public void updateBook(UUID userId, String bookId, BookUpdateRequestDto requestDto, MultipartFile coverImg) {
-		Book book = getBookById(bookId, userId, true);
+		Book book = getBookById(bookId, userId);
 
 		book.setTitle(requestDto.getTitle());
 		book.setContent(requestDto.getContent());
@@ -114,23 +115,28 @@ public class BookService {
 		}
 	}
 
-	private Book getBookById(String bookId, UUID userId, boolean checkValidUser) {
-		Book book = bookRepository.findById(bookId)
-				.orElseThrow(() -> new IllegalArgumentException("Book not found - id: " + bookId));
-		if (checkValidUser) {
-			validateOwner(book.getUserId(), userId);
-		}
+	private Book getBookById(String bookId) {
+		return bookRepository.findById(bookId)
+		  .orElseThrow(() -> new IllegalArgumentException("Book not found - id: " + bookId));
+	}
+
+	private Book getBookById(String bookId, UUID userId) {
+		Book book = getBookById(bookId);
+		validateOwner(book.getUserId(), userId);
 		return book;
 	}
 
-	private BookInfo getBookInfoByBookId(String bookId, UUID userId, boolean checkAuthor) {
-		BookInfo bookInfo = bookInfoRepository.findByBookId(bookId)
-				.orElseThrow(() -> new IllegalArgumentException("Book info not found"));
-		if (checkAuthor) {
-			validateOwner(bookInfo.getAuthor().getId(), userId);
-		}
+	private BookInfo getBookInfoByBookId(String bookId) {
+		return bookInfoRepository.findByBookId(bookId)
+		  .orElseThrow(() -> new IllegalArgumentException("Book info not found"));
+	}
+
+	private BookInfo getBookInfoByBookId(String bookId, UUID userId) {
+		BookInfo bookInfo = getBookInfoByBookId(bookId);
+		validateOwner(bookInfo.getAuthor().getId(), userId);
 		return bookInfo;
 	}
+
 
 	private void validateOwner(UUID correctId, UUID userId) {
 		if (!correctId.equals(userId)) {
@@ -138,14 +144,13 @@ public class BookService {
 		}
 	}
 
-	public List<BookResponseDto> getAllBooks() {
+	public List<BookResponseDto> getAllBooks(UUID userId) {
 		Sort sort = Sort.by(Sort.Order.desc("likeCount")); // 좋아요 내림차순 정렬
 
 		return bookRepository.findAll(sort)
 				.stream()
 				.map(book -> {
-					BookInfo bookInfo = bookInfoRepository.findByBookId(book.getId())
-							.orElseThrow(() -> new IllegalArgumentException("Book info not found"));
+					BookInfo bookInfo = getBookInfoByBookId(book.getId());
 					return getBookResponse(book.getUserId(), book, bookInfo);
 				})
 				.collect(Collectors.toList());
@@ -155,8 +160,7 @@ public class BookService {
 		return bookRepository.findByUserId(userId)
 				.stream()
 				.map(book -> {
-					BookInfo bookInfo = bookInfoRepository.findByBookId(book.getId())
-							.orElseThrow(() -> new IllegalArgumentException("Book info not found"));
+					BookInfo bookInfo = getBookInfoByBookId(book.getId());
 					return getBookResponse(userId, book, bookInfo);
 				})
 				.collect(Collectors.toList());
@@ -165,10 +169,8 @@ public class BookService {
 	// 책 상세 조회 (조회수 증가)
 	@Transactional
 	public BookResponseDto getBookDetail(UUID userId, String bookId) {
-		Book book = getBookById(bookId, userId, false);
-
-		BookInfo bookInfo = bookInfoRepository.findByBookId(bookId)
-				.orElseThrow(() -> new IllegalArgumentException("Book info not found"));
+		Book book = getBookById(bookId);
+		BookInfo bookInfo = getBookInfoByBookId(book.getId());
 
 		// 조회수 증가 (MongoDB)
 		book.increaseViewCount();
@@ -201,7 +203,7 @@ public class BookService {
 
 		return bookIds.stream()
 				.map(bookId -> {
-					Book book = getBookById(bookId, userId, true);
+					Book book = getBookById(bookId, userId);
 
 					BookInfo bookInfo = bookInfoRepository.findByBookId(bookId)
 							.orElseThrow(() -> new IllegalArgumentException("Book info not found"));
@@ -215,8 +217,7 @@ public class BookService {
 	@Transactional
 	public boolean toggleLike(String bookId, UUID userId) {
 
-		BookInfo bookInfo = bookInfoRepository.findByBookId(bookId)
-				.orElseThrow(() -> new IllegalArgumentException("Book info not found"));
+		BookInfo bookInfo = getBookInfoByBookId(bookId);
 
 		boolean isLiked = bookInfo.toggleLike(userId);
 		bookInfoRepository.save(bookInfo);
@@ -230,12 +231,7 @@ public class BookService {
 	}
 
 	public void deleteBook(String bookId, UUID userId) {
-		BookInfo bookInfo = bookInfoRepository.findByBookId(bookId)
-				.orElseThrow(() -> new IllegalArgumentException("Book info not found"));
-
-		if (!bookInfo.getAuthor().getId().equals(userId)) {
-			throw new IllegalArgumentException("You are not allowed to delete this book");
-		}
+		BookInfo bookInfo = getBookInfoByBookId(bookId, userId);
 
 		bookRepository.deleteById(bookId);
 		bookInfoRepository.delete(bookInfo);
@@ -256,9 +252,7 @@ public class BookService {
 		return bookRepository.findTop3ByCreatedAtAfter(oneWeekAgo, pageable)
 				.stream()
 				.map(book -> {
-					BookInfo bookInfo = bookInfoRepository.findByBookId(book.getId())
-							.orElseThrow(() -> new IllegalArgumentException("Book info not found"));
-
+					BookInfo bookInfo = getBookInfoByBookId(book.getId());
 					return getBookResponse(book.getUserId(), book, bookInfo);
 				})
 				.collect(Collectors.toList());
@@ -287,9 +281,7 @@ public class BookService {
 		Sort sort = buildSort(sortFields, directions);
 		return bookRepository.findAll(sort).stream()
 				.map(book -> {
-					BookInfo bookInfo = bookInfoRepository.findByBookId(book.getId())
-							.orElseThrow(() -> new IllegalArgumentException("Book info not found"));
-
+					BookInfo bookInfo = getBookInfoByBookId(book.getId());
 					return getBookResponse(book.getUserId(), book, bookInfo);
 				})
 				.collect(Collectors.toList());
@@ -313,8 +305,24 @@ public class BookService {
 	}
 
 	public BookResponseDto getBookResponse(UUID userId, Book book, BookInfo bookInfo) {
+		boolean isLiked = Optional.ofNullable(bookInfo.getLikedUsers())
+		  .map(likedUsers -> likedUsers.contains(userId))
+		  .orElse(false);
+
+		List<CommentResponseDto> commentDtos = (bookInfo.getComments() == null) ?
+		  List.of() : bookInfo.getComments().stream()
+		  .map(comment -> new CommentResponseDto(
+			comment.getId(),
+			comment.getContent(),
+			comment.getUser().getUserNickname(),
+			comment.getCreatedAt(),
+			comment.getUpdatedAt(),
+			comment.getParent() != null ? comment.getParent().getId() : null
+		  ))
+		  .collect(Collectors.toList());
+
 		List<String> storyImageUrls = getImagesFromStories(book.getStoryIds());
-		return bookMapper.toResponseDto(userId, book, bookInfo, storyImageUrls);
+		return bookMapper.toResponseDto(userId, book, bookInfo, isLiked, commentDtos, storyImageUrls);
 	}
 
 	private List<String> getImagesFromStories(Set<Long> storyIds) {

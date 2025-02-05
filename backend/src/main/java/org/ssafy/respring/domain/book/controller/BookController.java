@@ -41,7 +41,7 @@ public class BookController {
 										   @RequestPart("requestDto") BookUpdateRequestDto requestDto,
 										   @RequestPart(value = "표지 이미지", required = false) MultipartFile coverImg,
 										   @RequestHeader("X-User-Id") UUID userId) {
-		bookService.updateBook(book_id, requestDto, coverImg, userId);
+		bookService.updateBook(userId, book_id, requestDto, coverImg);
 		return ResponseEntity.ok().build();
 	}
 
@@ -55,8 +55,10 @@ public class BookController {
 
 	@GetMapping("/all")
 	@Operation(summary = "모든 봄날의 서(자서전) 조회", description = "모든 봄날의 서를 조회합니다.")
-	public ResponseEntity<List<BookResponseDto>> getAllBooks() {
-		return ResponseEntity.ok(bookService.getAllBooks());
+	public ResponseEntity<List<BookResponseDto>> getAllBooks(
+	  @RequestHeader("X-User-Id") UUID userId
+	) {
+		return ResponseEntity.ok(bookService.getAllBooks(userId));
 	}
 
 	@GetMapping("/my")
