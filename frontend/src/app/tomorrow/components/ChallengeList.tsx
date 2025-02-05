@@ -51,6 +51,7 @@ export default function ChallengeList({ challenges }: ChallengeListProps) {
             participants={challenge.participantCount}
             tags={[]} // Challenge에는 태그 없음. ChallengeDetail에 있음.
             status={challenge.status}
+            // startDate={challenge.startDate} // 📌 백엔드에서 startDate 추가되면 활성화 예정
           />
         ))}
       </div>
