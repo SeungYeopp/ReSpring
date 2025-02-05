@@ -1,7 +1,9 @@
 package org.ssafy.respring.domain.chat.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.challenge.repository.ChallengeRepository;
 import org.ssafy.respring.domain.challenge.vo.Challenge;
@@ -36,6 +38,7 @@ public class ChatService {
     private final UserRepository userRepository;
     private final ChallengeRepository challengeRepository;
     private final ChatRoomUserRepository chatRoomUserRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     private final Path fileStoragePath = Paths.get("uploads");
 
@@ -49,12 +52,16 @@ public class ChatService {
                         .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId)))
                 .collect(Collectors.toList());
 
-        // ✅ 채팅방 생성
-        ChatRoom chatRoom = ChatRoom.builder()
+        ChatRoom.ChatRoomBuilder chatRoomBuilder = ChatRoom.builder()
                 .name(request.getName())
-                .isOpenChat(request.isOpenChat()) // 오픈채팅 여부 설정
-                .build();
+                .isOpenChat(request.isOpenChat())
+                .isMentoring(request.isMentoring());
 
+        if (request.isMentoring() && request.getMentorId() != null) {
+            chatRoomBuilder.mentorId(request.getMentorId());
+        }
+
+        ChatRoom chatRoom = chatRoomBuilder.build();
         chatRoomRepository.save(chatRoom);
 
         // ✅ 채팅방-유저 관계 저장
@@ -226,16 +233,36 @@ public class ChatService {
 
     public ChatRoomResponse joinRoom(Long roomId, UUID userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("❌ 채팅방이 존재하지 않습니다."));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                .orElseThrow(() -> new RuntimeException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
-        if (chatRoom.getUsers().add(user)) {
-            chatRoomRepository.save(chatRoom);
+        // ✅ 멘토링 방인지 확인
+        if (chatRoom.isMentoring()) {
+            System.out.println("✅ 멘토링 방 참가 요청: " + chatRoom.getName());
         }
+
+        boolean alreadyJoined = chatRoom.getChatRoomUsers().stream()
+                .anyMatch(chatRoomUser -> chatRoomUser.getUser().getId().equals(userId));
+
+        if (alreadyJoined) {
+            System.out.println("⚠️ 이미 채팅방에 참가한 유저: " + userId);
+            return ChatRoomResponse.from(chatRoom);
+        }
+
+        // ✅ 채팅방-유저 관계 저장
+        ChatRoomUser chatRoomUser = ChatRoomUser.builder()
+                .chatRoom(chatRoom)
+                .user(user)
+                .isActive(true)
+                .build();
+
+        chatRoomUserRepository.save(chatRoomUser);
+        System.out.println("✅ 채팅방 참가 성공: " + userId);
 
         return ChatRoomResponse.from(chatRoom);
     }
+
 
     public void leaveRoom(Long roomId, UUID userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
@@ -252,6 +279,12 @@ public class ChatService {
         chatRoomUserRepository.save(chatRoomUser);
 
         System.out.println("✅ 사용자가 나갔음: " + userId);
+
+        // ✅ WebSocket을 통해 나간 사실을 알림
+        messagingTemplate.convertAndSend(
+                "/topic/roomUpdates/" + roomId,
+                "User " + userId + " has left the room."
+        );
 
         // ✅ 1:1 채팅방에서 두 명 다 나갔으면 삭제
         if (!chatRoom.isOpenChat()) {
@@ -278,20 +311,21 @@ public class ChatService {
         chatRoomRepository.delete(chatRoom);
     }
 
+    @Transactional
     public ChatRoom getOrJoinPrivateRoom(UUID user1Id, UUID user2Id) {
         User user1 = userRepository.findById(user1Id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + user1Id));
         User user2 = userRepository.findById(user2Id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + user2Id));
 
-        // ✅ 정확한 두 명이 포함된 기존 방 찾기
+        // ✅ 기존 1:1 채팅방 조회
         Optional<ChatRoom> existingRoomOpt = chatRoomRepository.findExactPrivateRoom(user1, user2);
 
         if (existingRoomOpt.isPresent()) {
             ChatRoom existingRoom = existingRoomOpt.get();
             System.out.println("✅ 기존 1:1 채팅방 재사용: " + existingRoom.getId());
 
-            // ✅ 나갔던 사용자가 다시 들어오면 isActive = true로 변경
+            // ✅ 기존 사용자의 isActive를 다시 활성화 (isActive = true)
             existingRoom.getChatRoomUsers().forEach(chatRoomUser -> {
                 if (chatRoomUser.getUser().equals(user1) || chatRoomUser.getUser().equals(user2)) {
                     chatRoomUser.setActive(true);
@@ -302,7 +336,7 @@ public class ChatService {
             return existingRoom;
         }
 
-        // ✅ 기존 방이 없으면 자동 생성
+        // ✅ 기존 방이 없으면 새로운 1:1 채팅방 생성
         System.out.println("✅ 새로운 1:1 채팅방 생성");
         ChatRoom chatRoom = ChatRoom.builder()
                 .name("Private Chat: " + user1.getUserNickname() + " & " + user2.getUserNickname())
@@ -328,6 +362,39 @@ public class ChatService {
 
 
 
+    // ✅ 멘토링(강연자) 방 생성
+    public ChatRoom createMentoringRoom(String name, UUID mentorId) {
+        User mentor = userRepository.findById(mentorId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 멘토(강연자)를 찾을 수 없음"));
 
+        ChatRoom chatRoom = ChatRoom.builder()
+                .name(name)
+                .isMentoring(true)
+                .mentorId(mentorId)
+                .build();
 
+        chatRoomRepository.save(chatRoom);
+
+        // ✅ 방 생성 시, 강연자(멘토)를 자동 추가
+        ChatRoomUser chatRoomUser = ChatRoomUser.builder()
+                .chatRoom(chatRoom)
+                .user(mentor)
+                .isActive(true)
+                .build();
+
+        chatRoomUserRepository.save(chatRoomUser);
+
+        return chatRoom;
+    }
+
+    // ✅ 특정 방 정보 조회 (멘토링 여부 포함)
+    public ChatRoom getRoomById(Long roomId) {
+        return chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 채팅방을 찾을 수 없음"));
+    }
+
+    // ✅ 멘토링(발표자) 방 조회
+    public List<ChatRoom> getMentoringRooms() {
+        return chatRoomRepository.findByIsMentoring(true);
+    }
 }

@@ -7,16 +7,20 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.chat.dto.request.ChatMessageRequest;
+import org.ssafy.respring.domain.chat.dto.request.ChatRoomPrivateRequest;
 import org.ssafy.respring.domain.chat.dto.request.ChatRoomRequest;
 import org.ssafy.respring.domain.chat.dto.response.ChatMessageResponse;
+import org.ssafy.respring.domain.chat.dto.response.ChatRoomMentoringResponseDto;
 import org.ssafy.respring.domain.chat.dto.response.ChatRoomResponse;
 import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
@@ -53,24 +57,62 @@ public class ChatController {
 
     }
 
-    @Operation(summary = "채팅방 리스트 조회", description = "현재 존재하는 모든 채팅방의 리스트를 조회합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "채팅방 리스트 조회 성공",
-                    content = @Content(schema = @Schema(implementation = ChatRoomResponse.class))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청")
-    })
-    @GetMapping("/chat/rooms")
-    @ResponseBody
+    /** ✅ 모든 채팅방 조회 (WebSocket) */
+    @MessageMapping("/chat/rooms")
+    @SendTo("/topic/chat/rooms")
     public List<ChatRoomResponse> getAllRooms() {
-        List<ChatRoom> chatRooms = chatService.getAllRooms();
-        return chatRooms.stream()
+        return chatService.getAllRooms().stream()
                 .map(chatRoom -> ChatRoomResponse.builder()
                         .roomId(chatRoom.getId())
                         .name(chatRoom.getName())
                         .isOpenChat(chatRoom.isOpenChat())
+                        .mentorId(chatRoom.getMentorId())
+                        .isMentoring(chatRoom.isMentoring())
                         .userCount(chatRoom.getUsers().size())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    /** ✅ 내 채팅방 조회 (WebSocket) */
+    @MessageMapping("/chat/myRooms/{userId}")
+    @SendTo("/topic/chat/myRooms/{userId}")
+    public List<ChatRoomResponse> getMyRooms(@DestinationVariable UUID userId) {
+        return chatService.getUserRooms(userId).stream()
+                .map(chatRoom -> ChatRoomResponse.builder()
+                        .roomId(chatRoom.getId())
+                        .name(chatRoom.getName())
+                        .isOpenChat(chatRoom.isOpenChat())
+                        .isMentoring(chatRoom.isMentoring())
+                        .mentorId(chatRoom.getMentorId())
+                        .userCount(chatRoom.getUsers().size())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    /** ✅ 멘토링 채팅방 조회 (WebSocket) */
+    @MessageMapping("/chat/mentoringRooms")
+    @SendTo("/topic/chat/mentoringRooms")
+    public List<ChatRoomMentoringResponseDto> getMentoringRooms() {
+        return chatService.getMentoringRooms().stream()
+                .map(room -> ChatRoomMentoringResponseDto.builder()
+                        .roomId(room.getId())
+                        .name(room.getName())
+                        .isMentoring(true)
+                        .mentorId(room.getMentorId())
+                        .userCount(room.getUsers().size())
+                        .participants(room.getUsers().stream().map(User::getId).collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    /** ✅ 방 참가 기능 */
+    @MessageMapping("/chat/joinRoom")
+    public void joinRoom(ChatRoomRequest request) {
+        UUID userId = UUID.fromString(request.getUserIds().get(0));
+        chatService.joinRoom(request.getRoomId(), userId);
+
+        // 참가한 사용자에게 업데이트된 방 정보를 전송
+        messagingTemplate.convertAndSend("/topic/chat/myRooms/" + userId, getMyRooms(userId));
     }
 
 
@@ -82,39 +124,21 @@ public class ChatController {
                     content = @Content(schema = @Schema(implementation = ChatRoomResponse.class))),
             @ApiResponse(responseCode = "400", description = "잘못된 요청")
     })
-    @PostMapping("/chat/room")
-    @ResponseBody
-    public ChatRoomResponse createRoomWithParams(
-            @RequestParam String name,
-            @RequestParam List<String> userIds,
-            @RequestParam(required = false, defaultValue = "false") boolean isOpenChat) {
-
-        System.out.println("Received Room Name: " + name);
-        System.out.println("Received User IDs: " + userIds);
-
-        if (userIds == null || userIds.isEmpty()) {
-            throw new IllegalArgumentException("유효한 유저 ID 리스트를 제공해야 합니다.");
-        }
-
-        ChatRoom chatRoom = chatService.createRoom(ChatRoomRequest.builder()
-                .name(name)
-                .userIds(userIds)
-                .isOpenChat(isOpenChat)
-                .build());
-
+    @MessageMapping("/chat.createRoom")
+    @SendTo("/topic/rooms")
+    public ChatRoomResponse createRoom(ChatRoomRequest request) {
+        ChatRoom chatRoom = chatService.createRoom(request);
         return ChatRoomResponse.builder()
                 .roomId(chatRoom.getId())
                 .name(chatRoom.getName())
                 .isOpenChat(chatRoom.isOpenChat())
+                .isMentoring(chatRoom.isMentoring())
+                .mentorId(chatRoom.getMentorId())
                 .userCount(chatRoom.getUsers().size())
                 .build();
     }
 
-    @PostMapping("/chat/room/join")
-    @ResponseBody
-    public ChatRoomResponse joinRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
-        return chatService.joinRoom(roomId, userId);
-    }
+
 
 
 //    @Operation(summary = "파일 업로드", description = "채팅 메시지에 파일을 업로드합니다.")
@@ -149,20 +173,20 @@ public class ChatController {
 //    }
 
     @Operation(summary = "채팅 메시지 조회", description = "특정 채팅방의 모든 메시지를 조회합니다.")
-    @GetMapping("/chat/messages/{roomId}")
-    @ResponseBody
-    public List<ChatMessageResponse> getMessages(@PathVariable Long roomId) {
+    @MessageMapping("/chat.messages.{roomId}")
+    @SendTo("/topic/messages/{roomId}")  // ❌ 이게 문제! {roomId}가 바인딩 안됨
+    public List<ChatMessageResponse> getMessages(@DestinationVariable Long roomId) {
         return chatService.getMessages(roomId).stream()
                 .map(message -> ChatMessageResponse.builder()
                         .sender(message.getSender())
                         .receiver(message.getReceiver())
                         .content(message.getContent())
-                        .fileUrl(message.getFileUrl())
-                        .read(message.isRead())
                         .timestamp(message.getTimestamp())
                         .build())
                 .collect(Collectors.toList());
     }
+
+
 
 //    @Operation(summary = "방 이름으로 Room ID 조회", description = "특정 방 이름에 해당하는 Room ID를 반환합니다.")
 //    @GetMapping("/chat/room/findByName")
@@ -175,42 +199,66 @@ public class ChatController {
 //        return chatRoom.getId();
 //    }
 
-    @Operation(summary = "사용자의 채팅방 목록 조회")
-    @GetMapping("/chat/myRooms")
-    @ResponseBody
-    public List<ChatRoomResponse> getMyRooms(@RequestParam UUID userId) {
-        List<ChatRoom> chatRooms = chatService.getUserRooms(userId);
-        return chatRooms.stream()
-                .map(chatRoom -> ChatRoomResponse.builder()
-                        .roomId(chatRoom.getId())
-                        .name(chatRoom.getName())
-                        .isOpenChat(chatRoom.isOpenChat())
-                        .userCount(chatRoom.getUsers().size()) // 🔹 유저 수 추가
-                        .build())
-                .collect(Collectors.toList());
-    }
+
 
     @Operation(summary = "채팅방 나가기", description = "사용자가 채팅방을 나갑니다.")
-    @PostMapping("/chat/room/leave")
-    @ResponseBody
-    public void leaveRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
-        chatService.leaveRoom(roomId, userId);
+    @MessageMapping("/chat.leaveRoom")
+    public void leaveRoom(ChatRoomRequest request) {
+        chatService.leaveRoom(request.getRoomId(), UUID.fromString(request.getUserIds().get(0)));
     }
 
-    @Operation(summary = "1:1 채팅방 조회 또는 생성", description = "두 사용자의 1:1 채팅방을 찾고 없으면 생성합니다.")
-    @GetMapping("/chat/private")
-    @ResponseBody
-    public ChatRoomResponse getOrJoinPrivateRoom(@RequestParam UUID user1, @RequestParam UUID user2) {
-        ChatRoom chatRoom = chatService.getOrJoinPrivateRoom(user1, user2);
+
+    @MessageMapping("/chat.private")
+    public void getOrJoinPrivateRoom(ChatRoomPrivateRequest request) {
+        if (request.getUser1() == null || request.getUser2() == null) {
+            throw new IllegalArgumentException("Both user1 and user2 must be provided for private chat.");
+        }
+
+        ChatRoom chatRoom = chatService.getOrJoinPrivateRoom(
+                request.getUser1(),
+                request.getUser2()
+        );
+
         ChatRoomResponse response = ChatRoomResponse.from(chatRoom);
 
-        // ✅ WebSocket을 통해 상대방에게 새로운 채팅방 정보 전송
-        messagingTemplate.convertAndSend("/topic/newRoom/" + user2, response);
-
-        return response;
+        // ✅ WebSocket을 통해 두 사용자에게 새로운 1:1 채팅방 정보 전송
+        messagingTemplate.convertAndSend("/topic/newRoom/" + request.getUser1(), response);
+        messagingTemplate.convertAndSend("/topic/newRoom/" + request.getUser2(), response);
     }
 
 
 
+
+
+    // ✅ 멘토링(강연자) 방 생성
+    @PostMapping("/chat/room/mentoring")
+    @ResponseBody
+    public ChatRoomMentoringResponseDto createMentoringRoom(
+            @RequestParam String name,
+            @RequestParam UUID mentorId) {
+
+        ChatRoom chatRoom = chatService.createMentoringRoom(name, mentorId);
+
+        return ChatRoomMentoringResponseDto.builder()
+                .roomId(chatRoom.getId())
+                .name(chatRoom.getName())
+                .isMentoring(true)
+                .mentorId(mentorId)
+                .userCount(chatRoom.getUsers().size())
+                .build();
+    }
+
+    @MessageMapping("/chat.getRoomInfo/{roomId}")
+    @SendTo("/topic/chat/roomInfo/{roomId}")
+    public ChatRoomMentoringResponseDto getRoomInfo(@DestinationVariable Long roomId) {
+        ChatRoom chatRoom = chatService.getRoomById(roomId);
+        return ChatRoomMentoringResponseDto.builder()
+                .roomId(chatRoom.getId())
+                .name(chatRoom.getName())
+                .isMentoring(chatRoom.isMentoring())
+                .mentorId(chatRoom.getMentorId() != null ? chatRoom.getMentorId() : null) // UUID를 String으로 변환
+                .userCount(chatRoom.getUsers().size())
+                .build();
+    }
 }
 
