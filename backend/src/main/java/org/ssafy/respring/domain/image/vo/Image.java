@@ -2,15 +2,19 @@ package org.ssafy.respring.domain.image.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
 import org.ssafy.respring.domain.post.vo.Post;
 import org.ssafy.respring.domain.story.vo.Story;
 
 @Entity
 @Table(name = "image")
 @Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Image {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageId;
@@ -26,13 +30,4 @@ public class Image {
     @JoinColumn(name = "story_id")
     @JsonIgnore
     private Story story;
-
-    @PrePersist
-    @PreUpdate
-    public void validateAssociations() {
-        if (post != null && story != null) {
-            throw new IllegalStateException("An image cannot be associated with both a post and a story.");
-        }
-    }
-
 }
