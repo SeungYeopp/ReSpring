@@ -74,5 +74,5 @@ management:
 spring:
   config:
     import: optional:file:.env[.properties]
-
-  profiles: local
+    activate:
+      on-profile: local
