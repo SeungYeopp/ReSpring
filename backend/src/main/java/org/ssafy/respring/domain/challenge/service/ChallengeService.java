@@ -17,6 +17,7 @@ import org.ssafy.respring.domain.chat.dto.request.ChatRoomRequest;
 import org.ssafy.respring.domain.chat.repository.ChatRoomRepository;
 import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
+import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
@@ -39,27 +40,11 @@ public class ChallengeService {
     private final RecordsRepository recordsRepository;
     private final UserRepository userRepository;
     private final ChatService chatService;
+    private final ImageService imageService;
     private final ChatRoomRepository chatRoomRepository;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
-
-    // ✅ 이미지 저장 메서드
-    private String saveImage(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
-
-        String originalFileName = file.getOriginalFilename();
-        String extension = originalFileName != null && originalFileName.contains(".") ?
-                originalFileName.substring(originalFileName.lastIndexOf(".")) : "";
-        String uniqueFileName = UUID.randomUUID().toString() + extension;
-
-        String filePath = uploadDir + File.separator + uniqueFileName;
-        file.transferTo(new File(filePath));
-
-        return filePath; // 이미지 URL 반환
-    }
 
     // 챌린지 생성 (Owner 지정)
     public ChallengeResponseDto createChallenge(ChallengeRequestDto challengeDto, MultipartFile image) throws IOException {
@@ -74,7 +59,7 @@ public class ChallengeService {
         }
 
         // 이미지 저장 후 URL 반환
-        String imageUrl = saveImage(image);
+        String imageUrl = imageService.saveCoverImage(image);
 
         // ✅ 챌린지 생성 시 UUID 생성
         String chatRoomUUID = UUID.randomUUID().toString();
@@ -378,7 +363,7 @@ public class ChallengeService {
 
         // ✅ 이미지 수정 (새로운 이미지가 있을 경우 저장)
         if (image != null && !image.isEmpty()) {
-            String imageUrl = saveImage(image);
+            String imageUrl = imageService.saveCoverImage(image);
             challenge.setImage(imageUrl);
         }
 
