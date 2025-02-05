@@ -4,19 +4,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { searchChallenges } from "@/lib/api/tomorrow"; // 검색 API 함수 불러오기
+import { Challenge } from "../types/challenge";
 
 interface SearchBarProps {
   placeholder: string;
+  onSearchResults?: (results: Challenge[]) => void; // 검색 결과를 부모 컴포넌트로 전달하는 콜백
 }
 
-export function SearchBar({ placeholder }: SearchBarProps) {
+export function SearchBar({ placeholder, onSearchResults }: SearchBarProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchTerm.trim()) {
+    if (!searchTerm.trim()) return;
+
+    try {
+      const results = await searchChallenges(searchTerm.trim());
+      onSearchResults?.(results); // 검색 결과를 상위 컴포넌트로 전달
       router.push(`/tomorrow/search?q=${encodeURIComponent(searchTerm.trim())}`);
+    } catch (error) {
+      console.error("검색 실패:", error);
     }
   };
 
