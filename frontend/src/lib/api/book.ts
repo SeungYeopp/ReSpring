@@ -269,3 +269,21 @@ export const compileBookByAIMock = (content : string) : CompiledBook => {
 
     return jsonedData as CompiledBook; // JSON에서 CompiledBook 형으로 변환.
 }
+
+export const searchBook = async (keyword : string) : Promise<Book[]> => {
+    try{
+        const response = await axiosAPI.get(`/books/search?keyword=${keyword}`)
+        const responseBooks : Book[] = response.data as Book[];
+
+        responseBooks.map((book : Book) => ({
+                ...book,
+                createdAt : new Date(book.createdAt),
+                updatedAt : new Date(book.updatedAt)
+            }
+        ));
+
+        return responseBooks;
+    }catch(error : any){
+        throw new Error(error.response?.data?.message || 'searchBook 함수 API 호출에서 오류가 발생했습니다.')
+    }
+}
