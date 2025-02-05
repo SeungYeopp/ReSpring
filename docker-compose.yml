@@ -131,14 +131,16 @@ services:
       - xpack.security.enabled=true
       - ELASTIC_PASSWORD=${ELASTICSEARCH_PASSWORD}
       - network.host=0.0.0.0
+      - http.host=0.0.0.0
     ports:
       - "9200:9200"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     networks:
       - project-network
     healthcheck:
-      test: [ "CMD-SHELL", "curl -fsSL http://localhost:9200/_cluster/health || exit 1" ]
+      test: ["CMD-SHELL", "curl -u ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD} -fsSL http://localhost:9200/_cluster/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
