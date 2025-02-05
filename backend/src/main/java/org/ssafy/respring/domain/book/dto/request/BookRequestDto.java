@@ -9,6 +9,7 @@ import java.util.UUID;
 @Data
 public class BookRequestDto {
 	private UUID userId;
+	private String authorName;
 	private String title;
 	private String content;
 	private Set<String> tags;

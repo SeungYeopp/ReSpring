@@ -74,8 +74,9 @@ public class BookController {
 	@GetMapping("/{book_id}")
 	@Operation(summary = "봄날의 서(자서전) 세부 조회", description = "특정 봄날의 서 내용을 조회합니다.")
 	public ResponseEntity<BookResponseDto> getBookDetail(
-			@Parameter(description = "봄날의 서 ID") @PathVariable String book_id) {
-		return ResponseEntity.ok(bookService.getBookDetail(book_id));
+			@Parameter(description = "봄날의 서 ID") @PathVariable String book_id,
+			@RequestHeader("X-User-Id") UUID userId) {
+		return ResponseEntity.ok(bookService.getBookDetail(userId, book_id));
 	}
 
 	@PatchMapping("/likes/{book_id}")
