@@ -11,23 +11,23 @@ interface FootstepsItem {
 const footstepsData: FootstepsItem[] = [
   {
     id: '1',
-    title: 'Start of Journey',
-    date: 'January 2020',
+    title: '졸업식',
+    date: '1990년 1월',
   },
   {
     id: '2',
-    title: 'First Milestone',
-    date: 'March 2021',
+    title: '입사',
+    date: '1990년 5월',
   },
   {
     id: '3',
-    title: 'Big Achievement',
-    date: 'July 2022',
+    title: '30년 근속',
+    date: '2020년 5월',
   },
   {
     id: '4',
-    title: 'Final Step',
-    date: 'December 2023',
+    title: '은퇴',
+    date: '2023년 10월',
   },
 ];
 
@@ -39,7 +39,7 @@ const Footsteps: React.FC = () => {
     <div className="relative pl-6">
       <div className="relative">
         <div
-          className="absolute left-[10%] top-0 w-[2px] bg-[#a46500]"
+          className="absolute left-[14%] top-0 w-[2px] bg-[#a46500]"
           style={{
             height: `${footstepsData.length * (circleSize + 24)}px`,
             animation: `lineExpand ${(footstepsData.length - 2) * animationDuration}s ease-out forwards`,
