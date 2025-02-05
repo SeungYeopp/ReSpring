@@ -69,6 +69,16 @@ management:
     health:
       show-details: always
 
+cloud:
+  aws:
+    s3:
+      bucket: respring-bucket
+    stack.auto: false
+    region.static: ap-southeast-2
+    credentials:
+      access-key: ${S3_ACCESSKEY}
+      secret-key: ${S#_SECRETKEY}
+
 ---
 # 🔹 로컬 환경에서 `.env` 파일을 읽도록 설정 (필요한 경우만)
 spring:
