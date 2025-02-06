@@ -4,13 +4,18 @@ import { useState, useEffect, useRef } from "react";
 import { getAllStories, deleteStory } from "@/lib/api/story";
 import { getAllEvents } from "@/lib/api/event";
 
+export interface Image {
+  imageId: number;
+  imageUrl: string;
+}
+
 interface Story {
   id: number;
   title: string;
   createdAt: string | Date;
   content: string;
   eventId: number;
-  coverImg?: string;
+  images: Image[];
 }
 
 interface Event {
@@ -106,7 +111,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userId }) => {
                 <div className="relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
                   <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
                     <img
-                      src={story.coverImg || "/placeholder_storycover.png"}
+                      src={"/placeholder_storycover.png"}
                       alt={`Story ${story.title}`}
                       className="w-full h-full object-cover"
                     />
@@ -124,7 +129,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userId }) => {
                     <p className="mt-1">작성일: {new Date(story.createdAt).toLocaleDateString()}</p>
                     <div className="mt-2 flex space-x-2">
                       <a
-                        href={`/viewer/${story.id}`}
+                        href={`/yesterday/writenote?storyId=${story.id}`}
                         className="px-3 py-1 bg-green-500 text-white rounded-md text-xs hover:bg-green-600"
                       >
                         편집
