@@ -32,30 +32,17 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody LoginRequestDto loginRequestDto, HttpSession session,
-                                      HttpServletResponse response) throws AuthenticationFailedException {
-        LoginResponseDto loginResponseDto = userService.loginUser(loginRequestDto);
+//    @PostMapping("/login")
+//    public ResponseEntity<Void> login(@RequestBody LoginRequestDto loginRequestDto, HttpSession session,
+//                                      HttpServletResponse response) throws AuthenticationFailedException {
+//        LoginResponseDto loginResponseDto = userService.loginUser(loginRequestDto);
+//
+//        session.setAttribute("userId", loginResponseDto.getUserId());
+//        session.setAttribute("userNickname", loginResponseDto.getUserNickname());
+//
+//        return ResponseEntity.status(HttpStatus.OK).build();
+//    }
 
-        session.setAttribute("userId", loginResponseDto.getUserId());
-        session.setAttribute("userNickname", loginResponseDto.getUserNickname());
-
-        return ResponseEntity.status(HttpStatus.OK).build();
-    }
-
-    @GetMapping("/session")
-    public ResponseEntity<Map<String, Object>> getSessionInfo(HttpSession session) {
-
-        UUID userId = (UUID) session.getAttribute("userId");
-        String userNickname = (String) session.getAttribute("userNickname");
-
-        System.out.println(session.getId());
-
-        Map<String, Object> sessionInfo = new HashMap<>();
-        sessionInfo.put("userId", userId);
-        sessionInfo.put("userNickname", userNickname);
-        return ResponseEntity.status(HttpStatus.OK).body(sessionInfo);
-    }
     //DB 확인용 테스트 코드입니다
     @GetMapping("/alluser")
     public ResponseEntity<List<String>> getAllUser() {
@@ -68,6 +55,19 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(nicknames);
 
     }
+    @GetMapping("/profile")
+    public ResponseEntity<Void> getUserProfile(HttpSession session) {
+        Object userId = session.getAttribute("userId");
+        Object userNickname = session.getAttribute("userNickname");
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+
 }
 
 

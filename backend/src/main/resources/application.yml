@@ -49,28 +49,6 @@ spring:
     username: ${ELASTICSEARCH_USERNAME}
     password: ${ELASTICSEARCH_PASSWORD}
 
-logging:
-  level:
-    org:
-      hibernate:
-        orm:
-          connections:
-            pooling: ERROR
-
-file:
-  upload-dir: ${FILE_UPLOAD_DIR:${user.home}/uploads}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "health,info"
-  endpoint:
-    health:
-      show-details: always
-
-
-
   security:
     oauth2:
       client:
@@ -101,6 +79,30 @@ management:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-info-authentication-method: header
             user-name-attribute: id
+
+
+logging:
+  level:
+    org:
+      hibernate:
+        orm:
+          connections:
+            pooling: ERROR
+
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:${user.home}/uploads}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  endpoint:
+    health:
+      show-details: always
+
+
+
 
 
 ---
