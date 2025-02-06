@@ -4,6 +4,8 @@ import StatSummary from "./components/stat-summary";
 import TabBar from "./components/tabbar";
 
 export default function ProfilePage() {
+  const userId = "b3470d7d-ab19-4514-9abe-9c3ffaf0a616";
+
   return (
     <main>
       <div className="flex gap-4 pl-[5%] pt-4">
@@ -41,9 +43,9 @@ export default function ProfilePage() {
       <div className="flex justify-center items-center w-full">
         {/* <Others /> */}
       </div>
-      <StatSummary />
+      <StatSummary userId={userId} />
       <br />
-      <TabBar />
+      <TabBar userId={userId} />
     </main>
   );
 }

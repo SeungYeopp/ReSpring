@@ -1,37 +1,45 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getAllEvents, Event } from '@/lib/api/event';
+import EditEvent from '@/components/custom/EditEvent';
+import AddEvent from '@/components/custom/AddEvent';
 
-interface FootstepsItem {
-  id: string;
-  title: string;
-  date: string;
-}
+const Footsteps: React.FC<{ userId: string }> = ({ userId }) => {
+  const [footstepsData, setFootstepsData] = useState<Event[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-const footstepsData: FootstepsItem[] = [
-  {
-    id: '1',
-    title: '졸업식',
-    date: '1990년 1월',
-  },
-  {
-    id: '2',
-    title: '입사',
-    date: '1990년 5월',
-  },
-  {
-    id: '3',
-    title: '30년 근속',
-    date: '2020년 5월',
-  },
-  {
-    id: '4',
-    title: '은퇴',
-    date: '2023년 10월',
-  },
-];
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
-const Footsteps: React.FC = () => {
+  const fetchEvents = async () => {
+    try {
+      const events = await getAllEvents(userId);
+      const formattedEvents = events.map(event => ({
+        id: event.id,
+        eventName: event.eventName,
+        occurredAt: event.occurredAt,
+        category: event.category,
+        display: event.display,
+      }));
+      setFootstepsData(formattedEvents);
+    } catch (error) {
+      console.error("Failed to fetch events:", error);
+    }
+  };
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEventUpdated = async () => {
+    await fetchEvents();
+    setIsEditModalOpen(false);
+  };
+
   const circleSize = 48;
   const animationDuration = 2;
 
@@ -50,10 +58,11 @@ const Footsteps: React.FC = () => {
           return (
             <div
               key={item.id}
-              className="flex items-start mb-8 relative opacity-0"
+              className="flex items-start mb-8 relative opacity-0 cursor-pointer"
               style={{
                 animation: `fadeInAndExpand ${animationDuration}s ease-out forwards ${delay}`,
               }}
+              onClick={() => handleEventClick(item)}
             >
               <div
                 className={`w-12 h-12 rounded-full border-2 border-white ${
@@ -69,13 +78,26 @@ const Footsteps: React.FC = () => {
                   animation: `fadeInText ${animationDuration}s ease-out forwards ${parseFloat(delay) + 0.5}s`,
                 }}
               >
-                <div className="text-lg font-bold">{item.title}</div>
-                <div className="text-sm text-gray-500">{item.date}</div>
+                <div className="text-lg font-bold">{item.eventName}</div>
+                <div className="text-sm text-gray-500">{new Date(item.occurredAt).toLocaleDateString()}</div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {isEditModalOpen && selectedEvent && (
+        <EditEvent
+          event={selectedEvent}
+          userId={userId}
+          onClose={() => setIsEditModalOpen(false)}
+          onEventUpdated={handleEventUpdated}
+          onEventDeleted={handleEventUpdated}
+        />
+      )}
+
+      <AddEvent onEventAdded={fetchEvents} />
+
       <style jsx global>{`
         @keyframes circleExpand {
           0% {
