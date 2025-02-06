@@ -9,21 +9,29 @@ import { SearchBar } from "@/app/tomorrow/components/SearchBar";
 import { SkeletonCard } from "@/components/custom/SkeletonCard";
 import { SearchSummary } from "../components/SearchSummary";
 import { useRecentSearches } from "@/app/tomorrow/hooks/useRecentSearches";
-import { List, X, Filter } from "lucide-react";
+import { List, Filter } from "lucide-react";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { recentSearches, addRecentSearch, clearRecentSearches } = useRecentSearches();
+
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [results, setResults] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTime, setSearchTime] = useState(0);
-  const { recentSearches, addRecentSearch, clearRecentSearches } = useRecentSearches();
-
-  // ✅ STATUS 필터 관련 상태 추가
   const [statusFilter, setStatusFilter] = useState<"ALL" | "UPCOMING" | "ONGOING" | "ENDED">("ALL");
 
-  // ✅ API 요청 함수 (무한 스크롤 제거)
+  // ✅ URL 변경 시 검색 실행 (검색어가 변경될 때 query 상태 자동 업데이트)
+  useEffect(() => {
+    const newQuery = searchParams.get("q") || "";
+    if (newQuery !== query) {
+      setQuery(newQuery);
+      performSearch(newQuery);
+    }
+  }, [searchParams]);
+
+  // ✅ API 요청 함수
   const performSearch = useCallback(
     async (searchQuery: string) => {
       if (!searchQuery.trim() || searchQuery.length < 2) {
@@ -35,7 +43,6 @@ export default function SearchPage() {
       const startTime = performance.now();
       try {
         const data = await searchChallenges(searchQuery);
-
         setResults(data);
         addRecentSearch(searchQuery);
       } catch (error) {
@@ -49,51 +56,22 @@ export default function SearchPage() {
     [addRecentSearch]
   );
 
-  // ✅ 검색어(query) 변경 시 재검색
-  useEffect(() => {
-    if (query.length > 1) {
-      performSearch(query);
-    }
-  }, [query]);
-
-  // ✅ 클라이언트 측 STATUS 필터 적용
-  const filteredResults = statusFilter === "ALL" ? results : results.filter((challenge) => challenge.status === statusFilter);
-
-  // ✅ 검색바 콜백
-  const handleSearchResults = (newResults: Challenge[]) => {
-    setResults(newResults);
-    setLoading(false);
-  };
-
-  // ✅ 최근 검색어 클릭 시 검색 수행
-  const handleRecentSearchClick = (search: string) => {
-    setQuery(search);
+  // ✅ 검색바에서 검색 실행
+  const handleSearchSubmit = (search: string) => {
+    if (search.trim().length < 2) return;
     router.push(`/tomorrow/search?q=${encodeURIComponent(search)}`);
   };
+
+  // ✅ 클라이언트 측 STATUS 필터 적용
+  const filteredResults =
+    statusFilter === "ALL" ? results : results.filter((challenge) => challenge.status === statusFilter);
 
   return (
     <div className="container mx-auto px-4">
       {/* 검색바 */}
       <div className="mb-6 mt-4">
-        <SearchBar placeholder="챌린지 검색" onSearchResults={handleSearchResults} />
+        <SearchBar placeholder="챌린지 검색" onSearchResults={setResults} />
       </div>
-
-      {/* 최근 검색어 */}
-      {recentSearches.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-2">최근 검색어</h3>
-          <div className="flex flex-wrap gap-2">
-            {recentSearches.map((search, index) => (
-              <button key={index} onClick={() => handleRecentSearchClick(search)} className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">
-                {search}
-              </button>
-            ))}
-            <button onClick={clearRecentSearches} className="text-red-500 hover:text-red-700 text-sm flex items-center">
-              <X size={16} className="mr-1" /> 전체 삭제
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* 검색 결과 헤더 + 필터 */}
       <div className="mb-4 flex justify-between items-center">
@@ -105,7 +83,13 @@ export default function SearchPage() {
         {/* STATUS 필터 UI */}
         <div className="flex items-center space-x-2">
           <Filter className="w-5 h-5 text-gray-600" />
-          <select className="border rounded-md px-2 py-1 text-sm" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as "ALL" | "UPCOMING" | "ONGOING" | "ENDED")}>
+          <select
+            className="border rounded-md px-2 py-1 text-sm"
+            value={statusFilter}
+            onChange={(e) =>
+              setStatusFilter(e.target.value as "ALL" | "UPCOMING" | "ONGOING" | "ENDED")
+            }
+          >
             <option value="ALL">전체</option>
             <option value="UPCOMING">예정</option>
             <option value="ONGOING">진행 중</option>
@@ -134,7 +118,7 @@ export default function SearchPage() {
         ))}
       </div>
 
-      {/* 로딩 시 GridChallengeCard 크기에 맞는 Skeleton 적용 */}
+      {/* 로딩 시 Skeleton UI 적용 */}
       {loading && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           {Array.from({ length: 8 }).map((_, index) => (
