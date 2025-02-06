@@ -33,7 +33,7 @@ export default function CreateBook() {
 
   // ui
   const bookUrl = '/placeholder/gardening.jpg';
-  const availableTags = ["청춘", "마지막", "퇴직", "새로운 시작", "추억", "성장", "변화"];
+
 
   const coverImages = [
     "/corgis/placeholder7.jpg",
@@ -74,6 +74,11 @@ export default function CreateBook() {
     handleInitialSetting();
   }, []);
 
+  useEffect(() => {
+    console.log("현재 bookTags:", bookTags);
+  }, [bookTags]);
+  
+
   const handleTagKeyDown = (e : React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && tagInput.trim() !== "") {
       e.preventDefault();
@@ -101,7 +106,9 @@ export default function CreateBook() {
       // 봄날의 서를 생성할 떄는 제목과 내용만 받는다. 따라서 내용 부분은 각 챕터를 json 형식으로 만들어서 보낸다!
       const jsonifiedBookContent = JSON.stringify(compiledBook!.chapters);
 
-      const result = await makeBook(userId, compiledBook!.title, jsonifiedBookContent, [bookTag], selectedStoryIds, bookCoverImg!);
+      console.log(bookTags)
+
+      const result = await makeBook(userId, compiledBook!.title, jsonifiedBookContent, bookTags, selectedStoryIds, bookCoverImg!);
 
       console.log('생성된 봄날의 서 ID', result);
       setGeneratedCompiledBookId(result);

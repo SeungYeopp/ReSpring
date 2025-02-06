@@ -51,6 +51,7 @@ export const makeBook = async (
     coverImg : File
 ) : Promise<string> => {
     try{
+        console.log(tag)
         const formData = new FormData();
         formData.append('requestDto', new Blob([
             JSON.stringify({userId, title, content, tag, storyIds})
