@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook } from "@/lib/api";
+import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook, Chapter} from "@/lib/api";
 import { getSessionInfo } from "@/lib/api";
 import {useRouter} from "next/navigation"
+
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 
 import { Card } from "@/components/ui/card";
 
@@ -12,6 +14,7 @@ export default function CreateBook() {
   const [stories, setStories] = useState<Story[]>([]); // 유저의 모든 스토리
   const [selectedStorieIds, setSelectedStorieIds] = useState<number[]>([]);
   const [step, setStep] = useState(1);
+  const [currentChapter, setCurrentChapter] = useState<number>(1);
 
   const [msg, setMsg] = useState<string>("...");
 
@@ -40,6 +43,14 @@ export default function CreateBook() {
 
     handleInitialSettings();
   }, []);
+
+  const [pages, setPages] = useState<string[]>([]);
+  
+  useEffect(() => {
+    if (compiledBook) {
+      setPages(paginateContent(compiledBook.chapters, 500)); // 한 페이지당 500자 제한
+    }
+  }, [compiledBook]);
 
   const handleTags = (event : React.ChangeEvent<HTMLInputElement>) => {
     const tagParsed = event.target.value.split(',').map((tag) => tag.trim());
@@ -188,6 +199,23 @@ export default function CreateBook() {
         )}
 
         {step === 2 && (
+          (compiledBook && (
+            <div className="w-full max-w-md mx-auto p-4 border rounded-lg shadow-md bg-white">
+              <h2 className="text-xl font-bold text-center mb-4">{compiledBook.title}</h2>
+              <Carousel className="w-full">
+                <CarouselContent>
+                  {pages.map((page, index) => (
+                    <CarouselItem key={index} className="p-4 text-center">
+                      <p className="text-sm leading-relaxed whitespace-pre-line">{page}</p>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+            </div>
+          ))
+        )}
+
+        {step === 3 && (
           <div>
             <label>제목</label>
             <input type="text" value={compiledBook?.title} onChange={handleBookTitleChange}/>
@@ -206,19 +234,27 @@ export default function CreateBook() {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <div>
             <label>표지 이미지 선택</label>
             <input type="file" accept="image/*"onChange={handleImageUpload}/>
           </div>
         )}
-
-        {step === 4 && (
-          <div>
-            <h1>생성된 봄날의 서 ID : {generatedCompiledBookId}</h1>
-          </div>
-        )}
       </div>
     </div>
   );
+}
+
+// 텍스트를 페이지 단위로 나누는 함수
+function paginateContent(chapters: Chapter[], maxChars: number): string[] {
+  const text = chapters.map((chapter) => `${chapter.chapterTitle}\n${chapter.content}`).join("\n\n");
+  const pages: string[] = [];
+  let i = 0;
+
+  while (i < text.length) {
+    pages.push(text.slice(i, i + maxChars));
+    i += maxChars;
+  }
+
+  return pages;
 }
