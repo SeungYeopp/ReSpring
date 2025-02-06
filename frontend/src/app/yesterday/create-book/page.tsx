@@ -190,17 +190,25 @@ export default function CreateBook() {
           </div>
         }
       </div>
-      <div>
+      <div className="w-full p-4">
         {step === 1 && (
           <div className="flex flex-col gap-6">
             {stories.map((story) => (
               <Card
                 key={story.id}
-                className={`p-4 rounded-md cursor-pointer
-                  ${selectedStorieIds.includes(story.id) ? "border-brand" : "border-gray-300"}`}
+                className={`p-4 rounded-md cursor-pointer transition-all
+                  ${selectedStorieIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-300"}`}
                   onClick={() => toggleStorySelection(story.id)}
               >
-                TEST
+                <div className="flex items-center">
+                  <div className="w-[100px] h-[100px]">
+                    <img src={story.images[0].imageUrl} className="rounded-md w-full h-full object-cover" onError={(e) => {e.currentTarget.src = '/placeholder/gardening.jpg'}}/>
+                  </div>
+                  <div className="flex flex-col justify-center p-2">
+                    <h3 className="test-lg font-bold">{story.title}</h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">{story.content}</p>
+                  </div>
+                </div>
               </Card>
             ))}
           </div>
