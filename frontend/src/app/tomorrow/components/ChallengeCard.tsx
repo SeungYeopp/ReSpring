@@ -85,12 +85,15 @@ export function ChallengeCard({
               {status === "ONGOING" ? "진행 중" : status === "UPCOMING" ? "예정" : "종료됨"}
             </span>
 
-            {/* 버튼 (ONGOING 상태일 때만 활성화) */}
+            {/* 챌린지 상태에 따른 버튼 로직 수정 */}
             {status === "ONGOING" ? (
-              <Button className="bg-[#5F9D55] hover:bg-[#4C7C43] text-white">이어하기</Button>
+              <Button className="bg-green-500 hover:bg-green-700 text-white">이어하기</Button>
+            ) : status === "UPCOMING" ? (
+              <Button className="bg-blue-500 hover:bg-blue-700 text-white">참여하기</Button>
             ) : (
               <Button disabled className="bg-gray-400 text-white">종료됨</Button>
             )}
+
           </div>
         </div>
       </div>

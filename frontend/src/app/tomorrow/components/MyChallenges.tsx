@@ -43,7 +43,7 @@ export default function MyChallenges({ userId }: MyChallengesProps) {
   useEffect(() => {
     console.log("✅ useEffect 실행됨, userId:", userId); // userId 값 확인
     if (!userId) return;
-  
+
     const loadChallenges = async () => {
       console.log("✅ API 요청 시작:", userId);
       try {
@@ -54,10 +54,10 @@ export default function MyChallenges({ userId }: MyChallengesProps) {
         console.error("🚨 챌린지 불러오기 실패:", error);
       }
     };
-  
+
     loadChallenges();
   }, [userId]);
-  
+
   if (challenges.length === 0) {
     return <div className="text-center text-gray-500">참여 중인 도전이 없습니다.</div>;
   }
@@ -74,25 +74,25 @@ export default function MyChallenges({ userId }: MyChallengesProps) {
       >
         <CarouselContent>
           {challenges.map((challenge) => (
-            <CarouselItem key={challenge.id} className="md:basis-1/2 lg:basis-1/3">
-              <div className="p-1">
-                <SliderChallengeCard
-                  id={challenge.id}
-                  image={challenge.image || "/placeholder.webp"}
-                  title={challenge.title}
-                  description={
-                    <div className="flex items-center gap-2 text-gray-600 text-sm">
-                      <Calendar size={16} />
-                      {new Date(challenge.registerDate).toLocaleDateString()}{" "}
-                      <span className="flex items-center gap-1">
-                        <Flame size={16} className="text-red-500" />
-                        {challenge.currentStreak}일 연속 참여
-                      </span>
+            <CarouselItem key={challenge.id} className="md:basis-1/2 lg:basis-1/3 pl-4">
+              <SliderChallengeCard
+                id={challenge.id}
+                image={challenge.image || "/placeholder.webp"}
+                title={challenge.title}
+                description={
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <div className="flex items-center gap-1">
+                      <Calendar size={14} className="text-gray-400" />
+                      <span>{new Date(challenge.registerDate).toLocaleDateString()}</span>
                     </div>
-                  } // ✅ 등록 날짜 + 연속 도전 일수 표시
-                  tags={challenge.tags}
-                />
-              </div>
+                    <div className="flex items-center gap-1">
+                      <Flame size={14} className="text-red-500" />
+                      <span>{challenge.currentStreak}일 연속</span>
+                    </div>
+                  </div>
+                }
+                tags={challenge.tags}
+              />
             </CarouselItem>
           ))}
         </CarouselContent>
