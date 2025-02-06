@@ -7,7 +7,7 @@ export interface BookPostDto{
     userId : string,
     title : string,
     content : string,
-    tag : string[],
+    tags : string[],
     storyIds : number[],
 }
 
@@ -18,7 +18,7 @@ export interface Book{
     title : string,
     content : string,
     coverImg : string,
-    tag : string[],
+    tags : string[],
     likes : number,
     view : number,
     createdAt : Date,
@@ -46,15 +46,14 @@ export const makeBook = async (
     userId : string,
     title : string,
     content : string,
-    tag: string[],
+    tags: string[],
     storyIds : number[],
     coverImg : File
 ) : Promise<string> => {
     try{
-        console.log(tag)
         const formData = new FormData();
         formData.append('requestDto', new Blob([
-            JSON.stringify({userId, title, content, tag, storyIds})
+            JSON.stringify({userId, title, content, tags, storyIds})
         ], {type : 'application/json'}
         ));
         
@@ -99,13 +98,13 @@ export const updateBook = async (
     userId : string, 
     title : string, 
     content : string, 
-    tag : string[], 
+    tags : string[], 
     storyIds : number[], 
     image : File) : Promise<boolean> => {
         try{
             const formData = new FormData();
             formData.append('requestDto', new Blob([
-                JSON.stringify({title, content, tag, storyIds})
+                JSON.stringify({title, content, tags, storyIds})
             ], {type : 'application/json'}
             ));
 
