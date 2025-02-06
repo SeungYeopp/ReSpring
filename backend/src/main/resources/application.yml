@@ -72,14 +72,14 @@ management:
 cloud:
   aws:
     s3:
-      bucket: respring-bucket
+      bucket: ${S3_BUCKET}
     stack.auto: false
     region:
-      static: ap-southeast-2
+      static: ${S3_REGION}
     credentials:
       access-key: ${S3_ACCESSKEY}
       secret-key: ${S3_SECRETKEY}
-    endpoint: https://s3.ap-southeast-2.amazonaws.com
+
 ---
 spring:
   config:
