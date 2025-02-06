@@ -28,7 +28,7 @@ const mockChallenges: Challenge[] = [
     likes: 12,
     views: 150,
     participantCount: 30,
-    status: getChallengeStatus("2024-02-01T00:00:00", "2024-02-28T23:59:59"),
+    status: getChallengeStatus("2026-02-01T00:00:00", "2024-02-28T23:59:59"),
   },
   {
     id: 2,
@@ -39,7 +39,7 @@ const mockChallenges: Challenge[] = [
     likes: 25,
     views: 200,
     participantCount: 45,
-    status: getChallengeStatus("2024-03-01T00:00:00", "2024-03-31T23:59:59"),
+    status: getChallengeStatus("2024-03-01T00:00:00", "2025-03-31T23:59:59"),
   },
   {
     id: 3,
@@ -127,7 +127,7 @@ const mockChallenges: Challenge[] = [
     likes: 15,
     views: 160,
     participantCount: 40,
-    status: getChallengeStatus("2024-10-01T00:00:00", "2024-10-31T23:59:59"),
+    status: getChallengeStatus("2024-10-01T00:00:00", "2027-10-31T23:59:59"),
   },
 ];
 
