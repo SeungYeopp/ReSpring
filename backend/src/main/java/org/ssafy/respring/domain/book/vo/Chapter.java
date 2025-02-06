@@ -6,8 +6,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "chapter")
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -24,4 +23,6 @@ public class Chapter {
 
     @Column(columnDefinition = "TEXT")
     private String chapterContent; // JSON 형태로 저장
+
+    private int chapterOrder;
 }

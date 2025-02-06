@@ -80,5 +80,26 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
                 .fetch();
     }
 
+    @Override
+    public List<Book> findLikedBooksByUserId(UUID userId) {
+        QBook book = QBook.book;
+        QBookLikes bookLikes = QBookLikes.bookLikes;
 
+        return queryFactory
+          .select(book)
+          .from(bookLikes)
+          .join(bookLikes.book, book)
+          .where(bookLikes.user.id.eq(userId))
+          .fetch();
+    }
+
+    @Override
+    public List<Book> findMyBooksByUserId(UUID userId) {
+        QBook book = QBook.book;
+
+        return queryFactory
+          .selectFrom(book)
+          .where(book.author.id.eq(userId))
+          .fetch();
+    }
 }

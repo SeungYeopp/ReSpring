@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
-@Table(name = "book_info")
+@Table(name = "book")
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -49,9 +49,9 @@ public class Book {
     @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Long> storyIds;
 
-//    @OneToMany(mappedBy = "book_info", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @Builder.Default
-//    private List<Comment> comments = new ArrayList<>();
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {

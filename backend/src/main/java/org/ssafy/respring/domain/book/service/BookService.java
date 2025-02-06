@@ -13,6 +13,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
+import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
+import org.ssafy.respring.domain.book.dto.response.BookDetailResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
 import org.ssafy.respring.domain.book.repository.BookLikesRepository;
 import org.ssafy.respring.domain.book.repository.BookRepository;
@@ -24,6 +26,7 @@ import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.book.vo.BookLikes;
 import org.ssafy.respring.domain.book.vo.BookViews;
 import org.ssafy.respring.domain.book.vo.Chapter;
+import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.story.repository.StoryRepository;
 import org.ssafy.respring.domain.user.repository.UserRepository;
@@ -42,6 +45,8 @@ public class BookService {
 	private final UserRepository userRepository;
 	private final StoryRepository storyRepository;
 	private final ChapterRepository chapterRepository;
+
+	private final ChapterService chapterService;
 	private final BookViewsRedisService bookViewsRedisService;
 	private final BookLikesRedisService bookLikesRedisService;
 	private final RedisTemplate<String, Object> redisTemplate;
@@ -58,11 +63,11 @@ public class BookService {
 				.title(requestDto.getTitle())
 				.coverImage(requestDto.getCoverImage())
 				.tags(requestDto.getTags())
+		  		.chapters(requestDto.getChapters())
+		  		.storyIds(requestDto.getStoryIds())
 				.createdAt(LocalDateTime.now())
 				.updatedAt(LocalDateTime.now())
 				.build();
-
-		bookRepository.save(book);
 
 		// 챕터 저장
 		List<Chapter> chapters = requestDto.getChapters().stream()
@@ -74,13 +79,50 @@ public class BookService {
 				.collect(Collectors.toList());
 
 		chapterRepository.saveAll(chapters);
+
+		bookRepository.save(book);
 		return book.getId();
 	}
 
 	@Transactional
-	public void updateBook(Book book) {
-		book.setUpdatedAt(LocalDateTime.now());
-		bookRepository.save(book);
+	public void updateBook(BookUpdateRequestDto requestDto) {
+		// ✅ 1️⃣ 기존 책 조회 및 권한 검증
+		Book book = getBookById(requestDto.getBookId(), requestDto.getUserId());
+
+		boolean isUpdated = false; // 변경 여부 추적
+
+		// ✅ 2️⃣ ChapterService를 이용하여 챕터 업데이트
+		if (requestDto.getChapters() != null) {
+			chapterService.updateChapters(book, requestDto.getChapters());
+			isUpdated = true; // 챕터 업데이트가 일어남
+		}
+
+		// ✅ 3️⃣ 기존 book 엔티티에 변경 사항 적용
+		isUpdated |= Optional.ofNullable(requestDto.getTitle())
+		  .filter(title -> !title.equals(book.getTitle()))
+		  .map(title -> { book.setTitle(title); return true; })
+		  .orElse(false);
+
+		isUpdated |= Optional.ofNullable(requestDto.getCoverImage())
+		  .filter(coverImage -> !coverImage.equals(book.getCoverImage()))
+		  .map(coverImage -> { book.setCoverImage(coverImage); return true; })
+		  .orElse(false);
+
+		isUpdated |= Optional.ofNullable(requestDto.getTags())
+		  .filter(tags -> !tags.equals(book.getTags()))
+		  .map(tags -> { book.setTags(tags); return true; })
+		  .orElse(false);
+
+		isUpdated |= Optional.ofNullable(requestDto.getStoryIds())
+		  .filter(storyIds -> !storyIds.equals(book.getStoryIds()))
+		  .map(storyIds -> { book.setStoryIds(storyIds); return true; })
+		  .orElse(false);
+
+		// ✅ 4️⃣ 변경 사항이 있는 경우에만 저장
+		if (isUpdated) {
+			book.setUpdatedAt(LocalDateTime.now());
+			bookRepository.save(book);
+		}
 	}
 
 	@Transactional
@@ -89,7 +131,7 @@ public class BookService {
 	}
 
 	@Transactional
-	public BookResponseDto getBookDetail(Long bookId, UUID userId) {
+	public BookDetailResponseDto getBookDetail(Long bookId, UUID userId) {
 		Book book = getBookById(bookId);
 		viewBook(book, userId);
 
@@ -97,38 +139,43 @@ public class BookService {
 		Long likeCount = bookLikesRedisService.getLikeCount(bookId);
 		Long viewCount = bookViewsRedisService.getViewCount(bookId);
 		List<String> imageUrls = getImagesFromStories(book.getStoryIds());
-		String bookContent = getBookContent(bookId);
+		String bookContent = chapterService.getBookContent(bookId);
 
-		return BookResponseDto.toResponseDto(
-				book,
-				isLiked, // ✅ 좋아요 여부 포함
-				likeCount,
-				viewCount,
-				imageUrls,
-				true,
-				bookContent
+		// ✅ 댓글 조회
+		List<CommentResponseDto> comments = bookRepository.findCommentsByBookId(bookId).stream()
+		  .map(comment -> new CommentResponseDto(
+			comment.getId(),
+			comment.getContent(),
+			comment.getUser().getUserNickname(),
+			comment.getCreatedAt(),
+			comment.getUpdatedAt(),
+			comment.getParent().getId()
+		  ))
+		  .collect(Collectors.toList());
+
+		return BookDetailResponseDto.toResponseDto(
+		  book,
+		  isLiked,
+		  likeCount,
+		  viewCount,
+		  imageUrls,
+		  comments,
+		  bookContent
 		);
 	}
 
+	@Transactional
+	public List<BookResponseDto> getLikedBooks(UUID userId) {
+		return bookRepository.findLikedBooksByUserId(userId).stream()
+		  .map(book -> mapToBookResponseDto(book, userId))
+		  .collect(Collectors.toList());
+	}
 
-
-	private String getBookContent(Long bookId) {
-		List<Chapter> chapters = chapterRepository.findByBookIdOrderByTrend(bookId);
-		List<Map<String, String>> chapterContents = new ArrayList<>();
-
-		for (Chapter chapter : chapters) {
-			Map<String, String> chapterMap = new LinkedHashMap<>();
-			chapterMap.put("chapterTitle", chapter.getChapterTitle());
-			chapterMap.put("chapterContent", chapter.getChapterContent());
-			chapterContents.add(chapterMap);
-		}
-
-		try {
-			ObjectMapper objectMapper = new ObjectMapper();
-			return objectMapper.writeValueAsString(chapterContents);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException("Error converting chapters to JSON", e);
-		}
+	@Transactional
+	public List<BookResponseDto> getMyBooks(UUID userId) {
+		return bookRepository.findMyBooksByUserId(userId).stream()
+		  .map(book -> mapToBookResponseDto(book, userId))
+		  .collect(Collectors.toList());
 	}
 
 	@Transactional
@@ -143,53 +190,25 @@ public class BookService {
 		saveRecentView(user.getId(), bookId);
 	}
 
-	public Long getBookViewCount(Long bookId) {
-		return bookViewsRedisService.getViewCount(bookId);
-	}
-
 	@Transactional
 	public List<BookResponseDto> getBooksByAuthorId(UUID authorId, UUID userId) {
 		return bookRepository.findByAuthorId(authorId).stream()
-				.map(book -> BookResponseDto.toResponseDto(
-						book,
-						isBookLiked(book.getId(), userId), // ✅ 좋아요 여부 확인
-						bookLikesRedisService.getLikeCount(book.getId()),
-						bookViewsRedisService.getViewCount(book.getId()),
-						getImagesFromStories(book.getStoryIds()),
-						false,
-						null
-				))
-				.collect(Collectors.toList());
+		  .map(book -> mapToBookResponseDto(book, userId))
+		  .collect(Collectors.toList());
 	}
 
 	@Transactional
 	public List<BookResponseDto> getAllBooksSortedByTrends(UUID userId) {
 		return bookRepository.getAllBooksSortedByTrends().stream()
-				.map(book -> BookResponseDto.toResponseDto(
-						book,
-						isBookLiked(book.getId(), userId), // ✅ 좋아요 여부 확인
-						bookLikesRedisService.getLikeCount(book.getId()),
-						bookViewsRedisService.getViewCount(book.getId()),
-						getImagesFromStories(book.getStoryIds()),
-						false,
-						null
-				))
-				.collect(Collectors.toList());
+		  .map(book -> mapToBookResponseDto(book, userId))
+		  .collect(Collectors.toList());
 	}
 
 	@Transactional
 	public List<BookResponseDto> getWeeklyTop3Books(UUID userId) {
 		return bookRepository.getWeeklyTop3Books().stream()
-				.map(book -> BookResponseDto.toResponseDto(
-						book,
-						isBookLiked(book.getId(), userId), // ✅ 좋아요 여부 확인
-						bookLikesRedisService.getLikeCount(book.getId()),
-						bookViewsRedisService.getViewCount(book.getId()),
-						getImagesFromStories(book.getStoryIds()),
-						false,
-						null
-				))
-				.collect(Collectors.toList());
+		  .map(book -> mapToBookResponseDto(book, userId))
+		  .collect(Collectors.toList());
 	}
 
 	@Transactional
@@ -245,9 +264,27 @@ public class BookService {
 				.collect(Collectors.toList());
 	}
 
+	/**
+	 * ✅ Book 엔티티를 BookResponseDto로 변환하는 공통 메서드
+	 */
+	private BookResponseDto mapToBookResponseDto(Book book, UUID userId) {
+		return BookResponseDto.toResponseDto(
+		  book,
+		  isBookLiked(book.getId(), userId), // ✅ 좋아요 여부 확인
+		  bookLikesRedisService.getLikeCount(book.getId()),
+		  bookViewsRedisService.getViewCount(book.getId())
+		);
+	}
+
 	private Book getBookById(Long bookId) {
 		return bookRepository.findById(bookId)
 				.orElseThrow(() -> new IllegalArgumentException("❌ 해당하는 봄날의 서가 없습니다!"));
+	}
+
+	private Book getBookById(Long bookId, UUID userId) {
+		Book book = getBookById(bookId);
+		validateOwner(book.getAuthor().getUserId(), userId);
+		return book;
 	}
 
 	private User getUSerById(UUID userId) {
