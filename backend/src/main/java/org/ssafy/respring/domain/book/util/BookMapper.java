@@ -12,8 +12,8 @@ import java.util.UUID;
 
 @Component
 public class BookMapper {
-    public BookResponseDto toResponseDto(UUID userId, Book book, BookInfo bookInfo,
-                                         boolean isLiked, List<CommentResponseDto> commentDtos,
+    public BookResponseDto toResponseDto(Book book, BookInfo bookInfo,
+                                         boolean isLiked,
                                          List<String> storyImageUrls) {
         return new BookResponseDto(
           book.getId(),
@@ -28,8 +28,8 @@ public class BookMapper {
           book.getViewCount(),
           book.getCreatedAt(),
           book.getUpdatedAt(),
-          storyImageUrls, // Service에서 미리 조회하여 전달
-          commentDtos     // Service에서 변환 후 전달
+          storyImageUrls // Service에서 미리 조회하여 전달
+//          commentDtos     // Service에서 변환 후 전달
         );
     }
 }

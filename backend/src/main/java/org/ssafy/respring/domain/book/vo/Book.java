@@ -1,46 +1,77 @@
 package org.ssafy.respring.domain.book.vo;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.OneToMany;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
+import lombok.*;
 import org.ssafy.respring.domain.comment.vo.Comment;
+import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
-@Document(collection = "book")
+@Entity
+@Table(name = "book_info")
 @Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Book {
     @Id
-    private String id; // MongoDB ObjectId
-    private UUID userId;
-    private String title;
-    private Set<String> tags;
-    private String coverImage;
-    private String content; // JSON {chapterTitle: chapterContent}
-    private List<String> imageUrls;
-    private Set<Long> storyIds;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private Long likeCount = 0L;  // 전체 좋아요 수
-    private Long viewCount = 0L;  // 전체 조회수
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User author;
+
+    private String title;
+
+    private Set<String> tags;
+
+    @Column(name = "cover_image")
+    private String coverImage;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // 조회수 증가
-    public void increaseViewCount() {
-        this.viewCount = (this.viewCount == null) ? 1 : this.viewCount + 1;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "book_likes", joinColumns = @JoinColumn(name = "book_info_id"))
+    @Column(name = "user_id")
+    private Set<UUID> likedUsers = new HashSet<>(); // 좋아요한 유저 리스트
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "book_views", joinColumns = @JoinColumn(name = "book_info_id"))
+    @Column(name = "user_id")
+    private Set<UUID> viewedUsers = new HashSet<>(); // 조회한 유저 리스트
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Chapter> chapters;
+
+    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Long> storyIds;
+
+//    @OneToMany(mappedBy = "book_info", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @Builder.Default
+//    private List<Comment> comments = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    // 좋아요 수 업데이트
-    public void updateLikeCount(Long count) {
-        this.likeCount = count;
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // 좋아요 추가/삭제
+    public boolean toggleLike(UUID userId) {
+        if (likedUsers.contains(userId)) {
+            likedUsers.remove(userId);
+            return false;
+        } else {
+            likedUsers.add(userId);
+            return true;
+        }
     }
 }

@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.ssafy.respring.domain.book.vo.Chapter;
+
 @Data
 public class BookRequestDto {
 	private UUID userId;
 	private String authorName;
 	private String title;
-	private String content;
+	private List<Chapter> chapters;
+	private String coverImage;
 	private Set<String> tags;
 	private Set<Long> storyIds;
 }

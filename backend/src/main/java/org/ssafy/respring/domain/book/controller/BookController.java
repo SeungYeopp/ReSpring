@@ -10,10 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
 import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
-import org.ssafy.respring.domain.book.service.BookIndexService;
 import org.ssafy.respring.domain.book.service.BookSearchService;
 import org.ssafy.respring.domain.book.service.BookService;
-import org.ssafy.respring.domain.book.vo.Book;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,7 +23,6 @@ import java.util.UUID;
 @Tag(name = "Books API", description = "봄날의 서(자서전) 관련 API")
 public class BookController {
 	private final BookService bookService;
-	private final BookIndexService bookIndexService;
 	private final BookSearchService bookSearchService;
 
 	@PostMapping(consumes = {"multipart/form-data"})
@@ -58,7 +55,7 @@ public class BookController {
 	public ResponseEntity<List<BookResponseDto>> getAllBooks(
 	  @RequestHeader("X-User-Id") UUID userId
 	) {
-		return ResponseEntity.ok(bookService.getAllBooks(userId));
+		return ResponseEntity.ok(bookService.getAllBooksSortedByTrends());
 	}
 
 	@GetMapping("/my")
@@ -78,6 +75,8 @@ public class BookController {
 	public ResponseEntity<BookResponseDto> getBookDetail(
 			@Parameter(description = "봄날의 서 ID") @PathVariable String book_id,
 			@RequestHeader("X-User-Id") UUID userId) {
+		// 봄날의 서 내용 가져오기 (Chapter 에서)
+		// 봄날의 서 댓글 가져오기
 		return ResponseEntity.ok(bookService.getBookDetail(userId, book_id));
 	}
 
