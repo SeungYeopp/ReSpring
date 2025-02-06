@@ -71,7 +71,7 @@ public class BookService {
 			throw new RuntimeException("Elasticsearch 인덱싱 실패", e);
 		}
 
-		return book.getId() +" S3 객체 주소(디버깅용) :  " + book.getCoverImg();
+		return book.getId();
 	}
 
 	public void updateBook(String bookId, BookUpdateRequestDto requestDto, MultipartFile coverImg, UUID userId) {

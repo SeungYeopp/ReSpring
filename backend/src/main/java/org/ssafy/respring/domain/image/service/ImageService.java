@@ -220,8 +220,8 @@ public class ImageService {
 
         imageRepository.save(image);
 
-        System.out.println("📌 S3 객체 키: " + s3Key);
-        System.out.println("🔗 생성된 Unsigned URL: " + presignedUrl);
+//        System.out.println("S3 객체 키: " + s3Key);
+//        System.out.println("생성된 Presigned URL: " + presignedUrl);
 
         return s3Key;
     }
