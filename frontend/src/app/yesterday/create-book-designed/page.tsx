@@ -35,9 +35,9 @@ export default function CreateBook() {
   const availableTags = ["청춘", "마지막", "퇴직", "새로운 시작", "추억", "성장", "변화"];
 
   const coverImages = [
-    "/books/book1.jpg",
-    "/books/book2.jpg",
-    "/books/book3.jpg",
+    "/corgis/placeholder7.jpg",
+    "/corgis/placeholder4.jpg",
+    "/corgis/placeholder1.jpg",
   ];
 
   const [prevBtnStyle, setPrevBtnStyle] = useState<string>("opacity-0 pointer-events-none text-brand border-2 border-brand rounded-md font-semibold");
@@ -261,17 +261,17 @@ export default function CreateBook() {
             {coverImages.map((image, index) => (
               <Card
                 key={index}
-                className={`w-40 h-60 cursor-pointer border-2 ${
+                className={`w-[140px] h-[210px] cursor-pointer border-2 ${
                   selectedImage === image ? "border-brand-dark" : "border-gray-300"
                 }`}
                 onClick={() => handleSelectImage(image)}
               >
-                <img src={image} alt={`표지 ${index + 1}`} className="w-full h-full object-cover rounded" />
+                <img src={image} onError = {(e) => (e.currentTarget.src = '/corgis/placeholder7.jpg')} alt={`표지 ${index + 1}`} className="w-full h-full object-cover rounded" />
               </Card>
             ))}
 
             {/* 사용자 이미지 업로드 버튼 */}
-            <label className="w-40 h-60 flex items-center justify-center cursor-pointer border-2 border-dashed border-gray-300 rounded">
+            <label className="w-[140px] h-[210px] flex items-center justify-center cursor-pointer border-2 border-dashed border-gray-300 rounded">
               <Plus className="w-8 h-8 text-gray-400" />
               <input
                 type="file"
