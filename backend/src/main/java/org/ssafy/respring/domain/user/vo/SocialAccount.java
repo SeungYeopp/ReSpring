@@ -1,11 +1,14 @@
 package org.ssafy.respring.domain.user.vo;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "social_account")
+@Setter @Getter
 public class SocialAccount {
     @Id
     private Long id;
