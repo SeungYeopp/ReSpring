@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook } from "@/lib/api";
 import { getSessionInfo } from "@/lib/api";
+import {useRouter} from "next/navigation"
 
 import { Card } from "@/components/ui/card";
 
 export default function CreateBook() {
   const [userId, setUserId] = useState<string>("");
-  const [stories, setStories] = useState<Story[]>([]); // 유저의 모든 스토리리
+  const [stories, setStories] = useState<Story[]>([]); // 유저의 모든 스토리
   const [selectedStorieIds, setSelectedStorieIds] = useState<number[]>([]);
   const [step, setStep] = useState(1);
 
@@ -18,6 +19,8 @@ export default function CreateBook() {
   const [bookCoverImg, setBookCoverImg] = useState<File>();
   const [compiledBook, setCompiledBook] = useState<CompiledBook>();
   const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<string>("");
+
+  const router = useRouter();
 
   useEffect(() => {
     const handleInitialSettings = async () => {
@@ -141,10 +144,18 @@ export default function CreateBook() {
     setCompiledBook(newCompiledBook);
   }
 
+  const onClickBackButton = () =>{
+    if(step > 1){
+      setStep(step-1);
+    }else{
+      router.push("/yesterday");
+    }
+  }
+
   return (
     <div className="flex flex-col items-center">
       <div className="w-full flex items-center justify-between bg-white p-4">
-        <button className="text-brand border-2 border-brand rounded-md font-semibold px-2 py-1" onClick={() => setStep(step - 1)}>
+        <button className="text-brand border-2 border-brand rounded-md font-semibold px-2 py-1" onClick={onClickBackButton}>
           이전
         </button>
         <span className="text-lg font-bold">{step === 1 ? "글조각 선택하기" : step === 2 ? "미리 보기" : step === 3 ? "봄날의 서 수정하기" : "봄날의 서 표지 선택"}</span>

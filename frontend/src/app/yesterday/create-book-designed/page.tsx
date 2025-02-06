@@ -34,7 +34,6 @@ export default function CreateBook() {
   // ui
   const bookUrl = '/placeholder/gardening.jpg';
 
-
   const coverImages = [
     "/corgis/placeholder7.jpg",
     "/corgis/placeholder4.jpg",
