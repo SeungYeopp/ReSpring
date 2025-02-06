@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook, Chapter} from "@/lib/api";
 import { getSessionInfo } from "@/lib/api";
 import {useRouter} from "next/navigation"
+import { Plus } from "lucide-react";
 
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import {
@@ -29,7 +30,16 @@ export default function CreateBook() {
   const [compiledBook, setCompiledBook] = useState<CompiledBook>();
   const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<string>("");
 
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   const [tagInput, setTagInput] = useState("");
+
+  const coverImages = [
+    "/corgis/placeholder7.jpg",
+    "/corgis/placeholder4.jpg",
+    "/corgis/placeholder1.jpg",
+  ];
+
 
   const router = useRouter();
 
@@ -118,6 +128,8 @@ export default function CreateBook() {
       const result = await makeBook(userId, compiledBook!.title, jsonifiedBookContent, bookTags, selectedStorieIds, bookCoverImg!);
 
       setGeneratedCompiledBookId(result);
+      
+      router.push('/yesterday')
     }catch(error : any){
       console.error(error);
     }
@@ -184,6 +196,10 @@ export default function CreateBook() {
       router.push("/yesterday");
     }
   }
+
+  const handleSelectImage = (image: string) => {
+    setSelectedImage(image);
+  };
 
   return (
     <div className="flex flex-col items-center">
@@ -306,9 +322,35 @@ export default function CreateBook() {
         )}
 
         {step === 4 && (
-          <div>
-            <label>표지 이미지 선택</label>
-            <input type="file" accept="image/*"onChange={handleImageUpload}/>
+          <div className="flex items-center justify-center flex-wrap gap-4">
+            {coverImages.map((image, index) => (
+              <Card
+                key={index}
+                className={`w-[120px] h-[180px] cursor-pointer border-2 ${
+                  selectedImage === image ? "border-brand-dark" : "border-gray-300"
+                }`}
+                onClick={() => handleSelectImage(image)}
+              >
+                <img src={image} onError = {(e) => (e.currentTarget.src = '/corgis/placeholder7.jpg')} alt={`표지 ${index + 1}`} className="w-full h-full object-cover rounded" />
+              </Card>
+            ))}
+
+            {/* 사용자 이미지 업로드 버튼 */}
+            <label className="w-[120px] h-[180px] flex items-center justify-center cursor-pointer border-2 border-dashed border-gray-300 rounded">
+              <Plus className="w-8 h-8 text-gray-400" />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    const fileURL = URL.createObjectURL(e.target.files[0]);
+                    setSelectedImage(fileURL);
+                    handleImageUpload(e);
+                  }
+                }}
+              />
+            </label>
           </div>
         )}
       </div>
