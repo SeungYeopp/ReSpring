@@ -1,13 +1,13 @@
 "use client";
 
-interface NoteEditorProps {
+interface StoryEditorProps {
   title: string;
   content: string;
   onTitleChange: (newTitle: string) => void;
   onContentChange: (newContent: string) => void;
 }
 
-export default function NoteEditor({ title, content, onTitleChange, onContentChange }: NoteEditorProps) {
+export default function NoteEditor({ title, content, onTitleChange, onContentChange }: StoryEditorProps) {
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onTitleChange(e.target.value);
   };

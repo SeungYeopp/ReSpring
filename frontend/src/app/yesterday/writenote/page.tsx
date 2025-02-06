@@ -6,11 +6,11 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { getAllEvents } from "@/lib/api";
 import { makeStory } from "@/lib/api/story";  
-import SelectNote from "../components/SelectNote";
-import NoteEditor from "../components/NoteEditor";
+import SelectEvent from "../components/SelectEvent";
+import StoryEditor from "../components/StoryEditor";
 import AddEvent from "@/components/custom/AddEvent";
 
-export default function WriteNotePage() {
+export default function WriteStoryPage() {
   const router = useRouter();
   const [selected, setSelected] = useState<number | null>(null);
   const [selectedEventName, setSelectedEventName] = useState<string>("");
@@ -98,11 +98,11 @@ export default function WriteNotePage() {
 
       {stage === "select" ? (
         <>
-          <SelectNote events={events} selected={selected} onSelect={setSelected} />
+          <SelectEvent events={events} selected={selected} onSelect={setSelected} />
           <AddEvent onEventAdded={handleEventAdded} />
         </>
       ) : (
-        <NoteEditor
+        <StoryEditor
           title={title}
           content={content}
           onTitleChange={setTitle}
