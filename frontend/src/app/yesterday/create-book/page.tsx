@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook } from "@/lib/api";
+import { getSessionInfo } from "@/lib/api";
+
+import { Card } from "@/components/ui/card";
 
 export default function CreateBook() {
   const [userId, setUserId] = useState<string>("");
-  const [stories, setStories] = useState<Story[]>([]);
+  const [stories, setStories] = useState<Story[]>([]); // 유저의 모든 스토리리
   const [selectedStorieIds, setSelectedStorieIds] = useState<number[]>([]);
   const [step, setStep] = useState(1);
 
@@ -16,15 +19,24 @@ export default function CreateBook() {
   const [compiledBook, setCompiledBook] = useState<CompiledBook>();
   const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<string>("");
 
-  const handleStoriesGet = async () => {
-    try{
-      const result = await getAllStories(userId);
+  useEffect(() => {
+    const handleInitialSettings = async () => {
+      try{
+        const sessionInfo = await getSessionInfo();
 
-      setStories(result);
-    }catch(error){
-      setMsg('에러 발생' + error);
+        setUserId(sessionInfo.userId); // 세션 정보를 통해 유저 ID 받아오기
+
+        const allStoriesGot = await getAllStories(sessionInfo.userId);
+
+        setStories(allStoriesGot);
+      }catch(error){
+        setMsg('유저의 글 조각 목록을 받아오는 데 실패하였습니다..');
+        console.error(error);
+      }
     }
-  }
+
+    handleInitialSettings();
+  }, []);
 
   const handleTags = (event : React.ChangeEvent<HTMLInputElement>) => {
     const tagParsed = event.target.value.split(',').map((tag) => tag.trim());
@@ -47,6 +59,19 @@ export default function CreateBook() {
     const parsedIds = unparsed.split(",").map((token) => (token.trim())).map((token) => parseInt(token, 10));
 
     setSelectedStorieIds(parsedIds);
+  }
+
+  const toggleStorySelection = (storyId : number) => {
+    let isAlreadySelected = selectedStorieIds.includes(storyId);
+    let newArr : number[] = selectedStorieIds;
+
+    if(isAlreadySelected){
+      newArr = newArr.filter((id) => id !==storyId)
+    }else{
+      newArr = [...newArr, storyId]
+    }
+
+    setSelectedStorieIds(newArr);
   }
 
   const handleSubmit = async () => {
@@ -167,22 +192,17 @@ export default function CreateBook() {
       </div>
       <div>
         {step === 1 && (
-          <div>
-            <label>사용자 ID 입력 : </label>
-            <input value = {userId} onChange={(e) => (setUserId(e.target.value))}></input>
-            <label>글 조각 ID 입력 여러 개 (예시 : "1, 3, 4") : </label>
-            <input onChange={handleSelectedStories}></input>
-            <button className="bg-brand" onClick={handleStoriesGet}>글 조각 가져오기</button>
-            {stories && (<div>
-              {stories.map((story, idx) => (
-                <div key={idx}>
-                  <div>{story.id}</div>
-                  <div>{story.title}</div>
-                  <div>{story.content}</div>
-                </div>
-              ))}
-            </div>)}
-
+          <div className="flex flex-col gap-6">
+            {stories.map((story) => (
+              <Card
+                key={story.id}
+                className={`p-4 rounded-md cursor-pointer
+                  ${selectedStorieIds.includes(story.id) ? "border-brand" : "border-gray-300"}`}
+                  onClick={() => toggleStorySelection(story.id)}
+              >
+                TEST
+              </Card>
+            ))}
           </div>
         )}
 
