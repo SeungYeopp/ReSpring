@@ -6,6 +6,12 @@ import { getSessionInfo } from "@/lib/api";
 import {useRouter} from "next/navigation"
 
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 import { Card } from "@/components/ui/card";
 
@@ -22,6 +28,8 @@ export default function CreateBook() {
   const [bookCoverImg, setBookCoverImg] = useState<File>();
   const [compiledBook, setCompiledBook] = useState<CompiledBook>();
   const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<string>("");
+
+  const [tagInput, setTagInput] = useState("");
 
   const router = useRouter();
 
@@ -58,6 +66,16 @@ export default function CreateBook() {
     setBookTags(tagParsed);
   }
 
+  const handleTagKeyDown = (e : React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && tagInput.trim() !== "") {
+      e.preventDefault();
+      if (!bookTags.includes(tagInput.trim())) {
+        setBookTags([...bookTags, tagInput.trim()]);
+      }
+      setTagInput("");
+    }
+  };
+
   const handleImageUpload = (event : React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
 
@@ -65,6 +83,10 @@ export default function CreateBook() {
       setBookCoverImg(files[0]);
     }
   }
+
+  const removeTag = (index : number) => {
+    setBookTags(bookTags.filter((_, i) => i !== index));
+  };
 
   const handleSelectedStories = (event : React.ChangeEvent<HTMLInputElement>) => {
     const unparsed = event.target.value;
@@ -216,22 +238,71 @@ export default function CreateBook() {
         )}
 
         {step === 3 && (
-          <div>
-            <label>제목</label>
-            <input type="text" value={compiledBook?.title} onChange={handleBookTitleChange}/>
-            <br/>
-            <label>태그 입력</label>
-            <input placeholder="예: 청춘, 마지막, 퇴직" value={bookTags} onChange={handleTags}/>
-            <br/>
-            {compiledBook?.chapters.map((chapter, chapterIdx) => (
-              <div key={chapterIdx}>
-                <label>챕터 {chapterIdx + 1} 제목 : </label>
-                <input value={chapter.chapterTitle} onChange={(event) => (handleChapterTitleChange(chapterIdx, event.target.value))}></input>
-                <label>챕터 내용</label>
-                <textarea rows={3} value={chapter.content} onChange={(event) => (handleChapterContentChange(chapterIdx, event.target.value))}></textarea>
-              </div>
+          <div className="flex flex-col gap-4 p-4">
+          {/* 제목 입력 */}
+          <label>제목</label>
+          <input
+            type="text"
+            value={compiledBook?.title}
+            onChange={handleBookTitleChange}
+            className="border-brand border-2 rounded-sm p-2"
+          />
+
+          {/* 태그 입력 */}
+          <label>태그 입력</label>
+          <div className="border border-brand p-2 rounded-sm flex flex-wrap gap-2">
+            {bookTags.map((tag, index) => (
+              <span
+                key={index}
+                className="bg-brand text-white px-2 py-1 rounded-full text-sm flex items-center gap-1"
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => removeTag(index)}
+                  className="ml-1 text-xs"
+                >
+                  ✕
+                </button>
+              </span>
             ))}
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={handleTagKeyDown}
+              className="border-none focus:ring-0 p-1 outline-none flex-1"
+              placeholder="태그 입력 후 Enter"
+            />
           </div>
+
+          {/* 챕터 입력 */}
+          <Accordion type="multiple" className="w-full">
+            {compiledBook?.chapters.map((chapter, chapterIdx) => (
+              <AccordionItem key={chapterIdx} value={`item-${chapterIdx}`}>
+                <AccordionTrigger>
+                  <input
+                    value={chapter.chapterTitle}
+                    onChange={(event) =>
+                      handleChapterTitleChange(chapterIdx, event.target.value)
+                    }
+                    className="w-full"
+                  />
+                </AccordionTrigger>
+                <AccordionContent>
+                  <textarea
+                    rows={5}
+                    value={chapter.content}
+                    onChange={(event) =>
+                      handleChapterContentChange(chapterIdx, event.target.value)
+                    }
+                    className="w-full"
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
         )}
 
         {step === 4 && (
