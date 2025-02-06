@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.post.vo.Post;
 import org.ssafy.respring.domain.story.vo.Story;
 
@@ -18,8 +19,7 @@ public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageId;
-
-    private String imageUrl;
+    private String S3Key;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
@@ -30,4 +30,6 @@ public class Image {
     @JoinColumn(name = "story_id")
     @JsonIgnore
     private Story story;
+
+
 }

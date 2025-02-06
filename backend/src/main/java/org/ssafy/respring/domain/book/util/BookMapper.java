@@ -38,7 +38,7 @@ public class BookMapper {
     private Set<String> getImagesFromStories(Set<Long> storyIds) {
         return storyRepository.findAllById(storyIds).stream()
                 .flatMap(story -> story.getImages() != null ? story.getImages().stream() : List.<Image>of().stream())
-                .map(Image::getImageUrl)
+                .map(Image::getS3Key)
                 .collect(Collectors.toSet());
     }
 }
