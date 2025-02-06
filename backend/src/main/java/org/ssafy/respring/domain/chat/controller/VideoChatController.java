@@ -3,7 +3,6 @@ package org.ssafy.respring.domain.chat.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
@@ -12,21 +11,36 @@ import org.springframework.stereotype.Controller;
 public class VideoChatController {
     private final SimpMessagingTemplate messagingTemplate;
 
+    /**
+     * ✅ 멘토가 Offer를 보내면 모든 멘티들에게 전송
+     */
     @MessageMapping("/video.offer/{roomId}")
-    @SendTo("/topic/video/offer/{roomId}")  // ✅ 클라이언트가 올바른 경로로 수신하도록 변경
-    public String handleOffer(@DestinationVariable String roomId, String offer) {
-        return offer;  // 클라이언트에 SDP Offer 전송
+    public void handleOffer(@DestinationVariable String roomId, String offer) {
+        System.out.println("📡 멘토의 WebRTC Offer 수신 -> 멘티들에게 전송: " + roomId);
+        messagingTemplate.convertAndSend("/topic/video.offer/" + roomId, offer);
     }
 
+    /**
+     * ✅ 멘티가 Answer를 보내면 멘토에게 전송
+     */
     @MessageMapping("/video.answer/{roomId}")
-    @SendTo("/topic/video/answer/{roomId}") // ✅ 클라이언트가 올바른 경로로 수신하도록 변경
-    public String handleAnswer(@DestinationVariable String roomId, String answer) {
-        return answer;  // 클라이언트에 SDP Answer 전송
+    public void handleAnswer(@DestinationVariable String roomId, String answer) {
+        System.out.println("📡 멘티의 WebRTC Answer 수신 -> 멘토에게 전송: " + roomId);
+        messagingTemplate.convertAndSend("/topic/video.answer/" + roomId, answer);
     }
 
+    /**
+     * ✅ ICE Candidate는 모든 참가자에게 전송
+     */
     @MessageMapping("/video.ice/{roomId}")
-    @SendTo("/topic/video/ice/{roomId}") // ✅ ICE Candidate는 별도의 경로로 전송
-    public String handleIceCandidate(@DestinationVariable String roomId, String candidate) {
-        return candidate;  // 클라이언트에 ICE Candidate 전송
+    public void handleIceCandidate(@DestinationVariable String roomId, String candidate) {
+        System.out.println("❄ ICE Candidate 수신 -> 모든 참가자에게 전송: " + roomId);
+        messagingTemplate.convertAndSend("/topic/video.ice/" + roomId, candidate);
+    }
+
+    @MessageMapping("/video.broadcast/{roomId}")
+    public void handleVideoBroadcast(@DestinationVariable String roomId) {
+        System.out.println("📡 멘토가 모든 멘티에게 Offer 전송 요청: " + roomId);
+        messagingTemplate.convertAndSend("/topic/video.broadcast/" + roomId, "{}");
     }
 }

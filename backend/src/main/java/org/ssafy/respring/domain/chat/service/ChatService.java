@@ -264,6 +264,7 @@ public class ChatService {
     }
 
 
+    @Transactional
     public void leaveRoom(Long roomId, UUID userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 채팅방이 존재하지 않습니다."));
@@ -271,14 +272,36 @@ public class ChatService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
-        ChatRoomUser chatRoomUser = chatRoomUserRepository.findByChatRoomAndUser(chatRoom, user)
-                .orElseThrow(() -> new IllegalArgumentException("❌ 해당 유저가 채팅방에 없음"));
+        Optional<ChatRoomUser> chatRoomUserOpt = chatRoomUserRepository.findByChatRoomAndUser(chatRoom, user);
 
-        // ✅ isActive 상태만 변경 (삭제 X)
-        chatRoomUser.setActive(false);
-        chatRoomUserRepository.save(chatRoomUser);
+        if (chatRoomUserOpt.isEmpty()) {
+            throw new IllegalArgumentException("❌ 해당 유저가 채팅방에 없음");
+        }
 
-        System.out.println("✅ 사용자가 나갔음: " + userId);
+        ChatRoomUser chatRoomUser = chatRoomUserOpt.get();
+
+
+        if (chatRoom.isMentoring()) {
+            if(chatRoom.getMentorId().equals(userId)){
+                chatRoomRepository.delete(chatRoom);
+                System.out.println("🗑️ 멘토링 방 삭제됨: " + roomId);
+            } else{
+                // ✅ 멘토링 방이면 유저 삭제
+                chatRoomUserRepository.deleteByRoomIdAndUserId(roomId, userId);
+                System.out.println("🗑️ 멘토링 방 - 사용자 삭제됨: " + userId);
+            }
+
+            // ✅ 방에 남은 유저가 없으면 삭제
+            if (!chatRoomUserRepository.existsByChatRoom(chatRoom)) {
+                chatRoomRepository.delete(chatRoom);
+                System.out.println("🔥 멘토링 방이 비어 삭제됨: " + roomId);
+            }
+        } else {
+            // ✅ 일반 채팅방이면 `isActive`를 false로 변경
+            chatRoomUser.setActive(false);
+            chatRoomUserRepository.save(chatRoomUser);
+            System.out.println("🚪 일반 채팅방 - isActive = false 설정됨: " + userId);
+        }
 
         // ✅ WebSocket을 통해 나간 사실을 알림
         messagingTemplate.convertAndSend(
@@ -286,18 +309,21 @@ public class ChatService {
                 "User " + userId + " has left the room."
         );
 
-        // ✅ 1:1 채팅방에서 두 명 다 나갔으면 삭제
+        // ✅ 1:1 채팅방에서 모든 유저가 나가면 방 삭제
         if (!chatRoom.isOpenChat()) {
-            long activeUsers = chatRoom.getUsers().stream().filter(u ->
-                    chatRoomUserRepository.findByChatRoomAndUser(chatRoom, u).get().isActive()
-            ).count();
+            boolean hasActiveUsers = chatRoom.getUsers().stream().anyMatch(u ->
+                    chatRoomUserRepository.findByChatRoomAndUser(chatRoom, u)
+                            .map(ChatRoomUser::isActive)
+                            .orElse(false)
+            );
 
-            if (activeUsers == 0) {
+            if (!hasActiveUsers) {
                 chatRoomRepository.delete(chatRoom);
                 System.out.println("✅ 1:1 채팅방 삭제됨: " + roomId);
             }
         }
     }
+
 
 
 

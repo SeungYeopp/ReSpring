@@ -173,10 +173,9 @@ public class ChatController {
 //    }
 
     @Operation(summary = "채팅 메시지 조회", description = "특정 채팅방의 모든 메시지를 조회합니다.")
-    @MessageMapping("/chat.messages.{roomId}")
-    @SendTo("/topic/messages/{roomId}")  // ❌ 이게 문제! {roomId}가 바인딩 안됨
-    public List<ChatMessageResponse> getMessages(@DestinationVariable Long roomId) {
-        return chatService.getMessages(roomId).stream()
+    @GetMapping("/chat/messages/{roomId}")  // ✅ REST API로 변경
+    public ResponseEntity<List<ChatMessageResponse>> getMessages(@PathVariable Long roomId) {
+        List<ChatMessageResponse> messages = chatService.getMessages(roomId).stream()
                 .map(message -> ChatMessageResponse.builder()
                         .sender(message.getSender())
                         .receiver(message.getReceiver())
@@ -184,7 +183,10 @@ public class ChatController {
                         .timestamp(message.getTimestamp())
                         .build())
                 .collect(Collectors.toList());
+
+        return ResponseEntity.ok(messages);
     }
+
 
 
 
