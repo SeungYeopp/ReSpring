@@ -43,4 +43,26 @@ public class VideoChatController {
         System.out.println("📡 멘토가 모든 멘티에게 Offer 전송 요청: " + roomId);
         messagingTemplate.convertAndSend("/topic/video.broadcast/" + roomId, "{}");
     }
+
+    /**
+     * ✅ 멘토가 영상 통화를 중지하면 모든 멘티에게 알림
+     */
+    @MessageMapping("/video.stop/{roomId}")
+    public void handleVideoStop(@DestinationVariable String roomId) {
+        System.out.println("📴 멘토가 영상 통화를 종료 -> 모든 멘티에게 알림: " + roomId);
+        messagingTemplate.convertAndSend("/topic/video.stop/" + roomId, "{}");
+    }
+
+    /**
+     * ✅ 새로운 멘티가 방에 입장하면, 멘토에게 Offer 요청을 전달
+     */
+    @MessageMapping("/video.requestOffer/{roomId}")
+    public void handleOfferRequest(@DestinationVariable String roomId) {
+        System.out.println("📡 새로운 멘티가 입장 -> 멘토에게 Offer 요청: " + roomId);
+        messagingTemplate.convertAndSend("/topic/video.requestOffer/" + roomId, "{}");
+    }
+
+
+
+
 }
