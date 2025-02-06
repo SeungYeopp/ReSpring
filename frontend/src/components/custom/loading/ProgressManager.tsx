@@ -1,7 +1,8 @@
 "use client";
 
 import { ReactNode } from "react";
-import DelayedSkeleton from "./DelayedSkeleton";  // 지연된 스켈레톤 컴포넌트
+import DelayedSkeleton from "./DelayedSkeleton";
+import ResponsiveProgressLoading from "./ResponsiveProgressLoading";  // 반응형 로딩 컴포넌트 추가
 
 /**
  * ProgressManagerProps 타입 정의
@@ -9,14 +10,15 @@ import DelayedSkeleton from "./DelayedSkeleton";  // 지연된 스켈레톤 컴�
  * - isLoading: 현재 로딩 상태
  * - delayedSkeleton: 지연된 스켈레톤 표시 (100ms ~ 500ms)
  * - immediateSkeleton: 즉시 스켈레톤 표시 (500ms 이상)
- * - loadingIndicator: 로딩 애니메이션 표시 (500ms 이상) - 이 부분 추가!
+ * - useResponsiveLoading: 반응형 로딩 애니메이션 사용 여부 (500ms 이상)
+ * - children: 데이터 로드 완료 후 표시할 실제 콘텐츠
  */
 interface ProgressManagerProps {
   avgResponseTime: number;
   isLoading: boolean;
   delayedSkeleton: ReactNode;
   immediateSkeleton: ReactNode;
-  loadingIndicator?: ReactNode;  // 💡 이 부분 추가!
+  useResponsiveLoading?: boolean;  // 💡 반응형 로딩 애니메이션 사용 여부
   children: ReactNode;
 }
 
@@ -24,7 +26,7 @@ interface ProgressManagerProps {
  * API 응답 시간에 따라 로딩 UI 결정
  * - 100ms 이하: 로딩 없이 즉시 렌더링
  * - 100ms ~ 500ms: 지연된 스켈레톤 표시
- * - 500ms 이상: 즉시 스켈레톤 + 로딩 애니메이션 표시
+ * - 500ms 이상: 즉시 스켈레톤 + (옵션에 따라) 반응형 로딩 애니메이션 표시
  */
 const determineProgressType = (avgResponseTime: number) => {
   if (avgResponseTime < 100) return "NO_INDICATOR";
@@ -34,14 +36,14 @@ const determineProgressType = (avgResponseTime: number) => {
 
 /**
  * ProgressManager 컴포넌트
- * - API 응답 시간에 따라 자동으로 스켈레톤 및 로딩 애니메이션 적용
+ * - API 응답 시간에 따라 스켈레톤 및 반응형 로딩 애니메이션 자동 적용
  */
 export const ProgressManager = ({
   avgResponseTime,
   isLoading,
   delayedSkeleton,
   immediateSkeleton,
-  loadingIndicator,  // 💡 이 부분 추가!
+  useResponsiveLoading = false,  // 💡 기본값: 반응형 로딩 애니메이션 사용 안 함
   children,
 }: ProgressManagerProps) => {
   const progressType = determineProgressType(avgResponseTime);
@@ -50,7 +52,7 @@ export const ProgressManager = ({
     return (
       <div>
         {immediateSkeleton}
-        {loadingIndicator}  {/* 💡 로딩 애니메이션 표시 */}
+        {useResponsiveLoading && <ResponsiveProgressLoading />}  {/* 💡 500ms 이상일 때 반응형 로딩 애니메이션 표시 */}
       </div>
     );
   }
@@ -63,7 +65,7 @@ export const ProgressManager = ({
     );
   }
 
-  return children;
+  return children;  // 로딩이 완료되면 실제 콘텐츠 표시
 };
 
 export default ProgressManager;

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";  // Next.js 라우터 사용
 import { Button } from "@/components/ui/button";  // shadCN UI 버튼 컴포넌트
+import ResponsiveProgressLoading from "@/components/custom/loading/ResponsiveProgressLoading";
 
 const LoadingTestPage = () => {
   const router = useRouter();  // 라우터 초기화
@@ -32,8 +33,12 @@ const LoadingTestPage = () => {
         반응형 로딩 테스트
       </Button>
 
-      <Button className="w-64" onClick={() => navigateTo("/test/loading/Progress")}>
+      <Button className="w-64" onClick={() => navigateTo("/test/loading/progress")}>
         프로그레스 매니저 테스트
+      </Button>
+
+      <Button className="w-64" onClick={() => navigateTo("/test/loading/ResponsiveProgress")}>
+        반응형 프로그레스 매니저 테스트
       </Button>
     </div>
   );
