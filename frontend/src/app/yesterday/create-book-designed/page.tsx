@@ -12,7 +12,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Plus } from "lucide-react";
-import ViewerPage from "@/app/viewer/[BookID]/page"
 
 export default function CreateBook() {
   const [userId, setUserId] = useState<string>("");
@@ -21,9 +20,11 @@ export default function CreateBook() {
   const [step, setStep] = useState(1);
   const [bookTag, setBookTag] = useState<string>("청춘");
 
+  const [bookTags, setBookTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+
   const [msg, setMsg] = useState<string>("...");
 
-  const [bookTags, setBookTags] = useState<string[]>([]);
   const [bookCoverImg, setBookCoverImg] = useState<File>();
   const [compiledBook, setCompiledBook] = useState<CompiledBook>();
   const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<string>("");
@@ -73,11 +74,19 @@ export default function CreateBook() {
     handleInitialSetting();
   }, []);
 
-  const handleTags = (event : React.ChangeEvent<HTMLInputElement>) => {
-    const tagParsed = event.target.value.split(',').map((tag) => tag.trim());
-
-    setBookTags(tagParsed);
-  }
+  const handleTagKeyDown = (e : React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && tagInput.trim() !== "") {
+      e.preventDefault();
+      if (!bookTags.includes(tagInput.trim())) {
+        setBookTags([...bookTags, tagInput.trim()]);
+      }
+      setTagInput("");
+    }
+  };
+  
+  const removeTag = (index : number) => {
+    setBookTags(bookTags.filter((_, i) => i !== index));
+  };
 
   const handleImageUpload = (event : React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -169,12 +178,12 @@ export default function CreateBook() {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="w-full flex items-center justify-between bg-white p-4">
-        <button className={prevBtnStyle} onClick={() => setStep(step - 1)}>
+      <div className="w-full flex items-center justify-center bg-white p-4">
+        <button className="text-brand w-20 border-2 border-brand rounded-md font-semibold px-2 py-1" onClick={() => setStep(step - 1)}>
           이전
         </button>
-        <span className="text-lg font-bold">{step === 1 ? "글조각 선택하기" : step === 2 ? "미리 보기" : step === 3 ? "봄날의 서 수정하기" : "봄날의 서 표지 선택"}</span>
-        <button className="text-white bg-brand-dark border-2 border-brand-dark rounded-md font-semibold px-2 py-1" onClick={() => (step === 1 ? handleMakeAIContent() : (step === 4 ? handleSubmit() : setStep(step + 1)))} disabled={step === 4 && !compiledBook}>
+        <span className="text-md font-bold w-2/4 text-center">{step === 1 ? "글조각 선택하기" : step === 2 ? "미리 보기" : step === 3 ? "봄날의 서 수정하기" : "봄날의 서 표지 선택"}</span>
+        <button className="w-20 text-white bg-brand-dark border-2 border-brand-dark rounded-md font-semibold px-2 py-1" onClick={() => (step === 1 ? handleMakeAIContent() : (step === 4 ? handleSubmit() : setStep(step + 1)))} disabled={step === 4 && !compiledBook}>
           {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : step === 2 ? "수정" : "다음"}
         </button>
       </div>
@@ -193,7 +202,7 @@ export default function CreateBook() {
                   <div className="flex items-center">
                     <img src={bookUrl} className="h-[100px] w-[100px] rounded-md" height={160} width={100} />
                     <div className="px-5">
-                      <h3 className="text-lg font-bold">{story.title}</h3>
+                      <h3 className="text-md font-bold">{story.title}</h3>
                       <p className="text-sm text-gray-600 line-clamp-2">{story.content}</p>
                     </div>
                   </div>
@@ -206,7 +215,7 @@ export default function CreateBook() {
         {step === 2 && (
           <div className="flex items-center justify-center">
             {/*<ViewerPage params={{ BookID: "1" }}/>*/}
-            <img src='/placeholder/viewer_screenshot2.jpg' width={350} />
+            여기에 미리보기 입력..
           </div>
         )}
 
@@ -214,40 +223,62 @@ export default function CreateBook() {
           <div className="flex flex-col gap-4 p-4">
             {/* 제목 입력 */}
             <label>제목</label>
-            <input type="text" value={compiledBook?.title} onChange={handleBookTitleChange} className="border-brand border-2 rounded-sm"/>
+            <input
+              type="text"
+              value={compiledBook?.title}
+              onChange={handleBookTitleChange}
+              className="border-brand border-2 rounded-sm p-2"
+            />
 
-            {/* 태그 선택 */}
+            {/* 태그 입력 */}
             <label>태그 입력</label>
-            <Select onValueChange={setBookTag} value={bookTag}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="태그를 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableTags.map((tag) => (
-                  <SelectItem key={tag} value={tag}>
-                    {tag}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="border border-brand p-2 rounded-sm flex flex-wrap gap-2">
+              {bookTags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="bg-brand text-white px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(index)}
+                    className="ml-1 text-xs"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                className="border-none focus:ring-0 p-1 outline-none flex-1"
+                placeholder="태그 입력 후 Enter"
+              />
+            </div>
 
             {/* 챕터 입력 */}
             <Accordion type="multiple" className="w-full">
               {compiledBook?.chapters.map((chapter, chapterIdx) => (
-                <AccordionItem value={`item-${chapterIdx}`}>
+                <AccordionItem key={chapterIdx} value={`item-${chapterIdx}`}>
                   <AccordionTrigger>
                     <input
                       value={chapter.chapterTitle}
-                      onChange={(event) => handleChapterTitleChange(chapterIdx, event.target.value)}
+                      onChange={(event) =>
+                        handleChapterTitleChange(chapterIdx, event.target.value)
+                      }
                       className="w-full"
                     />
                   </AccordionTrigger>
                   <AccordionContent>
-                  <textarea
-                    rows={5}
-                    value={chapter.content}
-                    onChange={(event) => handleChapterContentChange(chapterIdx, event.target.value)}
-                    className="w-full"
+                    <textarea
+                      rows={5}
+                      value={chapter.content}
+                      onChange={(event) =>
+                        handleChapterContentChange(chapterIdx, event.target.value)
+                      }
+                      className="w-full"
                     />
                   </AccordionContent>
                 </AccordionItem>
@@ -256,12 +287,13 @@ export default function CreateBook() {
           </div>
         )}
 
+
         {step === 4 && (
           <div className="flex items-center justify-center flex-wrap gap-4">
             {coverImages.map((image, index) => (
               <Card
                 key={index}
-                className={`w-[140px] h-[210px] cursor-pointer border-2 ${
+                className={`w-[120px] h-[180px] cursor-pointer border-2 ${
                   selectedImage === image ? "border-brand-dark" : "border-gray-300"
                 }`}
                 onClick={() => handleSelectImage(image)}
@@ -271,7 +303,7 @@ export default function CreateBook() {
             ))}
 
             {/* 사용자 이미지 업로드 버튼 */}
-            <label className="w-[140px] h-[210px] flex items-center justify-center cursor-pointer border-2 border-dashed border-gray-300 rounded">
+            <label className="w-[120px] h-[180px] flex items-center justify-center cursor-pointer border-2 border-dashed border-gray-300 rounded">
               <Plus className="w-8 h-8 text-gray-400" />
               <input
                 type="file"
