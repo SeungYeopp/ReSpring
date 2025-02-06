@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllStories, Story, compileBookByAIMock, makeBook, CompiledBook, Chapter} from "@/lib/api";
+import { getAllStories, Story, compileBookByAIMock, compileBookByAI, makeBook, CompiledBook, Chapter} from "@/lib/api";
 import { getSessionInfo } from "@/lib/api";
 import {useRouter} from "next/navigation"
 import { Plus } from "lucide-react";
@@ -146,7 +146,7 @@ export default function CreateBook() {
       }
   
       // 글 조각 합친 것들 AI로 생성.
-      const compiledBook : CompiledBook = await compileBookByAIMock(joinStories);
+      const compiledBook : CompiledBook = await compileBookByAI(joinStories);
   
       setCompiledBook(compiledBook);
       setStep(step + 1);
