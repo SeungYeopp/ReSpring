@@ -7,7 +7,7 @@ interface StoryEditorProps {
   onContentChange: (newContent: string) => void;
 }
 
-export default function NoteEditor({ title, content, onTitleChange, onContentChange }: StoryEditorProps) {
+export default function StoryEditor({ title, content, onTitleChange, onContentChange }: StoryEditorProps) {
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onTitleChange(e.target.value);
   };
