@@ -104,7 +104,7 @@ export const TodaysBook = () => {
                                                 tags.map((tag, index) => (
                                                     <span 
                                                         key={index} 
-                                                        className="text-xs font-medium text-white bg-green-500 px-3 py-1 rounded-full"
+                                                        className="text-xs font-medium text-white bg-brand-light px-3 py-1 rounded-full"
                                                     >
                                                         {tag}
                                                     </span>
