@@ -21,7 +21,7 @@ export default function LoginTestPage() {
                 console.log(sessionResult)
 
                 setUserId(sessionResult.userId);
-                setUserNickname(sessionResult.userNickname);
+                setUserNickname(sessionResult.nickname);
             }else{
                 setMsg("로그인 실패..");
             }

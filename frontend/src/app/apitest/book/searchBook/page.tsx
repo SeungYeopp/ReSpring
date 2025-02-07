@@ -1,47 +1,42 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAllBooksSorted, Book } from '@/lib/api';
+import { searchBook, Book } from '@/lib/api';
 
-export default function SortedBooksPage() {
+export default function AllBooks() {
     const [books, setBooks] = useState<Book[]>([]);
+    const [query, setQuery] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
-    const [sortFields, setSortFields] = useState<string[]>(['view']);
-    const [directions, setDirections] = useState<string[]>(['desc']);
 
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const sortedBooks = await getAllBooksSorted(sortFields, directions);
-                setBooks(sortedBooks);
+                const result = await searchBook(query);
+                setBooks(result);
             } catch (err: any) {
                 setError(err.message);
             }
         };
 
         fetchBooks();
-    }, [sortFields, directions]);
+    }, []); // 컴포넌트가 마운트 될 때 api 한 번 호출.
+
+    const handleSearch = async () => {
+        try{
+            const result = await searchBook(query);
+            setBooks(result);
+        }catch(error){
+            console.error(error);
+        }
+    }
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">정렬된 책 목록</h1>
+            <h1 className="text-2xl font-bold mb-4">봄날의 서 제목 검색</h1>
             {error && <p className="text-red-500">{error}</p>}
-
-            <div className="mb-4">
-                <label className="mr-2">정렬 기준:</label>
-                <select onChange={(e) => setSortFields([e.target.value])}>
-                    <option value="view">조회수</option>
-                    <option value="title">제목</option>
-                    <option value="likes">좋아요</option>
-                </select>
-
-                <label className="ml-4 mr-2">정렬 방향:</label>
-                <select onChange={(e) => setDirections([e.target.value])}>
-                    <option value="asc">오름차순</option>
-                    <option value="desc">내림차순</option>
-                </select>
-            </div>
-
+            <label>검색할 제목 입력 : </label>
+            <input value={query} onChange={(e) => (setQuery(e.target.value))}></input>
+            <button onClick={handleSearch}>검색</button>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {books.map((book) => (
                     <div key={book.id} className="border rounded-lg p-4 shadow-md">

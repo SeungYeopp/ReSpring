@@ -29,7 +29,7 @@ export default function WeeklyTopBooksPage() {
                     <div key={book.id} className="border rounded-lg p-4 shadow-md">
                         <img src={book.coverImg} alt={book.title} className="w-full h-48 object-cover rounded-md" />
                         <h2 className="text-lg font-semibold mt-2">{book.title}</h2>
-                        <p className="text-sm text-gray-600">조회수: {book.view} | 좋아요: {book.likes}</p>
+                        <p className="text-sm text-gray-600">조회수: {book.viewCount} | 좋아요: {book.likeCount}</p>
                         <p className="mt-2 text-sm">{book.tags.join(', ')}</p>
                     </div>
                 ))}
