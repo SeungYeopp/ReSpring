@@ -1,4 +1,4 @@
-package org.ssafy.respring.domain.book.repository.bookRepo;
+package org.ssafy.respring.domain.book.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -7,8 +7,6 @@ import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.book.vo.QBook;
 import org.ssafy.respring.domain.book.vo.QBookLikes;
 import org.ssafy.respring.domain.book.vo.QBookViews;
-import org.ssafy.respring.domain.comment.vo.Comment;
-import org.ssafy.respring.domain.comment.vo.QComment;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -65,18 +63,6 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
                 .limit(3)
                 .fetch();
     }
-
-    @Override
-    public List<Comment> findCommentsByBookId(Long bookId) {
-        QComment comment = QComment.comment;
-
-        return queryFactory
-                .selectFrom(comment)
-                .where(comment.book.id.eq(bookId))  // ✅ 특정 책의 댓글 조회
-                .orderBy(comment.createdAt.asc())   // ✅ 댓글을 작성 시간 순으로 정렬
-                .fetch();
-    }
-
 
     @Override
     public List<Book> getAllBooksSortedByTrends() {

@@ -1,4 +1,4 @@
-package org.ssafy.respring.domain.book.repository.bookRepo;
+package org.ssafy.respring.domain.book.repository;
 
 import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.comment.vo.Comment;
@@ -11,5 +11,4 @@ public interface BookRepositoryQueryDsl {
     List<Book> findLikedBooksByUserId(UUID userId);
     List<Book> findMyBooksByUserId(UUID userId);
     List<Book> getWeeklyTop3Books();
-    List<Comment> findCommentsByBookId(Long bookId);
 }

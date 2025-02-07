@@ -1,4 +1,4 @@
-package org.ssafy.respring.domain.book.repository.bookRepo;
+package org.ssafy.respring.domain.book.repository.info;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

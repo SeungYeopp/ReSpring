@@ -1,8 +1,8 @@
-package org.ssafy.respring.domain.book.repository.bookRepo;
+package org.ssafy.respring.domain.book.repository.info;
 
 import org.ssafy.respring.domain.book.vo.BookViews;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List;
+
 import java.util.UUID;
 
 public interface BookViewsRepository extends JpaRepository<BookViews, Long>, BookViewsRepositoryQueryDsl {

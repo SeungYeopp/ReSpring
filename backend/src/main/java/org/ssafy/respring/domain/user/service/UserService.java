@@ -39,14 +39,14 @@ public class UserService {
         user.changePassword(encryptionResult.getHashedPassword());
 
         userRepository.save(user);
-        saltRepository.save(new Salt(user.getUserId(), encryptionResult.getSalt()));
+        saltRepository.save(new Salt(user.getId(), encryptionResult.getSalt()));
     }
 
     public LoginResponseDto loginUser(LoginRequestDto loginRequestDto) throws AuthenticationFailedException {
         User loginUser = userRepository.findByEmail(loginRequestDto.getEmail())
                 .orElseThrow(() -> new NoSuchElementException("EMAIL_NOT_FOUND"));
 
-        String salt = saltRepository.findById(loginUser.getUserId())
+        String salt = saltRepository.findById(loginUser.getId())
                 .orElseThrow(() -> new NoSuchElementException("SALT_NOT_FOUND")).getSalt();
 
         String encryptPassword = OpenCrypt.byteArrayToHex(OpenCrypt.getSHA256(loginRequestDto.getPassword(), salt));
@@ -54,7 +54,7 @@ public class UserService {
             throw new AuthenticationFailedException("AUTH_FAILED");
         }
 
-        return new LoginResponseDto(loginUser.getUserId(),loginUser.getUserNickname());
+        return new LoginResponseDto(loginUser.getId(),loginUser.getUserNickname());
     }
     //DB 테스트용 코드입니다
     public List<User> findAllUser(){

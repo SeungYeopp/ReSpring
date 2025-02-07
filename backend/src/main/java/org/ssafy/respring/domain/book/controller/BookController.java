@@ -30,18 +30,17 @@ public class BookController {
 	public ResponseEntity<Long> createBook(
 			@RequestPart("requestDto") BookRequestDto requestDto,
 			@RequestPart(value = "coverImg", required = false) MultipartFile coverImg) {
-		Long bookId = bookService.createBook(requestDto);
+		Long bookId = bookService.createBook(requestDto, coverImg);
 		return ResponseEntity.ok(bookId);
 	}
 
 	@PutMapping(path = "/{bookId}", consumes = {"multipart/form-data"})
 	@Operation(summary = "봄날의 서(자서전) 수정", description = "특정 봄날의 서를 수정합니다.")
 	public ResponseEntity<Void> updateBook(
-			@Parameter(description = "봄날의 서 ID") @PathVariable Long bookId,
 			@RequestPart("requestDto") BookUpdateRequestDto requestDto,
 			@RequestPart(value = "coverImg", required = false) MultipartFile coverImg,
 			@RequestHeader("X-User-Id") UUID userId) {
-		bookService.updateBook(requestDto);
+		bookService.updateBook(requestDto, coverImg);
 		return ResponseEntity.ok().build();
 	}
 

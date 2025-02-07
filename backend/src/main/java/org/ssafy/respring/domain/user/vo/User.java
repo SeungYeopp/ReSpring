@@ -1,10 +1,13 @@
 package org.ssafy.respring.domain.user.vo;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.persistence.*;
 import lombok.*;
 import org.ssafy.respring.domain.challenge.vo.Challenge;
 import org.ssafy.respring.domain.challenge.vo.UserChallenge;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,8 +18,9 @@ import java.util.UUID;
 @Getter @Setter
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(columnDefinition = "BINARY(16)")
+    @JsonProperty("userId") // Elasticsearch의 "userId"와 매핑
+    @JsonAlias("id")  // JSON에서 "id"로 들어와도 매핑 가능
     private UUID id;
 
     private String userNickname;
@@ -50,9 +54,7 @@ public class User {
 
     }
 
-    public UUID getUserId() {
-        return id;
-    }
+
 
     public void changePassword(String encryptedPassword) {
         this.password = encryptedPassword;

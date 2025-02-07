@@ -1,5 +1,6 @@
 package org.ssafy.respring.domain.book.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.ssafy.respring.domain.comment.vo.Comment;
@@ -21,9 +22,13 @@ public class Book {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    // @JsonIgnoreProperties({"createdChallenges", "joinedChallenges"})
     private User author;
 
     private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
     private Set<String> tags;
 
@@ -45,14 +50,11 @@ public class Book {
     @Builder.Default
     private Set<UUID> viewedUsers = new HashSet<>(); // 조회한 유저 리스트
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Chapter> chapters;
-
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "book_story", joinColumns = @JoinColumn(name = "book_id"))
     @Column(name = "story_id")
+    @Builder.Default
     private Set<Long> storyIds = new HashSet<>();
-
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
