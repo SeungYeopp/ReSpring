@@ -16,6 +16,16 @@ pipeline {
         REDIS_HOST = credentials('REDIS_HOST')
         REDIS_PORT = credentials('REDIS_PORT')
         REDIS_PASSWORD = credentials('REDIS_PASSWORD')
+        S3_BUCKET= credentials('S3_BUCKET')
+        S3_ACCESSKEY = credentials('S3_ACCESSKEY')
+        S3_SECRETKEY = credentials('S3_SECRETKEY')
+        S3_REGION = credentials('S3_REGION')
+        GOOGLE_CLIENT_ID = credentials('GOOGLE_CLIENT_ID')
+        GOOGLE_CLIENT_SECRET = credentials('GOOGLE_CLIENT_SECRET')
+        GOOGLE_REDIRECT_URI = credentials('GOOGLE_REDIRECT_URI')
+        KAKAO_CLIENT_ID = credentials('KAKAO_CLIENT_ID')
+        KAKAO_CLIENT_SECRET = credentials('KAKAO_CLIENT_SECRET')
+        KAKAO_REDIRECT_URI = credentials('KAKAO_REDIRECT_URI')
     }
     stages {
         stage('Backend Build') {
