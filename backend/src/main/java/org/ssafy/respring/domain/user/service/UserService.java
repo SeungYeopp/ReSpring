@@ -87,7 +87,7 @@ public class UserService {
         }
 
         // 3️⃣ SocialAccount에 해당 소셜 계정 존재 여부 확인
-        Optional<SocialAccount> existingSocialAccount = socialAccountRepository.findBySocialIdAndProvider(socialId, provider);
+        Optional<SocialAccount> existingSocialAccount = socialAccountRepository.findByProviderAndSocialId(provider, socialId);
 
         if (existingSocialAccount.isEmpty()) {
             // 4️⃣ 새로운 SocialAccount 추가
