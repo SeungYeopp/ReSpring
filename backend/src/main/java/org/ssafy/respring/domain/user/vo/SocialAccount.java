@@ -1,16 +1,18 @@
 package org.ssafy.respring.domain.user.vo;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "social_account")
-@Setter @Getter
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class SocialAccount {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -28,4 +30,14 @@ public class SocialAccount {
 
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
+
+    public SocialAccount(User user, String provider, String socialId, String accessToken, String refreshToken, LocalDateTime expiresAt) {
+        this.user = user;
+        this.provider = provider;
+        this.socialId = socialId;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+        this.expiresAt = expiresAt;
+        this.createdAt = LocalDateTime.now();
+    }
 }
