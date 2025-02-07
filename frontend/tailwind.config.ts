@@ -15,6 +15,8 @@ export default {
         "spin-slow": "spin 20s linear infinite",
         "spin-slow-medium": "spin 22s linear infinite",
         "spin-slow-reverse": "spin 25s linear infinite reverse",
+        'accordion-down': 'accordion-down 0.2s ease-out',
+  			'accordion-up': 'accordion-up 0.2s ease-out'
       },
       colors: {
         background: "hsl(var(--background))",
@@ -104,10 +106,6 @@ export default {
   				}
   			}
   		},
-  		animation: {
-  			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
-  		}
     },
   },
   plugins: [require("tailwindcss-animate")],
