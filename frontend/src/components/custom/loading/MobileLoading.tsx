@@ -1,7 +1,12 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useMemo } from "react"
-import { cn } from "@/lib/utils"
+import { useMemo } from "react";
+import { cn } from "@/lib/utils";
+
+// 👉 progress를 props로 받아 사용
+interface MobileLoadingProps {
+  progress: number;
+}
 
 const getLeafStyle = (index: number) => {
   const colorClasses = [
@@ -9,37 +14,28 @@ const getLeafStyle = (index: number) => {
     "bg-gradient-to-br from-green-400 to-green-300",
     "bg-gradient-to-br from-green-200 to-green-300",
     "bg-gradient-to-br from-green-400 to-green-500",
-  ]
-  const sizeClasses = ["w-2 h-2", "w-[9px] h-[9px]", "w-[11px] h-[11px]", "w-[10px] h-[10px]"]
+  ];
+  const sizeClasses = ["w-2 h-2", "w-[9px] h-[9px]", "w-[11px] h-[11px]", "w-[10px] h-[10px]"];
   return {
     color: colorClasses[index % 4],
     size: sizeClasses[index % 4],
-  }
-}
+  };
+};
 
-export function MobileLoading() {
-  const [progress, setProgress] = useState(0)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prevProgress) => {
-        if (prevProgress >= 100) {
-          clearInterval(timer)
-          return 100
-        }
-        return prevProgress + 1
-      })
-    }, 100)
-
-    return () => clearInterval(timer)
-  }, [])
-
-  const leaves = useMemo(() => Array.from({ length: 36 }), [])
+/**
+ * MobileLoading
+ * - 부모에게서 받은 progress로 로딩 원형 게이지 표시
+ * - 잎(leaf) 애니메이션은 동일하게 출력
+ * - 기존 useEffect 제거 (부모 컴포넌트에서 progress를 관리)
+ */
+export function MobileLoading({ progress }: MobileLoadingProps) {
+  // 36개의 잎 렌더링
+  const leaves = useMemo(() => Array.from({ length: 36 }), []);
 
   const renderLeaves = (ringSize: string, origin: string, animationClass: string) => (
     <div className={`absolute ${ringSize} ${animationClass}`}>
       {leaves.map((_, i) => {
-        const { color, size } = getLeafStyle(i)
+        const { color, size } = getLeafStyle(i);
         return (
           <div
             key={i}
@@ -52,15 +48,16 @@ export function MobileLoading() {
             <div
               className={cn("absolute", size, color, "shadow-sm")}
               style={{
+                // 잎 모양 클리핑
                 clipPath: 'path("M4 0 C6 2 6 6 4 8 C2 6 2 2 4 0")',
                 transform: `rotate(${90 + i * 10}deg) translateX(1px)`,
               }}
             />
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 
   return (
     <div className="relative min-h-[200px] w-full flex items-center justify-center bg-transparent">
@@ -92,11 +89,14 @@ export function MobileLoading() {
               cy="32"
               style={{
                 strokeDasharray: `${2 * Math.PI * 29}`,
+                // progress에 따라 strokeDashoffset 조절
                 strokeDashoffset: `${2 * Math.PI * 29 * (1 - progress / 100)}`,
               }}
             />
           </svg>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-lg font-light text-green-600">
+
+          {/* 게이지 중앙에 progress % 표시 */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-light text-green-600">
             {progress}%
           </div>
         </div>
@@ -104,6 +104,5 @@ export function MobileLoading() {
         <div className="text-xs tracking-wider text-green-500/80 font-medium">PROCESSING</div>
       </div>
     </div>
-  )
+  );
 }
-

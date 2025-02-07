@@ -1,7 +1,11 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useMemo } from "react"
-import { cn } from "@/lib/utils"
+import { useMemo } from "react";
+import { cn } from "@/lib/utils";
+
+interface TabletLoadingProps {
+  progress: number;
+}
 
 const getLeafStyle = (index: number) => {
   const colorClasses = [
@@ -9,37 +13,21 @@ const getLeafStyle = (index: number) => {
     "bg-gradient-to-br from-green-400 to-green-300",
     "bg-gradient-to-br from-green-200 to-green-300",
     "bg-gradient-to-br from-green-400 to-green-500",
-  ]
-  const sizeClasses = ["w-3 h-3", "w-[11px] h-[11px]", "w-[14px] h-[14px]", "w-[13px] h-[13px]"]
+  ];
+  const sizeClasses = ["w-3 h-3", "w-[11px] h-[11px]", "w-[14px] h-[14px]", "w-[13px] h-[13px]"];
   return {
     color: colorClasses[index % 4],
     size: sizeClasses[index % 4],
-  }
-}
+  };
+};
 
-export function TabletLoading() {
-  const [progress, setProgress] = useState(0)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prevProgress) => {
-        if (prevProgress >= 100) {
-          clearInterval(timer)
-          return 100
-        }
-        return prevProgress + 1
-      })
-    }, 100)
-
-    return () => clearInterval(timer)
-  }, [])
-
-  const leaves = useMemo(() => Array.from({ length: 54 }), [])
+export function TabletLoading({ progress }: TabletLoadingProps) {
+  const leaves = useMemo(() => Array.from({ length: 54 }), []);
 
   const renderLeaves = (ringSize: string, origin: string, animationClass: string) => (
     <div className={`absolute ${ringSize} ${animationClass}`}>
       {leaves.map((_, i) => {
-        const { color, size } = getLeafStyle(i)
+        const { color, size } = getLeafStyle(i);
         return (
           <div
             key={i}
@@ -57,10 +45,10 @@ export function TabletLoading() {
               }}
             />
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 
   return (
     <div className="relative min-h-[300px] w-full flex items-center justify-center bg-transparent">
@@ -68,7 +56,6 @@ export function TabletLoading() {
       {renderLeaves("w-44 h-44", "88px 88px", "animate-spin-slow-medium")}
       {renderLeaves("w-40 h-40", "80px 80px", "animate-spin-slow-reverse")}
 
-      {/* 중앙 컨텐츠 */}
       <div className="relative z-10 flex flex-col items-center gap-2">
         {/* 원형 프로그레스 바 */}
         <div className="relative w-20 h-20">
@@ -97,7 +84,7 @@ export function TabletLoading() {
               }}
             />
           </svg>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xl font-light text-green-600">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-light text-green-600">
             {progress}%
           </div>
         </div>
@@ -105,6 +92,5 @@ export function TabletLoading() {
         <div className="text-sm tracking-wider text-green-500/80 font-medium">PROCESSING</div>
       </div>
     </div>
-  )
+  );
 }
-

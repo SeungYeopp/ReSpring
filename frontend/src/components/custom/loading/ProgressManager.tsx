@@ -1,75 +1,81 @@
 "use client";
 
 import { ReactNode } from "react";
-import DelayedSkeleton from "./DelayedSkeleton";  // 지연된 스켈레톤 컴포넌트
-import ResponsiveProgressLoading from "./ResponsiveProgressLoading";  // 반응형 로딩 애니메이션 컴포넌트
+import { DelayedRender } from "./DelayedRender";// 지연 렌더링용(아래 예시) 컴포넌트
+import ResponsiveProgressLoading from "./ResponsiveProgressLoading";
 
 /**
- * ProgressManagerProps 타입 정의
- * - avgResponseTime: API 평균 응답 시간 (ms 단위)
- * - isLoading: 현재 로딩 상태 (true: 로딩 중, false: 로딩 완료)
- * - delayedSkeleton: 100ms ~ 500ms 동안 표시할 지연된 스켈레톤 UI
- * - immediateSkeleton: 500ms 이상 응답 지연 시 즉시 표시할 스켈레톤 UI
- * - useResponsiveLoading: 반응형 로딩 애니메이션 사용 여부 (500ms 이상 시 활성화)
- * - children: 데이터 로드 완료 후 렌더링할 실제 콘텐츠
+ * ProgressManagerProps
+ * - avgResponseTime: API 평균 응답 시간 (ms)
+ * - isLoading: 현재 로딩 중 여부
+ * - useResponsiveLoading: 반응형 로딩(ResponsiveProgressLoading) 사용 여부 (기본값 false)
+ * - children: 로딩이 아닐 때 렌더링할 실제 UI
  */
 interface ProgressManagerProps {
   avgResponseTime: number;
   isLoading: boolean;
-  delayedSkeleton: ReactNode;
-  immediateSkeleton: ReactNode;
-  useResponsiveLoading?: boolean;  // 💡 반응형 로딩 애니메이션 사용 여부 (기본값: false)
+  useResponsiveLoading?: boolean;
   children: ReactNode;
 }
 
 /**
- * API 응답 시간에 따라 로딩 UI 결정 함수
- * - avgResponseTime 값에 따라 어떤 로딩 UI를 표시할지 결정.
- * - 100ms 이하: 로딩 UI 없이 즉시 데이터 렌더링.
- * - 100ms ~ 500ms: 지연된 스켈레톤 표시.
- * - 500ms 이상: 즉시 스켈레톤 + (옵션에 따라) 반응형 로딩 애니메이션 표시.
+ * API 응답 시간에 따른 로딩 타입 분기
+ * - 100ms 이하 => NO_INDICATOR (로딩 표시 없음)
+ * - 100ms ~ 500ms => DELAYED_OVERLAY (200ms 뒤에 오버레이 표시)
+ * - 500ms 이상 => IMMEDIATE_OVERLAY (즉시 오버레이 표시)
  */
-const determineProgressType = (avgResponseTime: number) => {
-  if (avgResponseTime < 100) return "NO_INDICATOR";          // 100ms 이하: 즉시 데이터 표시
-  if (avgResponseTime < 500) return "DELAYED_SKELETON";      // 100ms ~ 500ms: 지연된 스켈레톤 표시
-  return "IMMEDIATE_SKELETON";                               // 500ms 이상: 즉시 스켈레톤 + 애니메이션
+const determineLoadingType = (time: number) => {
+  if (time < 100) return "NO_INDICATOR";
+  if (time < 500) return "DELAYED_OVERLAY";
+  return "IMMEDIATE_OVERLAY";
 };
 
 /**
- * ProgressManager 컴포넌트
- * - API 응답 시간과 로딩 상태에 따라 자동으로 스켈레톤 및 반응형 로딩 애니메이션을 적용.
- * - 로딩이 완료되면 실제 콘텐츠(children)를 렌더링.
+ * ProgressManager
+ * - "전역 오버레이 로딩"만 담당
+ * - 스켈레톤은 페이지별 로직에서 (또는 별도 컴포넌트) 처리
  */
-export const ProgressManager = ({
+export function ProgressManager({
   avgResponseTime,
   isLoading,
-  delayedSkeleton,
-  immediateSkeleton,
-  useResponsiveLoading = false,  // 💡 기본값: 반응형 로딩 애니메이션 비활성화
+  useResponsiveLoading = false,
   children,
-}: ProgressManagerProps) => {
-  const progressType = determineProgressType(avgResponseTime);  // API 응답 시간에 따른 로딩 UI 결정
+}: ProgressManagerProps) {
+  const loadingType = determineLoadingType(avgResponseTime);
 
-  // 500ms 이상 응답 지연 시: 즉시 스켈레톤 + 반응형 로딩 애니메이션(옵션)
-  if (progressType === "IMMEDIATE_SKELETON" && isLoading) {
+  // [A] 500ms 이상 => 즉시 오버레이
+  if (loadingType === "IMMEDIATE_OVERLAY" && isLoading) {
     return (
-      <div>
-        {immediateSkeleton}  {/* 즉시 표시할 스켈레톤 */}
-        {useResponsiveLoading && <ResponsiveProgressLoading />}  {/* 💡 500ms 이상일 때 반응형 로딩 애니메이션 표시 */}
-      </div>
+      <>
+        {/* 뒤의 children도 렌더링할지 말지는 UX에 따라 선택
+            만약 로딩 중엔 화면 뒤를 가리고 싶다면 children을 안 그릴 수도 있음 */}
+        {children}
+
+        {/* 오버레이 (화면 전체 덮기) */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
+          {useResponsiveLoading && <ResponsiveProgressLoading />}
+        </div>
+      </>
     );
   }
 
-  // 100ms ~ 500ms 응답 지연 시: 200ms 이후 지연된 스켈레톤 표시
-  if (progressType === "DELAYED_SKELETON" && isLoading) {
+  // [B] 100ms ~ 500ms => 지연 오버레이 (200ms 뒤 표시)
+  if (loadingType === "DELAYED_OVERLAY" && isLoading) {
     return (
-      <DelayedSkeleton delay={200} isLoading={isLoading}>
-        {delayedSkeleton}  {/* 200ms 이상 로딩 지연 시 표시할 스켈레톤 */}
-      </DelayedSkeleton>
+      <>
+        {children}
+
+        <DelayedRender delay={200} isLoading={isLoading}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
+            {useResponsiveLoading && <ResponsiveProgressLoading />}
+          </div>
+        </DelayedRender>
+      </>
     );
   }
 
-  return children;  // 로딩이 완료된 경우 실제 콘텐츠(children)를 렌더링
-};
+  // [C] 그 외(로딩X or 100ms 이하) => 로딩 표시 없이 children 바로 렌더
+  return <>{children}</>;
+}
 
 export default ProgressManager;

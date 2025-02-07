@@ -1,47 +1,53 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useMediaQuery } from "react-responsive";  // 화면 크기별로 반응형 처리를 위한 훅
-import { MobileLoading } from "./MobileLoading";    // 모바일용 로딩 애니메이션 컴포넌트
-import { TabletLoading } from "./TabletLoading";    // 태블릿용 로딩 애니메이션 컴포넌트
-import { DesktopLoading } from "./DesktopLoading";  // 데스크탑용 로딩 애니메이션 컴포넌트
+import { useMediaQuery } from "react-responsive";
+import { MobileLoading } from "./MobileLoading";
+import { TabletLoading } from "./TabletLoading";
+import { DesktopLoading } from "./DesktopLoading";
 
 /**
- * ResponsiveProgressLoading 컴포넌트
- * - 화면 크기에 따라 모바일, 태블릿, 데스크탑용 로딩 애니메이션을 자동으로 표시.
- * - 모든 화면 크기에서 로딩 진행률(progress)을 동기화하여 일관된 UX 제공.
+ * ResponsiveProgressLoading
+ * - 화면 크기에 따라 모바일/태블릿/데스크톱용 로딩 컴포넌트를 조건부 렌더링
+ * - "progress" (0~100%)를 부모에서 관리, 자식에 props로 전달
+ * - position: fixed + z-index를 높게 설정하여 항상 화면 최상단 중앙에 위치
  */
 const ResponsiveProgressLoading = () => {
-  // 🔍 화면 크기 감지하여 모바일/태블릿/데스크탑 여부 결정
-  const isMobile = useMediaQuery({ maxWidth: 640 });               // 640px 이하: 모바일
-  const isTablet = useMediaQuery({ minWidth: 641, maxWidth: 1023 }); // 641px ~ 1023px: 태블릿
-  const isDesktop = useMediaQuery({ minWidth: 1024 });             // 1024px 이상: 데스크탑
+  // 1) 반응형 체크
+  const isMobile = useMediaQuery({ maxWidth: 640 });
+  const isTablet = useMediaQuery({ minWidth: 641, maxWidth: 1023 });
+  const isDesktop = useMediaQuery({ minWidth: 1024 });
 
-  // 📈 로딩 진행률 상태 관리 (0% ~ 100%)
+  // 2) "진행률" 상태를 부모에서 관리 (0 → 100%)
   const [progress, setProgress] = useState(0);
 
+  // 3) 마운트 시 100ms 간격 타이머로 progress 증가
   useEffect(() => {
-    // ⏲️ 100ms마다 progress 값을 1씩 증가시켜 로딩 애니메이션 효과 생성
     const timer = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {     // 🔔 100%에 도달하면 타이머 종료
-          clearInterval(timer);
-          return 100;         // 로딩 완료 시 100%로 고정
+        if (prev >= 100) {
+          clearInterval(timer); // 100% 도달 시 타이머 해제
+          return 100;
         }
-        return prev + 1;      // 로딩 진행 중일 때 1%씩 증가
+        return prev + 1; // 0~99 구간에는 1%씩 증가
       });
-    }, 100);  // 100ms 간격으로 업데이트 (1초에 10%씩 증가)
+    }, 100);
 
-    // 🧹 컴포넌트 언마운트 시 타이머 정리 (메모리 누수 방지)
     return () => clearInterval(timer);
   }, []);
 
+  /**
+   * 4) 로딩 컴포넌트를 화면 전역에 덮는 방식(fixed)으로 배치
+   *    - inset-0: top/left/bottom/right = 0
+   *    - z-50: 다른 요소들(스켈레톤 등)보다 위
+   *    - flex+center: 중앙 정렬
+   *    - bg-transparent: 투명 배경 (원하면 반투명 배경을 깔아서 뒤를 가릴 수도 있음)
+   */
   return (
-    <div className="min-h-screen flex items-center justify-center bg-transparent p-4">
-      {/* 🌐 화면 크기에 따라 다른 로딩 애니메이션 표시 */}
-      {isMobile && <MobileLoading />}   {/* 모바일 화면일 때 MobileLoading 컴포넌트 렌더링 */}
-      {isTablet && <TabletLoading />}   {/* 태블릿 화면일 때 TabletLoading 컴포넌트 렌더링 */}
-      {isDesktop && <DesktopLoading />} {/* 데스크탑 화면일 때 DesktopLoading 컴포넌트 렌더링 */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent p-4">
+      {isMobile && <MobileLoading progress={progress} />}
+      {isTablet && <TabletLoading progress={progress} />}
+      {isDesktop && <DesktopLoading progress={progress} />}
     </div>
   );
 };
