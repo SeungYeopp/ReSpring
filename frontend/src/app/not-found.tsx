@@ -10,7 +10,7 @@ export default function NotFound() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#e6f3d4] to-[#fce8e8] p-4 sm:p-6 md:p-8 overflow-hidden">
+<div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#e6f3d4] to-[#fce8e8] px-4 sm:px-6 md:px-8 -mt-14 -mb-16 md:-my-4 overflow-hidden">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -26,11 +26,21 @@ export default function NotFound() {
         >
           찾으시는 봄날이 여기 없네요.
         </motion.h1>
-        <motion.p className="text-base sm:text-lg text-gray-700 mb-4 sm:mb-6 md:mb-8 leading-relaxed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1 }}>
+        <motion.p
+          className="text-base sm:text-lg text-gray-700 mb-4 sm:mb-6 md:mb-8 leading-relaxed"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 1 }}
+        >
           하지만 걱정마세요, 새로운 봄날이 기다리고 있어요.
         </motion.p>
 
-        <motion.div className="mb-6 sm:mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 1 }}>
+        <motion.div
+          className="mb-6 sm:mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 1 }}
+        >
           <p className="text-base sm:text-lg text-gray-700 leading-relaxed">
             <span className="font-bold text-[#96b23c]">'다시, 봄(RE:Spring)'</span>에서 여러분의 이야기는 계속됩니다. 어제의 추억, 오늘의 나눔, 그리고 내일의 도전이 여러분을 기다리고 있어요.
           </p>
@@ -59,7 +69,12 @@ export default function NotFound() {
         </motion.div>
 
         {/* 추천 콘텐츠 */}
-        <motion.div className="mt-8 sm:mt-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5, duration: 1 }}>
+        <motion.div
+          className="mt-8 sm:mt-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.5, duration: 1 }}
+        >
           <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-4">새로운 봄날의 이야기를 시작해볼까요?</h2>
           <div className="flex flex-row justify-center items-center space-x-4 sm:space-x-6 flex-wrap">
             <Link
