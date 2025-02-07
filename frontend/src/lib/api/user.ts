@@ -2,7 +2,7 @@
 import axiosAPI from "./axios";
 
 export interface SessionInfo{
-    userNickname: string,
+    nickname: string,
     userId: string
 }
 
@@ -60,7 +60,7 @@ export const login = async (email : string, password : string) : Promise<boolean
 // 출력 : SessionInfo 정보.
 export const getSessionInfo = async () : Promise<SessionInfo> => {
     try{
-        const response = await axiosAPI.get('/user/session');
+        const response = await axiosAPI.get('/user/me');
 
         return response.data as SessionInfo;
     }catch(error : any){

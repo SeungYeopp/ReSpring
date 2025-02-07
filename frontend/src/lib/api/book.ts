@@ -7,7 +7,7 @@ export interface BookPostDto{
     userId : string,
     title : string,
     content : string,
-    tag : string[],
+    tags : string[],
     storyIds : number[],
 }
 
@@ -18,9 +18,9 @@ export interface Book{
     title : string,
     content : string,
     coverImg : string,
-    tag : string[],
-    likes : number,
-    view : number,
+    tags : string[],
+    likeCount : number,
+    viewCount : number,
     createdAt : Date,
     updatedAt : Date,
     storyIds : number[],
@@ -46,14 +46,14 @@ export const makeBook = async (
     userId : string,
     title : string,
     content : string,
-    tag: string[],
+    tags: string[],
     storyIds : number[],
     coverImg : File
 ) : Promise<string> => {
     try{
         const formData = new FormData();
         formData.append('requestDto', new Blob([
-            JSON.stringify({userId, title, content, tag, storyIds})
+            JSON.stringify({userId, title, content, tags, storyIds})
         ], {type : 'application/json'}
         ));
         
@@ -81,8 +81,6 @@ export const getBookById = async (bookId : string) : Promise<Book>=> {
             updatedAt : new Date(response.data.updatedAt)
         }
 
-        console.log(bookdata)
-
         return bookdata;
     }catch(error : any){
         console.error('getBookById 에러', error);
@@ -98,13 +96,13 @@ export const updateBook = async (
     userId : string, 
     title : string, 
     content : string, 
-    tag : string[], 
+    tags : string[], 
     storyIds : number[], 
     image : File) : Promise<boolean> => {
         try{
             const formData = new FormData();
             formData.append('requestDto', new Blob([
-                JSON.stringify({title, content, tag, storyIds})
+                JSON.stringify({title, content, tags, storyIds})
             ], {type : 'application/json'}
             ));
 
@@ -262,10 +260,26 @@ export const compileBookByAIMock = (content : string) : CompiledBook => {
     // json, ``` 등 chatgpt가 생성한 불필요한 단어들 제거.
     const cleanedData = resData.replaceAll("json","").replaceAll('```', "").replaceAll("\n","").replaceAll("  ", "");
 
-    console.log(cleanedData);
-
     // JSON 형식으로 파싱.
     const jsonedData = JSON.parse(cleanedData);
 
     return jsonedData as CompiledBook; // JSON에서 CompiledBook 형으로 변환.
+}
+
+export const searchBook = async (keyword : string) : Promise<Book[]> => {
+    try{
+        const response = await axiosAPI.get(`/books/search?keyword=${keyword}`)
+        const responseBooks : Book[] = response.data as Book[];
+
+        responseBooks.map((book : Book) => ({
+                ...book,
+                createdAt : new Date(book.createdAt),
+                updatedAt : new Date(book.updatedAt)
+            }
+        ));
+
+        return responseBooks;
+    }catch(error : any){
+        throw new Error(error.response?.data?.message || 'searchBook 함수 API 호출에서 오류가 발생했습니다.')
+    }
 }

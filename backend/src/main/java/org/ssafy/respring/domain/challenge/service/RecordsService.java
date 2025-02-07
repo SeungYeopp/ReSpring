@@ -35,6 +35,16 @@ public class RecordsService {
         LocalDate startDate = challenge.getStartDate().toLocalDate();
         LocalDate endDate = challenge.getEndDate().toLocalDate();
 
+        // ✅ 챌린지가 시작 전이면 기록 불가
+        if (today.isBefore(startDate)) {
+            throw new IllegalStateException("챌린지가 아직 시작되지 않았습니다.");
+        }
+
+        // ✅ 챌린지가 종료 후이면 기록 불가
+        if (today.isAfter(endDate)) {
+            throw new IllegalStateException("챌린지가 이미 종료되었습니다.");
+        }
+
         Optional<Records> existingRecord = recordsRepository.findByUserAndChallengeAndStartDateAndEndDate(
                 user, challenge, startDate, endDate);
 

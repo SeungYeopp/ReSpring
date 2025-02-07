@@ -18,8 +18,7 @@ public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageId;
-
-    private String imageUrl;
+    private String s3Key;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
@@ -30,4 +29,6 @@ public class Image {
     @JoinColumn(name = "story_id")
     @JsonIgnore
     private Story story;
+
+
 }

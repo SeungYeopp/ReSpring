@@ -71,6 +71,10 @@ dependencies {
     //spring AI
     implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:1.0.0-SNAPSHOT'
 
+    //aws s3
+    implementation 'software.amazon.awssdk:s3:2.20.150'
+
+
 }
 
 tasks.named('test') {
