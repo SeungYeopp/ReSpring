@@ -96,12 +96,12 @@ export function MobileLoading({ progress }: MobileLoadingProps) {
           </svg>
 
           {/* 게이지 중앙에 progress % 표시 */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-light text-green-600">
-            {progress}%
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-extrabold text-green-600">
+            {progress}
           </div>
         </div>
 
-        <div className="text-xs tracking-wider text-green-500/80 font-medium">PROCESSING</div>
+        <div className="text-lg tracking-wider text-green-500/80 font-extrabold">불러오는 중</div>
       </div>
     </div>
   );

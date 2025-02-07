@@ -6,43 +6,68 @@ import { MobileLoading } from "./MobileLoading";
 import { TabletLoading } from "./TabletLoading";
 import { DesktopLoading } from "./DesktopLoading";
 
+interface ResponsiveProgressLoadingProps {
+  isLoading: boolean;              // 부모에서 로딩 여부를 받아옴
+  onFinish?: () => void;           // 로딩 컴포넌트가 언마운트될 때 처리할 콜백(선택)
+}
+
 /**
  * ResponsiveProgressLoading
- * - 화면 크기에 따라 모바일/태블릿/데스크톱용 로딩 컴포넌트를 조건부 렌더링
- * - "progress" (0~100%)를 부모에서 관리, 자식에 props로 전달
- * - position: fixed + z-index를 높게 설정하여 항상 화면 최상단 중앙에 위치
+ * - 부모가 주는 isLoading에 따라 0→99%로 진행률을 가짜로 증가시키고,
+ *   로딩이 false가 되면 강제로 100% 표시 후 잠시 뒤 언마운트
+ * - 화면 크기에 따라 Mobile/Tablet/Desktop 로딩을 렌더링
  */
-const ResponsiveProgressLoading = () => {
-  // 1) 반응형 체크
+const ResponsiveProgressLoading = ({ isLoading, onFinish }: ResponsiveProgressLoadingProps) => {
+  // 반응형 체크
   const isMobile = useMediaQuery({ maxWidth: 640 });
   const isTablet = useMediaQuery({ minWidth: 641, maxWidth: 1023 });
   const isDesktop = useMediaQuery({ minWidth: 1024 });
 
-  // 2) "진행률" 상태를 부모에서 관리 (0 → 100%)
+  // 진행률(0~100)
   const [progress, setProgress] = useState(0);
 
-  // 3) 마운트 시 100ms 간격 타이머로 progress 증가
+  // "현재 로딩 UI를 보여줄지" 여부
+  const [visible, setVisible] = useState(false);
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(timer); // 100% 도달 시 타이머 해제
-          return 100;
-        }
-        return prev + 1; // 0~99 구간에는 1%씩 증가
-      });
-    }, 100);
+    let timer: NodeJS.Timeout | null = null;
 
-    return () => clearInterval(timer);
-  }, []);
+    if (isLoading) {
+      // 로딩 시작 시점
+      setVisible(true);   // UI 표시
+      setProgress(0);     // 0%부터 시작
 
-  /**
-   * 4) 로딩 컴포넌트를 화면 전역에 덮는 방식(fixed)으로 배치
-   *    - inset-0: top/left/bottom/right = 0
-   *    - z-50: 다른 요소들(스켈레톤 등)보다 위
-   *    - flex+center: 중앙 정렬
-   *    - bg-transparent: 투명 배경 (원하면 반투명 배경을 깔아서 뒤를 가릴 수도 있음)
-   */
+      // 0→99%로 가짜 애니메이션
+      timer = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 99) {
+            clearInterval(timer!);
+            return 99;
+          }
+          return prev + 1;
+        });
+      }, 50); // 0.05초마다 1%씩 증가
+      console.log('1씩증가함')
+    } else {
+      console.log('엘스로 넘어감')
+      // 로딩이 false (끝)로 바뀌는 순간
+      setProgress(100);   // 100%로 맞춤
+      timer = setTimeout(() => {
+        // 0.5초 후에 UI를 숨기거나 언마운트
+        setVisible(false);
+        onFinish?.();      // 필요하다면 부모로 콜백
+      }, 500);
+    }
+
+    // 언마운트 or isLoading 변동 시 타이머 정리
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isLoading, onFinish]);
+
+  // visible이 false라면 JSX null (실제 DOM에서 제거)
+  if (!visible) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent p-4">
       {isMobile && <MobileLoading progress={progress} />}

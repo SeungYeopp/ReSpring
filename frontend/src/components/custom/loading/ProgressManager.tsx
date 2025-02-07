@@ -1,7 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
-import { DelayedRender } from "./DelayedRender";// 지연 렌더링용(아래 예시) 컴포넌트
+import { ReactNode, useState, useEffect } from "react";
+import { DelayedRender } from "./DelayedRender"; // 지연 렌더링용 컴포넌트
 import ResponsiveProgressLoading from "./ResponsiveProgressLoading";
 
 /**
@@ -42,18 +42,37 @@ export function ProgressManager({
   children,
 }: ProgressManagerProps) {
   const loadingType = determineLoadingType(avgResponseTime);
+  // isLoading과는 별개로 오버레이 렌더링 여부를 제어하는 상태
+  const [showOverlay, setShowOverlay] = useState(isLoading);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (!isLoading) {
+      // 로딩 종료 후 500ms 동안 오버레이 유지 -> 얘 바꿀거면 ResponsiveProgressLoading.tsx도 바꿔야 함.
+      timer = setTimeout(() => {
+        setShowOverlay(false);
+      }, 500);
+    } else {
+      // 로딩 시작 시점에 즉시 오버레이 표시
+      setShowOverlay(true);
+    }
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [isLoading]);
+
+  // 디버깅 로그
+  console.log("[ProgressManager] avgResponseTime:", avgResponseTime, 
+              "loadingType:", loadingType, "isLoading:", isLoading, "showOverlay:", showOverlay);
 
   // [A] 500ms 이상 => 즉시 오버레이
-  if (loadingType === "IMMEDIATE_OVERLAY" && isLoading) {
+  if (loadingType === "IMMEDIATE_OVERLAY" && showOverlay) {
+    console.log("[ProgressManager] IMMEDIATE_OVERLAY branch activated");
     return (
       <>
-        {/* 뒤의 children도 렌더링할지 말지는 UX에 따라 선택
-            만약 로딩 중엔 화면 뒤를 가리고 싶다면 children을 안 그릴 수도 있음 */}
         {children}
-
-        {/* 오버레이 (화면 전체 덮기) */}
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
-          {useResponsiveLoading && <ResponsiveProgressLoading />}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+          {useResponsiveLoading && <ResponsiveProgressLoading isLoading={isLoading} />}
         </div>
       </>
     );
@@ -61,20 +80,20 @@ export function ProgressManager({
 
   // [B] 100ms ~ 500ms => 지연 오버레이 (200ms 뒤 표시)
   if (loadingType === "DELAYED_OVERLAY" && isLoading) {
+    console.log("[ProgressManager] DELAYED_OVERLAY branch activated");
     return (
       <>
         {children}
-
         <DelayedRender delay={200} isLoading={isLoading}>
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
-            {useResponsiveLoading && <ResponsiveProgressLoading />}
+            {/* {useResponsiveLoading && <ResponsiveProgressLoading isLoading={isLoading} />} */}
           </div>
         </DelayedRender>
       </>
     );
   }
 
-  // [C] 그 외(로딩X or 100ms 이하) => 로딩 표시 없이 children 바로 렌더
+  console.log("[ProgressManager] No overlay activated (either isLoading is false or loadingType is NO_INDICATOR)");
   return <>{children}</>;
 }
 

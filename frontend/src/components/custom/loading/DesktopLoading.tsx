@@ -107,12 +107,12 @@ export function DesktopLoading({ progress }: DesktopLoadingProps) {
           </svg>
 
           {/* 게이지 중앙에 퍼센트 표시 */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-light text-green-600">
-            {progress}%
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl font-extrabold text-green-600">
+            {progress}
           </div>
         </div>
 
-        <div className="text-sm tracking-wider text-green-500/80 font-medium">PROCESSING</div>
+        <div className="text-4xl tracking-wider text-green-500/80 font-extrabold">불러오는 중</div>
       </div>
     </div>
   );
