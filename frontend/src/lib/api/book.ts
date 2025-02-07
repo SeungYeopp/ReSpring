@@ -19,8 +19,8 @@ export interface Book{
     content : string,
     coverImg : string,
     tags : string[],
-    likes : number,
-    view : number,
+    likeCount : number,
+    viewCount : number,
     createdAt : Date,
     updatedAt : Date,
     storyIds : number[],
@@ -80,8 +80,6 @@ export const getBookById = async (bookId : string) : Promise<Book>=> {
             createdAt : new Date(response.data.createdAt),
             updatedAt : new Date(response.data.updatedAt)
         }
-
-        console.log(bookdata)
 
         return bookdata;
     }catch(error : any){
