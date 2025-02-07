@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.ssafy.respring.domain.user.vo.User;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "book_views")
 @Getter @Setter
@@ -23,4 +25,11 @@ public class BookViews {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

@@ -34,10 +34,10 @@ public class CommentRepositoryImpl implements CommentRepositoryQuerydsl {
     }
 
     @Override
-    public List<Comment> findByBookIdWithFetchJoin(String bookId) {
+    public List<Comment> findByBookIdWithFetchJoin(Long bookId) {
         return queryFactory.selectFrom(comment)
                 .leftJoin(comment.children).fetchJoin()
-                .where(comment.bookId.eq(bookId))
+                .where(comment.book.id.eq(bookId))
                 .fetch();
     }
 }

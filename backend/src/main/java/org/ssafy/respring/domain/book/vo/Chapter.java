@@ -15,14 +15,14 @@ public class Chapter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false)
-    private Book book;
+    @Column(name = "book_id", nullable = false)
+    private Long bookId;
 
+    @Column(name = "chapter_title", nullable = false)
     private String chapterTitle;
 
-    @Column(columnDefinition = "TEXT")
-    private String chapterContent; // JSON 형태로 저장
+    @Column(name = "chapter_content", nullable = false)
+    private String chapterContent;
 
     private int chapterOrder;
 }

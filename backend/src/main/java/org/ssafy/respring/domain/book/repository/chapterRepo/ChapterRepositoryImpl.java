@@ -1,4 +1,4 @@
-package org.ssafy.respring.domain.book.repository;
+package org.ssafy.respring.domain.book.repository.chapterRepo;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -22,17 +22,6 @@ public class ChapterRepositoryImpl implements ChapterRepositoryQueryDsl {
 		  .selectFrom(chapter)
 		  .where(chapter.bookId.eq(bookId))
 		  .orderBy(chapter.chapterOrder.asc()) // ✅ 추가: 순서 기준 정렬
-		  .fetch();
-	}
-
-	@Override
-	public List<Comment> findCommentsByBookId(Long bookId) {
-		QComment comment = QComment.comment; // QueryDSL 엔티티
-
-		return queryFactory
-		  .selectFrom(comment)
-		  .where(comment.book.id.eq(bookId)) // 특정 bookId의 댓글만 조회
-		  .orderBy(comment.createdAt.desc()) // 최신 댓글 순 정렬
 		  .fetch();
 	}
 }

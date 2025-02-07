@@ -49,7 +49,9 @@ public class CommentService {
         }
 
         if (dto.getBookId() != null) {
-            comment.setBookId(dto.getBookId());
+            Book book = new Book();
+            book.setId(dto.getBookId());
+            comment.setBook(book);
         }
 
         // 4. 부모 댓글 설정
@@ -105,7 +107,7 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
-    public List<CommentResponseDto> getCommentsByBookId(String bookId) {
+    public List<CommentResponseDto> getCommentsByBookId(Long bookId) {
         return commentRepository.findByBookIdWithFetchJoin(bookId)
                 .stream()
                 .map(this::mapToResponseDto)
@@ -152,7 +154,7 @@ public class CommentService {
         if (parent.getPost() != null && dto.getPostId() != null && !parent.getPost().getId().equals(dto.getPostId())) {
             throw new IllegalStateException("다른 게시글의 댓글에는 대댓글을 추가할 수 없습니다.");
         }
-        if (parent.getBookId() != null && dto.getBookId() != null && !parent.getBookId().equals(dto.getBookId())) {
+        if (parent.getBook() != null && dto.getBookId() != null && !parent.getBook().getId().equals(dto.getBookId())) {
             throw new IllegalStateException("다른 책의 댓글에는 대댓글을 추가할 수 없습니다.");
         }
     }

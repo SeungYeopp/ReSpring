@@ -36,18 +36,23 @@ public class Book {
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "book_likes", joinColumns = @JoinColumn(name = "book_info_id"))
     @Column(name = "user_id")
+    @Builder.Default
     private Set<UUID> likedUsers = new HashSet<>(); // 좋아요한 유저 리스트
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "book_views", joinColumns = @JoinColumn(name = "book_info_id"))
     @Column(name = "user_id")
+    @Builder.Default
     private Set<UUID> viewedUsers = new HashSet<>(); // 조회한 유저 리스트
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Chapter> chapters;
 
-    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Long> storyIds;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "book_story", joinColumns = @JoinColumn(name = "book_id"))
+    @Column(name = "story_id")
+    private Set<Long> storyIds = new HashSet<>();
+
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

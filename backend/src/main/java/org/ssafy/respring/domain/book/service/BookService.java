@@ -1,14 +1,17 @@
 package org.ssafy.respring.domain.book.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -16,17 +19,18 @@ import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
 import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
 import org.ssafy.respring.domain.book.dto.response.BookDetailResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
-import org.ssafy.respring.domain.book.repository.BookLikesRepository;
-import org.ssafy.respring.domain.book.repository.BookRepository;
-import org.ssafy.respring.domain.book.repository.BookViewsRepository;
+import org.ssafy.respring.domain.book.repository.bookRepo.BookLikesRepository;
+import org.ssafy.respring.domain.book.repository.bookRepo.BookRepository;
+import org.ssafy.respring.domain.book.repository.bookRepo.BookViewsRepository;
 
-import org.ssafy.respring.domain.book.repository.ChapterRepository;
+import org.ssafy.respring.domain.book.repository.chapterRepo.ChapterRepository;
 import org.ssafy.respring.domain.book.vo.Book;
 
 import org.ssafy.respring.domain.book.vo.BookLikes;
 import org.ssafy.respring.domain.book.vo.BookViews;
 import org.ssafy.respring.domain.book.vo.Chapter;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
+import org.ssafy.respring.domain.comment.service.CommentService;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.story.repository.StoryRepository;
 import org.ssafy.respring.domain.user.repository.UserRepository;
@@ -47,6 +51,7 @@ public class BookService {
 	private final ChapterRepository chapterRepository;
 
 	private final ChapterService chapterService;
+	private final CommentService commentService;
 	private final BookViewsRedisService bookViewsRedisService;
 	private final BookLikesRedisService bookLikesRedisService;
 	private final RedisTemplate<String, Object> redisTemplate;
@@ -55,8 +60,8 @@ public class BookService {
 	private static final String RECENT_VIEW_KEY = "user:recent:books:";
 
 	@Transactional
-	public Long createBook(BookRequestDto requestDto, UUID userId) {
-		User user = getUSerById(userId);
+	public Long createBook(BookRequestDto requestDto) {
+		User user = getUSerById(requestDto.getUserId());
 
 		Book book = Book.builder()
 				.author(user)
@@ -72,15 +77,18 @@ public class BookService {
 		// 챕터 저장
 		List<Chapter> chapters = requestDto.getChapters().stream()
 				.map(chapterDto -> Chapter.builder()
-						.book(book)
+						.bookId(book.getId())
 						.chapterTitle(chapterDto.getChapterTitle())
 						.chapterContent(chapterDto.getChapterContent())
 						.build())
 				.collect(Collectors.toList());
 
 		chapterRepository.saveAll(chapters);
-
 		bookRepository.save(book);
+
+		// ✅ Elasticsearch 색인 수행
+		indexBookData(book, "book_title");
+
 		return book.getId();
 	}
 
@@ -122,12 +130,15 @@ public class BookService {
 		if (isUpdated) {
 			book.setUpdatedAt(LocalDateTime.now());
 			bookRepository.save(book);
+			indexBookData(book, "book_title");
 		}
 	}
 
 	@Transactional
 	public void deleteBook(Long bookId) {
 		bookRepository.deleteById(bookId);
+		// ✅ Elasticsearch 색인 삭제
+		deleteBookFromIndex(bookId, "book_title");
 	}
 
 	@Transactional
@@ -142,14 +153,14 @@ public class BookService {
 		String bookContent = chapterService.getBookContent(bookId);
 
 		// ✅ 댓글 조회
-		List<CommentResponseDto> comments = bookRepository.findCommentsByBookId(bookId).stream()
+		List<CommentResponseDto> comments = commentService.getCommentsByBookId(bookId).stream()
 		  .map(comment -> new CommentResponseDto(
 			comment.getId(),
 			comment.getContent(),
-			comment.getUser().getUserNickname(),
+			comment.getUsername(),
 			comment.getCreatedAt(),
 			comment.getUpdatedAt(),
-			comment.getParent().getId()
+			comment.getParentId()
 		  ))
 		  .collect(Collectors.toList());
 
@@ -185,7 +196,13 @@ public class BookService {
 
 		bookViewsRedisService.incrementViewCount(bookId);
 		if (!bookViewsRepository.existsByBookIdAndUserId(bookId, userId)) {
-			bookViewsRepository.save(new BookViews(null, book, user));
+			BookViews newView = BookViews.builder()
+					.book(book)
+					.user(user)
+					.updatedAt(LocalDateTime.now())
+					.build();
+
+			bookViewsRepository.save(newView);
 		}
 		saveRecentView(user.getId(), bookId);
 	}
@@ -212,9 +229,10 @@ public class BookService {
 	}
 
 	@Transactional
-	public boolean toggleLikeBook(Long bookId, User user) {
+	public boolean toggleLikeBook(Long bookId, UUID userId) {
 		Book book = getBookById(bookId);
-		boolean isLiked = book.toggleLike(user.getId());
+		User user = getUSerById(userId);
+		boolean isLiked = book.toggleLike(userId);
 
 		if (isLiked) {
 			bookLikesRedisService.addLike(bookId, user.getId());
@@ -263,6 +281,81 @@ public class BookService {
 				.flatMap(Optional::stream)
 				.collect(Collectors.toList());
 	}
+
+	@Transactional
+	public List<BookResponseDto> getBooksSortedByTrends(UUID userId) {
+		// ✅ 트렌드 기반으로 책 목록 조회
+		List<Book> books = bookRepository.getAllBooksSortedByTrends();
+
+		return books.stream()
+				.map(book -> {
+					// ✅ Redis에서 좋아요 & 조회수 조회 (캐싱 활용)
+					Long likeCount = bookLikesRedisService.getLikeCount(book.getId());
+					Long viewCount = bookViewsRedisService.getViewCount(book.getId());
+
+					return BookResponseDto.toResponseDto(
+							book,
+							isBookLiked(book.getId(), userId),  // ✅ 좋아요 여부 확인
+							likeCount,
+							viewCount
+					);
+				})
+				.collect(Collectors.toList());
+	}
+
+	public void indexBookData(Book book, String indexName) {
+		try {
+			IndexRequest<Book> request = IndexRequest.of(i -> i
+					.index(indexName)
+					.id(book.getId().toString())
+					.document(book)
+			);
+
+			esClient.index(request);
+		} catch (IOException e) {
+			throw new RuntimeException("Elasticsearch 색인 오류", e);
+		}
+	}
+
+	public void deleteBookFromIndex(Long bookId, String indexName) {
+		try {
+			esClient.delete(d -> d
+					.index(indexName)
+					.id(bookId.toString())
+			);
+		} catch (IOException e) {
+			throw new RuntimeException("Elasticsearch 색인 삭제 오류", e);
+		}
+	}
+
+	// ✅ 책 제목 검색 기능 추가 (Elasticsearch 활용)
+	public List<BookResponseDto> searchByBookTitle(String keyword, UUID userId) throws IOException {
+		SearchRequest searchRequest = getSearchRequest("book_title", keyword);
+
+		SearchResponse<Book> searchResponse = esClient.search(searchRequest, Book.class);
+
+		List<Book> books = searchResponse.hits().hits().stream()
+				.map(Hit::source)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+
+		return books.stream()
+				.map(book -> mapToBookResponseDto(book, userId))
+				.collect(Collectors.toList());
+	}
+
+	private SearchRequest getSearchRequest(String indexName, String keyword) {
+		return SearchRequest.of(s -> s
+				.index(indexName)  // ✅ "book_title" 인덱스에서 검색 수행
+				.query(q -> q
+						.match(m -> m
+								.field("title")  // ✅ title 필드에서 검색
+								.query(keyword)
+						)
+				)
+		);
+	}
+
 
 	/**
 	 * ✅ Book 엔티티를 BookResponseDto로 변환하는 공통 메서드

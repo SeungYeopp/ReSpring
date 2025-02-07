@@ -1,4 +1,4 @@
-package org.ssafy.respring.domain.book.repository;
+package org.ssafy.respring.domain.book.repository.bookRepo;
 
 import org.ssafy.respring.domain.book.vo.Book;
 import org.springframework.data.jpa.repository.JpaRepository;

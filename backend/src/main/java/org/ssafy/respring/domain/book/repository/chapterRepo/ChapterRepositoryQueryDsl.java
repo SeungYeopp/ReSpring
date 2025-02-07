@@ -1,4 +1,4 @@
-package org.ssafy.respring.domain.book.repository;
+package org.ssafy.respring.domain.book.repository.chapterRepo;
 
 import org.ssafy.respring.domain.book.vo.Chapter;
 

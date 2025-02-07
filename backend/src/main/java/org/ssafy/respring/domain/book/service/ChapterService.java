@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.ssafy.respring.domain.book.repository.ChapterRepository;
+import org.ssafy.respring.domain.book.repository.chapterRepo.ChapterRepository;
 import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.book.vo.Chapter;
 
@@ -49,7 +49,7 @@ public class ChapterService {
 		// ✅ 4️⃣ 새로운 챕터 추가 (ID가 없는 챕터들만)
 		for (Chapter updatedChapter : updatedChapters) {
 			if (updatedChapter.getId() == null) {
-				updatedChapter.setBook(book);
+				updatedChapter.setBookId(book.getId());
 				newChapters.add(updatedChapter);
 			}
 		}
