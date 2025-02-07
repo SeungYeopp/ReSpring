@@ -21,7 +21,6 @@ import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
 
 import org.ssafy.respring.domain.chat.vo.ChatRoomUser;
-=======
 import org.ssafy.respring.domain.image.service.ImageService;
 
 import org.ssafy.respring.domain.user.repository.UserRepository;
