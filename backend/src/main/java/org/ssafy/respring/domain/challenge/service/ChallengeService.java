@@ -81,8 +81,6 @@ public class ChallengeService {
         // 이미지 저장 후 URL 반환
         String imageUrl = saveImage(image);
 
-        // ✅ 챌린지 생성 시 UUID 생성
-        String chatRoomUUID = UUID.randomUUID().toString();
 
 
         Challenge challenge = Challenge.builder()
@@ -97,7 +95,7 @@ public class ChallengeService {
                 .likes(0L)
                 .views(0L)
                 .participantCount(1L)
-                .chatRoomUUID(chatRoomUUID)
+                .chatRoomUUID(challengeDto.getTitle())
                 .build();
 
         challengeRepository.save(challenge);
@@ -111,7 +109,7 @@ public class ChallengeService {
 
         // ✅ 챌린지 생성 시 UUID 기반 오픈채팅방 생성
         ChatRoom chatRoom = chatService.createRoom(ChatRoomRequest.builder()
-                .name(chatRoomUUID) // ✅ UUID를 채팅방 이름으로 사용
+                .name(challengeDto.getTitle()) // ✅ UUID를 채팅방 이름으로 사용
                 .userIds(List.of(owner.getId().toString()))
                 .isOpenChat(true)
                 .build());
