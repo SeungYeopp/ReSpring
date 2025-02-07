@@ -1,6 +1,6 @@
 import { SelectableEntry } from "./SelectableEntry";
 
-interface SelectNoteProps {
+interface SelectEventProps {
   events: {
     id: number;
     eventName: string;
@@ -12,7 +12,7 @@ interface SelectNoteProps {
   onSelect: (id: number) => void;
 }
 
-const SelectNote = ({ events, selected, onSelect }: SelectNoteProps) => {
+const SelectEvent = ({ events, selected, onSelect }: SelectEventProps) => {
   return (
     <div className="flex flex-col space-y-2 p-4 mt-4">
       {events.map((entry) => (
@@ -30,4 +30,4 @@ const SelectNote = ({ events, selected, onSelect }: SelectNoteProps) => {
   );
 };
 
-export default SelectNote;
+export default SelectEvent;

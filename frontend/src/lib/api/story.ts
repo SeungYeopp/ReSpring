@@ -97,9 +97,16 @@ export const makeStory = async (
  * @param storyId - 조회할 스토리의 ID
  * @returns Promise<Story> - 조회된 스토리 객체 반환
  */
-export const getStoryById = async (storyId: number): Promise<Story> => {
+export const getStoryById = async (storyId: number, userId: string): Promise<Story> => {
     try {
-        const response = await axiosAPI.get(`/stories/${storyId}`);
+        const response = await axiosAPI.get(`/stories/${storyId}`,
+            {
+                headers: {
+                    "X-User-Id": userId,
+                    "Accept": "*/*" // 서버로부터 아무 타입의 반환값을 받겠다는 것을 의미한데요.
+                }
+            }
+        );
 
         return {
             ...response.data,
@@ -115,11 +122,19 @@ export const getStoryById = async (storyId: number): Promise<Story> => {
 /**
  * 특정 ID의 스토리를 삭제하는 함수
  * @param storyId - 삭제할 스토리의 ID
+ * @param userId - 작성자 ID
  * @returns Promise<boolean> - 삭제 성공 여부 반환
  */
-export const deleteStory = async (storyId: number): Promise<boolean> => {
+export const deleteStory = async (storyId: number, userId: string): Promise<boolean> => {
     try {
-        const response = await axiosAPI.delete(`/stories/${storyId}`);
+        const response = await axiosAPI.delete(`/stories/${storyId}`,
+            {
+                headers: {
+                    "X-User-Id": userId,
+                    "Accept": "*/*" // 서버로부터 아무 타입의 반환값을 받겠다는 것을 의미한데요.
+                }
+            }
+        )
 
         if (response.status === 200) {
             return true;
@@ -140,6 +155,7 @@ export const deleteStory = async (storyId: number): Promise<boolean> => {
  * @param title - 수정할 제목
  * @param content - 수정할 내용
  * @param eventId - 관련 이벤트 ID
+ * @param deleteImageIds
  * @param images - 업데이트할 이미지 목록
  * @returns Promise<Story> - 업데이트된 스토리 객체 반환
  */
@@ -149,16 +165,17 @@ export const updateStory = async (
     title: string,
     content: string,
     eventId: number,
+    deleteImageIds: number[],
     images: File[]
 ): Promise<Story> => {
     try {
         const formData = new FormData();
-        formData.append('storyDto', new Blob([
-            JSON.stringify({ userId, title, content, eventId })
-        ], { type: 'application/json' }));
+
+        const storyDto = JSON.stringify({ userId, title, content, eventId, deleteImageIds });
+        formData.append('storyDto', new Blob([storyDto], { type: 'application/json' }));
 
         images.forEach((image) => {
-            formData.append('deleteImageIds', image);
+            formData.append('images', image);
         });
 
         const response = await axiosAPI.patch(`/stories/${storyId}`, formData, {

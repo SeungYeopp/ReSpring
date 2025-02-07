@@ -11,4 +11,5 @@ import java.util.UUID;
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, ChatRoomRepositoryQuerydsl {
     Optional<ChatRoom> findByName(String name);
+    List<ChatRoom> findByIsMentoring(boolean isMentoring);
 }

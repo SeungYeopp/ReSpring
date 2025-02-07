@@ -8,9 +8,10 @@ import {BookSearchResult} from "@/app/yesterday/components/BookSearchResult"
 import { YesterdayMain } from "./components/YesterdayMain";
 import BubbleMenuYesterday from "@/components/custom/BubbleMenuYesterday"
 import Category from "./components/Category";
-
+import {useRouter} from "next/navigation"
 
 export default function Yesterday() {
+  const router = useRouter();
   const searchParams = useSearchParams()
 
   const searchQuery = searchParams && searchParams.get("q");
@@ -26,7 +27,10 @@ export default function Yesterday() {
         <Category />
       </div>
       }
-      <BubbleMenuYesterday/>
+      <BubbleMenuYesterday
+        onStoryEditorClick={() => router.push("yesterday/writenote")}
+        onBookEditorClick={() => router.push("yesterday/create-book")}
+      />
     </div>
   );
 }

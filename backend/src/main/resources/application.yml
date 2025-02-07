@@ -105,8 +105,16 @@ management:
       show-details: always
 
 
-
-
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET}
+    stack.auto: false
+    region:
+      static: ${S3_REGION}
+    credentials:
+      access-key: ${S3_ACCESSKEY}
+      secret-key: ${S3_SECRETKEY}
 
 ---
 # 🔹 로컬 환경에서 `.env` 파일을 읽도록 설정 (필요한 경우만)

@@ -1,28 +1,33 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { getAllEvents } from "@/lib/api";
-import { makeStory } from "@/lib/api/story";  
-import SelectNote from "../components/SelectNote";
-import NoteEditor from "../components/NoteEditor";
+import { getAllEvents, getStoryById, updateStory } from "@/lib/api";
+import { makeStory } from "@/lib/api/story";
+import SelectEvent from "../components/SelectEvent";
+import StoryEditor from "../components/StoryEditor";
 import AddEvent from "@/components/custom/AddEvent";
 
-export default function WriteNotePage() {
+export default function WriteStoryPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selected, setSelected] = useState<number | null>(null);
   const [selectedEventName, setSelectedEventName] = useState<string>("");
   const [events, setEvents] = useState<
     { id: number; eventName: string; occurredAt: string; category: string; display: boolean }[]
-  >([]);
+  >([]); 
   const [stage, setStage] = useState<"select" | "editor">("select");
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
+  const [eventId, setEventId] = useState<number>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [story, setStory] = useState<{ title: string; content: string } | null>(null);
 
   const userId = "b3470d7d-ab19-4514-9abe-9c3ffaf0a616";
+
+  const storyId = searchParams?.get("storyId") ? Number(searchParams.get("storyId")) : null;
 
   const fetchEvents = async () => {
     try {
@@ -44,6 +49,27 @@ export default function WriteNotePage() {
     fetchEvents();
   }, [userId]);
 
+  useEffect(() => {
+    if (storyId) {
+      fetchStoryData(storyId);
+      setStage("editor");
+    } else {
+      setStage("select");
+    }
+  }, [storyId]);
+
+  const fetchStoryData = async (storyId: number) => {
+    try {
+      const fetchedStory = await getStoryById(storyId, userId);
+      setStory(fetchedStory);
+      setTitle(fetchedStory.title);
+      setContent(fetchedStory.content);
+      setEventId(fetchedStory.eventId);
+    } catch (error) {
+      console.error("Error fetching story:", error);
+    }
+  };
+
   const handleNext = async () => {
     if (selected !== null) {
       const event = events.find((event) => event.id === selected);
@@ -52,24 +78,27 @@ export default function WriteNotePage() {
       }
     }
 
-    if (stage === "editor") {
-      setLoading(true);
-      try {
-        const storyId = await makeStory(userId, title, content, selected!, []);
-        router.push(`/stories/${storyId}`);
-      } catch (error) {
-        console.error("Error creating story:", error);
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    try {
+      const deleteImageIds: number[] = [];
+
+      if (storyId) {
+        await updateStory(storyId, userId, title, content, eventId!, deleteImageIds, []);
+        router.push("/yesterday/booklist?tab=stories");
+      } else {
+        const newStoryId = await makeStory(userId, title, content, selected!, []);
+        router.push(`/stories/${newStoryId}`);
       }
-    } else {
-      setStage("editor");
+    } catch (error) {
+      console.error("Error saving story:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleBack = () => {
     if (stage === "editor") {
-      setStage("select");
+      router.push("/yesterday/booklist?tab=stories");
     } else {
       router.back();
     }
@@ -98,11 +127,11 @@ export default function WriteNotePage() {
 
       {stage === "select" ? (
         <>
-          <SelectNote events={events} selected={selected} onSelect={setSelected} />
+          <SelectEvent events={events} selected={selected} onSelect={setSelected} />
           <AddEvent onEventAdded={handleEventAdded} />
         </>
       ) : (
-        <NoteEditor
+        <StoryEditor
           title={title}
           content={content}
           onTitleChange={setTitle}
