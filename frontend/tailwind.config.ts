@@ -11,6 +11,11 @@ export default {
   ],
   theme: {
     extend: {
+      animation:{
+        "spin-slow": "spin 20s linear infinite",
+        "spin-slow-medium": "spin 22s linear infinite",
+        "spin-slow-reverse": "spin 25s linear infinite reverse",
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
