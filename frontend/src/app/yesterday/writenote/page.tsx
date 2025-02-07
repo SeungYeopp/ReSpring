@@ -21,6 +21,7 @@ export default function WriteStoryPage() {
   const [stage, setStage] = useState<"select" | "editor">("select");
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
+  const [eventId, setEventId] = useState<number>();
   const [loading, setLoading] = useState<boolean>(false);
   const [story, setStory] = useState<{ title: string; content: string } | null>(null);
 
@@ -63,6 +64,7 @@ export default function WriteStoryPage() {
       setStory(fetchedStory);
       setTitle(fetchedStory.title);
       setContent(fetchedStory.content);
+      setEventId(fetchedStory.eventId);
     } catch (error) {
       console.error("Error fetching story:", error);
     }
@@ -81,8 +83,8 @@ export default function WriteStoryPage() {
       const deleteImageIds: number[] = [];
 
       if (storyId) {
-        await updateStory(storyId, userId, title, content, selected!, deleteImageIds, []);
-        router.push(`/stories/${storyId}`);
+        await updateStory(storyId, userId, title, content, eventId!, deleteImageIds, []);
+        router.push("/yesterday/booklist?tab=stories");
       } else {
         const newStoryId = await makeStory(userId, title, content, selected!, []);
         router.push(`/stories/${newStoryId}`);
