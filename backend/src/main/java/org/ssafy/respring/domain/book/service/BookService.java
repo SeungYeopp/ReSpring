@@ -15,6 +15,7 @@ import org.ssafy.respring.domain.book.repository.MongoBookRepository;
 import org.ssafy.respring.domain.book.util.BookMapper;
 import org.ssafy.respring.domain.book.vo.Book;
 
+import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.story.repository.StoryRepository;
 
@@ -33,6 +34,7 @@ public class BookService {
 	// private final UserRepository userRepository;
 	private final BookMapper bookMapper;
 	private final ElasticsearchClient esClient;
+	private final ImageService imageService;
 
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -49,11 +51,16 @@ public class BookService {
 		book.setTags(requestDto.getTags());
 		book.setLikeCount(0L);
 		book.setViewCount(0L);
-		book.setCoverImg(saveCoverImage(coverImg));
-
+//		book.setCoverImg(imageService.saveImageToDatabase(coverImg,"book_cover",null,null));
 		book.setCreatedAt(LocalDateTime.now());
 		book.setUpdatedAt(LocalDateTime.now());
 		book.setStoryIds(requestDto.getStoryIds());
+
+		if (coverImg != null && !coverImg.isEmpty()) {
+			// ✅ 이미지 업로드 후 S3 객체 키만 저장
+			String s3Key = imageService.saveImageToDatabase(coverImg, "book_covers", null, null);
+			book.setCoverImg(s3Key);
+		}
 
 		bookRepository.save(book);
 
@@ -173,7 +180,7 @@ public class BookService {
 	private List<String> getImagesFromStories(List<Long> storyIds) {
 		return storyRepository.findAllById(storyIds).stream()
 				.flatMap(story -> story.getImages() != null ? story.getImages().stream() : List.<Image>of().stream())
-				.map(Image::getImageUrl)
+				.map(Image::getS3Key)
 				.collect(Collectors.toList());
 	}
 

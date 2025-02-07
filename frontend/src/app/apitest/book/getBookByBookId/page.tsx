@@ -47,7 +47,7 @@ export interface Book{
                     <h4>봄날의 서 유저 ID : {book.userId}</h4>
                     {book.coverImg && <img key={book.coverImg} src={book.coverImg} alt="봄날의 서 이미지" width="100" />}
                     <h4>봄날의 서 태그들 : </h4>
-                    {book.tag.map((tag) => (
+                    {book.tags.map((tag) => (
                         <span key={tag}>
                             {tag}, 
                         </span>

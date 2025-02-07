@@ -1,3 +1,6 @@
+// src/components/custom/SekletonCard.tsx
+
+
 import { Card } from "@/components/ui/card";
 import { CustomSkeleton } from "@/components/custom/Skeleton";
 

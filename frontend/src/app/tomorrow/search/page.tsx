@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { searchChallenges } from "@/lib/api/tomorrow";
 import type { Challenge } from "@/app/tomorrow/types/challenge";
 import { GridChallengeCard } from "@/app/tomorrow/components/GridChallengeCard";
@@ -11,18 +11,20 @@ import { SearchSummary } from "../components/SearchSummary";
 import { useRecentSearches } from "@/app/tomorrow/hooks/useRecentSearches";
 import { List, Filter } from "lucide-react";
 
+// ProgressManager (오버레이 로딩 전용)
+import ProgressManager from "@/components/custom/loading/ProgressManager";
+
 export default function SearchPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const { recentSearches, addRecentSearch, clearRecentSearches } = useRecentSearches();
+  const { addRecentSearch } = useRecentSearches();
 
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [results, setResults] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchTime, setSearchTime] = useState(0);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "UPCOMING" | "ONGOING" | "ENDED">("ALL");
+  console.log("[SearchPage] 렌더링, query:", query, "loading:", loading, "results length:", results.length);
 
-  // ✅ URL 변경 시 검색 실행 (검색어가 변경될 때 query 상태 자동 업데이트)
+  // 쿼리 파라미터 변화 시 검색
   useEffect(() => {
     const newQuery = searchParams.get("q") || "";
     if (newQuery !== query) {
@@ -31,40 +33,37 @@ export default function SearchPage() {
     }
   }, [searchParams]);
 
-  // ✅ API 요청 함수
-  const performSearch = useCallback(
-    async (searchQuery: string) => {
-      if (!searchQuery.trim() || searchQuery.length < 2) {
-        setResults([]);
-        return;
-      }
+ // 예시: performSearch 함수 내에 로그 추가
+const performSearch = useCallback(async (searchQuery: string) => {
+  console.log("[SearchPage] performSearch 시작, searchQuery:", searchQuery);
+  if (!searchQuery.trim() || searchQuery.length < 2) {
+    setResults([]);
+    return;
+  }
+  setLoading(true);
 
-      setLoading(true);
-      const startTime = performance.now();
-      try {
-        const data = await searchChallenges(searchQuery);
-        setResults(data);
-        addRecentSearch(searchQuery);
-      } catch (error) {
-        console.error("검색 API 실패:", error);
-        setResults([]);
-      } finally {
-        setSearchTime((performance.now() - startTime) / 1000);
-        setLoading(false);
-      }
-    },
-    [addRecentSearch]
-  );
+  try {
+    // 테스트용 1초 인위적 지연
+    // await new Promise((r) => setTimeout(r, 1000));
 
-  // ✅ 검색바에서 검색 실행
-  const handleSearchSubmit = (search: string) => {
-    if (search.trim().length < 2) return;
-    router.push(`/tomorrow/search?q=${encodeURIComponent(search)}`);
-  };
+    const data = await searchChallenges(searchQuery);
+    console.log("[SearchPage] 검색 결과:", data);
+    setResults(data);
+    addRecentSearch(searchQuery);
+  } catch (error) {
+    console.error("검색 API 실패:", error);
+    setResults([]);
+  } finally {
+    setLoading(false);
+    console.log("[SearchPage] performSearch 종료, loading:", false);
+  }
+}, [addRecentSearch]);
 
-  // ✅ 클라이언트 측 STATUS 필터 적용
-  const filteredResults =
-    statusFilter === "ALL" ? results : results.filter((challenge) => challenge.status === statusFilter);
+  // 상태 필터링
+  const filteredResults = 
+    statusFilter === "ALL"
+      ? results
+      : results.filter((challenge) => challenge.status === statusFilter);
 
   return (
     <div className="container mx-auto px-4">
@@ -80,15 +79,12 @@ export default function SearchPage() {
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800">검색 결과</h2>
         </div>
 
-        {/* STATUS 필터 UI */}
         <div className="flex items-center space-x-2">
           <Filter className="w-5 h-5 text-gray-600" />
           <select
             className="border rounded-md px-2 py-1 text-sm"
             value={statusFilter}
-            onChange={(e) =>
-              setStatusFilter(e.target.value as "ALL" | "UPCOMING" | "ONGOING" | "ENDED")
-            }
+            onChange={(e) => setStatusFilter(e.target.value as "ALL" | "UPCOMING" | "ONGOING" | "ENDED")}
           >
             <option value="ALL">전체</option>
             <option value="UPCOMING">예정</option>
@@ -98,34 +94,51 @@ export default function SearchPage() {
         </div>
       </div>
 
-      {/* 검색 요약 */}
-      {query && !loading && <SearchSummary query={query} resultCount={filteredResults.length} />}
-
-      {/* 필터 적용 후 결과 렌더링 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4">
-        {filteredResults.map((challenge) => (
-          <GridChallengeCard
-            key={challenge.id}
-            id={challenge.id}
-            title={challenge.title}
-            description={challenge.description}
-            image={challenge.image}
-            like={challenge.likes}
-            participants={challenge.participantCount}
-            tags={[]}
-            status={challenge.status}
-          />
-        ))}
-      </div>
-
-      {/* 로딩 시 Skeleton UI 적용 */}
-      {loading && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <SkeletonCard key={index} className="h-[200px] sm:h-[240px] md:h-[280px]" />
-          ))}
-        </div>
+      {/* 검색 요약 (로딩 중이 아닐 때만) */}
+      {query && !loading && (
+        <SearchSummary query={query} resultCount={filteredResults.length} />
       )}
+
+      {/* 
+        ProgressManager를 전역 오버레이 로딩 전용으로 사용 
+        - avgResponseTime=1500 => 1.5초 이상이면 즉시 오버레이
+        - 100ms~500ms면 200ms 뒤 오버레이
+      */}
+      <ProgressManager
+        avgResponseTime={1200}
+        isLoading={loading}
+        useResponsiveLoading
+      >
+        {/**
+         * children:
+         * - 스켈레톤은 페이지 내부에서 직접 렌더링
+         * - loading === true => 스켈레톤 카드
+         * - loading === false => 실제 결과
+         */}
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <SkeletonCard key={i} className="h-[200px] sm:h-[240px] md:h-[280px]" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4">
+            {filteredResults.map((challenge) => (
+              <GridChallengeCard
+                key={challenge.id}
+                id={challenge.id}
+                title={challenge.title}
+                description={challenge.description}
+                image={challenge.image}
+                like={challenge.likes}
+                participants={challenge.participantCount}
+                tags={[]}
+                status={challenge.status}
+              />
+            ))}
+          </div>
+        )}
+      </ProgressManager>
     </div>
   );
 }
