@@ -5,5 +5,5 @@ import org.ssafy.respring.domain.user.vo.SocialAccount;
 import java.util.Optional;
 
 public interface SocialAccountRepository extends JpaRepository<SocialAccount, Long> {
-    Optional<SocialAccount> findBySocialIdAndProvider(String socialId, String provider);
+    Optional<SocialAccount> findByProviderAndSocialId(String provider, String socialId);
 }
