@@ -19,14 +19,19 @@ public class ElasticSearchConfig {
 
     @Bean
     public ElasticsearchClient elasticsearchClient() {
-        Dotenv dotenv = Dotenv.load();
 
-        String elasticUri = dotenv.get("ELASTICSEARCH_URI", "http://localhost:9200");
-        String elasticUser = dotenv.get("ELASTICSEARCH_USERNAME");
-        String elasticPassword = dotenv.get("ELASTICSEARCH_PASSWORD");
+        String elasticUri = System.getenv("ELASTICSEARCH_URI");
+        String elasticUser = System.getenv("ELASTICSEARCH_USERNAME");
+        String elasticPassword = System.getenv("ELASTICSEARCH_PASSWORD");
 
-        if (elasticUser == null || elasticPassword == null) {
-            throw new IllegalArgumentException("Elasticsearch username or password is missing in .env file.");
+        if (elasticUri == null || elasticUri.isEmpty()) {
+            throw new IllegalArgumentException("Environment variable 'ELASTICSEARCH_URI' is missing or empty.");
+        }
+        if (elasticUser == null || elasticUser.isEmpty()) {
+            throw new IllegalArgumentException("Environment variable 'ELASTICSEARCH_USERNAME' is missing or empty.");
+        }
+        if (elasticPassword == null || elasticPassword.isEmpty()) {
+            throw new IllegalArgumentException("Environment variable 'ELASTICSEARCH_PASSWORD' is missing or empty.");
         }
 
         BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();

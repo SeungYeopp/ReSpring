@@ -71,7 +71,7 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
           <CarouselItem key={post.id}>
             {/* ✅ 게시물 클릭 시 상세 페이지로 이동 */}
             <Link href={`/today/${post.id}`} className="block">
-              <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200">
+              <Card className="shadow-none border-none hover:shadow-md transition-shadow duration-200">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
@@ -82,15 +82,11 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
                       </Avatar>
                       <div>
                         <p className="text-sm font-medium">{post.userName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}</p>
                       </div>
                     </div>
                     {/* ✅ 카테고리별 배지 색상 적용 */}
-                    <Badge className={`text-xs px-2 py-1 rounded-lg shadow-sm ${getCategoryColor(post.category)}`}>
-                      {post.category}
-                    </Badge>
+                    <Badge className={`text-xs px-2 py-1 rounded-lg shadow-sm ${getCategoryColor(post.category)}`}>{post.category}</Badge>
                   </div>
                   <h3 className="font-bold text-sm mb-1">{post.title}</h3>
                   <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{post.content}</p>

@@ -10,7 +10,8 @@ spring:
       max-request-size: 10MB
 
   config:
-    import: optional:file:.env[.properties]
+    activate:
+      on-profile: default
 
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -27,7 +28,6 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
-
 
   ai:
     openai:
@@ -49,7 +49,6 @@ spring:
     username: ${ELASTICSEARCH_USERNAME}
     password: ${ELASTICSEARCH_PASSWORD}
 
-
 logging:
   level:
     org:
@@ -70,3 +69,10 @@ management:
     health:
       show-details: always
 
+---
+# 🔹 로컬 환경에서 `.env` 파일을 읽도록 설정 (필요한 경우만)
+spring:
+  config:
+    import: optional:file:.env[.properties]
+    activate:
+      on-profile: local

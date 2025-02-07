@@ -115,11 +115,19 @@ export const getStoryById = async (storyId: number): Promise<Story> => {
 /**
  * 특정 ID의 스토리를 삭제하는 함수
  * @param storyId - 삭제할 스토리의 ID
+ * @param userId - 작성자 ID
  * @returns Promise<boolean> - 삭제 성공 여부 반환
  */
-export const deleteStory = async (storyId: number): Promise<boolean> => {
+export const deleteStory = async (storyId: number, userId: string): Promise<boolean> => {
     try {
-        const response = await axiosAPI.delete(`/stories/${storyId}`);
+        const response = await axiosAPI.delete(`/stories/${storyId}`,
+            {
+                headers: {
+                    "X-User-Id": userId,
+                    "Accept": "*/*" // 서버로부터 아무 타입의 반환값을 받겠다는 것을 의미한데요.
+                }
+            }
+        )
 
         if (response.status === 200) {
             return true;

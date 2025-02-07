@@ -1,16 +1,16 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { type SortOption, sortOptions } from "../types/challenge";
 
 interface SortButtonProps {
   currentSort: SortOption;
-  onSortChange: (sort: SortOption) => void;
+  setCurrentSort: (sort: SortOption) => void;
 }
 
-export default function SortButton({ currentSort, onSortChange }: SortButtonProps) {
+export default function SortButton({ currentSort, setCurrentSort }: SortButtonProps) {
   const currentLabel = sortOptions.find((option) => option.value === currentSort)?.label || "정렬 기준";
 
   return (
@@ -22,7 +22,7 @@ export default function SortButton({ currentSort, onSortChange }: SortButtonProp
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
         {sortOptions.map((option) => (
-          <DropdownMenuItem key={option.value} onClick={() => onSortChange(option.value)} className={currentSort === option.value ? "bg-[#96b23c]/10 text-[#96b23c]" : ""}>
+          <DropdownMenuItem key={option.value} onClick={() => setCurrentSort(option.value)} className={currentSort === option.value ? "bg-[#96b23c]/10 text-[#96b23c]" : ""}>
             {option.label}
           </DropdownMenuItem>
         ))}

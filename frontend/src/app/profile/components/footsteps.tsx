@@ -1,37 +1,45 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getAllEvents, Event } from '@/lib/api/event';
+import EditEvent from '@/components/custom/EditEvent';
+import AddEvent from '@/components/custom/AddEvent';
 
-interface FootstepsItem {
-  id: string;
-  title: string;
-  date: string;
-}
+const Footsteps: React.FC<{ userId: string }> = ({ userId }) => {
+  const [footstepsData, setFootstepsData] = useState<Event[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-const footstepsData: FootstepsItem[] = [
-  {
-    id: '1',
-    title: 'Start of Journey',
-    date: 'January 2020',
-  },
-  {
-    id: '2',
-    title: 'First Milestone',
-    date: 'March 2021',
-  },
-  {
-    id: '3',
-    title: 'Big Achievement',
-    date: 'July 2022',
-  },
-  {
-    id: '4',
-    title: 'Final Step',
-    date: 'December 2023',
-  },
-];
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
-const Footsteps: React.FC = () => {
+  const fetchEvents = async () => {
+    try {
+      const events = await getAllEvents(userId);
+      const formattedEvents = events.map(event => ({
+        id: event.id,
+        eventName: event.eventName,
+        occurredAt: event.occurredAt,
+        category: event.category,
+        display: event.display,
+      }));
+      setFootstepsData(formattedEvents);
+    } catch (error) {
+      console.error("Failed to fetch events:", error);
+    }
+  };
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEventUpdated = async () => {
+    await fetchEvents();
+    setIsEditModalOpen(false);
+  };
+
   const circleSize = 48;
   const animationDuration = 2;
 
@@ -39,7 +47,7 @@ const Footsteps: React.FC = () => {
     <div className="relative pl-6">
       <div className="relative">
         <div
-          className="absolute left-[10%] top-0 w-[2px] bg-[#a46500]"
+          className="absolute left-[14%] top-0 w-[2px] bg-[#a46500]"
           style={{
             height: `${footstepsData.length * (circleSize + 24)}px`,
             animation: `lineExpand ${(footstepsData.length - 2) * animationDuration}s ease-out forwards`,
@@ -50,10 +58,11 @@ const Footsteps: React.FC = () => {
           return (
             <div
               key={item.id}
-              className="flex items-start mb-8 relative opacity-0"
+              className="flex items-start mb-8 relative opacity-0 cursor-pointer"
               style={{
                 animation: `fadeInAndExpand ${animationDuration}s ease-out forwards ${delay}`,
               }}
+              onClick={() => handleEventClick(item)}
             >
               <div
                 className={`w-12 h-12 rounded-full border-2 border-white ${
@@ -69,13 +78,26 @@ const Footsteps: React.FC = () => {
                   animation: `fadeInText ${animationDuration}s ease-out forwards ${parseFloat(delay) + 0.5}s`,
                 }}
               >
-                <div className="text-lg font-bold">{item.title}</div>
-                <div className="text-sm text-gray-500">{item.date}</div>
+                <div className="text-lg font-bold">{item.eventName}</div>
+                <div className="text-sm text-gray-500">{new Date(item.occurredAt).toLocaleDateString()}</div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {isEditModalOpen && selectedEvent && (
+        <EditEvent
+          event={selectedEvent}
+          userId={userId}
+          onClose={() => setIsEditModalOpen(false)}
+          onEventUpdated={handleEventUpdated}
+          onEventDeleted={handleEventUpdated}
+        />
+      )}
+
+      <AddEvent onEventAdded={fetchEvents} />
+
       <style jsx global>{`
         @keyframes circleExpand {
           0% {

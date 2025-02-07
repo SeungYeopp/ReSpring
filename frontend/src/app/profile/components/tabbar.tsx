@@ -3,9 +3,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/custom/TabGreen";
 import Footsteps from "./footsteps";
 import CommunityPosts from "./my-activities";
-import AddEvent from "@/components/custom/AddEvent";
 
-export const Tabbar = () => {
+export const Tabbar: React.FC<{ userId: string }> = ({ userId }) => {
   return (
     <div className="flex flex-col items-center justify-center">
       <Tabs defaultValue="footsteps" className="flex flex-col items-center justify-center">
@@ -17,8 +16,7 @@ export const Tabbar = () => {
         </TabsList>
         <br />
         <TabsContent value="footsteps">
-          <Footsteps />
-          <AddEvent onEventAdded={() => { console.log("Event added!"); }} />
+          <Footsteps userId={userId} />
         </TabsContent>
         <TabsContent value="sub-activities"></TabsContent>
         <TabsContent value="my-activities">
