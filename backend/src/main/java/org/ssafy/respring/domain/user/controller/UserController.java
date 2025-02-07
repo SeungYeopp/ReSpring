@@ -14,63 +14,53 @@ import org.ssafy.respring.domain.user.service.UserService;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    UserService userService;
-//    private final static UUID TEST_USERID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private final UserService userService;
 
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
+    // ✅ 회원가입 (일반 로그인)
     @PostMapping("/signup")
     public ResponseEntity<Void> signupUser(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
         userService.addUser(signUpRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<Void> login(@RequestBody LoginRequestDto loginRequestDto, HttpSession session,
-//                                      HttpServletResponse response) throws AuthenticationFailedException {
-//        LoginResponseDto loginResponseDto = userService.loginUser(loginRequestDto);
-//
-//        session.setAttribute("userId", loginResponseDto.getUserId());
-//        session.setAttribute("userNickname", loginResponseDto.getUserNickname());
-//
-//        return ResponseEntity.status(HttpStatus.OK).build();
-//    }
-
-    //DB 확인용 테스트 코드입니다
-    @GetMapping("/alluser")
-    public ResponseEntity<List<String>> getAllUser() {
-        List<User> list =userService.findAllUser();
-
-        List<String> nicknames = list.stream()
-                .map(User::getUserNickname)
-                .toList();
-
-        return ResponseEntity.status(HttpStatus.OK).body(nicknames);
-
+    // ✅ 일반 로그인
+    @PostMapping("/login")
+    public ResponseEntity<Void> login(@RequestBody LoginRequestDto loginRequestDto, HttpSession session)
+            throws AuthenticationFailedException {
+        LoginResponseDto loginResponseDto = userService.loginUser(loginRequestDto);
+        session.setAttribute("userId", loginResponseDto.getUserId());
+        session.setAttribute("userNickname", loginResponseDto.getUserNickname());
+        return ResponseEntity.ok().build();
     }
-    @GetMapping("/profile")
-    public ResponseEntity<Void> getUserProfile(HttpSession session) {
+
+    // ✅ 로그인 상태 확인 (OAuth2 + 일반 로그인 통합)
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> getUserProfile(HttpSession session) {
         Object userId = session.getAttribute("userId");
         Object userNickname = session.getAttribute("userNickname");
 
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
         }
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(Map.of(
+                "userId", userId,
+                "nickname", userNickname
+        ));
     }
 
-
+    // ✅ 로그아웃 (OAuth2 + 일반 로그인 통합)
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok().build();
+    }
 }
-
-
-
-
-
