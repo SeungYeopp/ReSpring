@@ -10,7 +10,7 @@ export const topNavItems: NavItem[] = [
 
 // 사이드바 네비게이션 아이템 (데스크탑용)
 export const sidebarItems: NavItem[] = [
-  { label: "홈", href: "/", iconName: "Sprout", isLogo: true },
+  { label: "다시, 봄(Re:Spring)", href: "/", iconName: "Sprout", isLogo: true },
   { label: "어제", href: "/yesterday", iconName: "Pencil" },
   { label: "오늘", href: "/today", iconName: "MessageSquare" },
   { label: "내일", href: "/tomorrow", iconName: "Target" },

@@ -10,8 +10,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
 import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
+import org.ssafy.respring.domain.book.service.BookIndexService;
+import org.ssafy.respring.domain.book.service.BookSearchService;
 import org.ssafy.respring.domain.book.service.BookService;
+import org.ssafy.respring.domain.book.vo.Book;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +25,8 @@ import java.util.UUID;
 @Tag(name = "Books API", description = "봄날의 서(자서전) 관련 API")
 public class BookController {
 	private final BookService bookService;
+	private final BookIndexService bookIndexService;
+	private final BookSearchService bookSearchService;
 
 	@PostMapping(consumes = {"multipart/form-data"})
 	@Operation(summary = "봄날의 서(자서전) 생성", description = "새로운 봄날의 서를 생성합니다.")
@@ -93,5 +99,11 @@ public class BookController {
 	@Operation(summary = "봄날의 서 주간 랭킹 Top3", description = "봄날의 서 주간 랭킹 Top3를 반환합니다.")
 	public ResponseEntity<List<BookResponseDto>> getWeeklyTop3() {
 		return ResponseEntity.ok(bookService.getWeeklyTop3());
+	}
+
+	@GetMapping("/search")
+	@Operation(summary = "봄날의 서 제목 검색 (Elasticsearch)", description = "Elasticsearch에서 책 제목을 검색합니다.")
+	public ResponseEntity<List<BookResponseDto>> searchBooks(@RequestParam String keyword) throws IOException {
+		return ResponseEntity.ok(bookSearchService.searchByTitle(keyword));
 	}
 }

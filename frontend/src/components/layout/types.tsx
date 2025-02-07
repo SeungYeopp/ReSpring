@@ -12,3 +12,11 @@ export type NavSection = {
   items: NavItem[];
   showLabels?: boolean;
 };
+
+// NavigationItem 컴포넌트의 props 타입 정의
+export type NavigationItemProps = NavItem & {
+  showLabel?: boolean;
+  className?: string;
+  isBottomNav?: boolean;
+  isTopNav?: boolean; // ✅ 추가된
+};

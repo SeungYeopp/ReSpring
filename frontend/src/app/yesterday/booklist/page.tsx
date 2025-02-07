@@ -1,95 +1,29 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/custom/TabGreen";
-
-const books = [
-  "/books/book1.jpg",
-  "/books/book2.jpg",
-  "/books/book3.jpg",
-  "/books/book4.jpg",
-  "/books/book5.jpg",
-  "/books/book6.jpg",
-  "/books/book7.jpg",
-  "/books/book8.jpg",
-  "/books/book9.jpg",
-  "/books/book10.jpg",
-];
+import BookShelf from "../components/BookShelf";
+import StoryShelf from "../components/StoryShelf";
+import { useSearchParams } from "next/navigation";
 
 export default function BookList() {
-  const [booksPerShelf, setBooksPerShelf] = useState(4);
-  const [bookWidth, setBookWidth] = useState(160);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const updateLayout = () => {
-      if (containerRef.current) {
-        const containerWidth = containerRef.current.offsetWidth;
-        let booksToShow;
-
-        if (containerWidth < 500) {
-          booksToShow = 2;
-        } else if (containerWidth < 800) {
-          booksToShow = 3;
-        } else {
-          booksToShow = 4;
-        }
-        setBooksPerShelf(booksToShow);
-        const padding = 32;
-        const newBookWidth = (containerWidth - padding) * 0.7 / booksToShow;
-        setBookWidth(newBookWidth);
-      }
-    };
-
-    updateLayout();
-    window.addEventListener("resize", updateLayout);
-    return () => window.removeEventListener("resize", updateLayout);
-  }, []);
-
-  const shelves = [];
-  for (let i = 0; i < books.length; i += booksPerShelf) {
-    shelves.push(books.slice(i, i + booksPerShelf));
-  }
+  const userId = "b3470d7d-ab19-4514-9abe-9c3ffaf0a616";
+  const searchParams = useSearchParams();
+  const tab = searchParams?.get("tab") || "books";
 
   return (
     <div className="flex flex-col items-center w-full p-4">
-      <Tabs defaultValue="books">
+      <Tabs defaultValue={tab}>
         <TabsList className="flex justify-center items-center mb-4 space-x-4">
           <TabsTrigger value="books">봄날의 서재</TabsTrigger>
-          <TabsTrigger value="notes">나의 글조각</TabsTrigger>
+          <TabsTrigger value="stories">나의 글조각</TabsTrigger>
         </TabsList>
 
         <TabsContent value="books">
-          <div ref={containerRef} className="flex flex-col items-center w-full p-4">
-            {shelves.map((shelf, index) => (
-              <div key={index} className="flex flex-col items-center mb-6">
-                <div className="flex justify-center gap-6 w-full">
-                  {shelf.map((book, bookIndex) => (
-                    <div key={bookIndex} className={`relative w-[${bookWidth}px] h-[${(bookWidth / 160) * 240}px] transform transition-transform duration-300 [transform:rotateY(0deg)] hover:[transform:rotateY(180deg)]`}>
-                      <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-white text-sm opacity-0 hover:opacity-100 transition-opacity duration-300 [transform:rotateY(180deg)]">
-                        Book {bookIndex + 1}
-                      </div>
-                      <Image
-                        src={book}
-                        alt={`Book ${bookIndex}`}
-                        width={bookWidth}
-                        height={(bookWidth / 160) * 240}
-                        className="object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <Image src="/shelf.png" alt="Bookshelf" width={1909} height={152} />
-              </div>
-            ))}
-          </div>
+          <BookShelf userId={userId} />
         </TabsContent>
 
-        <TabsContent value="notes">
-          <div className="p-4 text-center">
-            <p>This is the content for the "Notes" tab.</p>
-          </div>
+        <TabsContent value="stories">
+          <StoryShelf userId={userId} />
         </TabsContent>
       </Tabs>
     </div>

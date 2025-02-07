@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 import type { Post } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 import { useEffect, useState } from "react";
@@ -15,12 +15,18 @@ interface PopularPostsProps {
   posts: Post[];
 }
 
+// ✅ 랜덤 프로필 이미지 생성 함수
+const getRandomImage = () => {
+  const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
+  return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
+};
+
 export default function PopularPosts({ posts }: PopularPostsProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
 
-  // ✅ 카테고리 색상 함수 (내부에서 정의)
+  // ✅ 카테고리 색상 함수
   const getCategoryColor = (category: string): string => {
     switch (category) {
       case "전체":
@@ -65,12 +71,14 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
           <CarouselItem key={post.id}>
             {/* ✅ 게시물 클릭 시 상세 페이지로 이동 */}
             <Link href={`/today/${post.id}`} className="block">
-              <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200">
+              <Card className="shadow-none border-none hover:shadow-md transition-shadow duration-200">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
                       <Avatar>
                         <AvatarFallback>{post.userName[0]}</AvatarFallback>
+                        {/* ✅ 랜덤 프로필 이미지 적용 */}
+                        <AvatarImage src={getRandomImage()} alt={post.userName} />
                       </Avatar>
                       <div>
                         <p className="text-sm font-medium">{post.userName}</p>

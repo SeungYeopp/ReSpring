@@ -11,6 +11,11 @@ export default {
   ],
   theme: {
     extend: {
+      animation:{
+        "spin-slow": "spin 20s linear infinite",
+        "spin-slow-medium": "spin 22s linear infinite",
+        "spin-slow-reverse": "spin 25s linear infinite reverse",
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -57,12 +62,52 @@ export default {
           DEFAULT: "#96b23c",
           dark: "#638d3e",
         },
+        // ✅ 스플래시 스크린 색상 추가
+        splash: {
+          background: "#e8f3d6", // 연한 초록색 배경
+          text: "#638d3e", // 진한 초록색 텍스트
+          accent: "#4a6d2e", // 보조 초록색
+        },
+        chat: {
+          primary: {
+            DEFAULT: "#96b23c",
+            foreground: "hsl(var(--primary-foreground))",
+            light: "#a6c24c",
+            dark: "#638d3e",
+          },
+          secondary: {
+            DEFAULT: "#f0f4e6",
+            foreground: "#4a5568",
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+  			'accordion-down': {
+  				from: {
+  					height: '0'
+  				},
+  				to: {
+  					height: 'var(--radix-accordion-content-height)'
+  				}
+  			},
+  			'accordion-up': {
+  				from: {
+  					height: 'var(--radix-accordion-content-height)'
+  				},
+  				to: {
+  					height: '0'
+  				}
+  			}
+  		},
+  		animation: {
+  			'accordion-down': 'accordion-down 0.2s ease-out',
+  			'accordion-up': 'accordion-up 0.2s ease-out'
+  		}
     },
   },
   plugins: [require("tailwindcss-animate")],

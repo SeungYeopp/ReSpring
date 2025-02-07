@@ -1,11 +1,17 @@
 import { SubscribedUserChallenge } from "@/app/tomorrow/types/challenge";
 
+/** ✅ 랜덤 챌린지 이미지 생성 함수 */
+const getRandomImage = () => {
+  const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
+  return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
+};
+
 const mockSubscribedUserChallenges: SubscribedUserChallenge[] = [
   {
     challengeId: 202,
     title: "30일 코딩 챌린지",
     description: "매일 1시간 이상 코딩하기",
-    image: "https://example.com/challenge.jpg",
+    image: getRandomImage(),
     registerDate: "2024-01-20T08:00:00",
     likes: 100,
     views: 500,
@@ -17,7 +23,7 @@ const mockSubscribedUserChallenges: SubscribedUserChallenge[] = [
     challengeId: 203,
     title: "명상 챌린지",
     description: "매일 10분 명상하기",
-    image: "https://example.com/challenge2.jpg",
+    image: getRandomImage(),
     registerDate: "2024-01-15T12:00:00",
     likes: 80,
     views: 300,
@@ -29,7 +35,7 @@ const mockSubscribedUserChallenges: SubscribedUserChallenge[] = [
     challengeId: 204,
     title: "홈트레이닝 챌린지",
     description: "집에서 간단한 운동으로 건강 유지하기",
-    image: "https://example.com/challenge3.jpg",
+    image: getRandomImage(),
     registerDate: "2024-02-05T10:00:00",
     likes: 65,
     views: 280,
@@ -41,7 +47,7 @@ const mockSubscribedUserChallenges: SubscribedUserChallenge[] = [
     challengeId: 205,
     title: "비건 식단 챌린지",
     description: "매일 비건 식단으로 건강 관리하기",
-    image: "https://example.com/challenge4.jpg",
+    image: getRandomImage(),
     registerDate: "2024-02-20T14:30:00",
     likes: 90,
     views: 350,

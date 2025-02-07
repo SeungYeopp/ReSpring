@@ -12,15 +12,15 @@ export function Sidebar() {
           <NavigationItem {...sidebarItems[0]} className="w-full justify-start flex-row gap-3 mb-2" />
           <Divider thick />
           <NavigationItem {...sidebarItems[1]} className="w-full justify-start flex-row gap-3" />
-          <Divider />
+          {/* <Divider /> */}
           <NavigationItem {...sidebarItems[2]} className="w-full justify-start flex-row gap-3" />
-          <Divider />
+          {/* <Divider /> */}
           <NavigationItem {...sidebarItems[3]} className="w-full justify-start flex-row gap-3" />
-          <Divider />
-          <NavigationItem {...sidebarItems[4]} className="w-full justify-start flex-row gap-3" />
+          {/* <Divider /> */}
           <Divider thick />
+          <NavigationItem {...sidebarItems[4]} className="w-full justify-start flex-row gap-3" />
           <NavigationItem {...sidebarItems[5]} className="w-full justify-start flex-row gap-3" />
-          <Divider />
+          {/* <Divider /> */}
           <NavigationItem {...sidebarItems[6]} className="w-full justify-start flex-row gap-3" />
           <Divider thick />
           <NavigationItem {...sidebarItems[7]} className="w-full justify-start flex-row gap-3" />

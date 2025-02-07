@@ -26,7 +26,7 @@ export default function FollowedChallenges({ challenges }: FollowedChallengesPro
 
     api.on("select", onSelect);
 
-    // 5초마다 다음 슬라이드로 이동
+    // 5초마다 다음 슬라이드로 이동 (자동 재생)
     const autoplayInterval = setInterval(() => {
       api.scrollNext();
     }, 5000);
@@ -62,7 +62,7 @@ export default function FollowedChallenges({ challenges }: FollowedChallengesPro
   }, []);
 
   if (challenges.length === 0) {
-    return <div className="text-center text-gray-500">팔로우한 도전이 없습니다.</div>;
+    return <div className="text-center text-gray-500">구독한 사람들이 도전을 진행하고 있지 않습니다....</div>;
   }
 
   return (
@@ -81,11 +81,11 @@ export default function FollowedChallenges({ challenges }: FollowedChallengesPro
               <CarouselItem key={challenge.challengeId} className="md:basis-1/2 lg:basis-1/3">
                 <div className="p-1">
                   <SliderChallengeCard
-                    id={challenge.challengeId}
+                    id={challenge.challengeId} // ✅ challengeId 유지
                     image={challenge.image || "/placeholder.webp"}
                     title={challenge.title}
                     description={challenge.description}
-                    tags={[]} // SubscribedUserChallenge에 tags가 없으므로 빈 배열 사용
+                    tags={[]} // ✅ SubscribedUserChallenge에 tags 없음 → 빈 배열 사용
                   />
                 </div>
               </CarouselItem>
@@ -95,9 +95,9 @@ export default function FollowedChallenges({ challenges }: FollowedChallengesPro
         <CarouselNext />
       </Carousel>
 
-      {/* 점 인디케이터 추가 */}
+      {/* ✅ 점 인디케이터 (최대 5개까지만 표시) */}
       <div className="flex justify-center mt-4">
-        {challenges.map((_, index) => (
+        {challenges.slice(0, 5).map((_, index) => (
           <button
             key={index}
             className={`h-2 w-2 rounded-full mx-1 ${current === index ? "bg-blue-500" : "bg-gray-300"}`}
