@@ -1,10 +1,15 @@
-import Me from "./components/me";
-import Others from "./components/others";
-import StatSummary from "./components/stat-summary";
-import TabBar from "./components/tabbar";
+'use client';
+
+import { useParams } from "next/navigation";
+import Me from "../components/me";
+import Others from "../components/others";
+import StatSummary from "../components/stat-summary";
+import TabBar from "../components/tabbar";
 
 export default function ProfilePage() {
-  const userId = "b3470d7d-ab19-4514-9abe-9c3ffaf0a616";
+  const myId = "b3470d7d-ab19-4514-9abe-9c3ffaf0a616";
+  const { urlId } = useParams();
+  const userId = urlId && !Array.isArray(urlId) ? urlId : myId;
 
   return (
     <main>
@@ -38,10 +43,7 @@ export default function ProfilePage() {
         </div>
       </div>
       <div className="flex justify-center items-center w-full">
-        <Me />
-      </div>
-      <div className="flex justify-center items-center w-full">
-        {/* <Others /> */}
+        {userId === myId ? <Me /> : <Others />}
       </div>
       <StatSummary userId={userId} />
       <br />
