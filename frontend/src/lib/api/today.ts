@@ -4,6 +4,20 @@ import { posts, popularPosts, followedPosts } from "@/app/today/mocks/posts";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
+export interface Image {
+  imageId: number;
+  imageUrl: string;
+};
+
+export interface Comment {
+  id: number;
+  content: string;
+  username: string;
+  createdAt: string;
+  updatedAt: string;
+  parentId: number | null;
+};
+
 export interface Post {
   id: number; // 게시물 고유 ID
   title: string; // 게시물 제목
@@ -14,7 +28,7 @@ export interface Post {
   createdAt: string; // 생성 날짜 및 시간
   updatedAt: string; // 수정 날짜 및 시간
   likes: number; // 좋아요 수
-  images: string[]; // 게시물에 첨부된 이미지 URL 배열
+  images: Image[]; // 게시물에 첨부된 이미지 URL 배열
 }
 
 /**
@@ -124,6 +138,17 @@ export async function getPostDetail(postId: number): Promise<Post> {
   }
 }
 
+export async function getCommentsByPostId(postId: number): Promise<Comment[]> {
+  try {
+    const response = await axiosAPI.get<Comment[]>(`/posts/${postId}`);
+
+    return response.data;
+  } catch (error) {
+    console.error("게시글에 달린 댓글들 가져오기 실패:", error);
+    throw new Error("게시글에 달린 댓글들 가져오기 실패");
+  }
+}
+
 // async function getPostDetail(postId: number): Promise<Post> {
 //   const response = await fetch(`/posts/${postId}`, {
 //     method: "GET",
@@ -132,4 +157,12 @@ export async function getPostDetail(postId: number): Promise<Post> {
 //   const data = await response.json();
 //   console.log(data);
 //   return data;
+// }
+
+// async function getCommentsByPostId(postId: number): Promise<Comment[]> {
+//   const response = await fetch(`/comments/posts/${postId}`, {
+//     method: "GET",
+//   });
+//   if (!response.ok) throw new Error("댓글 조회 실패");
+//   return response.json();
 // }
