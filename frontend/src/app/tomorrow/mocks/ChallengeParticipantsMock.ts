@@ -1,6 +1,7 @@
 import { ChallengeParticipant } from "@/app/tomorrow/types/challenge";
 
 const mockParticipants: ChallengeParticipant = {
+  challengeId: 1, // ✅ 챌린지 ID 추가
   participantCount: 10,
   participantIds: [
     "dd5a7b3c-d887-11ef-b310-d4f32d147183",

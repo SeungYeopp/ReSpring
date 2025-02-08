@@ -163,7 +163,7 @@ public class PostService {
 
     private PostResponseDto toResponseDto(Post post) {
         List<ImageResponseDTO> imageDtos = post.getImages().stream()
-          .map(image -> new ImageResponseDTO(image.getImageId(), image.getImageUrl()))
+          .map(image -> new ImageResponseDTO(image.getImageId(), image.getS3Key()))
           .collect(Collectors.toList());
 
         List<CommentResponseDto> commentDtos = (post.getComments() == null) ?

@@ -4,6 +4,8 @@ import StatSummary from "./components/stat-summary";
 import TabBar from "./components/tabbar";
 
 export default function ProfilePage() {
+  const userId = "b3470d7d-ab19-4514-9abe-9c3ffaf0a616";
+
   return (
     <main>
       <div className="flex gap-4 pl-[5%] pt-4">
@@ -31,7 +33,6 @@ export default function ProfilePage() {
             <div className="flex">
              <img src="/verified.svg" alt="Verified Badge" className="w-[48px]" />
              <img src="/verified.svg" alt="Verified Badge" className="w-[48px]" />
-             <img src="/verified.svg" alt="Verified Badge" className="w-[48px]" />
             </div>
           </div>
         </div>
@@ -40,11 +41,11 @@ export default function ProfilePage() {
         <Me />
       </div>
       <div className="flex justify-center items-center w-full">
-        <Others />
+        {/* <Others /> */}
       </div>
-      <StatSummary />
+      <StatSummary userId={userId} />
       <br />
-      <TabBar />
+      <TabBar userId={userId} />
     </main>
   );
 }

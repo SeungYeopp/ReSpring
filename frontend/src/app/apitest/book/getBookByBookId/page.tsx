@@ -45,15 +45,15 @@ export interface Book{
                     <h4>봄날의 서 제목 : {book.title}</h4>
                     <h4>봄날의 서 내용 : {book.content}</h4>
                     <h4>봄날의 서 유저 ID : {book.userId}</h4>
-                    {book.coverImg && <img key={book.coverImg} src={book.coverImg} alt="봄날의 서 이미지" width="100" />}
+                    {book.coverImg && <img key={book.coverImg} src={book.coverImg} alt={book.coverImg} width="100" />}
                     <h4>봄날의 서 태그들 : </h4>
-                    {book.tag.map((tag) => (
+                    {book.tags.map((tag) => (
                         <span key={tag}>
                             {tag}, 
                         </span>
                     ))}
-                    <h4>받은 좋아요 수 : {book.likes}</h4>
-                    <h4>조회수 : {book.view}</h4>
+                    <h4>받은 좋아요 수 : {book.likeCount}</h4>
+                    <h4>조회수 : {book.viewCount}</h4>
                     <h4>생성 날짜 : {book.createdAt.toLocaleString()}</h4>
                     <h4>수정 날짜 : {book.updatedAt.toLocaleString()}</h4>
                     <h4>봄날의 서에 담긴 이벤트 정보들 : </h4>

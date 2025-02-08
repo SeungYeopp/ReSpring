@@ -8,10 +8,10 @@ export const YesterdayMain = () => {
         <div className="flex flex-col items-center justify-center">
             <Tabs defaultValue="today" className="flex flex-col items-center justify-center">
                 <TabsList>
-                    <TabsTrigger value="today">오늘의 서</TabsTrigger>
+                    <TabsTrigger value="today">주간의 서</TabsTrigger>
                     <TabsTrigger value="subscribe">구독</TabsTrigger>
                 </TabsList>
-                <TabsContent value="today">
+                <TabsContent value="today" className="flex flex-col items-center justify-center">
                     <TodaysBook />
                 </TabsContent>
                 <TabsContent value="subscribe">

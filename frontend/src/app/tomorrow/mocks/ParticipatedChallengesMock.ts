@@ -10,10 +10,10 @@ const mockParticipatedChallenges: ParticipatedChallenge[] = [
   {
     id: 1,
     title: "30일 독서 챌린지",
-    image: getRandomImage(), // ✅ 랜덤 이미지 적용
+    image: getRandomImage(),
     registerDate: "2024-01-30T10:00:00",
     tags: ["독서", "습관", "성장"],
-    tagCount: 3,
+    tagCount: 3, // ✅ tagCount 추가
     currentStreak: 5,
   },
   {

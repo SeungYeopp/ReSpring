@@ -1,20 +1,33 @@
 pipeline {
     agent any
-    environment {
-        ENV_FILE = credentials('project-env')
-    }
     tools {
         dockerTool 'DefaultDocker'
+        nodejs 'NodeJS-20'
+    }
+    environment {
+        SPRING_DATASOURCE_URL = credentials('SPRING_DATASOURCE_URL')
+        SPRING_DATASOURCE_USERNAME = credentials('SPRING_DATASOURCE_USERNAME')
+        SPRING_DATASOURCE_PASSWORD = credentials('SPRING_DATASOURCE_PASSWORD')
+        MONGODB_URI = credentials('MONGODB_URI')
+        MONGODB_DATABASE = credentials('MONGODB_DATABASE')
+        ELASTICSEARCH_URI = credentials('ELASTICSEARCH_URI')
+        ELASTICSEARCH_USERNAME = credentials('ELASTICSEARCH_USERNAME')
+        ELASTICSEARCH_PASSWORD = credentials('ELASTICSEARCH_PASSWORD')
+        REDIS_HOST = credentials('REDIS_HOST')
+        REDIS_PORT = credentials('REDIS_PORT')
+        REDIS_PASSWORD = credentials('REDIS_PASSWORD')
+        S3_BUCKET= credentials('S3_BUCKET')
+        S3_ACCESSKEY = credentials('S3_ACCESSKEY')
+        S3_SECRETKEY = credentials('S3_SECRETKEY')
+        S3_REGION = credentials('S3_REGION')
+        GOOGLE_CLIENT_ID = credentials('GOOGLE_CLIENT_ID')
+        GOOGLE_CLIENT_SECRET = credentials('GOOGLE_CLIENT_SECRET')
+        GOOGLE_REDIRECT_URI = credentials('GOOGLE_REDIRECT_URI')
+        KAKAO_CLIENT_ID = credentials('KAKAO_CLIENT_ID')
+        KAKAO_CLIENT_SECRET = credentials('KAKAO_CLIENT_SECRET')
+        KAKAO_REDIRECT_URI = credentials('KAKAO_REDIRECT_URI')
     }
     stages {
-        stage('Setup Environment') {
-            steps {
-                script {
-                    sh 'cp $ENV_FILE ./backend/.env'
-                    sh 'cp $ENV_FILE ./frontend/.env'
-                }
-            }
-        }
         stage('Backend Build') {
             steps {
                 dir('backend') {
@@ -24,9 +37,6 @@ pipeline {
             }
         }
         stage('Frontend Build') {
-            tools {
-                nodejs "NodeJS-20"
-            }
             steps {
                 dir('frontend') {
                     sh '''
@@ -57,7 +67,6 @@ pipeline {
         always {
             script {
                 sh '''
-                echo "🛑 Cleaning up test containers..."
                 docker-compose down || true
                 '''
             }

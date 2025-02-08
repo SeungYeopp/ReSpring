@@ -2,6 +2,7 @@ package org.ssafy.respring.domain.challenge.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,9 +16,13 @@ import org.ssafy.respring.domain.challenge.repository.UserChallengeRepository;
 import org.ssafy.respring.domain.challenge.vo.*;
 import org.ssafy.respring.domain.chat.dto.request.ChatRoomRequest;
 import org.ssafy.respring.domain.chat.repository.ChatRoomRepository;
+import org.ssafy.respring.domain.chat.repository.ChatRoomUserRepository;
 import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
+
+import org.ssafy.respring.domain.chat.vo.ChatRoomUser;
 import org.ssafy.respring.domain.image.service.ImageService;
+
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
@@ -42,6 +47,8 @@ public class ChallengeService {
     private final ChatService chatService;
     private final ImageService imageService;
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatRoomUserRepository chatRoomUserRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -61,8 +68,6 @@ public class ChallengeService {
         // 이미지 저장 후 URL 반환
         String imageUrl = imageService.saveCoverImage(image);
 
-        // ✅ 챌린지 생성 시 UUID 생성
-        String chatRoomUUID = UUID.randomUUID().toString();
 
 
         Challenge challenge = Challenge.builder()
@@ -77,7 +82,7 @@ public class ChallengeService {
                 .likes(0L)
                 .views(0L)
                 .participantCount(1L)
-                .chatRoomUUID(chatRoomUUID)
+                .chatRoomUUID(challengeDto.getTitle())
                 .build();
 
         challengeRepository.save(challenge);
@@ -91,7 +96,7 @@ public class ChallengeService {
 
         // ✅ 챌린지 생성 시 UUID 기반 오픈채팅방 생성
         ChatRoom chatRoom = chatService.createRoom(ChatRoomRequest.builder()
-                .name(chatRoomUUID) // ✅ UUID를 채팅방 이름으로 사용
+                .name(challengeDto.getTitle()) // ✅ UUID를 채팅방 이름으로 사용
                 .userIds(List.of(owner.getId().toString()))
                 .isOpenChat(true)
                 .build());
@@ -201,26 +206,50 @@ public class ChallengeService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
-        // 이미 참가한 경우 방지
-        boolean alreadyJoined = userChallengeRepository.findByUser(user).stream()
-                .anyMatch(uc -> uc.getChallenge().equals(challenge));
+        // ✅ UserChallenge 기록이 없으면 새로 추가 (챌린지 자체에 대한 참가 기록 유지)
+        boolean alreadyJoined = userChallengeRepository.existsByUserAndChallenge(user, challenge);
 
-        if (alreadyJoined) {
-            throw new IllegalStateException("이미 참가한 챌린지입니다.");
+        if (!alreadyJoined) {
+            UserChallenge userChallenge = UserChallenge.builder()
+                    .user(user)
+                    .challenge(challenge)
+                    .build();
+            userChallengeRepository.save(userChallenge);
+            System.out.println("✅ 새로운 챌린지 참가 기록 추가됨");
         }
 
-        UserChallenge userChallenge = UserChallenge.builder()
-                .user(user)
-                .challenge(challenge)
-                .build();
-
-        userChallengeRepository.save(userChallenge);
+        // ✅ 참가자 수 증가
         challenge.setParticipantCount(challenge.getParticipantCount() + 1);
+        challengeRepository.save(challenge);
 
-        // ✅ UUID 기반 채팅방 참가
+        // ✅ UUID 기반 채팅방 참가 (기존 참가자일 경우 `isActive = true`로 변경)
         Optional<ChatRoom> chatRoomOptional = chatService.findByName(challenge.getChatRoomUUID());
-        chatRoomOptional.ifPresent(chatRoom -> chatService.addUserToRoom(chatRoom.getId(), userId));
+        chatRoomOptional.ifPresent(chatRoom -> {
+            Optional<ChatRoomUser> existingChatRoomUser = chatRoomUserRepository.findByChatRoomAndUser(chatRoom, user);
+
+            if (existingChatRoomUser.isPresent()) {
+                // ✅ 기존 참가 기록이 있으면 `isActive = true`로 변경
+                ChatRoomUser chatRoomUser = existingChatRoomUser.get();
+                chatRoomUser.setActive(true);
+                chatRoomUserRepository.save(chatRoomUser);
+                System.out.println("✅ 기존 채팅방 참가 기록 있음 → isActive = true 변경됨");
+            } else {
+                // ✅ 기존 기록이 없으면 새롭게 추가
+                ChatRoomUser newChatRoomUser = ChatRoomUser.builder()
+                        .chatRoom(chatRoom)
+                        .user(user)
+                        .isActive(true) // 기본적으로 활성화
+                        .build();
+                chatRoomUserRepository.save(newChatRoomUser);
+                System.out.println("✅ 새로운 채팅방 참가 기록 추가됨");
+            }
+        });
+
+        // ✅ WebSocket 이벤트 전송 → 참가자 UI 즉시 갱신
+        messagingTemplate.convertAndSend("/topic/newOpenChatRoom/" + userId, challenge.getChatRoomUUID());
     }
+
+
 
     // ✅ 챌린지 나가기 기능
     public void leaveChallenge(UUID userId, Long challengeId) {
@@ -252,6 +281,10 @@ public class ChallengeService {
         // ✅ UUID 기반 채팅방에서 나가기
         Optional<ChatRoom> chatRoomOptional = chatService.findByName(challenge.getChatRoomUUID());
         chatRoomOptional.ifPresent(chatRoom -> chatService.leaveRoom(chatRoom.getId(), userId));
+
+        // ✅ WebSocket 이벤트 전송 → 챌린지 리스트 즉시 갱신
+        messagingTemplate.convertAndSend("/topic/updateChallengeList/" + userId, challenge.getId());
+
         // 🔥 참가자가 0명이면 챌린지 자동 삭제
         if (challenge.getParticipantCount() == 0) {
             challengeRepository.delete(challenge);

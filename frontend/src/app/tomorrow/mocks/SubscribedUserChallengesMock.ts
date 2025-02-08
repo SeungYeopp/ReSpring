@@ -11,7 +11,7 @@ const mockSubscribedUserChallenges: SubscribedUserChallenge[] = [
     challengeId: 202,
     title: "30일 코딩 챌린지",
     description: "매일 1시간 이상 코딩하기",
-    image: getRandomImage(), // ✅ 랜덤 이미지 적용
+    image: getRandomImage(),
     registerDate: "2024-01-20T08:00:00",
     likes: 100,
     views: 500,
