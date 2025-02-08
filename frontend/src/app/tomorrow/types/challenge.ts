@@ -26,6 +26,7 @@ export interface ChallengeDetail extends Challenge {
   likes: number; // ✅ 좋아요 수 (API 응답에 포함)
   views: number; // ✅ 조회수 (API 응답에 포함)
   image: string; // ✅ API로부터 오는 이미지 URL
+  ownerId?: string; // ✅ 챌린지 소유자 ID (API 응답에 포함)
 }
 
 // 📌 3. 내가 참여한 챌린지 목록
