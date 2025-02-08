@@ -45,6 +45,9 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
     async function fetchPost() {
       try {
         const fetchedPost = await getPost(Number(params.id));
+
+        console.log(fetchedPost);
+
         setPost(fetchedPost);
         setLikes(fetchedPost.likes);
         setLikeByMe(fetchedPost.likeByMe);

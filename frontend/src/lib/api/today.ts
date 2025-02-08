@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosAPI from "@/lib/api/axios";
 import { posts, popularPosts, followedPosts } from "@/app/today/mocks/posts";
 
 
@@ -24,7 +24,7 @@ export interface Post {
 export async function getPopularPosts(): Promise<Post[]> {
   try {
     // 서버에서 인기 게시물을 가져옵니다.
-    const response = await axios.get<Post[]>(`${API_BASE_URL}/posts/popular`);
+    const response = await axiosAPI.get<Post[]>(`/posts/popular`);
     return response.data;
   } catch (error) {
     console.error("Error fetching popular posts:", error);
@@ -42,7 +42,7 @@ export async function getPopularPosts(): Promise<Post[]> {
 export async function getAllPosts(lastId?: number, limit = 10): Promise<Post[]> {
   try {
     // 서버에서 전체 게시물을 가져옵니다.
-    const response = await axios.get<Post[]>(`${API_BASE_URL}/posts/all`, {
+    const response = await axiosAPI.get<Post[]>(`/posts/all`, {
       params: { lastId, limit },
     });
     return response.data;
@@ -85,7 +85,7 @@ export async function createPost(postData: CreatePostDto, images?: File[]): Prom
       });
     }
 
-    const response = await axios.post<CreatePostResponse>(`${API_BASE_URL}/posts`, formData, {
+    const response = await axiosAPI.post<CreatePostResponse>(`/posts`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -112,3 +112,24 @@ export async function getFollowedPosts(lastId?: number | null | undefined, limit
     }, 500); // ✅ 0.5초 지연 후 데이터 반환 (실제 API 응답처럼 보이도록)
   });
 }
+
+export async function getPostDetail(postId: number): Promise<Post> {
+  try {
+    const response = await axiosAPI.get<Post>(`/posts/${postId}`);
+
+    return response.data;
+  } catch (error) {
+    console.error("상세 게시글 가져오기 실패:", error);
+    throw new Error("상세 게시글 가져오기 실패");
+  }
+}
+
+// async function getPostDetail(postId: number): Promise<Post> {
+//   const response = await fetch(`/posts/${postId}`, {
+//     method: "GET",
+//   });
+//   if (!response.ok) throw new Error("게시글 상세 조회 실패");
+//   const data = await response.json();
+//   console.log(data);
+//   return data;
+// }
