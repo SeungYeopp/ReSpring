@@ -33,8 +33,6 @@ async function updateChallenge(id: string, data: Partial<ChallengeDetail>): Prom
 export default function EditChallengePage() {
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null);
   const [updatedData, setUpdatedData] = useState<Partial<ChallengeDetail>>({});
-  const [preview, setPreview] = useState<string | undefined>(undefined); // preview 상태 별도 관리
-
   const isTablet = useMediaQuery("(min-width: 768px)");
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const params = useParams();
@@ -69,13 +67,6 @@ export default function EditChallengePage() {
   }, [router]);
 
   const handleChange = useCallback((newData: Partial<ChallengeDetail>) => {
-    if (newData.image && typeof newData.image !== "string") {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(newData.image as File);
-    }
     setUpdatedData((prevData) => ({ ...prevData, ...newData }));
   }, []);
 
@@ -88,7 +79,7 @@ export default function EditChallengePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 pt pb-16 md:pt-0 md:pb-0">
+    <main className="min-h-screen bg-gray-50  pb-16 md:pt-0 md:pb-0">
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="w-full lg:w-1/2">
@@ -102,7 +93,7 @@ export default function EditChallengePage() {
                 tags={previewData.tags}
                 startDate={new Date(previewData.startDate)}
                 endDate={typeof previewData.endDate === "string" ? new Date(previewData.endDate) : previewData.endDate}
-                preview={preview || previewData.image} // preview 상태 적용
+                preview={typeof previewData.image === "string" ? previewData.image : ""}
               />
             </motion.div>
           )}

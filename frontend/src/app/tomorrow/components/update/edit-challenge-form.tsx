@@ -16,6 +16,11 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Card, CardContent } from "@/components/ui/card";
 import { Camera, FileText, Tags, Calendar } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type React from "react";
+
+// 주석 처리: import { getSessionInfo } from "@/lib/api/user"
+// 주석 처리: import type { SessionInfo } from "@/types/user"
 
 interface EditChallengeFormProps {
   challenge: ChallengeDetail;
@@ -32,6 +37,31 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const { toast } = useToast();
+  const router = useRouter();
+
+  // 주석 처리: const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null)
+  // 주석 처리: const [isAuthorized, setIsAuthorized] = useState(false)
+
+  // 임시로 모든 사용자에게 권한 부여
+  const isAuthorized = true;
+
+  // 주석 처리된 useEffect
+  /*
+  useEffect(() => {
+    const fetchSessionInfo = async () => {
+      try {
+        const info = await getSessionInfo()
+        setSessionInfo(info)
+        setIsAuthorized(info.userId === challenge.ownerId)
+      } catch (error) {
+        console.error("세션 정보를 가져오는 데 실패했습니다:", error)
+        setIsAuthorized(false)
+      }
+    }
+
+    fetchSessionInfo()
+  }, [challenge.ownerId])
+  */
 
   const handleDescriptionChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -57,7 +87,7 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
         reader.onloadend = () => {
           const previewUrl = reader.result as string;
           setPreview(previewUrl);
-          onChange({ image: previewUrl }); // 이미지 미리보기 URL 전달
+          onChange({ image: previewUrl }); // File 대신 미리보기 URL(string) 전달
         };
         reader.readAsDataURL(file);
       } else {
@@ -73,7 +103,7 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
     (date: Date | undefined) => {
       if (date) {
         setEndDate(date);
-        onChange({ endDate: date.toISOString() }); // 날짜를 문자열로 변환하여 전달
+        onChange({ endDate: date.toISOString() }); // Date → ISO 문자열로 변환
         setErrors((prev) => ({ ...prev, endDate: "" }));
       } else {
         setErrors((prev) => ({ ...prev, endDate: "종료일을 선택해주세요." }));
@@ -85,6 +115,7 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
   const validateForm = useCallback(() => {
     const newErrors: { [key: string]: string } = {};
 
+    // 설명 유효성 검사
     if (!description.trim()) {
       newErrors.description = "설명을 입력해주세요.";
     } else if (description.length < MIN_DESCRIPTION_LENGTH) {
@@ -93,21 +124,27 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
       newErrors.description = `설명은 최대 ${MAX_DESCRIPTION_LENGTH}자까지 입력 가능합니다.`;
     }
 
+    // 종료일 유효성 검사
     if (!endDate) {
       newErrors.endDate = "종료일을 선택해주세요.";
     }
 
+    // 이미지 유효성 검사 (이미지가 없으면 에러)
+    if (!preview) {
+      newErrors.image = "이미지를 업로드해주세요.";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [description, endDate]);
+  }, [description, endDate, preview]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) {
-      // 폼 내에서 직접 알림 표시
+    if (!validateForm()) return;
+    if (!isAuthorized) {
       toast({
-        title: "폼 검증 실패",
-        description: "입력한 내용을 확인해주세요.",
+        title: "권한 없음",
+        description: "이 챌린지를 수정할 권한이 없습니다.",
         variant: "destructive",
       });
       return;
@@ -117,21 +154,48 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
     try {
       const challengeData: Partial<ChallengeDetail> = {
         description,
-        endDate: endDate.toISOString(),
-        image: preview,
+        endDate: endDate.toISOString(), // Date → 문자열 변환
+        image: preview, // File → 미리보기 URL(string)
       };
-      await onSubmit(challengeData); // 검증 성공 시만 부모 컴포넌트로 전달
+
+      await onSubmit(challengeData);
+      router.push(`/tomorrow/${challenge.id}`);
+      toast({
+        title: "챌린지 수정 성공",
+        description: "챌린지가 성공적으로 수정되었습니다.",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "챌린지 수정 실패",
+        description: "챌린지 수정 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (!isAuthorized) {
+    return (
+      <Card className="max-w-xl mx-auto">
+        <CardContent className="p-6">
+          <h1 className="text-2xl font-bold mb-4">권한 없음</h1>
+          <p>이 챌린지를 수정할 권한이 없습니다.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="max-w-xl mx-auto">
       <CardContent className="space-y-4 p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-4">
-            <ImageUpload onImageChange={handleImageChange} preview={preview} />
+            <div>
+              <ImageUpload onImageChange={handleImageChange} preview={preview} />
+              {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image}</p>} {/* 이미지 에러 메시지 */}
+            </div>
 
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -166,13 +230,16 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
                 <span className="text-sm text-gray-500">태그</span>
               </div>
               <div className="flex flex-wrap gap-2 p-2 bg-gray-50 rounded-lg border border-[#8BC34A] min-h-[42px] mb-2">
-                {challenge.tags.map((tag: string) => (
+                {challenge.tags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="bg-[#F8BBD0] text-gray-700 text-xs">
                     {tag}
                   </Badge>
                 ))}
               </div>
-              <p className="text-xs text-gray-500">태그는 수정할 수 없습니다.</p>
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-gray-500">태그는 수정할 수 없습니다.</p>
+                <p className="text-xs text-gray-500">태그 {challenge.tags.length}/3</p>
+              </div>
             </div>
 
             <div>
@@ -180,9 +247,30 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
                 <Calendar className="w-4 h-4 text-[#8BC34A]" />
                 <span className="text-sm text-gray-500">기간</span>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
-                <Input value={format(new Date(challenge.startDate), "yyyy년 MM월 dd일", { locale: ko })} disabled className="bg-gray-50 border-[#8BC34A] text-gray-500 text-sm" />
-                <DatePicker date={endDate} onSelect={handleEndDateChange} label="종료일 선택" error={errors.endDate} disabledDays={(date) => new Date(challenge.startDate) >= date} />
+                {/* 시작일 표시 (수정 불가) */}
+                <div>
+                  <Input value={format(new Date(challenge.startDate), "yyyy년 MM월 dd일", { locale: ko })} disabled className="bg-gray-50 border-[#8BC34A] text-gray-500 text-sm" />
+                </div>
+
+                {/* 종료일 선택 */}
+                <DatePicker
+                  date={endDate}
+                  onSelect={handleEndDateChange}
+                  label="종료일 선택"
+                  error={errors.endDate}
+                  disabledDays={(date) => {
+                    // 시작일 다음 날 이전은 비활성화
+                    const startDate = new Date(challenge.startDate);
+                    const nextDay = new Date(startDate);
+                    nextDay.setDate(startDate.getDate() + 1); // 시작일의 다음 날로 설정
+
+                    return date < nextDay; // 시작일 다음 날 이전은 비활성화
+                  }}
+                />
+
+                <p className="text-xs text-gray-500 mt-1">시작일 다음 날부터 선택 가능합니다.</p>
               </div>
             </div>
 
