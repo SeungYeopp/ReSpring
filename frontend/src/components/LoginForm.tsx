@@ -1,38 +1,38 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { login } from "@/lib/api"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/hooks/useAuth"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { login } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export function LoginForm() {
-  // 상태 관리를 위한 useState 훅 사용
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
+  const { setIsAuthenticated } = useAuth();  // useAuth에서 상태 변경 함수 사용
   const router = useRouter();
 
-  // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try{
+    e.preventDefault();
+    try {
       const result = await login(email, password);
 
-      if(result){
+      if (result) {
         console.log("login 성공");
-        router.replace('/today');
-      }else{
-        alert('로그인 실패')
+        setIsAuthenticated(true);  // 로그인 성공 시 상태 업데이트
+        window.location.reload();
+      } else {
+        alert('로그인 실패');
       }
 
-    }catch(error){
+    } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   return (
     <Card className="w-full mx-auto">
@@ -69,6 +69,5 @@ export function LoginForm() {
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }
-

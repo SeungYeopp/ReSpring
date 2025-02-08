@@ -18,12 +18,11 @@ export function SignUpForm() {
 
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
-
     try{
       const signUpResult = await signup(username, email, password);
 
       if(signUpResult){
-          router.replace("/auth")
+        window.location.reload();
       }else{
         alert('회원가입 실패')
       }
@@ -32,8 +31,6 @@ export function SignUpForm() {
       console.error(error);
     }
     e.preventDefault()
-    // TODO: API 호출 로직 구현
-    console.log("회원가입 시도:", { username, email, password })
   }
 
   return (
