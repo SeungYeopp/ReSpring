@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { getSessionInfo } from '@/lib/api'; // getSessionInfo 함수 임포트
 
 export const useAuth = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
-
-    const router = useRouter();
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -22,13 +19,6 @@ export const useAuth = () => {
 
         checkAuth();
     }, []);
-
-    // 로그인 안 된 경우, 로그인 페이지로 리디렉션
-    useEffect(() => {
-        if (!loading && !isAuthenticated) {
-            router.push('/auth');  // 로그인 페이지로 리디렉션
-        }
-    }, [loading, isAuthenticated, router]);
 
     return { isAuthenticated, loading };
 };
