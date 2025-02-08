@@ -55,15 +55,23 @@ export async function getPopularPosts(): Promise<Post[]> {
  */
 export async function getAllPosts(lastId?: number, limit = 10): Promise<Post[]> {
   try {
-    // 서버에서 전체 게시물을 가져옵니다.
-    const response = await axiosAPI.get<Post[]>(`/posts/all`, {
-      params: { lastId, limit },
-    });
+    const response = await axiosAPI.get<Post[]>(`/posts?lastId=${lastId}&limit=${limit}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching all posts:", error);
     // 서버가 꺼져 있거나 오류 발생 시, 목데이터 반환
-    return posts.slice(0, limit);
+    return [];
+  }
+}
+
+export async function getPostDetail(postId: number): Promise<Post> {
+  try {
+    const response = await axiosAPI.get<Post>(`/posts/${postId}`);
+
+    return response.data;
+  } catch (error) {
+    console.error("상세 게시글 가져오기 실패:", error);
+    throw new Error("상세 게시글 가져오기 실패");
   }
 }
 
@@ -128,17 +136,6 @@ export async function getFollowedPosts(lastId?: number | null | undefined, limit
       resolve(filteredPosts);
     }, 500); // ✅ 0.5초 지연 후 데이터 반환 (실제 API 응답처럼 보이도록)
   });
-}
-
-export async function getPostDetail(postId: number): Promise<Post> {
-  try {
-    const response = await axiosAPI.get<Post>(`/posts/${postId}`);
-
-    return response.data;
-  } catch (error) {
-    console.error("상세 게시글 가져오기 실패:", error);
-    throw new Error("상세 게시글 가져오기 실패");
-  }
 }
 
 export async function getCommentsByPostId(postId: number): Promise<Comment[]> {

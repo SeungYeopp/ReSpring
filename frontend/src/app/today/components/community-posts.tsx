@@ -52,11 +52,13 @@ export default function CommunityPosts() {
       setIsLoading(true)
       setError(null)
       try {
-        const newPosts = await getAllPosts()
+        const newPosts = await getAllPosts(50, 10)
         const formattedPosts = newPosts.map((post) => ({
           ...post,
           category: CATEGORY_MAP[post.category] || post.category,
         }))
+
+        console.log(formattedPosts)
 
         setAllPosts(formattedPosts)
         setPosts(formattedPosts)
@@ -85,7 +87,7 @@ export default function CommunityPosts() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="전체">전체</TabsTrigger>
           <TabsTrigger value="고민/질문">고민/질문</TabsTrigger>
-          <TabsTrigger value="INFORMATION_SHARING">정보공유</TabsTrigger>
+          <TabsTrigger value="정보 공유">정보공유</TabsTrigger>
         </TabsList>
       </Tabs>
 
