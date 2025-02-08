@@ -9,6 +9,7 @@ import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.comment.repository.CommentRepository;
 import org.ssafy.respring.domain.comment.vo.Comment;
 import org.ssafy.respring.domain.post.vo.Post;
+import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CommentService {
     private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
 
     public List<CommentResponseDto> getMyPostComments(UUID userId) {
         return commentRepository.findByUserIdAndPostNotNull(userId)
@@ -31,8 +33,8 @@ public class CommentService {
     @Transactional
     public CommentResponseDto createComment(CommentRequestDto dto) {
         // 1. 유저 설정
-        User user = new User();
-        user.setId(dto.getUserId());
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + dto.getUserId()));
 
         // 2. 댓글 객체 생성
         Comment comment = new Comment();
@@ -47,9 +49,7 @@ public class CommentService {
         }
 
         if (dto.getBookId() != null) {
-            Book book = new Book();
-            book.setId(dto.getBookId());
-            comment.setBook(book);
+            comment.setBookId(dto.getBookId());
         }
 
         // 4. 부모 댓글 설정
@@ -105,7 +105,7 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
-    public List<CommentResponseDto> getCommentsByBookId(Long bookId) {
+    public List<CommentResponseDto> getCommentsByBookId(String bookId) {
         return commentRepository.findByBookIdWithFetchJoin(bookId)
                 .stream()
                 .map(this::mapToResponseDto)
@@ -121,7 +121,7 @@ public class CommentService {
 
     public List<CommentResponseDto> getMyBookComments(UUID userId) {
         // 1. 사용자가 작성한 책 댓글 조회
-        return commentRepository.findByUserIdAndBookNotNull(userId)
+        return commentRepository.findByUserIdAndBookIdNotNull(userId)
                 .stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
@@ -132,7 +132,7 @@ public class CommentService {
         return new CommentResponseDto(
                 comment.getId(),
                 content,
-                comment.getUser().getUsername(),
+                comment.getUser().getUserNickname(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getParent() != null ? comment.getParent().getId() : null
@@ -152,7 +152,7 @@ public class CommentService {
         if (parent.getPost() != null && dto.getPostId() != null && !parent.getPost().getId().equals(dto.getPostId())) {
             throw new IllegalStateException("다른 게시글의 댓글에는 대댓글을 추가할 수 없습니다.");
         }
-        if (parent.getBook() != null && dto.getBookId() != null && !parent.getBook().getId().equals(dto.getBookId())) {
+        if (parent.getBookId() != null && dto.getBookId() != null && !parent.getBookId().equals(dto.getBookId())) {
             throw new IllegalStateException("다른 책의 댓글에는 대댓글을 추가할 수 없습니다.");
         }
     }

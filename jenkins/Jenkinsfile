@@ -1,0 +1,75 @@
+pipeline {
+    agent any
+    tools {
+        dockerTool 'DefaultDocker'
+        nodejs 'NodeJS-20'
+    }
+    environment {
+        SPRING_DATASOURCE_URL = credentials('SPRING_DATASOURCE_URL')
+        SPRING_DATASOURCE_USERNAME = credentials('SPRING_DATASOURCE_USERNAME')
+        SPRING_DATASOURCE_PASSWORD = credentials('SPRING_DATASOURCE_PASSWORD')
+        MONGODB_URI = credentials('MONGODB_URI')
+        MONGODB_DATABASE = credentials('MONGODB_DATABASE')
+        ELASTICSEARCH_URI = credentials('ELASTICSEARCH_URI')
+        ELASTICSEARCH_USERNAME = credentials('ELASTICSEARCH_USERNAME')
+        ELASTICSEARCH_PASSWORD = credentials('ELASTICSEARCH_PASSWORD')
+        REDIS_HOST = credentials('REDIS_HOST')
+        REDIS_PORT = credentials('REDIS_PORT')
+        REDIS_PASSWORD = credentials('REDIS_PASSWORD')
+        S3_BUCKET= credentials('S3_BUCKET')
+        S3_ACCESSKEY = credentials('S3_ACCESSKEY')
+        S3_SECRETKEY = credentials('S3_SECRETKEY')
+        S3_REGION = credentials('S3_REGION')
+        GOOGLE_CLIENT_ID = credentials('GOOGLE_CLIENT_ID')
+        GOOGLE_CLIENT_SECRET = credentials('GOOGLE_CLIENT_SECRET')
+        GOOGLE_REDIRECT_URI = credentials('GOOGLE_REDIRECT_URI')
+        KAKAO_CLIENT_ID = credentials('KAKAO_CLIENT_ID')
+        KAKAO_CLIENT_SECRET = credentials('KAKAO_CLIENT_SECRET')
+        KAKAO_REDIRECT_URI = credentials('KAKAO_REDIRECT_URI')
+    }
+    stages {
+        stage('Backend Build') {
+            steps {
+                dir('backend') {
+                    sh 'chmod +x ./gradlew'
+                    sh './gradlew clean build'
+                }
+            }
+        }
+        stage('Frontend Build') {
+            steps {
+                dir('frontend') {
+                    sh '''
+                    npm install
+                    npm run build
+                    '''
+                }
+            }
+        }
+        stage('Docker Compose (Test)') {
+            steps {
+                script {
+                    sh '''
+                    docker-compose up -d --build --no-deps backend frontend
+                    '''
+                }
+            }
+        }
+        stage('Check Running Containers') {
+            steps {
+                script {
+                    sh 'docker ps -a'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                sh '''
+                docker-compose down || true
+                '''
+            }
+        }
+    }
+}

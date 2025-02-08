@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: "optional:file:.env[.properties]"
+
   application:
     name: respring
 
@@ -10,13 +13,29 @@ spring:
       max-request-size: 10MB
 
 
-  config:
-    import: optional:file:.env[.properties]
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    mongodb:
+      database: ${MONGODB_DATABASE}
+      uri: ${MONGODB_URI}
+
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o-mini # gpt-4o-mini
+          temperature: 0.7
 
   jpa:
     hibernate:
@@ -25,6 +44,43 @@ spring:
     properties:
       hibernate.dialect: org.hibernate.dialect.MySQLDialect
 
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URI}
+    username: ${ELASTICSEARCH_USERNAME}
+    password: ${ELASTICSEARCH_PASSWORD}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${GOOGLE_REDIRECT_URI}
+            scope:
+              - profile
+              - email
+
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            scope:
+              - profile_nickname
+              - profile_image
+              - account_email
+            redirect-uri: ${KAKAO_REDIRECT_URI}
+            client-name: Kakao
+
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-info-authentication-method: header
+            user-name-attribute: id
 
 
 
@@ -37,4 +93,31 @@ logging:
             pooling: ERROR
 
 file:
-  upload-dir: C:/uploads
+  upload-dir: ${FILE_UPLOAD_DIR:${user.home}/uploads}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  endpoint:
+    health:
+      show-details: always
+
+
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET}
+    stack.auto: false
+    region:
+      static: ${S3_REGION}
+    credentials:
+      access-key: ${S3_ACCESSKEY}
+      secret-key: ${S3_SECRETKEY}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local

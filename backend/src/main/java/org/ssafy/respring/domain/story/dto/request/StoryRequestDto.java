@@ -12,5 +12,4 @@ public class StoryRequestDto {
     private String title;
     private String content;
     private Long eventId;
-    private List<Image> imageList;
 }

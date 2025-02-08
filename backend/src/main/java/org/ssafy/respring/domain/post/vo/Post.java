@@ -1,9 +1,8 @@
 package org.ssafy.respring.domain.post.vo;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.ssafy.respring.domain.comment.vo.Comment;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.user.vo.User;
 
@@ -12,11 +11,14 @@ import java.util.*;
 
 @Entity
 @Table(name = "post")
-@RequiredArgsConstructor
-@Getter @Setter
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Post {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // ID 자동 증가 설정
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -26,7 +28,7 @@ public class Post {
     private String title;
     private String content;
 
-    @Enumerated(EnumType.STRING) // Enum을 문자열로 저장
+    @Enumerated(EnumType.STRING)
     private Category category;
 
     @Column(name = "created_at", updatable = false)
@@ -37,13 +39,18 @@ public class Post {
 
     private Long likes;
 
-    @ElementCollection // 사용자 UUID를 저장하는 컬렉션
+    @ElementCollection
     @CollectionTable(name = "post_likes", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "user_id")
     private Set<UUID> likedUsers = new HashSet<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Image> images = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
@@ -59,15 +66,13 @@ public class Post {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // 좋아요 추가/취소 로직
     public boolean toggleLike(UUID userId) {
         if (likedUsers.contains(userId)) {
-            likedUsers.remove(userId); // 좋아요 취소
+            likedUsers.remove(userId);
             return false;
         } else {
-            likedUsers.add(userId); // 좋아요 추가
+            likedUsers.add(userId);
             return true;
         }
     }
-
 }
