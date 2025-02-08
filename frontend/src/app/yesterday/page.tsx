@@ -3,10 +3,11 @@ import { BookSearchBar } from "./components/main/BookSearchBar";
 import PopularBooks from "./components/main/PopularBooks";
 import TaggedPopularBooks from "./components/main/TaggedPopularBooks";
 import { BookSearchResult } from "./components/BookSearchResult";
+import BubbleMenuYesterday from "@/components/custom/BubbleMenuYesterday"
+
 // 서버 컴포넌트에서 searchParams 받기
 export default function YesterdayPage({ searchParams }: { searchParams: { q?: string } }) {
   const searchQuery = searchParams.q || ""; // 검색어가 없으면 빈 문자열
-
   return (
     <div className="flex flex-col min-h-screen bg-spring-pink">
       <main className="flex-grow pt-4 pb-16">
@@ -40,6 +41,7 @@ export default function YesterdayPage({ searchParams }: { searchParams: { q?: st
             </div>
           </div>
         </div>
+        <BubbleMenuYesterday/>
       </main>
     </div>
   );
