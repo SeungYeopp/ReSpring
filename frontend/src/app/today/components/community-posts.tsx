@@ -58,8 +58,6 @@ export default function CommunityPosts() {
           category: CATEGORY_MAP[post.category] || post.category,
         }))
 
-        console.log(formattedPosts)
-
         setAllPosts(formattedPosts)
         setPosts(formattedPosts)
       } catch (error) {
