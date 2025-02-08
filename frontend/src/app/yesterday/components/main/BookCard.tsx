@@ -14,8 +14,6 @@ export function BookCard({ book }: BookCardProps) {
     e.stopPropagation();
     router.push(`/yesterday/${book.id}`);
   };
-
-  // 랜덤 플레이스홀더 이미지 생성
   const placeholderImage = `/placeholder/bookcover/thumb (${Math.floor(Math.random() * 7) + 1}).webp`;
 
   return (
@@ -39,8 +37,8 @@ export function BookCard({ book }: BookCardProps) {
               transform: "rotateY(180deg)",
             }}
           >
-            <h4 className="font-bold text-white text-lg text-center mb-4">{book.title}</h4>
-            <Button onClick={handleDetailClick} variant="default" className="bg-blue-500 text-white hover:bg-blue-600">
+            <h4 className="font-bold text-white text-center mb-4 text-sm sm:text-base md:text-lg lg:text-xl">{book.title}</h4>
+            <Button onClick={handleDetailClick} variant="default" className="bg-blue-500 text-white hover:bg-blue-600 text-xs sm:text-sm md:text-base px-2 py-1 sm:px-3 sm:py-2">
               자세히 보기
             </Button>
           </div>

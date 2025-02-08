@@ -7,10 +7,13 @@ import { Tag } from "lucide-react";
 import { getAllBooks } from "@/lib/api/book";
 import type { Book as BookType } from "../../types/maintypes";
 
-// 랜덤으로 n개의 태그를 선택하는 함수
-const getRandomTags = (tags: string[], n: number): string[] => {
-  const shuffled = [...tags].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, n);
+// 랜덤한 고유 태그를 최대 n개 선택하는 함수
+const getUniqueRandomTags = (tags: string[], n: number): string[] => {
+  const uniqueTags = Array.from(new Set(tags)); // 중복 제거
+  if (uniqueTags.length <= n) return uniqueTags; // 태그 개수가 n 이하라면 그대로 반환
+
+  // 랜덤 섞기 후 앞에서 n개 선택
+  return uniqueTags.sort(() => 0.5 - Math.random()).slice(0, n);
 };
 
 // 태그별로 책을 필터링하고 상위 10개만 반환하는 함수
@@ -26,13 +29,11 @@ export default function TaggedPopularBooks() {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        // 실제 API 호출
         const allBooks = await getAllBooks();
 
-        // 모든 책에서 태그 수집 후 랜덤 5개 선택
+        // 모든 책에서 태그 수집 후 고유한 5개 선택
         const allTags = allBooks.flatMap((book) => book.tags);
-        const uniqueTags = Array.from(new Set(allTags));
-        const randomTags = getRandomTags(uniqueTags, 5);
+        const randomTags = getUniqueRandomTags(allTags, 5);
         setSelectedTags(randomTags);
 
         // 태그별로 책 필터링
@@ -44,8 +45,8 @@ export default function TaggedPopularBooks() {
       } catch (error) {
         console.error("API 호출 실패, 목데이터 사용:", error);
 
-        // API 호출 실패 시 목데이터 사용
-        const mockTags = getRandomTags(
+        // API 실패 시 목데이터 사용
+        const mockTags = getUniqueRandomTags(
           likedBooks.flatMap((book) => book.tags),
           5
         );
@@ -63,6 +64,11 @@ export default function TaggedPopularBooks() {
 
     fetchBooks();
   }, []);
+
+  useEffect(() => {
+    // 중복 태그가 포함되지 않았는지 검증 로그
+    console.log("✅ 선택된 태그:", selectedTags);
+  }, [selectedTags]);
 
   if (isLoading) {
     return <div className="mt-8">태그별 인기 책을 불러오는 중입니다...</div>;
