@@ -17,7 +17,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const isViewerPage = pathname.startsWith("/viewer");
 
-  const { isAuthenticated } = useAuth(true);
+  const { isAuthenticated } = useAuth(false);
 
   useEffect(() => {
     if (isAuthenticated === null) return;

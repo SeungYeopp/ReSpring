@@ -23,6 +23,9 @@ export function useAuth(blockUnauthenticated = true) {
   }, []);
 
   useEffect(() => {
+    if(!blockUnauthenticated)
+        setIsAuthenticated(true); // 로그인에서 쳐내지 않는 경우에는 무조건 인증된 걸로 확인..
+
     if (isAuthenticated === false && blockUnauthenticated) {
       router.replace("/auth");
     }
