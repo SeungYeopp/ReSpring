@@ -17,11 +17,17 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const isViewerPage = pathname.startsWith("/viewer");
 
-  const { isAuthenticated } = useAuth(false);
+  const { isAuthenticated } = useAuth(false); // 페이지가 바뀔때 마다 로그인 인증 확인.
 
   useEffect(() => {
-    if (isAuthenticated === null) return;
-    if (isAuthenticated === false) return; // ✅ 로그인되지 않았다면 더 진행할 필요 없음.
+    console.log("전체 조회", isAuthenticated);
+    // 인증이 되지 않은 경우 auth로 라우팅.
+    if (isAuthenticated === null){
+      return;
+    }else if(isAuthenticated === false){
+      router.push('/auth');
+      return;
+    }
 
     const lastSeenTimestamp = localStorage.getItem("splashTimestamp");
     const now = Date.now();

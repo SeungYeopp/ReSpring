@@ -6,31 +6,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { login } from "@/lib/api";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const { setIsAuthenticated } = useAuth();  // useAuth에서 상태 변경 함수 사용
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const result = await login(email, password);
 
-      if (result) {
-        console.log("login 성공");
-        setIsAuthenticated(true);  // 로그인 성공 시 상태 업데이트
-        window.location.reload();
-      } else {
+      if (!result){
         alert('로그인 실패');
       }
-
     } catch (error) {
+      alert('로그인 실패');
       console.error(error);
+    } finally{
+      window.location.reload();
     }
   };
 

@@ -18,19 +18,19 @@ export function SignUpForm() {
 
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     try{
       const signUpResult = await signup(username, email, password);
 
-      if(signUpResult){
-        window.location.reload();
-      }else{
+      if(!signUpResult){
         alert('회원가입 실패')
       }
     }catch(error){
       alert("회원가입 실패");
       console.error(error);
+    }finally{
+      window.location.reload();
     }
-    e.preventDefault()
   }
 
   return (
