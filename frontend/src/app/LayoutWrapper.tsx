@@ -18,7 +18,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const isViewerPage = pathname.startsWith("/viewer");
 
-  const blockUser : boolean = false; // 로그인하지 않은 경우 막을지 결정.
+  const blockUser : boolean = true; // 로그인하지 않은 경우 막을지 결정.
 
   let authed = false;
   
@@ -42,9 +42,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
         setIsAuthenticated(false)
       }
 
-      console.log(authed);
-
-      if(!authed){
+      if(!authed && blockUser){
         router.replace("/auth");
         return;
       }
