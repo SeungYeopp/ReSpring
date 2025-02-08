@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 
+import { useEffect } from "react";
+
 interface FollowedPostsProps {
   posts: Post[];
 }
@@ -20,6 +22,16 @@ const getRandomImage = () => {
 };
 
 export default function FollowedPosts({ posts }: FollowedPostsProps) {
+    const CATEGORY_MAP: Record<string, string> = {
+      INFORMATION_SHARING: "정보 공유",
+      QUESTION_DISCUSSION: "고민/질문",
+    };
+
+    const formattedPosts = posts.map((post) => ({
+      ...post,
+      category: CATEGORY_MAP[post.category] || post.category, // 변환되지 않으면 원래 값 유지
+    }));
+
   // ✅ 카테고리별 색상 함수 (내부에서 정의)
   const getCategoryColor = (category: string): string => {
     switch (category) {
@@ -27,7 +39,7 @@ export default function FollowedPosts({ posts }: FollowedPostsProps) {
         return "bg-[#dfeaa5] text-[#638d3e]";
       case "고민/질문":
         return "bg-[#96b23c] text-white";
-      case "INFORMATION_SHARING":
+      case "정보 공유":
         return "bg-[#f2cedd] text-[#665048]";
       default:
         return "bg-gray-200 text-gray-800";
@@ -36,7 +48,7 @@ export default function FollowedPosts({ posts }: FollowedPostsProps) {
 
   return (
     <div className="space-y-3">
-      {posts.map((post) => (
+      {formattedPosts.map((post) => (
         <Link key={post.id} href={`/today/${post.id}`} className="block">
           <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200">
             <CardContent className="p-3">
