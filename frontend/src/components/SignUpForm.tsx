@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { signup, login } from "@/lib/api"
+import { useRouter } from "next/navigation"
 
 export function SignUpForm() {
   // 상태 관리를 위한 useState 훅 사용
@@ -12,8 +14,23 @@ export function SignUpForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
+  const router = useRouter();
+
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
+
+    try{
+      const signUpResult = await signup(username, email, password);
+
+      if(signUpResult){
+          router.replace("/auth")
+      }else{
+        alert('회원가입 실패')
+      }
+    }catch(error){
+      alert("회원가입 실패");
+      console.error(error);
+    }
     e.preventDefault()
     // TODO: API 호출 로직 구현
     console.log("회원가입 시도:", { username, email, password })

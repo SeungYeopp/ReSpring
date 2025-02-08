@@ -22,8 +22,13 @@ export function LoginForm() {
     try{
       const result = await login(email, password);
 
-      console.log("login 성공");
-      router.replace('today');
+      if(result){
+        console.log("login 성공");
+        router.replace('/today');
+      }else{
+        alert('로그인 실패')
+      }
+
     }catch(error){
       console.error(error);
     }
