@@ -70,7 +70,7 @@ public class BookService {
 
 	@Transactional
 	public Long createBook(BookRequestDto requestDto, MultipartFile coverImage) {
-		User user = getUSerById(requestDto.getUserId());
+		User user = getUserById(requestDto.getUserId());
 
 		String coverImageUrl = imageService.saveCoverImage(coverImage);
 
@@ -235,7 +235,7 @@ public class BookService {
 	@Transactional
 	public void viewBook(Book book, UUID userId) {
 		Long bookId = book.getId();
-		User user = getUSerById(userId);
+		User user = getUserById(userId);
 
 		bookViewsRedisService.incrementViewCount(bookId);
 		if (!bookViewsRepository.existsByBookIdAndUserId(bookId, userId)) {
@@ -299,24 +299,6 @@ public class BookService {
 		return bookRepository.getWeeklyTop3Books().stream()
 		  .map(book -> mapToBookResponseDto(book, userId))
 		  .collect(Collectors.toList());
-	}
-
-	@Transactional
-	public boolean toggleLikeBook(Long bookId, UUID userId) {
-		Book book = getBookById(bookId);
-		User user = getUSerById(userId);
-		boolean isLiked = toggleLike(userId);
-
-		if (isLiked) {
-			bookLikesRedisService.addLike(bookId, user.getId());
-			bookLikesRepository.save(new BookLikes(null, book, user, LocalDateTime.now()));
-		} else {
-			bookLikesRedisService.removeLike(bookId, user.getId());
-			bookLikesRepository.deleteByBookIdAndUserId(bookId, user.getId());
-		}
-
-		bookRepository.save(book);
-		return isLiked;
 	}
 
 	public boolean isBookLiked(Long bookId, UUID userId) {
@@ -507,16 +489,16 @@ public class BookService {
 		return book;
 	}
 
-	private User getUSerById(UUID userId) {
+	private User getUserById(UUID userId) {
 		return userRepository.findById(userId)
 				.orElseThrow(()-> new IllegalArgumentException("❌ 존재하지 않는 사용자입니다."));
 	}
 
 	private List<String> getImagesFromStories(Set<Long> storyIds) {
 		return storyRepository.findAllById(storyIds).stream()
-				.flatMap(story -> story.getImages() != null ? story.getImages().stream() : List.<Image>of().stream())
-				.map(Image::getImageUrl)
-				.collect(Collectors.toList());
+		  .flatMap(story -> story.getImages() != null ? story.getImages().stream() : List.<Image>of().stream())
+		  .map(Image::getS3Key)
+		  .collect(Collectors.toList());
 	}
 
 

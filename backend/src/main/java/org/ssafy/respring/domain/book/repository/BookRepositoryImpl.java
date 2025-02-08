@@ -26,7 +26,7 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
                 .from(bookLikes)
                 .join(bookLikes.book, book)
                 .where(bookLikes.user.id.eq(userId))
-                .orderBy(bookLikes.createdAt.desc())
+                .orderBy(bookLikes.likedAt.desc())
                 .fetch();
     }
 
@@ -52,7 +52,7 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
                 .from(book)
                 .leftJoin(bookLikes).on(bookLikes.book.id.eq(book.id))
                 .leftJoin(bookViews).on(bookViews.book.id.eq(book.id))
-                .where(bookLikes.createdAt.after(oneWeekAgo)
+                .where(bookLikes.likedAt.after(oneWeekAgo)
                         .or(bookViews.updatedAt.after(oneWeekAgo)))
                 .groupBy(book.id)
                 .orderBy(

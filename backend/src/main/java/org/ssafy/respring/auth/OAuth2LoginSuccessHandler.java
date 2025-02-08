@@ -29,7 +29,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         // ✅ 로그인 성공 후 세션에 저장
         HttpSession session = request.getSession();
-        session.setAttribute("userId", user.getUserId());
+        session.setAttribute("userId", user.getId());
         session.setAttribute("nickname", user.getUserNickname());
 
         // ✅ 로그인 성공 후 프론트엔드 페이지로 리디렉트
