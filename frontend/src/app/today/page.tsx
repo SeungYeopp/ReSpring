@@ -16,7 +16,7 @@ export default async function TodayPage() {
       {/* 🔹 인기글 섹션 */}
       <section className="px-4 py-2 sm:px-6 sm:py-4">
         <h2 className="text-lg font-semibold mb-2 text-primary">인기글</h2>
-        <PopularPosts posts={popularPosts} />
+        <PopularPosts/>
       </section>
 
       {/* 🔹 내가 구독한 사람의 글 */}
