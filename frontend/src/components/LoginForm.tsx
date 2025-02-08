@@ -35,7 +35,7 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full mx-auto">
       <CardHeader>
         <CardTitle>로그인</CardTitle>
         <CardDescription>계정에 로그인하세요.</CardDescription>
