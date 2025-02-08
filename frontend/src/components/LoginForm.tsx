@@ -5,17 +5,28 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { login } from "@/lib/api"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/hooks/useAuth"
 
 export function LoginForm() {
   // 상태 관리를 위한 useState 훅 사용
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
+  const router = useRouter();
+
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: API 호출 로직 구현
-    console.log("로그인 시도:", { email, password })
+    try{
+      const result = await login(email, password);
+
+      console.log("login 성공");
+      router.replace('today');
+    }catch(error){
+      console.error(error);
+    }
   }
 
   return (
