@@ -17,6 +17,8 @@ import { CommentSection } from "./comment-section";
 import { ImageGallery } from "./image-gallery";
 import { Trash2 } from "lucide-react";
 
+import {useAuth} from "@/hooks/useAuth"
+
 // 게시글 데이터를 가져오는 비동기 함수
 async function getPost(id: number): Promise<Post> {
   try {
@@ -28,6 +30,9 @@ async function getPost(id: number): Promise<Post> {
 
 // 오늘의 상세 페이지 컴포넌트
 export default function TodayDetailPage({ params }: { params: { id: string } }) {
+
+  const {userId} = useAuth(true);
+
   const { user, isLoggedIn } = useAuthWithUser(); // 로그인 정보 가져오기
   const router = useRouter();
 
@@ -39,7 +44,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
   const [commentCount, setCommentCount] = useState(0);
 
   // 본인 게시글 여부 확인
-  const isMyPost = user?.id === post?.userId;
+  const isMyPost = userId === post?.userId;
 
   // 게시글 데이터 가져오기
   useEffect(() => {
