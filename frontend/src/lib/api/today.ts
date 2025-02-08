@@ -138,15 +138,44 @@ export async function getFollowedPosts(lastId?: number | null | undefined, limit
   });
 }
 
+export async function createNewCommunityComment(postId: number, content: string, userId: string, bookId: string, parentId: number | null): Promise<Comment> {
+  try{
+    const formData = new FormData();
+
+    const postDto = {
+      userId, content, postId, bookId, parentId,
+    }
+    
+    console.log(formData)
+    const response = await axiosAPI.post(`/comments/posts`, JSON.stringify(postDto), {headers : {'Content-Type': 'application/json'}})
+    
+    return response.data;
+  }catch(error){
+    console.error(error);
+    throw new Error("댓글 생성 실패");
+  }
+}
+
 export async function getCommentsByPostId(postId: number): Promise<Comment[]> {
   try {
-    const response = await axiosAPI.get<Comment[]>(`/posts/${postId}`);
+    const response = await axiosAPI.get<Comment[]>(`/comments/posts/${postId}`);
 
     return response.data;
   } catch (error) {
     console.error("게시글에 달린 댓글들 가져오기 실패:", error);
     throw new Error("게시글에 달린 댓글들 가져오기 실패");
   }
+}
+
+export async function getChildrenComments(parentId: number): Promise<Comment[]> {
+  try{
+    const response = await axiosAPI.get(`/comments/children/${parentId}`)
+
+    return response.data;
+  }catch(error){
+    throw new Error("자식 댓글 조회 실패");
+  }
+
 }
 
 export async function updatePost(postId: number, title: string, content: string, category: string, userId: string, deleteImageIds?: number[], newFiles?: File[]): Promise<void> {

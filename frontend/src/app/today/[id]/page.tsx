@@ -198,7 +198,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
 
         {/* 댓글 섹션 */}
         <div className="bg-white p-4">
-          <CommentSection postId={post.id} isLoggedIn={isLoggedIn} />
+          <CommentSection postId={post.id} userId={userId} />
         </div>
       </main>
     </div>
