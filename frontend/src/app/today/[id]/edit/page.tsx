@@ -10,13 +10,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { todayAPI } from "@/app/today/api/todayDetail";
 import { useAuthWithUser } from "@/lib/hooks/tempUseAuthWithUser";
+
+import {getPostDetail, updatePost} from "@/lib/api"
+
 import type React from "react"; // Added import for React
+
+import {useAuth} from "@/hooks/useAuth"
 
 const MAX_IMAGES = 6;
 
 export default function EditPostPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { user, isLoggedIn } = useAuthWithUser();
+
+  const {userId} = useAuth(true);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<(File | null)[]>(Array(MAX_IMAGES).fill(null));
@@ -27,17 +33,19 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     title: "",
     content: "",
     category: "",
-    userId: user?.id || "user123",
+    userId: "",
   });
 
   useEffect(() => {
+    if (!userId) return; // userId가 없으면 fetch 안 함
+
     async function fetchPost() {
       try {
-        const fetchedPost = await todayAPI.getPostDetail(Number(params.id));
-
-        if (fetchedPost.userId !== user?.id) {
-          alert("본인 게시글만 수정할 수 있습니다.");
-          router.push(`/today/${params.id}`);
+        const fetchedPost = await getPostDetail(Number(params.id));
+        console.log('fetchedPost.userId', fetchedPost.userId)
+        console.log('userId', userId)
+        if (fetchedPost.userId !== userId) {
+          router.replace(`/today/${params.id}`); // replace 사용으로 뒤로 가기 방지
           return;
         }
 
@@ -65,10 +73,8 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
       }
     }
 
-    if (isLoggedIn) {
-      fetchPost();
-    }
-  }, [params.id, user, isLoggedIn, router]);
+    fetchPost();
+  }, [params.id, userId, router]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const files = e.target.files;
@@ -119,7 +125,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     try {
       setIsSubmitting(true);
 
-      await todayAPI.updatePost(Number(params.id), formData.title, formData.content, formData.category, formData.userId, deleteImageIds, images.filter((img) => img !== null) as File[]);
+      await updatePost(Number(params.id), formData.title, formData.content, formData.category, formData.userId, deleteImageIds, images.filter((img) => img !== null) as File[]);
 
       alert("게시글이 수정되었습니다.");
       router.push(`/today/${params.id}`);
@@ -169,7 +175,8 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
               <div key={index} className="relative aspect-square">
                 {preview ? (
                   <>
-                    <Image src={preview.imageUrl || "/placeholder.svg"} alt={`이미지 ${index + 1}`} fill className="object-cover rounded-lg" />
+                    {/* 이미지 변경해야 함 */}
+                    <Image src={"/corgis/placeholder1.jpg"} alt={`이미지 ${index + 1}`} fill className="object-cover rounded-lg" />
                     <button type="button" onClick={() => removeImage(index)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1">
                       <X size={16} />
                     </button>
