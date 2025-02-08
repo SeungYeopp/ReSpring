@@ -10,10 +10,7 @@ import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @Builder
@@ -28,6 +25,7 @@ public class BookDetailResponseDto {
 	private boolean isLiked;
 	private Long likeCount;
 	private Long viewCount;
+	private Set<UUID> likedUsers;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private List<String> imageUrls; // ✅ 포함된 이미지 URL 리스트 추가

@@ -26,10 +26,10 @@ public class BookLikes {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime likedAt;
 
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDateTime.now();
+        this.likedAt = LocalDateTime.now();
     }
 }

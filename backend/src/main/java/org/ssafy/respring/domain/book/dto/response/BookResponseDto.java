@@ -10,6 +10,7 @@ import org.ssafy.respring.domain.book.vo.Book;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -23,10 +24,11 @@ public class BookResponseDto {
 	private boolean isLiked;
 	private Long likeCount;
 	private Long viewCount;
+	private Set<UUID> likedUsers;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 
-	public static BookResponseDto toResponseDto(Book book, boolean isLiked, Long likeCount, Long viewCount) {
+	public static BookResponseDto toResponseDto(Book book, boolean isLiked, Long likeCount, Set<UUID> likedUsers, Long viewCount) {
 		return BookResponseDto.builder()
 				.bookId(book.getId())
 				.authorName(book.getAuthor().getUserNickname())
@@ -34,6 +36,7 @@ public class BookResponseDto {
 				.coverImage(book.getCoverImage())
 				.tags(book.getTags())
 				.isLiked(isLiked)
+		  		.likedUsers(likedUsers)
 				.likeCount(likeCount)
 				.viewCount(viewCount)
 				.createdAt(book.getCreatedAt())

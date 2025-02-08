@@ -305,7 +305,7 @@ public class BookService {
 	public boolean toggleLikeBook(Long bookId, UUID userId) {
 		Book book = getBookById(bookId);
 		User user = getUSerById(userId);
-		boolean isLiked = book.toggleLike(userId);
+		boolean isLiked = toggleLike(userId);
 
 		if (isLiked) {
 			bookLikesRedisService.addLike(bookId, user.getId());
@@ -365,16 +365,12 @@ public class BookService {
 					// ✅ Redis에서 좋아요 & 조회수 조회 (캐싱 활용)
 					Long likeCount = bookLikesRedisService.getLikeCount(book.getId());
 					Long viewCount = bookViewsRedisService.getViewCount(book.getId());
+					Set<UUID> likedUsers = bookLikesRedisService.getLikedUsers(book.getId());
 
 					// ✅ MongoDB에서 책 본문 조회
 					Map<String, String> bookContent = getBookContent(book.getId());
 
-					return BookResponseDto.toResponseDto(
-							book,
-							isBookLiked(book.getId(), userId),  // ✅ 좋아요 여부 확인
-							likeCount,
-							viewCount
-					);
+					return mapToBookResponseDto(book, userId);
 				})
 				.collect(Collectors.toList());
 	}
@@ -438,6 +434,35 @@ public class BookService {
 		);
 	}
 
+	@Transactional
+	public boolean toggleLikeBook(Long bookId, UUID userId) {
+		Book book = getBookById(bookId);
+		User user = getUserById(userId);
+
+		Optional<BookLikes> existingLike = book.getBookLikes().stream()
+		  .filter(like -> like.getUser().getId().equals(userId))
+		  .findFirst();
+
+		if (existingLike.isPresent()) {
+			// 이미 좋아요를 눌렀으면 제거
+			book.getBookLikes().remove(existingLike.get());
+			bookLikesRepository.delete(existingLike.get());
+			bookLikesRedisService.removeLike(bookId, userId);
+			return false; // 좋아요 취소됨
+		} else {
+			// 좋아요 추가
+			BookLikes newLike = BookLikes.builder()
+			  .book(book)
+			  .user(user)
+			  .likedAt(LocalDateTime.now())
+			  .build();
+
+			book.getBookLikes().add(newLike);
+			bookLikesRepository.save(newLike);
+			bookLikesRedisService.addLike(bookId, userId);
+			return true; // 좋아요 추가됨
+		}
+	}
 
 	/**
 	 * ✅ Book 엔티티를 BookResponseDto로 변환하는 공통 메서드
@@ -447,10 +472,17 @@ public class BookService {
 		Map<String, String> bookContent = getBookContent(book.getId());
 		book.setContent(convertContentToJson(bookContent));
 
+		Set<UUID> likedUserIds = book.getBookLikes()
+		  .stream()
+		  .map(BookLikes::getUser)
+		  .map(User::getId)
+		  .collect(Collectors.toSet());
+
 		return BookResponseDto.toResponseDto(
 				book,
 				isBookLiked(book.getId(), userId),  // 좋아요 여부 확인
 				bookLikesRedisService.getLikeCount(book.getId()), // 좋아요
+		  		likedUserIds,
 				bookViewsRedisService.getViewCount(book.getId())  // 조회 수
 		);
 	}

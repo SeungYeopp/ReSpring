@@ -3,8 +3,11 @@ package org.ssafy.respring.domain.book.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,5 +40,17 @@ public class BookLikesRedisService {
     public void removeLikeCache(Long bookId) {
         String redisKey = LIKE_KEY_PREFIX + bookId;
         redisTemplate.delete(redisKey);
+    }
+
+    public Set<UUID> getLikedUsers(Long bookId) {
+        String redisKey = LIKE_KEY_PREFIX + bookId;
+        Set<Object> likedUsers = redisTemplate.opsForSet().members(redisKey);
+        if (likedUsers == null) {
+            return Set.of();
+        }
+        return likedUsers.stream()
+          .map(Object::toString)
+          .map(UUID::fromString)
+          .collect(Collectors.toSet());
     }
 }
