@@ -216,3 +216,23 @@ export async function deletePost(postId: number, userId: string): Promise<void> 
     throw new Error("게시글 삭제 실패");
   }
 }
+
+export async function likePost(postId: number, userId: string): Promise<"Liked" | "Unliked"> {
+  try{
+    const response = await axiosAPI.patch(`/posts/like/${postId}?userId=${userId}`);
+    return response.data; // "Liked" or "Unliked"
+  }catch(error){
+    throw new Error("게시글 좋아요/취소 실패");
+  }
+}
+
+export async function checkIfUserLiked(postId: number, userId: string): Promise<boolean> {
+  try{
+    const response = await axiosAPI.get(`/posts/like/${postId}?userId=${userId}`);
+    console.log(response.data)
+
+    return response.data;
+  }catch(error){
+    throw new Error("게시글 좋아요 확인 실패");
+  }
+}

@@ -11,7 +11,7 @@ import { useAuthWithUser } from "@/lib/hooks/tempUseAuthWithUser";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { todayAPI } from "@/app/today/api/todayDetail";
-import { getPostDetail, Post, getCommentsByPostId, deletePost} from "@/lib/api";
+import { getPostDetail, Post, getCommentsByPostId, deletePost, likePost, checkIfUserLiked} from "@/lib/api";
 //import type { Post } from "@/app/today/api/todayDetail";
 import { CommentSection } from "./comment-section";
 import { ImageGallery } from "./image-gallery";
@@ -49,14 +49,17 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
   // 게시글 데이터 가져오기
   useEffect(() => {
     async function fetchPost() {
+      if(userId === null)
+        return;
+      
       try {
         const fetchedPost = await getPost(Number(params.id));
 
-        console.log(fetchedPost);
+        const checkIfLiked = await checkIfUserLiked(Number(params.id), userId);
 
         setPost(fetchedPost);
         setLikes(fetchedPost.likes);
-        //setLikeByMe(fetchedPost.likeByMe);
+        setLikeByMe(checkIfLiked);
         const fetchedComments = await getCommentsByPostId(Number(params.id));
         setCommentCount(fetchedComments.length);
       } catch (error) {
@@ -64,7 +67,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
       }
     }
     fetchPost();
-  }, [params.id]);
+  }, [params.id, userId]);
 
   // 좋아요 버튼 클릭 핸들러
   const handleLike = useCallback(async () => {
@@ -74,7 +77,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
       return;
     }
     try {
-      const result = await todayAPI.likePost(post.id, "test-user-id");
+      const result = await likePost(post.id, userId);
       if (result === "Liked") {
         setLikes((prev) => prev + 1);
         setLikeByMe(true);
