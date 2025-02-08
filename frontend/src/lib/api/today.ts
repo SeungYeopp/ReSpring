@@ -88,10 +88,17 @@ export interface CreatePostResponse {
 export async function createPost(postData: CreatePostDto, images?: File[]): Promise<CreatePostResponse> {
   try {
     const formData = new FormData();
+    const title = postData.title;
+    const content = postData.content;
+    const category = postData.category;
+    const userId = postData.userId
 
-    // postDto를 JSON 문자열로 변환하여 추가
-    formData.append("postDto", JSON.stringify(postData));
-
+    const postDto = {
+      userId, title, content, category
+    }
+    
+    formData.append("postDto", JSON.stringify(postDto));
+    
     // 이미지가 있다면 추가
     if (images && images.length > 0) {
       images.forEach((image) => {
@@ -99,11 +106,7 @@ export async function createPost(postData: CreatePostDto, images?: File[]): Prom
       });
     }
 
-    const response = await axiosAPI.post<CreatePostResponse>(`/posts`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await axiosAPI.post<CreatePostResponse>(`/posts`, formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
     return response.data;
   } catch (error) {

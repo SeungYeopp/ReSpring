@@ -120,7 +120,7 @@ export default function WritePage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="INFORMATION_SHARING">정보 공유</SelectItem>
-              <SelectItem value="CAREER">고민/질문</SelectItem>
+              <SelectItem value="QUESTION_DISCUSSION">고민/질문</SelectItem>
             </SelectContent>
           </Select>
 
