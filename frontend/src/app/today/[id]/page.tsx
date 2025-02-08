@@ -11,7 +11,7 @@ import { useAuthWithUser } from "@/lib/hooks/tempUseAuthWithUser";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { todayAPI } from "@/app/today/api/todayDetail";
-import { getPostDetail, Post, getCommentsByPostId } from "@/lib/api";
+import { getPostDetail, Post, getCommentsByPostId, deletePost} from "@/lib/api";
 //import type { Post } from "@/app/today/api/todayDetail";
 import { CommentSection } from "./comment-section";
 import { ImageGallery } from "./image-gallery";
@@ -105,13 +105,13 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
 
   // 게시글 삭제 핸들러
   const handleDelete = async () => {
-    if (!post || !user?.id) return;
+    if (!post || !userId) return;
   // 삭제 팝업
     const confirmDelete = window.confirm("정말 이 게시글을 삭제하시겠습니까?");
     if (!confirmDelete) return;
   
     try {
-      await todayAPI.deletePost(post.id, user.id);
+      await deletePost(post.id, userId);
       alert("게시글이 삭제되었습니다.");
       router.push("/today");
     } catch (error) {

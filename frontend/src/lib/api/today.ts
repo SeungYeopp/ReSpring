@@ -178,3 +178,12 @@ export async function updatePost(postId: number, title: string, content: string,
     throw new Error("게시글 수정 실패");
   }
 }
+
+export async function deletePost(postId: number, userId: string): Promise<void> {
+  try{
+    const response = await axiosAPI.delete(`/posts/${postId}?userId=${userId}`);
+  }catch(error){
+    console.log(error);
+    throw new Error("게시글 삭제 실패");
+  }
+}
