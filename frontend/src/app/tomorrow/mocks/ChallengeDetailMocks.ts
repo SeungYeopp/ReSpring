@@ -18,7 +18,7 @@ const mockChallengeDetail: ChallengeDetail = {
   currentStreak: 5,
   successRate: 90.5,
   status: "ONGOING", // ✅ 상태값 추가
-  chatRoomUUID: "123e4567-e89b-12d3-a456-426614174000", // ✅ 챌린지 채팅방 UUID 추가
+  // chatRoomUUID: "123e4567-e89b-12d3-a456-/", // ✅ 챌린지 채팅방 UUID 추가
 };
 
 export default mockChallengeDetail;
