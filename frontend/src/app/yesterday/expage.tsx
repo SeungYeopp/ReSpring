@@ -27,10 +27,7 @@ export default function Yesterday() {
         <Category />
       </div>
       }
-      <BubbleMenuYesterday
-        onStoryEditorClick={() => router.push("yesterday/writenote")}
-        onBookEditorClick={() => router.push("yesterday/create-book")}
-      />
+      <BubbleMenuYesterday/>
     </div>
   );
 }
