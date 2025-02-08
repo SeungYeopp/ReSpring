@@ -51,6 +51,7 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="border-brand-light focus:ring-brand-dark"
             />
           </div>
           <div className="space-y-2">
@@ -61,9 +62,10 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="border-brand-light focus:ring-brand-dark"
             />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
             로그인
           </Button>
         </form>

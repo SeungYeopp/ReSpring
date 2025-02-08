@@ -13,10 +13,18 @@ export default function AuthPage() {
       <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="w-full max-w-md">
           <div className="flex justify-center mb-6">
-            <Button onClick={() => setIsLogin(true)} variant={isLogin ? "default" : "outline"} className="mr-2">
+            <Button
+              onClick={() => setIsLogin(true)}
+              variant={isLogin ? "default" : "outline"}
+              className={`mr-2 ${isLogin ? "bg-brand text-white" : "border-brand-light text-brand-dark"}`}
+            >
               로그인
             </Button>
-            <Button onClick={() => setIsLogin(false)} variant={!isLogin ? "default" : "outline"}>
+            <Button
+              onClick={() => setIsLogin(false)}
+              variant={!isLogin ? "default" : "outline"}
+              className={`${!isLogin ? "bg-brand text-white" : "border-brand-light text-brand-dark"}`}
+            >
               회원가입
             </Button>
           </div>
@@ -26,4 +34,3 @@ export default function AuthPage() {
     </div>
   )
 }
-

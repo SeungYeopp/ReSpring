@@ -36,13 +36,13 @@ export function SignUpForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>회원가입</CardTitle>
-        <CardDescription>새로운 계정을 만들어보세요.</CardDescription>
+        <CardTitle className="text-black">회원가입</CardTitle>
+        <CardDescription className="text-black">새로운 계정을 만들어보세요.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">사용자 이름</Label>
+            <Label htmlFor="username" className="text-black">사용자 이름</Label>
             <Input
               id="username"
               type="text"
@@ -50,10 +50,11 @@ export function SignUpForm() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              className="border-brand-light focus:ring-brand-dark"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">이메일</Label>
+            <Label htmlFor="email" className="text-black">이메일</Label>
             <Input
               id="email"
               type="email"
@@ -61,19 +62,21 @@ export function SignUpForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="border-brand-light focus:ring-brand-dark"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">비밀번호</Label>
+            <Label htmlFor="password" className="text-black">비밀번호</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="border-brand-light focus:ring-brand-dark"
             />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
             가입하기
           </Button>
         </form>
@@ -81,4 +84,3 @@ export function SignUpForm() {
     </Card>
   )
 }
-
