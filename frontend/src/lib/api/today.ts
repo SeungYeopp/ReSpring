@@ -1,13 +1,8 @@
 import axiosAPI from "@/lib/api/axios";
 import { posts, popularPosts, followedPosts } from "@/app/today/mocks/posts";
-
+import { Image } from "./story";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-
-export interface Image {
-  imageId: number;
-  imageUrl: string;
-};
 
 export interface Comment {
   id: number;

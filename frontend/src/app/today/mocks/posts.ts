@@ -1,5 +1,5 @@
 // src/app/today/mocks/posts.ts
-import type { Post, Image } from "@/lib/api/today";
+import type { Post, Image } from "@/lib/api";
 
 // ✅ 랜덤 이미지 생성 함수
 const getRandomImage = () : Image => {
