@@ -88,7 +88,7 @@ export default function EditChallengePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 pt-14 pb-16 md:pt-0 md:pb-0">
+    <main className="min-h-screen bg-gray-50 pt pb-16 md:pt-0 md:pb-0">
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="w-full lg:w-1/2">

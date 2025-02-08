@@ -103,27 +103,24 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      // 폼 내에서 직접 알림 표시
+      toast({
+        title: "폼 검증 실패",
+        description: "입력한 내용을 확인해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
       const challengeData: Partial<ChallengeDetail> = {
         description,
-        endDate: endDate.toISOString(), // 날짜를 ISO 문자열로 변환
-        image: preview, // 이미지 URL 전달
+        endDate: endDate.toISOString(),
+        image: preview,
       };
-      await onSubmit(challengeData);
-      toast({
-        title: "챌린지 수정 성공",
-        description: "챌린지가 성공적으로 수정되었습니다.",
-        variant: "default",
-      });
-    } catch (error) {
-      toast({
-        title: "챌린지 수정 실패",
-        description: "챌린지 수정 중 오류가 발생했습니다. 다시 시도해주세요.",
-        variant: "destructive",
-      });
+      await onSubmit(challengeData); // 검증 성공 시만 부모 컴포넌트로 전달
     } finally {
       setIsLoading(false);
     }
@@ -132,8 +129,6 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
   return (
     <Card className="max-w-xl mx-auto">
       <CardContent className="space-y-4 p-6">
-        <h1 className="text-2xl font-bold mb-6">챌린지 수정하기</h1>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-4">
             <ImageUpload onImageChange={handleImageChange} preview={preview} />
@@ -201,7 +196,6 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
             </div>
           </div>
         </form>
-        <Toaster />
       </CardContent>
     </Card>
   );
