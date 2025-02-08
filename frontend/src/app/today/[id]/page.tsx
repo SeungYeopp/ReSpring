@@ -51,15 +51,18 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
     async function fetchPost() {
       if(userId === null)
         return;
-      
+
       try {
         const fetchedPost = await getPost(Number(params.id));
 
-        const checkIfLiked = await checkIfUserLiked(Number(params.id), userId);
-
+        if(userId){
+          const checkIfLiked = await checkIfUserLiked(Number(params.id), userId);
+          setLikeByMe(checkIfLiked);
+        }
+          
         setPost(fetchedPost);
         setLikes(fetchedPost.likes);
-        setLikeByMe(checkIfLiked);
+
         const fetchedComments = await getCommentsByPostId(Number(params.id));
         setCommentCount(fetchedComments.length);
       } catch (error) {
