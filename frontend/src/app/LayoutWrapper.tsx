@@ -7,7 +7,9 @@ import { TopNav } from "@/components/layout/top-nav";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Sidebar } from "@/components/layout/sidebar";
 
-const SPLASH_EXPIRE_HOURS = 24; // ✅ 24시간 후 다시 표시
+import { useAuth } from "@/hooks/useAuth";
+
+const SPLASH_EXPIRE_HOURS = 24;
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const [showSplash, setShowSplash] = useState(false);
@@ -15,8 +17,18 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const isViewerPage = pathname.startsWith("/viewer");
 
-  // ✅ 1. 렌더링 전에 로컬 스토리지 확인 후 즉시 리디렉션
+  const { isAuthenticated } = useAuth(false); // 페이지가 바뀔때 마다 로그인 인증 확인.
+
   useEffect(() => {
+    console.log("전체 조회", isAuthenticated);
+    // 인증이 되지 않은 경우 auth로 라우팅.
+    if (isAuthenticated === null){
+      return;
+    }else if(isAuthenticated === false){
+      router.push('/auth');
+      return;
+    }
+
     const lastSeenTimestamp = localStorage.getItem("splashTimestamp");
     const now = Date.now();
 
@@ -24,36 +36,38 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       const elapsedHours = (now - Number(lastSeenTimestamp)) / (1000 * 60 * 60);
       if (elapsedHours < SPLASH_EXPIRE_HOURS) {
         if (pathname === "/") {
-          router.replace("/today"); // ✅ 스플래시 없이 즉시 이동
+          router.replace("/today");
         }
         return;
       }
     }
 
-    // ✅ 2. 스플래시가 필요한 경우 상태 업데이트
     setShowSplash(true);
     const timer = setTimeout(() => {
       setShowSplash(false);
-      localStorage.setItem("splashTimestamp", String(now)); // ✅ 현재 시간을 저장
-      router.replace("/today"); // ✅ /today로 이동
-    }, 4000); // 4초간 표시
+      localStorage.setItem("splashTimestamp", String(now));
+      router.replace("/today");
+    }, 4000);
 
     return () => clearTimeout(timer);
-  }, [router, pathname]);
+  }, [router, pathname, isAuthenticated]);
 
-  // ✅ 3. 스플래시가 필요한 경우만 표시
+  if (isAuthenticated === null) {
+    return <p>로딩 중...</p>;
+  }
+
   if (showSplash) {
     return <SplashScreen />;
   }
 
   return (
     <>
-      {!isViewerPage && <TopNav />}
-      {!isViewerPage && <Sidebar />}
+      {isAuthenticated && !isViewerPage && <TopNav />}
+      {isAuthenticated && !isViewerPage && <Sidebar />}
       <main className={isViewerPage ? "pt pb md:py-4" : "md:ml-64 pt-14 pb-16 md:py-4"}>
         {children}
       </main>
-      {!isViewerPage && <BottomNav />}
+      {isAuthenticated && !isViewerPage && <BottomNav />}
     </>
   );
 }
