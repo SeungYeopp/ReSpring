@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Chapter, getBookById } from "@/lib/api";
+import {Book, CompiledBook} from "@/lib/api"
 
 // ✅ 기본 목업 데이터 (API 실패 시 사용)
 const fallbackBookData = `
@@ -573,45 +575,51 @@ const fallbackBookData = `
 모두 다 모두 다 모두 다 함께`;
 
 // ✅ API에서 책 데이터 가져오기
-export function useBookData(bookId: string) {
-    const [bookContent, setBookContent] = useState<string>(fallbackBookData);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-  
-    useEffect(() => {
-      const fetchBookData = async () => {
-        try {
-          setIsLoading(true);
-          console.log(`📢 API 요청 시작: /books/${bookId}`);
-  
-          const response = await fetch(`http://localhost:8080/books/${bookId}`);
-  
-          if (!response.ok) {
-            throw new Error(`API 요청 실패: ${response.status}`);
+  export function useBookData(bookId: string) {
+      const [bookContent, setBookContent] = useState<string>(fallbackBookData);
+      const [bookTitle, setBookTitle] = useState<string>();
+      const [isLoading, setIsLoading] = useState<boolean>(true);
+      const [bookChapters, setBookChapters] = useState<Chapter[]>();
+      const [plainBookContent, setPlainBookContent] = useState<string>(); // 챕터1 -> 내용 -> 챕터2 -> 내용 -> ..  이렇게 이어져 있는 string.
+    
+      useEffect(() => {
+        const fetchBookData = async () => {
+          try {
+            setIsLoading(true);
+            console.log(`📢 API 요청 시작: /books/${bookId}`);
+    
+            const book : Book = await getBookById(bookId);
+    
+            if (!book.content || book.content.trim() === "") {
+              throw new Error("📢 책 내용이 비어 있습니다. 목업 데이터를 사용합니다.");
+            }
+
+            setBookTitle(book.title);
+            setBookContent(book.content);
+
+            const chapters = JSON.parse(book.content) as Chapter[];
+            setBookChapters(chapters);
+
+            const newContentText = chapters.map((chapter) => `${chapter.chapterTitle}\n${chapter.content}`).join('\n');
+            setPlainBookContent(newContentText);
+
+            console.log("✅ API 요청 성공, 책 데이터 적용됨.");
+          } catch (err) {
+            console.error("🚨 책 데이터 가져오기 실패:", err);
+            setBookTitle("임시 제목");
+            setBookContent(fallbackBookData); // ✅ 실패 시 기본 데이터 적용
+          } finally {
+            setIsLoading(false);
           }
-  
-          const data = await response.json();
-  
-          if (!data.content || data.content.trim() === "") {
-            throw new Error("📢 책 내용이 비어 있습니다. 목업 데이터를 사용합니다.");
-          }
-  
-          setBookContent(data.content);
-          console.log("✅ API 요청 성공, 책 데이터 적용됨.");
-        } catch (err) {
-          console.error("🚨 책 데이터 가져오기 실패:", err);
-          setBookContent(fallbackBookData); // ✅ 실패 시 기본 데이터 적용
-        } finally {
-          setIsLoading(false);
-        }
-      };
-  
-      fetchBookData();
-    }, [bookId]);
-  
-    // ✅ 디버깅용: 상태 변화 로깅
-    useEffect(() => {
-      console.log("📖 현재 bookContent 상태:", bookContent);
-    }, [bookContent]);
-  
-    return { bookContent, isLoading };
-  }
+        };
+    
+        fetchBookData();
+      }, [bookId]);
+    
+      // ✅ 디버깅용: 상태 변화 로깅
+      useEffect(() => {
+        console.log("📖 현재 bookContent 상태:", bookContent);
+      }, [bookContent]);
+    
+      return { bookContent, isLoading, bookTitle, bookChapters, plainBookContent };
+    }
