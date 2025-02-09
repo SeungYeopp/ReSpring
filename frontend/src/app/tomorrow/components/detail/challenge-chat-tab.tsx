@@ -128,10 +128,7 @@ export function ChallengeChatTab() {
   };
 
   return (
-    <div
-      className={`h-full flex flex-col bg-background border rounded-lg shadow-md ${themeColors[theme].background} ${themeColors[theme].text}`}
-      style={{ minHeight: "300px", maxHeight: "calc(100vh - 300px)" }}
-    >
+    <div className={`h-full flex flex-col bg-background ${themeColors[theme].background} ${themeColors[theme].text}`} style={{ height: "100%" }}>
       <div className={`py-3 px-4 border-b flex flex-row items-center justify-between ${themeColors[theme].background} ${themeColors[theme].text}`}>
         <h3 className="text-lg font-semibold">챌린지 채팅방</h3>
         <Popover>
@@ -213,35 +210,34 @@ export function ChallengeChatTab() {
           </PopoverContent>
         </Popover>
       </div>
-      <div className="flex-grow overflow-hidden p-4">
-        <ScrollArea className={`h-full ${themeColors[theme].background}`}>
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.userId === currentUserId ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[70%] p-3 rounded-lg ${
-                    message.userId === currentUserId ? `${themeColors[theme].primary} text-white rounded-br-none` : `${themeColors[theme].secondary} ${themeColors[theme].text} rounded-bl-none`
-                  }`}
-                  style={{
-                    fontFamily: font === "sans" ? "sans-serif" : font === "serif" ? "serif" : "monospace",
-                    fontSize: `${fontSize}px`,
-                  }}
-                >
-                  {message.userId !== currentUserId && <p className="text-xs font-medium mb-1">{message.nickname}</p>}
-                  <p className="break-words">{message.content}</p>
-                  <div className={`text-xs mt-1 text-right ${message.userId === currentUserId ? "text-white/80" : `${themeColors[theme].text} opacity-80`}`}>
-                    {new Date(message.timestamp).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
+      <div className="flex-grow p-4 overflow-y-auto">
+        <div className={`space-y-4 ${themeColors[theme].background}`}>
+          {messages.map((message) => (
+            <div key={message.id} className={`flex ${message.userId === currentUserId ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-[70%] p-3 rounded-lg ${
+                  message.userId === currentUserId ? `${themeColors[theme].primary} text-white rounded-br-none` : `${themeColors[theme].secondary} ${themeColors[theme].text} rounded-bl-none`
+                }`}
+                style={{
+                  fontFamily: font === "sans" ? "sans-serif" : font === "serif" ? "serif" : "monospace",
+                  fontSize: `${fontSize}px`,
+                }}
+              >
+                {message.userId !== currentUserId && <p className="text-xs font-medium mb-1">{message.nickname}</p>}
+                <p className="break-words">{message.content}</p>
+                <div className={`text-xs mt-1 text-right ${message.userId === currentUserId ? "text-white/80" : `${themeColors[theme].text} opacity-80`}`}>
+                  {new Date(message.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </div>
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
+
       <div className={`p-4 border-t ${themeColors[theme].background}`}>
         <div className="flex w-full space-x-2">
           <div className="relative flex-grow">
