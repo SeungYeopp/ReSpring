@@ -10,8 +10,24 @@ import { BookOpen, Clock } from "lucide-react";
 import type { Book, CarouselIndicatorProps } from "../../types/maintypes";
 import { weeklyBooks, latestBooks } from "@/app/yesterday/components/main/mocks/books";
 
+import {getTopThreeWeeklyBooks} from "@/lib/api"
+
+
 export default function TopCarousel() {
   const [activeTab, setActiveTab] = useState("weekly");
+  const [weeklyBooks, setWeeklyBooks] = useState<Book[]>([]);
+
+  useEffect(() => {
+    const handleInitials = async () => {
+      try{
+        const weeklyResult = await getTopThreeWeeklyBooks();
+        setWeeklyBooks(weeklyResult);
+      }catch(error){
+        console.error(error);
+      }
+    }
+    handleInitials();
+  }, [])
 
   return (
     <Tabs defaultValue="weekly" onValueChange={(value) => setActiveTab(value)} className="w-full">
