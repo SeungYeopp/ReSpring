@@ -116,9 +116,19 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userId }) => {
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 flex flex-col justify-start p-2">
-                      <h1 className="text-lg font-bold text-center ml-2 w-full py-1">
-                        {story.title}
-                      </h1>
+                      <div className="overflow-hidden whitespace-nowrap relative w-full">
+                        <span
+                          className="inline-block text-lg font-bold text-center ml-2 w-full py-1"
+                          style={{
+                            whiteSpace: "nowrap",
+                            display: "inline-block",
+                            animation: story.title.length > 10 ? "marquee 5s linear infinite" : "none",
+                          }}
+                        >
+                          {story.title}
+                        </span>
+                      </div>
+
                       <p className="text-xs text-center ml-4 mt-2 line-clamp-6 px-2">
                         {story.content}
                       </p>
@@ -154,6 +164,13 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userId }) => {
           <img src="/shelf.png" alt="Bookshelf" width={1909} height={152} />
         </div>
       ))}
+
+      <style jsx>{`
+        @keyframes marquee {
+          0% { transform: translateX(100%); }
+          100% { transform: translateX(-150%); }
+        }
+      `}</style>
     </div>
   );
 };
