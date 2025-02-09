@@ -41,16 +41,19 @@ const Footsteps: React.FC<{ userId: string }> = ({ userId }) => {
   };
 
   const circleSize = 48;
-  const animationDuration = 2;
+  const animationDuration = 2; // Adjust this value to control circle animation duration
+
+  // Calculate the total duration for the line animation
+  const lineAnimationDuration = (footstepsData.length - 1) * 0.5 + animationDuration;
 
   return (
     <div className="relative pl-6">
       <div className="relative">
         <div
-          className="absolute left-[14%] top-0 w-[2px] bg-[#a46500]"
+          className="absolute ml-[23px] top-0 w-[2px] bg-[#a46500]"
           style={{
             height: `${footstepsData.length * (circleSize + 24)}px`,
-            animation: `lineExpand ${(footstepsData.length - 2) * animationDuration}s ease-out forwards`,
+            animation: `lineExpand ${lineAnimationDuration}s ease-out forwards`,
           }}
         />
         {footstepsData.map((item, index) => {
@@ -65,7 +68,7 @@ const Footsteps: React.FC<{ userId: string }> = ({ userId }) => {
               onClick={() => handleEventClick(item)}
             >
               <div
-                className={`w-12 h-12 rounded-full border-2 border-white ${
+                className={`w-12 h-12 rounded-full border-4 border-white ${
                   index === 0 ? 'bg-[#a46500]' : 'bg-[#dfeaa5]'
                 }`}
                 style={{
