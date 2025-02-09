@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
+import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
 import org.ssafy.respring.domain.post.dto.request.PostUpdateRequestDto;
@@ -162,8 +162,8 @@ public class PostService {
     }
 
     private PostResponseDto toResponseDto(Post post) {
-        List<ImageResponseDTO> imageDtos = post.getImages().stream()
-          .map(image -> new ImageResponseDTO(image.getImageId(), image.getS3Key()))
+        List<ImageResponseDto> imageDtos = post.getImages().stream()
+          .map(image -> new ImageResponseDto(image.getImageId(), image.getS3Key()))
           .collect(Collectors.toList());
 
         List<CommentResponseDto> commentDtos = (post.getComments() == null) ?

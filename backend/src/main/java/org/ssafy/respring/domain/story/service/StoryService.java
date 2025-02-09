@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.event.repository.EventRepository;
 import org.ssafy.respring.domain.event.vo.Event;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
+import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.story.dto.request.StoryRequestDto;
@@ -158,8 +158,8 @@ public class StoryService {
      * Story -> StoryResponseDto 변환
      */
     private StoryResponseDto toResponseDto(Story story) {
-        List<ImageResponseDTO> imageDtos = story.getImages().stream()
-                .map(image -> new ImageResponseDTO(image.getImageId(), image.getS3Key()))
+        List<ImageResponseDto> imageDtos = story.getImages().stream()
+                .map(image -> new ImageResponseDto(image.getImageId(), image.getS3Key()))
                 .collect(Collectors.toList());
 
         return new StoryResponseDto(

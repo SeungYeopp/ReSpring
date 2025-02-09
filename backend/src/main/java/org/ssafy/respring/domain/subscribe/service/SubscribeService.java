@@ -3,11 +3,9 @@ package org.ssafy.respring.domain.subscribe.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.ssafy.respring.domain.challenge.dto.response.ChallengeListResponseDto;
 import org.ssafy.respring.domain.challenge.repository.ChallengeRepository;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
-import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
+import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.post.repository.PostRepository;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedChallengeResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedPostResponseDto;
@@ -83,7 +81,7 @@ public class SubscribeService {
                         post.getUpdatedAt(),
                         post.getLikes(),
                         post.getImages().stream()
-                                .map(image -> new ImageResponseDTO(image.getImageId(), image.getS3Key()))
+                                .map(image -> new ImageResponseDto(image.getImageId(), image.getS3Key()))
                                 .collect(Collectors.toList()),
                         post.getComments().size(),
                         post.getComments().stream()
