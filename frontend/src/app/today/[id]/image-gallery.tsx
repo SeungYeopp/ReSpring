@@ -50,7 +50,8 @@ export function ImageGallery({ images }: ImageGalleryProps) {
       <div className="flex gap-1 overflow-x-auto -mx-4 px-4 mt-3">
         {images.slice(0, 3).map((image, index) => (
           <div key={image.imageId} className="relative w-24 h-24 flex-shrink-0">
-            <Image src={image.imageUrl || "/placeholder.svg"} alt={`게시글 이미지 ${index + 1}`} fill className="rounded-md object-cover cursor-pointer" onClick={() => openGallery(index)} />
+            {/*실제 이미지로 변경해야 함.*/}
+            <Image src={"/corgis/placeholder1.jpg"} alt={`게시글 이미지 ${index + 1}`} fill className="rounded-md object-cover cursor-pointer" onClick={() => openGallery(index)} />
             {index === 2 && images.length > 3 && (
               <div className="absolute inset-0 bg-black/60 rounded-md flex items-center justify-center text-white text-sm font-bold cursor-pointer" onClick={() => openGallery(2)}>
                 +{images.length - 3}
@@ -69,7 +70,8 @@ export function ImageGallery({ images }: ImageGalleryProps) {
           </DialogClose>
           <div className="relative w-full h-full flex-1 touch-pan-y" {...handlers}>
             <div className={`absolute inset-0 flex items-center justify-center transition-transform duration-300 ease-in-out ${isSwiping ? "scale-95" : "scale-100"}`}>
-              <Image src={images[currentImageIndex].imageUrl || "/placeholder.svg"} alt={`게시글 이미지 ${currentImageIndex + 1}`} fill className="object-contain" />
+              {/*실제 이미지로 변경해야 함.*/}
+              <Image src={"/corgis/placeholder1.jpg"} alt={`게시글 이미지 ${currentImageIndex + 1}`} fill className="object-contain" />
             </div>
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full">
               {currentImageIndex + 1} / {images.length}
