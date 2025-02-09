@@ -16,8 +16,8 @@ import java.util.*;
 @Builder
 @AllArgsConstructor
 public class BookDetailResponseDto {
-	private Long bookId;
-	private String authorName;
+	private Long id;
+	private UUID authorId;
 	private String title;
 	private Map<String, String> content;  // ✅ 책 전체 내용 포함
 	private String coverImage;
@@ -36,18 +36,20 @@ public class BookDetailResponseDto {
 	  Map<String, String> contentJson,
 	  boolean isLiked,
 	  Long likeCount,
+	  Set<UUID> likedUsers,
 	  Long viewCount,
 	  List<String> imageUrls,
 	  List<CommentResponseDto> comments
 	) {
 		return BookDetailResponseDto.builder()
-		  .bookId(book.getId())
-		  .authorName(book.getAuthor().getUserNickname()) // 유저 닉네임 반환
+		  .id(book.getId())
+		  .authorId(book.getAuthor().getId()) // 유저 닉네임 반환
 		  .title(book.getTitle())
 		  .content(contentJson) // ✅ 책 내용 포함
 		  .coverImage(book.getCoverImage())
 		  .tags(book.getTags())
 		  .isLiked(isLiked)
+		  .likedUsers(likedUsers)
 		  .likeCount(likeCount)
 		  .viewCount(viewCount)
 		  .createdAt(book.getCreatedAt())

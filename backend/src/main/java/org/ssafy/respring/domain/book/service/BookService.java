@@ -194,6 +194,7 @@ public class BookService {
 		Long viewCount = bookViewsRedisService.getViewCount(bookId);
 		List<String> imageUrls = getImagesFromStories(book.getStoryIds());
 		Map<String, String> bookContent = getBookContent(bookId);
+		Set<UUID> likedUsers = bookLikesRedisService.getLikedUsers(book.getId());
 
 		// ✅ 댓글 조회
 		List<CommentResponseDto> comments = commentService.getCommentsByBookId(bookId).stream()
@@ -212,6 +213,7 @@ public class BookService {
 				bookContent,  // ✅ 순서 수정: contentJson
 				isLiked,
 				likeCount,
+		  		likedUsers,
 				viewCount,
 				imageUrls,
 				comments
@@ -362,7 +364,7 @@ public class BookService {
 			Map<String, Object> bookData = new HashMap<>();
 			bookData.put("id", book.getId());
 			bookData.put("title", book.getTitle());
-			bookData.put("authorId", book.getAuthor().getId());  // ✅ `UUID`만 저장
+			bookData.put("authorId", book.getAuthor().getId());
 			bookData.put("tags", book.getTags());
 
 			IndexRequest<Map<String, Object>> request = IndexRequest.of(i -> i
@@ -372,6 +374,7 @@ public class BookService {
 			);
 
 			esClient.index(request);
+			System.out.println("✅ Elasticsearch 색인 성공: " + book.getTitle());
 		} catch (IOException e) {
 			throw new RuntimeException("Elasticsearch 색인 오류", e);
 		}
@@ -390,18 +393,41 @@ public class BookService {
 	}
 
 	// ✅ 책 제목 검색 기능 (Elasticsearch)
+	@Transactional
 	public List<BookResponseDto> searchByBookTitle(String keyword, UUID userId) throws IOException {
 		SearchRequest searchRequest = getSearchRequest("book_title", keyword);
-		SearchResponse<Book> searchResponse = esClient.search(searchRequest, Book.class);
+		SearchResponse<Map> searchResponse = esClient.search(searchRequest, Map.class); // ✅ Map.class로 받기
 
-		List<Book> books = searchResponse.hits().hits().stream()
-				.map(Hit::source)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
+		ObjectMapper objectMapper = new ObjectMapper();
 
-		return books.stream()
-				.map(book -> mapToBookResponseDto(book, userId))
-				.collect(Collectors.toList());
+		List<BookResponseDto> books = searchResponse.hits().hits().stream()
+		  .map(hit -> {
+			  try {
+				  System.out.println("✅ 검색 결과: " + hit.source()); // ✅ 검색 결과 확인
+				  return objectMapper.convertValue(hit.source(), BookResponseDto.class);
+			  } catch (Exception e) {
+				  System.err.println("❌ 검색 변환 오류: " + e.getMessage());
+				  return null; // 변환 실패 시 null 반환
+			  }
+		  })
+		  .filter(Objects::nonNull)
+		  .map(book -> enrichBookResponse(book, userId))
+		  .collect(Collectors.toList());
+
+		return books;
+	}
+
+	private BookResponseDto enrichBookResponse(BookResponseDto book, UUID userId) {
+		Long likeCount = bookLikesRedisService.getLikeCount(book.getId());
+		Long viewCount = bookViewsRedisService.getViewCount(book.getId());
+		Set<UUID> likedUsers = bookLikesRedisService.getLikedUsers(book.getId());
+
+		book.setLikeCount(likeCount);
+		book.setViewCount(viewCount);
+		book.setLikedUsers(likedUsers);
+		book.setLiked(isBookLiked(book.getId(), userId)); // ✅ 사용자의 좋아요 여부 확인
+
+		return book;
 	}
 
 	private SearchRequest getSearchRequest(String indexName, String keyword) {
