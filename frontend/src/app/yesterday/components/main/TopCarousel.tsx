@@ -133,17 +133,30 @@ function BookCarousel({ books }: BookCarouselProps) {
               <CardContent className="flex p-6 gap-6">
                 {/* 왼쪽: 책 표지 */}
                 <div className="w-1/3 aspect-[3/4] flex-shrink-0">
-                  <img src={"/placeholder_bookcover.jpg"} alt={book.title} className="w-full h-full object-cover rounded-lg shadow-md" />
+                  <img
+                    src={"/placeholder_bookcover.jpg"}
+                    alt={book.title}
+                    className="w-full h-full object-cover rounded-lg shadow-md"
+                  />
                 </div>
                 {/* 오른쪽: 텍스트 콘텐츠 */}
                 <div className="flex-1 flex flex-col justify-between">
                   <div className="space-y-2">
                     <h3 className="text-2xl font-bold text-gray-800">{book.title}</h3>
-                    <p className="text-gray-600 line-clamp-3">{book.content}</p>
+                    {/* 태그 표시 */}
+                    <div className="flex flex-wrap gap-2">
+                      {book.tags.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="bg-brand text-white px-3 py-1 text-sm rounded-full shadow-sm"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 mt-4">
                     <Avatar className="h-8 w-8">
-                      {/* 피그마에는 이미지가 있는뎅.... */}
                       <AvatarImage src={getRandomImage()} />
                       <AvatarFallback className="bg-spring-olive text-white">박싸피</AvatarFallback>
                     </Avatar>
@@ -157,10 +170,16 @@ function BookCarousel({ books }: BookCarouselProps) {
       </CarouselContent>
       <div className="flex justify-center mt-4">
         {books.map((_, index) => (
-          <CarouselIndicator key={index} index={index} isActive={index === current} onClick={() => api?.scrollTo(index)} />
+          <CarouselIndicator
+            key={index}
+            index={index}
+            isActive={index === current}
+            onClick={() => api?.scrollTo(index)}
+          />
         ))}
       </div>
     </Carousel>
+
   );
 }
 
