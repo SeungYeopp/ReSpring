@@ -72,6 +72,10 @@ export default function BookDetail({ bookId }: BookDetailProps) {
     router.push('/chat');
   }
 
+  const handleViewerClick = () => {
+    router.push(`/viewer/${bookId}`);
+  }
+
   return (
     <div className="max-w-md mx-auto bg-white h-screen flex flex-col">
       {/* Header */}
@@ -153,7 +157,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
 
         {/* Action Buttons */}
         <div className="p-4 flex flex-col gap-2 max-w-md mx-auto">
-          <Button className="w-full bg-brand hover:bg-brand-dark transition-all py-6 text-lg">
+          <Button className="w-full bg-brand hover:bg-brand-dark transition-all py-6 text-lg" onClick={handleViewerClick}>
             <BookIcon className="w-5 h-5 mr-2" />
             읽기
           </Button>
