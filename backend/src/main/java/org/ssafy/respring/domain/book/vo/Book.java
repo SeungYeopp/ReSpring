@@ -46,14 +46,6 @@ public class Book {
     @Builder.Default
     private Set<BookViews> views = new HashSet<>();
 
-
-//
-//    @ElementCollection(fetch = FetchType.LAZY)
-//    @CollectionTable(name = "book_views", joinColumns = @JoinColumn(name = "book_info_id"))
-//    @Column(name = "user_id")
-//    @Builder.Default
-//    private Set<UUID> viewedUsers = new HashSet<>(); // 조회한 유저 리스트
-
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "book_story", joinColumns = @JoinColumn(name = "book_id"))
     @Column(name = "story_id")
