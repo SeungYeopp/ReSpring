@@ -7,27 +7,60 @@ import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { BookOpen, Clock } from "lucide-react";
-import type { Book, CarouselIndicatorProps } from "../../types/maintypes";
+import type {CarouselIndicatorProps } from "../../types/maintypes";
 import { weeklyBooks, latestBooks } from "@/app/yesterday/components/main/mocks/books";
 
-import {getTopThreeWeeklyBooks} from "@/lib/api"
+import {getTopThreeWeeklyBooks, getAllBooksByUserId, Book} from "@/lib/api"
+import {getAllSubscribers} from "@/lib/api/subscribe"
 
+import { useAuth } from "@/hooks/useAuth";
 
 export default function TopCarousel() {
   const [activeTab, setActiveTab] = useState("weekly");
   const [weeklyBooks, setWeeklyBooks] = useState<Book[]>([]);
+  const [subscriberBooks, setSubscriberBooks] = useState<Book[]>([]);
+
+  const {userId} = useAuth(true);
 
   useEffect(() => {
+    if(!userId)
+      return;
+
     const handleInitials = async () => {
       try{
         const weeklyResult = await getTopThreeWeeklyBooks();
         setWeeklyBooks(weeklyResult);
+
+        const subscribersResult = await getAllSubscribers(userId);
+        const subscriberIds = subscribersResult.map((subbedUser) => subbedUser.id);
+        
+        const randomSubscribers = getRandomSubscribers(subscriberIds, 1); // 구독한 사람 랜덤 한 명 뽑기.
+
+        const subscriberBooks = await getAllBooksByUserId(randomSubscribers[0]);
+
+        console.log(subscriberBooks)
+
+        setSubscriberBooks(subscriberBooks);
       }catch(error){
         console.error(error);
       }
     }
     handleInitials();
-  }, [])
+  }, [userId])
+
+  const getRandomSubscribers = (ids : string[], count : number) => {
+    if (ids.length <= count) {
+      return ids;
+    }
+  
+    const shuffled = [...ids]; // 배열을 복사한 뒤
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // 요소를 랜덤하게 섞기
+    }
+  
+    return shuffled.slice(0, count);
+  };
 
   return (
     <Tabs defaultValue="weekly" onValueChange={(value) => setActiveTab(value)} className="w-full">
@@ -38,14 +71,14 @@ export default function TopCarousel() {
         </TabsTrigger>
         <TabsTrigger value="latest" className="flex items-center justify-center">
           <Clock className="mr-2 h-4 w-4" />
-          최신 서적
+          구독
         </TabsTrigger>
       </TabsList>
       <TabsContent value="weekly">
         <BookCarousel books={weeklyBooks} />
       </TabsContent>
       <TabsContent value="latest">
-        <BookCarousel books={latestBooks} />
+        <BookCarousel books={subscriberBooks} />
       </TabsContent>
     </Tabs>
   );
@@ -100,7 +133,7 @@ function BookCarousel({ books }: BookCarouselProps) {
               <CardContent className="flex p-6 gap-6">
                 {/* 왼쪽: 책 표지 */}
                 <div className="w-1/3 aspect-[3/4] flex-shrink-0">
-                  <img src={book.coverImg || "/placeholder.svg"} alt={book.title} className="w-full h-full object-cover rounded-lg shadow-md" />
+                  <img src={"/placeholder_bookcover.jpg"} alt={book.title} className="w-full h-full object-cover rounded-lg shadow-md" />
                 </div>
                 {/* 오른쪽: 텍스트 콘텐츠 */}
                 <div className="flex-1 flex flex-col justify-between">
@@ -112,9 +145,9 @@ function BookCarousel({ books }: BookCarouselProps) {
                     <Avatar className="h-8 w-8">
                       {/* 피그마에는 이미지가 있는뎅.... */}
                       <AvatarImage src={getRandomImage()} />
-                      <AvatarFallback className="bg-spring-olive text-white">{book.nickname?.[0] || "?"}</AvatarFallback>
+                      <AvatarFallback className="bg-spring-olive text-white">박싸피</AvatarFallback>
                     </Avatar>
-                    <span className="text-gray-700 font-medium">{book.nickname}</span>
+                    <span className="text-gray-700 font-medium">박싸피</span>
                   </div>
                 </div>
               </CardContent>
