@@ -113,7 +113,7 @@ export default function WriteStoryPage() {
   };
 
   return (
-    <div className="relative p-6">
+    <div className="relative p-6 -mt-4">
       <div className="flex items-center justify-between">
         <button
           onClick={handleBack}

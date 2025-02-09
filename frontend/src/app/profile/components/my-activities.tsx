@@ -32,7 +32,7 @@ export default function CommunityPosts({ userId }: { userId: string }) {
     <div className="space-y-4 w-full">
       <PostList posts={posts.slice(0, 5)} />
       <div className="flex justify-center mt-4">
-        <Link href="/profile/activities">
+        <Link href={`/profile/${userId}/activities`}>
           <Button variant="default">더 보기</Button>
         </Link>
       </div>

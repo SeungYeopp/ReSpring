@@ -1,16 +1,24 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import StatSummary from "../components/stat-summary";
 import TabBar from "../components/tabbar";
 import { getAllSubscribers, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const myId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
-  const { id: id } = useParams();
-  const targetId = id && !Array.isArray(id) ? id : myId;
+  const { id } = useParams();
+  const targetId = Array.isArray(id) ? id[0] : id;
+
   const [isSubscribed, setIsSubscribed] = useState(false);
+
+  const handleBack = () => {
+    router.back();
+  };
+
   const checkIfSubscribed = async () => {
     try {
       const subscribers = await getAllSubscribers(myId);
@@ -20,6 +28,7 @@ export default function ProfilePage() {
       console.error("Error fetching subscribers:", error);
     }
   };
+
   const handleSubscribeUnsubscribe = async () => {
     if (isSubscribed) {
       try {
@@ -41,6 +50,7 @@ export default function ProfilePage() {
       }
     }
   };
+
   useEffect(() => {
     if (myId !== targetId) {
       checkIfSubscribed();
@@ -49,6 +59,13 @@ export default function ProfilePage() {
 
   return (
     <main className="relative -mt-4">
+      <button
+        onClick={handleBack}
+        className="absolute top-6 left-6 p-2 text-xl text-gray-600 hover:text-gray-800 z-50"
+      >
+        <ArrowLeft />
+      </button>
+
       <div className="top-0 left-0 w-full h-[150px] md:h-[200px] z-0">
         <img
           src="/placeholder_profilebanner.jpg"
@@ -56,6 +73,7 @@ export default function ProfilePage() {
           className="w-full h-full object-cover"
         />
       </div>
+
       <div className="relative flex flex-col md:flex-row gap-4 pt-4 z-10">
         <div className="flex flex-col md:flex-[0.7] gap-4">
           <div className="flex justify-center items-center h-auto -mt-24">
@@ -67,10 +85,13 @@ export default function ProfilePage() {
               />
             </div>
           </div>
+
           <div className="flex justify-center items-center pt-2 text-3xl">
             <b>김싸피</b>
           </div>
+
           <StatSummary userId={targetId} />
+
           <div className="flex justify-center items-start text-sm">
             <div className="flex">
               <img src="/placeholder_badge.svg" alt="Badge" className="w-[48px]" />
@@ -79,7 +100,7 @@ export default function ProfilePage() {
               <img src="/placeholder_badge.svg" alt="Badge" className="w-[48px]" />
             </div>
           </div>
-          
+
           {myId === targetId ? (
             <button
               className="bg-blue-500 text-white text-xl px-4 py-2 w-[50%] rounded-md mt-4 mx-auto block"
@@ -98,6 +119,7 @@ export default function ProfilePage() {
             </button>
           )}
         </div>
+
         <div className="flex flex-col md:flex-[1.3] justify-start items-center">
           <TabBar userId={targetId} />
         </div>
