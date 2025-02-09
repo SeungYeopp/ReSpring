@@ -13,7 +13,7 @@ interface ReaderProps {
 }
 
 export function Reader({ textData, bookChapters, plainBookContent }: ReaderProps) {
-  const { pages } = useDynamicPages(plainBookContent);
+  const { pages } = useDynamicPages(bookChapters);
   const { currentPage, totalPages } = usePageContext();
   const { fontSize, lineHeight, letterSpacing, pageTransition } = useViewerSettings();
 
