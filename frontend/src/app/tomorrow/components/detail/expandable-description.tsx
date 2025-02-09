@@ -11,18 +11,33 @@ export function ExpandableDescription({ description }: ExpandableDescriptionProp
   const [isExpanded, setIsExpanded] = useState(false);
   const [showButton, setShowButton] = useState(false);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
+  const fullTextRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    if (descriptionRef.current) {
-      const element = descriptionRef.current;
-      const lineHeight = Number.parseInt(window.getComputedStyle(element).lineHeight);
-      setShowButton(element.scrollHeight > lineHeight * 2);
-    }
-  }, []); // 의존성 배열에 description 추가
+    const checkHeight = () => {
+      if (descriptionRef.current && fullTextRef.current) {
+        const lineHeight = Number.parseFloat(window.getComputedStyle(descriptionRef.current).lineHeight);
+        const maxHeight = lineHeight * 2;
+        setShowButton(fullTextRef.current.offsetHeight > maxHeight);
+      }
+    };
+
+    // 폰트 로딩을 기다리기 위해 약간의 지연을 줍니다.
+    const timer = setTimeout(checkHeight, 100);
+
+    window.addEventListener("resize", checkHeight);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", checkHeight);
+    };
+  }, []); // Removed unnecessary dependency: description
 
   return (
     <div className="relative">
-      <p ref={descriptionRef} className={`text-gray-600 whitespace-pre-wrap break-words ${isExpanded ? "" : "max-h-[2.6em] overflow-hidden"}`}>
+      <p ref={descriptionRef} className={`text-gray-600 whitespace-pre-wrap break-words ${isExpanded ? "" : "line-clamp-2"}`}>
+        {description}
+      </p>
+      <p ref={fullTextRef} className="absolute top-0 left-0 invisible whitespace-pre-wrap break-words" aria-hidden="true">
         {description}
       </p>
       {showButton && (

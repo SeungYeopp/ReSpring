@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { ChallengeActionButton } from "./challenge-action-button";
+import { leaveChallenge } from "@/lib/api";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
@@ -102,8 +103,23 @@ export function ChallengeChatTab() {
     setShowEmojiPicker(false);
   };
 
-  const handleLeaveChallenge = () => {
-    console.log("챌린지 나가기");
+  const handleLeaveChallenge = async () => {
+    try {
+      const userId = "user1"; // 실제 로그인된 유저 ID로 교체 필요
+      const challengeId = Number("챌린지_ID"); // 문자열을 숫자로 변환
+
+      if (isNaN(challengeId)) {
+        throw new Error("유효하지 않은 챌린지 ID입니다.");
+      }
+
+      const success = await leaveChallenge(challengeId, userId);
+      if (success) {
+        console.log("챌린지 나가기 성공");
+        setIsParticipating(false);
+      }
+    } catch (error) {
+      console.error("챌린지 나가기 실패:", error);
+    }
   };
 
   const handleThemeChange = (newTheme: Theme) => {

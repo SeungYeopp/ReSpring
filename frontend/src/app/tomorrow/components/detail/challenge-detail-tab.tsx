@@ -14,6 +14,7 @@ import type { ParticipantListResponse } from "../../types/Participants";
 import { ParticipantListModal } from "./participant-list-modal";
 import { ChallengeActionButton } from "./challenge-action-button";
 import type { Theme } from "../../types/theme";
+import { joinChallenge } from "@/lib/api";
 
 interface ChallengeDetailTabProps {
   challenge: ChallengeDetail;
@@ -84,13 +85,16 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
     }
   };
 
+  // 챌린지 참가 핸들러
   const handleJoinChallenge = async () => {
     try {
-      // 실제 구현에서는 여기에 API 호출이 들어갈 것입니다
-      console.log("챌린지 참여 API 호출");
-      setIsParticipating(true);
+      const userId = "현재 사용자 ID"; // 여기에 실제 사용자 ID를 가져오는 로직 추가
+      const success = await joinChallenge(localChallenge.id, userId);
+      if (success) {
+        setIsParticipating(true); // 참가 성공 시 상태 업데이트
+      }
     } catch (error) {
-      console.error("챌린지 참여 중 오류 발생:", error);
+      console.error("챌린지 참가 중 오류 발생:", error);
     }
   };
 

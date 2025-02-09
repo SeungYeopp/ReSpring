@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ export function getMockChallengeDetail(id: string): ChallengeDetail | null {
 
 export default function ChallengePage({ params }: { params: { id: string } }) {
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const challengeData = getMockChallengeDetail(params.id);
@@ -58,7 +60,7 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button variant="secondary" size="icon" className="bg-white/80 hover:bg-white text-gray-800">
+                          <Button variant="secondary" size="icon" className="bg-white/80 hover:bg-white text-gray-800" onClick={() => router.push(`/tomorrow/edit/${challenge.id}`)}>
                             <Edit className="w-4 h-4" />
                           </Button>
                         </TooltipTrigger>
@@ -83,7 +85,9 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
                   </div>
                 </div>
               </div>
-              <CardContent className="p-0">
+              <CardContent className="p-0 overflow-visible">
+                {" "}
+                {/* overflow-visible 추가 */}
                 <div className="lg:hidden">
                   <Tabs defaultValue="detail" className="w-full">
                     <TabsList className="w-full rounded-none h-12 border-b">
@@ -94,22 +98,28 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
                         다른 사람 채팅
                       </TabsTrigger>
                     </TabsList>
-                    <div className="p-6">
-                      <TabsContent value="detail" className="mt-0">
+                    <div className="p-6 overflow-visible">
+                      {" "}
+                      {/* 여기에도 overflow-visible 추가 */}
+                      <TabsContent value="detail" className="mt-0 overflow-visible">
+                        {" "}
+                        {/* overflow-visible 추가 */}
                         <ChallengeDetailTab challenge={challenge} />
                       </TabsContent>
-                      <TabsContent value="chat" className="mt-0">
+                      <TabsContent value="chat" className="mt-0 h-[60vh] overflow-hidden">
                         <ChallengeChatTab />
                       </TabsContent>
                     </div>
                   </Tabs>
                 </div>
-                <div className="hidden lg:block p-6">
+                <div className="hidden lg:block p-6 overflow-visible">
+                  {" "}
+                  {/* 여기에도 overflow-visible 추가 */}
                   <ChallengeDetailTab challenge={challenge} />
                 </div>
               </CardContent>
             </Card>
-            <div className="hidden lg:flex lg:flex-col w-[45%] mt-6 lg:mt-0 rounded-lg shadow-md border bg-white h-[calc(100vh-150px)] max-h-[600px]">
+            <div className="hidden lg:flex lg:flex-col w-[45%] mt-6 lg:mt-0 rounded-lg shadow-md border bg-white h-[calc(100vh-150px)] max-h-[80vh] overflow-hidden">
               <ChallengeChatTab />
             </div>
           </div>
