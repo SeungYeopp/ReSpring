@@ -1,12 +1,5 @@
 // src/lib/api/tomorrow.ts
-import { 
-  Challenge, 
-  ChallengeDetail, 
-  ChallengeParticipant, 
-  ParticipatedChallenge,
-  SubscribedUser,
-  SubscribedUserChallenge,
-} from "@/app/tomorrow/types/challenge";
+import { Challenge, ChallengeDetail, ChallengeParticipant, ParticipatedChallenge, SubscribedUser, SubscribedUserChallenge } from "@/app/tomorrow/types/challenge";
 
 import mockChallenges from "@/app/tomorrow/mocks/ChallengeMocks";
 import mockChallengeDetail from "@/app/tomorrow/mocks/ChallengeDetailMocks";
@@ -38,10 +31,10 @@ export const getChallengeDetail = async (challengeId: number, userId: string): P
   try {
     const response = await fetch(`${BASE_URL}/challenges/${challengeId}?userId=${userId}`);
     if (!response.ok) throw new Error("챌린지 상세 조회 실패");
-    return await response.json();
+    return await response.json(); // 이 부분은 API가 단일 객체를 반환하는지 확인 필요
   } catch (error) {
     console.error("챌린지 상세 조회 실패, Mock 데이터 반환:", error);
-    return mockChallengeDetail;
+    return mockChallengeDetail[0]; // mock 데이터가 배열이라면 첫 번째 요소 반환
   }
 };
 
@@ -58,7 +51,6 @@ export const fetchChallengesByStatus = async (status: "UPCOMING" | "ONGOING" | "
     return mockChallenges;
   }
 };
-
 
 /**
  * 📌 4. 내가 참여한 챌린지 조회 (API 호출 실패 시 Mock 데이터 반환)
@@ -93,7 +85,6 @@ export const fetchParticipatedChallenges = async (userId: string): Promise<Parti
     return mockParticipatedChallenges;
   }
 };
-
 
 /**
  * 📌 5. 챌린지 참가
@@ -221,7 +212,6 @@ export const fetchChallengeParticipants = async (challengeId: number): Promise<C
   }
 };
 
-
 /**
  * 📌 13. 구독한 사용자의 챌린지 목록 조회
  */
@@ -235,7 +225,6 @@ export const fetchSubscribedUserChallenges = async (userId: string): Promise<Sub
     return mockSubscribedUserChallenges;
   }
 };
-
 
 /**
  * 📌 14. 내가 구독한 사용자 목록 조회
