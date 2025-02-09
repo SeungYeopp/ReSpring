@@ -76,11 +76,15 @@ export default function BookDetail({ bookId }: BookDetailProps) {
     router.push(`/viewer/${bookId}`);
   }
 
+  const handleBeforeClick = () => {
+    router.back();
+  }
+
   return (
     <div className="max-w-md mx-auto bg-white h-screen flex flex-col">
       {/* Header */}
       <div className="p-4 relative">
-        <button className="absolute left-4 top-4 text-brand hover:text-brand-dark transition-colors">
+        <button className="absolute left-4 top-4 text-brand hover:text-brand-dark transition-colors" onClick={handleBeforeClick}>
           <ArrowLeft className="w-6 h-6" />
         </button>
       </div>
