@@ -8,8 +8,8 @@ import { getAllSubscribers, newSubscription, cancelSubscription } from "@/lib/ap
 
 export default function ProfilePage() {
   const myId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
-  const { urlId } = useParams();
-  const targetId = urlId && !Array.isArray(urlId) ? urlId : myId;
+  const { id: id } = useParams();
+  const targetId = id && !Array.isArray(id) ? id : myId;
   const [isSubscribed, setIsSubscribed] = useState(false);
   const checkIfSubscribed = async () => {
     try {

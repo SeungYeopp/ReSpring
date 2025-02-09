@@ -39,7 +39,7 @@ export const Tabbar: React.FC<{ userId: string }> = ({ userId }) => {
       <div className="mt-8 w-full">
         {selectedTab === "footsteps" && <Footsteps userId={userId} />}
         {selectedTab === "sub-activities" && <div>구독자 활동 Content</div>}
-        {selectedTab === "my-activities" && <CommunityPosts />}
+        {selectedTab === "my-activities" && <CommunityPosts userId={userId} />}
         {selectedTab === "achievements" && <div>성취 Content</div>}
       </div>
     </div>
