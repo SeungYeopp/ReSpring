@@ -4,12 +4,14 @@ import React, { useState, useEffect } from "react";
 import { useDynamicPages } from "../hooks/useDynamicPages";
 import { usePageContext } from "../context/PageContext";
 import { useViewerSettings } from "../context/ViewerSettingsContext";
+import { Chapter } from "@/lib/api";
 
 interface ReaderProps {
   textData: string;
+  bookChapters : Chapter[]
 }
 
-export function Reader({ textData }: ReaderProps) {
+export function Reader({ textData, bookChapters }: ReaderProps) {
   const { pages } = useDynamicPages(textData);
   const { currentPage, totalPages } = usePageContext();
   const { fontSize, lineHeight, letterSpacing, pageTransition } = useViewerSettings();

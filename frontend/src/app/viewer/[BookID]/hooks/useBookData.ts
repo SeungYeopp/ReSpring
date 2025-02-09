@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Chapter, getBookById } from "@/lib/api";
+import {Book, CompiledBook} from "@/lib/api"
 
 // ✅ 기본 목업 데이터 (API 실패 시 사용)
 const fallbackBookData = `
@@ -575,7 +577,10 @@ const fallbackBookData = `
 // ✅ API에서 책 데이터 가져오기
 export function useBookData(bookId: string) {
     const [bookContent, setBookContent] = useState<string>(fallbackBookData);
+    const [bookTitle, setBookTitle] = useState<string>();
+    const [compiledBook, setCompiledBook] = useState<CompiledBook>();
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [bookChapters, setBookChapters] = useState<Chapter[]>();
   
     useEffect(() => {
       const fetchBookData = async () => {
@@ -583,22 +588,21 @@ export function useBookData(bookId: string) {
           setIsLoading(true);
           console.log(`📢 API 요청 시작: /books/${bookId}`);
   
-          const response = await fetch(`http://localhost:8080/books/${bookId}`);
+          const book : Book = await getBookById(bookId);
   
-          if (!response.ok) {
-            throw new Error(`API 요청 실패: ${response.status}`);
-          }
-  
-          const data = await response.json();
-  
-          if (!data.content || data.content.trim() === "") {
+          if (!book.content || book.content.trim() === "") {
             throw new Error("📢 책 내용이 비어 있습니다. 목업 데이터를 사용합니다.");
           }
+
+          setBookTitle(book.title);
+          setBookContent(book.content);
+          const chapters = JSON.parse(book.content) as Chapter[];
   
-          setBookContent(data.content);
+          setBookChapters(chapters);
           console.log("✅ API 요청 성공, 책 데이터 적용됨.");
         } catch (err) {
           console.error("🚨 책 데이터 가져오기 실패:", err);
+          setBookTitle("임시 제목");
           setBookContent(fallbackBookData); // ✅ 실패 시 기본 데이터 적용
         } finally {
           setIsLoading(false);
@@ -613,5 +617,5 @@ export function useBookData(bookId: string) {
       console.log("📖 현재 bookContent 상태:", bookContent);
     }, [bookContent]);
   
-    return { bookContent, isLoading };
+    return { bookContent, isLoading, bookTitle, bookChapters };
   }
