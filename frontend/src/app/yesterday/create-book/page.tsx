@@ -284,7 +284,7 @@ export default function CreateBook() {
           {aiCompilationComplete && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
-                <CheckCircle className="w-16 h-16 text-green-500 animate-bounce" />
+                <CheckCircle className="w-16 h-16 text-brand animate-bounce" />
                 <p className="text-lg font-semibold mt-4">AI 엮기 완료!</p>
               </div>
             </div>
