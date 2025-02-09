@@ -17,7 +17,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const isViewerPage = pathname.startsWith("/viewer");
 
-  const { isAuthenticated } = useAuth(true); // 페이지가 바뀔때 마다 로그인 인증 확인.
+  const { isAuthenticated } = useAuth(false); // 페이지가 바뀔때 마다 로그인 인증 확인.
 
   useEffect(() => {
     console.log("전체 조회", isAuthenticated);
