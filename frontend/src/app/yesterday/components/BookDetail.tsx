@@ -80,8 +80,12 @@ export default function BookDetail({ bookId }: BookDetailProps) {
     router.back();
   }
 
+  const handleProfileClick = () => {
+    router.push(`/profile/${book?.userId}`);
+  }
+
   return (
-    <div className="max-w-md mx-auto bg-white h-screen flex flex-col">
+    <div className="max-w-md mx-auto h-screen flex flex-col bg-gradient-to-b from-brand-light/20 to-white">
       {/* Header */}
       <div className="p-4 relative">
         <button className="absolute left-4 top-4 text-brand hover:text-brand-dark transition-colors" onClick={handleBeforeClick}>
@@ -106,7 +110,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
         {/* Tags */}
         <div className="px-4 flex flex-wrap gap-2 justify-center">
           {book?.tags.map((tag, index) => (
-            <span key={index} className="px-3 py-1 bg-brand/10 text-brand rounded-full text-sm">
+            <span key={index} className="px-3 py-1 bg-brand text-white rounded-full text-sm">
               {tag}
             </span>
           ))}
@@ -125,38 +129,44 @@ export default function BookDetail({ bookId }: BookDetailProps) {
         </div>
 
         {/* Author Section */}
-        <div className="p-1 mt-4">
-          <div className="rounded-xl border border-brand/20 p-4 bg-brand/5">
+        <div className="p-4 mt-2">
+        <div className="rounded-xl border border-brand/20 p-4 bg-white">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            {/* 프로필 사진과 이름을 하나의 버튼으로 묶기 */}
+            <button
+                className="flex items-center gap-3 focus:outline-none hover:bg-brand/10 hover:shadow-lg transition-all py-2 px-4 rounded-lg text-brand-dark font-medium"
+                onClick={handleProfileClick} // 클릭 시 동작할 함수
+            >
+                {/* 프로필 사진 */}
                 <div className="w-12 h-12 rounded-full overflow-hidden relative">
-                  <Image src="/placeholder_profilepic.png" alt="Author" fill className="object-cover" />
+                <Image src="/placeholder_profilepic.png" alt="Author" fill className="object-cover" />
                 </div>
-                <span className="font-medium">김싸피</span>
-              </div>
-              <div className="flex gap-2">
+                
+                {/* 사람 이름 */}
+                <span>김싸피</span>
+            </button>
+
+            <div className="flex gap-2">
                 <Button
-                  variant="outline"
-                  className={`transition-all ${
-                    isSubscribed ? "bg-brand/10 text-brand border-brand" : "bg-brand text-white hover:bg-brand-dark"
-                  }`}
-                  onClick={handleSubscribe}
+                variant="outline"
+                className={`transition-all ${isSubscribed ? "bg-brand/10 text-brand border-brand" : "bg-brand text-white hover:bg-brand-dark"}`}
+                onClick={handleSubscribe}
                 >
-                  {isSubscribed ? (
+                {isSubscribed ? (
                     <>
-                      <Check className="w-4 h-4 mr-1" />
-                      구독중
+                    <Check className="w-4 h-4 mr-1" />
+                    구독중
                     </>
-                  ) : (
+                ) : (
                     "구독"
-                  )}
+                )}
                 </Button>
                 <Button variant="outline" className="border-brand text-brand hover:bg-brand/10 transition-all" onClick={handleChatButtonClick}>
-                  <MessageSquare className="w-4 h-4" />
+                <MessageSquare className="w-4 h-4" />
                 </Button>
-              </div>
             </div>
-          </div>
+            </div>
+        </div>
         </div>
 
         {/* Action Buttons */}
