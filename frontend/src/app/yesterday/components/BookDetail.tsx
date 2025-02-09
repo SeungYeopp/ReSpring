@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import type { Book } from "@/lib/api"
 import { getBookById, likeOrUnlikeBook } from "@/lib/api"
 import { useAuth } from "@/hooks/useAuth"
+import { useRouter } from "next/navigation"
 
 interface BookDetailProps {
   bookId: string
@@ -19,6 +20,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   const [book, setBook] = useState<Book>()
 
   const {userId} = useAuth(true);
+  const router = useRouter();
 
   useEffect(() => {
     if(!userId)
@@ -64,6 +66,10 @@ export default function BookDetail({ bookId }: BookDetailProps) {
 
   const handleSubscribe = () => {
     setIsSubscribed(!isSubscribed)
+  }
+
+  const handleChatButtonClick = () => {
+    router.push('/chat');
   }
 
   return (
@@ -137,7 +143,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
                     "구독"
                   )}
                 </Button>
-                <Button variant="outline" className="border-brand text-brand hover:bg-brand/10 transition-all">
+                <Button variant="outline" className="border-brand text-brand hover:bg-brand/10 transition-all" onClick={handleChatButtonClick}>
                   <MessageSquare className="w-4 h-4" />
                 </Button>
               </div>
