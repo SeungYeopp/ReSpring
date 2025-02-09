@@ -5,7 +5,8 @@ import { ArrowLeft, MessageSquare, Heart, BookIcon, Eye, Check } from "lucide-re
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import type { Book } from "@/lib/api"
-import { getBookById } from "@/lib/api"
+import { getBookById, likeOrUnlikeBook } from "@/lib/api"
+import { useAuth } from "@/hooks/useAuth"
 
 interface BookDetailProps {
   bookId: string
@@ -17,22 +18,46 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   const [likeCount, setLikeCount] = useState<number>(240)
   const [book, setBook] = useState<Book>()
 
+  const {userId} = useAuth(true);
+
   useEffect(() => {
+    if(!userId)
+        return;
     const getBook = async () => {
       try {
         const result = await getBookById(bookId)
         setLikeCount(result.likeCount)
         setBook(result)
+
+        // const resultLiked = await likeOrUnlikeBook(bookId, userId);
+        // console.log(resultLiked)
+        // if(resultLiked === 'Liked'){
+        //     setIsLiked(false)
+        //     await likeOrUnlikeBook(book!.id, userId);
+        // }else if(resultLiked === 'Unliked'){
+        //     setIsLiked(true)
+        //     await likeOrUnlikeBook(book!.id, userId);
+        // }
       } catch (error) {
         console.error(error)
       }
     }
     getBook()
-  }, [])
+  }, [userId])
 
-  const handleLike = () => {
-    setIsLiked(!isLiked)
-    setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1))
+  const handleLike = async () => {
+    try{
+        const result = await likeOrUnlikeBook(book!.id, userId);
+
+        if(result === 'Liked'){
+            setIsLiked(true)
+        }else if(result === 'Unliked'){
+            setIsLiked(false)
+        }
+        setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1))
+    }catch(error){
+        console.error(error);
+    }
   }
 
   const handleSubscribe = () => {
