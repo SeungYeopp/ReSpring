@@ -9,10 +9,11 @@ import { Chapter } from "@/lib/api";
 interface ReaderProps {
   textData: string;
   bookChapters : Chapter[]
+  plainBookContent : string;
 }
 
-export function Reader({ textData, bookChapters }: ReaderProps) {
-  const { pages } = useDynamicPages(textData);
+export function Reader({ textData, bookChapters, plainBookContent }: ReaderProps) {
+  const { pages } = useDynamicPages(plainBookContent);
   const { currentPage, totalPages } = usePageContext();
   const { fontSize, lineHeight, letterSpacing, pageTransition } = useViewerSettings();
 

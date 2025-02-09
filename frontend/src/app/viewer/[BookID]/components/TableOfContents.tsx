@@ -25,7 +25,7 @@ const ITEMS_PER_PAGE = 10
 export function TableOfContents({ bookId }: { bookId: string }) {
   const { theme } = useViewerSettings()
   const { currentPage, totalPages, setCurrentPage } = usePageContext()
-  const { bookContent } = useBookData(bookId)
+  const { bookContent, bookChapters } = useBookData(bookId);
   const { pages } = useDynamicPages(bookContent)
   const [isOpen, setIsOpen] = useState(false)
   const [searchType, setSearchType] = useState("chapter")
