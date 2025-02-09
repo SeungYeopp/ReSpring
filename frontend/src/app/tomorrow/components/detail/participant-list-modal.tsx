@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Participant } from "@/types/participant";
+import type { Participant } from "../../types/Participants";
 import Link from "next/link";
 
 interface ParticipantListModalProps {

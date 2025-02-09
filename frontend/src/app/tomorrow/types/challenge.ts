@@ -27,6 +27,8 @@ export interface ChallengeDetail extends Challenge {
   views: number; // ✅ 조회수 (API 응답에 포함)
   image: string; // ✅ API로부터 오는 이미지 URL
   ownerId?: string; // ✅ 챌린지 소유자 ID (API 응답에 포함)
+  records?: { [key: string]: "SUCCESS" | "FAIL" }; // 날짜별 성공/실패 기록 (선택적)
+  isParticipating?: boolean; // 현재 사용자의 참여 여부 (선택적)
 }
 
 // 📌 3. 내가 참여한 챌린지 목록

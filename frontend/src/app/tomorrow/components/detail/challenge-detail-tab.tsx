@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChallengeCalendar } from "./challenge-calendar";
+import { ChallengeCalendar } from "./challnege-callender";
 import { ExpandableDescription } from "./expandable-description";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Users, CalendarIcon, Trophy, Zap, Search } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { ko } from "date-fns/locale";
-import type { ChallengeDetail } from "@/lib/mocks/challenge-detail";
-import type { ParticipantListResponse } from "@/types/participant";
+import type { ChallengeDetail } from "../../types/challenge";
+import type { ParticipantListResponse } from "../../types/Participants";
 import { ParticipantListModal } from "./participant-list-modal";
 import { ChallengeActionButton } from "./challenge-action-button";
-import type { Theme } from "@/types/theme";
+import type { Theme } from "../../types/theme";
 
 interface ChallengeDetailTabProps {
   challenge: ChallengeDetail;
@@ -35,7 +35,7 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
   };
 
   const calculateTotalSuccess = () => {
-    return Object.values(localChallenge.records).filter((status) => status === "SUCCESS").length;
+    return localChallenge.records ? Object.values(localChallenge.records).filter((status) => status === "SUCCESS").length : 0;
   };
 
   const totalDays = calculateTotalDays();
@@ -165,7 +165,9 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
           <CalendarIcon className="w-5 h-5 mr-2 text-[#8BC34A]" />
           달성 기록
         </h4>
-        <ChallengeCalendar records={localChallenge.records} startDate={startDate} endDate={endDate} />
+        {/* 여기서 localChallenge.records가 잘 넘어오는지 확인 */}
+        {/* <pre>{JSON.stringify(localChallenge.records, null, 2)}</pre> */}
+        <ChallengeCalendar records={localChallenge.records || {}} startDate={startDate} endDate={endDate} />
       </div>
 
       <ChallengeActionButton isParticipating={isParticipating} isTodayCompleted={isTodayCompleted} theme={theme} onComplete={handleCompleteToday} onJoin={handleJoinChallenge} />

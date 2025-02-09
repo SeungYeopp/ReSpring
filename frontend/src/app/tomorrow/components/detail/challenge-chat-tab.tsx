@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { ChatMessage } from "@/types/chat";
-import { Theme, themeColors } from "@/types/theme";
+import type { OpenChatMessage } from "../../types/OpenChat";
+import { Theme, themeColors } from "../../types/theme";
 import dynamic from "next/dynamic";
 import { Send, Smile, Settings, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { ChallengeActionButton } from "./challenge-action-button";
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
 // 임시 데이터
-const MOCK_MESSAGES: ChatMessage[] = [
+const MOCK_MESSAGES: OpenChatMessage[] = [
   {
     id: "1",
     userId: "user1",
@@ -33,7 +33,7 @@ const MOCK_MESSAGES: ChatMessage[] = [
 ];
 
 export function ChallengeChatTab() {
-  const [messages, setMessages] = useState<ChatMessage[]>(MOCK_MESSAGES);
+  const [messages, setMessages] = useState<OpenChatMessage[]>(MOCK_MESSAGES);
   const [newMessage, setNewMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [font, setFont] = useState("sans");
@@ -70,7 +70,9 @@ export function ChallengeChatTab() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("chatTheme") as Theme | null;
-    if (savedTheme && Object.values(Theme).includes(savedTheme)) {
+    const themeValues: Theme[] = ["light", "dark", "spring", "summer"]; // 테마 값 배열로 정의
+
+    if (savedTheme && themeValues.includes(savedTheme)) {
       setTheme(savedTheme);
     } else {
       setTheme("light");
@@ -83,7 +85,7 @@ export function ChallengeChatTab() {
 
   const handleSendMessage = async () => {
     if (newMessage.trim()) {
-      const newMsg: ChatMessage = {
+      const newMsg: OpenChatMessage = {
         id: Date.now().toString(),
         userId: currentUserId,
         nickname: "홍길동",
@@ -145,32 +147,36 @@ export function ChallengeChatTab() {
                 <label htmlFor="theme" className="col-span-4">
                   테마
                 </label>
-                <Select onValueChange={handleThemeChange} value={theme} className="col-span-8">
-                  <SelectTrigger id="theme" className={`w-full min-w-[8rem] ${themeColors[theme].background} ${themeColors[theme].text}`}>
-                    <SelectValue placeholder="테마 선택" />
-                  </SelectTrigger>
-                  <SelectContent className={`${themeColors[theme].background} ${themeColors[theme].text} min-w-[8rem] w-full`}>
-                    <SelectItem value="light">라이트 모드</SelectItem>
-                    <SelectItem value="dark">다크 모드</SelectItem>
-                    <SelectItem value="spring">봄</SelectItem>
-                    <SelectItem value="summer">여름</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="col-span-8">
+                  <Select onValueChange={handleThemeChange} value={theme}>
+                    <SelectTrigger id="theme" className={`w-full min-w-[8rem] ${themeColors[theme].background} ${themeColors[theme].text}`}>
+                      <SelectValue placeholder="테마 선택" />
+                    </SelectTrigger>
+                    <SelectContent className={`${themeColors[theme].background} ${themeColors[theme].text} min-w-[8rem] w-full`}>
+                      <SelectItem value="light">라이트 모드</SelectItem>
+                      <SelectItem value="dark">다크 모드</SelectItem>
+                      <SelectItem value="spring">봄</SelectItem>
+                      <SelectItem value="summer">여름</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="grid grid-cols-12 items-center gap-2">
                 <label htmlFor="font" className="col-span-4">
                   폰트
                 </label>
-                <Select onValueChange={setFont} value={font} className="col-span-8">
-                  <SelectTrigger id="font" className={`w-full min-w-[8rem] ${themeColors[theme].background} ${themeColors[theme].text}`}>
-                    <SelectValue placeholder="폰트 선택" />
-                  </SelectTrigger>
-                  <SelectContent className={`${themeColors[theme].background} ${themeColors[theme].text} min-w-[8rem] w-full`}>
-                    <SelectItem value="sans">Sans-serif</SelectItem>
-                    <SelectItem value="serif">Serif</SelectItem>
-                    <SelectItem value="mono">Monospace</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="col-span-8">
+                  <Select onValueChange={setFont} value={font}>
+                    <SelectTrigger id="font" className={`w-full min-w-[8rem] ${themeColors[theme].background} ${themeColors[theme].text}`}>
+                      <SelectValue placeholder="폰트 선택" />
+                    </SelectTrigger>
+                    <SelectContent className={`${themeColors[theme].background} ${themeColors[theme].text} min-w-[8rem] w-full`}>
+                      <SelectItem value="sans">Sans-serif</SelectItem>
+                      <SelectItem value="serif">Serif</SelectItem>
+                      <SelectItem value="mono">Monospace</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="grid grid-cols-12 items-center gap-2">
                 <label htmlFor="fontSize" className="col-span-4">
@@ -268,9 +274,7 @@ export function ChallengeChatTab() {
           </div>
         </div>
       </div>
-      <ChallengeActionButton isParticipating={isParticipating} isTodayCompleted={isTodayCompleted} theme={theme} onComplete={handleCompleteToday} onJoin={handleJoinChallenge} />
+      {/* <ChallengeActionButton isParticipating={isParticipating} isTodayCompleted={isTodayCompleted} theme={theme} onComplete={handleCompleteToday} onJoin={handleJoinChallenge} /> */}
     </div>
   );
 }
-
-export { ChallengeChatTab };

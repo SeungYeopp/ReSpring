@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isFuture } from "date-fns";
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isFuture, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
@@ -17,12 +17,8 @@ export function ChallengeCalendar({ records, startDate, endDate }: ChallengeCale
 
   useEffect(() => {
     const today = new Date();
-    if (today >= startDate && today <= endDate) {
-      setCurrentMonth(today);
-    } else {
-      setCurrentMonth(startDate);
-    }
-  }, [startDate, endDate]);
+    setCurrentMonth(today);
+  }, []);
 
   const days = eachDayOfInterval({
     start: startOfMonth(currentMonth),
@@ -30,25 +26,23 @@ export function ChallengeCalendar({ records, startDate, endDate }: ChallengeCale
   });
 
   const previousMonth = () => {
-    const newDate = subMonths(currentMonth, 1);
-    if (newDate >= startDate) {
-      setCurrentMonth(newDate);
-    }
+    setCurrentMonth(subMonths(currentMonth, 1));
   };
 
   const nextMonth = () => {
-    const newDate = addMonths(currentMonth, 1);
-    if (newDate <= endDate) {
-      setCurrentMonth(newDate);
-    }
+    setCurrentMonth(addMonths(currentMonth, 1));
   };
 
-  const getDateStatus = (date: Date) => {
-    const dateString = format(date, "yyyy-MM-dd");
-    if (isFuture(date)) return "future";
-    if (isToday(date)) {
+  const getDateStatus = (date: Date): "SUCCESS" | "FAIL" | "success-today" | "today" | "none" | "future" => {
+    const normalizedDate = startOfDay(date);
+    const dateString = format(normalizedDate, "yyyy-MM-dd");
+
+    if (isFuture(normalizedDate)) return "future";
+
+    if (isToday(normalizedDate)) {
       return records[dateString] === "SUCCESS" ? "success-today" : "today";
     }
+
     return records[dateString] || "none";
   };
 
@@ -56,11 +50,11 @@ export function ChallengeCalendar({ records, startDate, endDate }: ChallengeCale
     <div className="w-full max-w-md mx-auto">
       <div className="bg-white rounded-lg shadow">
         <div className="flex items-center justify-between p-4">
-          <button onClick={previousMonth} disabled={startOfMonth(currentMonth) <= startDate} className="p-2 hover:bg-gray-100 rounded-full disabled:opacity-50">
+          <button onClick={previousMonth} className="p-2 hover:bg-gray-100 rounded-full">
             <ChevronLeft className="w-5 h-5" />
           </button>
           <h2 className="font-semibold text-xl">{format(currentMonth, "MMMM yyyy", { locale: ko })}</h2>
-          <button onClick={nextMonth} disabled={endOfMonth(currentMonth) >= endDate} className="p-2 hover:bg-gray-100 rounded-full disabled:opacity-50">
+          <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-full">
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
@@ -72,7 +66,7 @@ export function ChallengeCalendar({ records, startDate, endDate }: ChallengeCale
             </div>
           ))}
 
-          {days.map((day, dayIdx) => {
+          {days.map((day) => {
             const status = getDateStatus(day);
 
             return (

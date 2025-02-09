@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
-import { type Theme, themeColors } from "@/types/theme";
+import { type Theme, themeColors } from "../../types/theme";
 
 interface ChallengeActionButtonProps {
   isParticipating: boolean;

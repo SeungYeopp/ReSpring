@@ -5,11 +5,18 @@ import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { ChallengeDetailTab } from "@/components/challenge-detail-tab"
-import { ChallengeChatTab } from "@/components/challenge-chat-tab"
+import { ChallengeDetailTab } from "../components/detail/challenge-detail-tab"
+import { ChallengeChatTab } from "../components/detail/challenge-chat-tab"
 import { Heart, Eye, Edit, ArrowLeft } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { getMockChallengeDetail, type ChallengeDetail } from "@/lib/mocks/challenge-detail"
+import { ChallengeDetail } from "@/app/tomorrow/types/challenge";
+import mockChallengeDetails from "../mocks/ChallengeDetailMocks"
+
+// ID에 해당하는 챌린지를 반환하는 함수
+export function getMockChallengeDetail(id: string): ChallengeDetail | null {
+  const challenge = mockChallengeDetails.find((challenge) => challenge.id.toString() === id);
+  return challenge || null;
+}
 
 export default function ChallengePage({ params }: { params: { id: string } }) {
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null)
@@ -121,7 +128,7 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
             <Card className="hidden lg:flex lg:flex-col w-[45%] mt-6 lg:mt-0">
               <CardContent className="flex-grow flex flex-col">
                 <div className="flex-grow">
-                  <ChallengeChatTab />
+                  <ChallengeChatTab  />
                 </div>
               </CardContent>
             </Card>
