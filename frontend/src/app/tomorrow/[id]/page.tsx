@@ -12,12 +12,7 @@ import { Heart, Eye, Edit, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ChallengeDetail } from "@/app/tomorrow/types/challenge";
 import mockChallengeDetails from "../mocks/ChallengeDetailMocks";
-
-// ID에 해당하는 챌린지를 반환하는 함수
-export function getMockChallengeDetail(id: string): ChallengeDetail | null {
-  const challenge = mockChallengeDetails.find((challenge) => challenge.id.toString() === id);
-  return challenge || null;
-}
+import { getMockChallengeDetail } from "../mocks/ChallengeDetailMocks";
 
 export default function ChallengePage({ params }: { params: { id: string } }) {
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null);
