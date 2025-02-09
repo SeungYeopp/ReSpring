@@ -11,15 +11,18 @@ import { useAuthWithUser } from "@/lib/hooks/tempUseAuthWithUser";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { todayAPI } from "@/app/today/api/todayDetail";
-import type { Post } from "@/app/today/api/todayDetail";
+import { getPostDetail, Post, getCommentsByPostId, deletePost, likePost, checkIfUserLiked} from "@/lib/api";
+//import type { Post } from "@/app/today/api/todayDetail";
 import { CommentSection } from "./comment-section";
 import { ImageGallery } from "./image-gallery";
 import { Trash2 } from "lucide-react";
 
+import {useAuth} from "@/hooks/useAuth"
+
 // 게시글 데이터를 가져오는 비동기 함수
 async function getPost(id: number): Promise<Post> {
   try {
-    return await todayAPI.getPostDetail(id);
+    return await getPostDetail(id);
   } catch (error) {
     notFound(); // 게시글을 찾지 못하면 404 페이지로 리다이렉트
   }
@@ -27,6 +30,9 @@ async function getPost(id: number): Promise<Post> {
 
 // 오늘의 상세 페이지 컴포넌트
 export default function TodayDetailPage({ params }: { params: { id: string } }) {
+
+  const {userId} = useAuth(true);
+
   const { user, isLoggedIn } = useAuthWithUser(); // 로그인 정보 가져오기
   const router = useRouter();
 
@@ -38,24 +44,33 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
   const [commentCount, setCommentCount] = useState(0);
 
   // 본인 게시글 여부 확인
-  const isMyPost = user?.id === post?.userId;
+  const isMyPost = userId === post?.userId;
 
   // 게시글 데이터 가져오기
   useEffect(() => {
     async function fetchPost() {
+      if(userId === null)
+        return;
+
       try {
         const fetchedPost = await getPost(Number(params.id));
+
+        if(userId){
+          const checkIfLiked = await checkIfUserLiked(Number(params.id), userId);
+          setLikeByMe(checkIfLiked);
+        }
+          
         setPost(fetchedPost);
         setLikes(fetchedPost.likes);
-        setLikeByMe(fetchedPost.likeByMe);
-        const fetchedComments = await todayAPI.getComments(Number(params.id));
+
+        const fetchedComments = await getCommentsByPostId(Number(params.id));
         setCommentCount(fetchedComments.length);
       } catch (error) {
         notFound();
       }
     }
     fetchPost();
-  }, [params.id]);
+  }, [params.id, userId]);
 
   // 좋아요 버튼 클릭 핸들러
   const handleLike = useCallback(async () => {
@@ -65,7 +80,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
       return;
     }
     try {
-      const result = await todayAPI.likePost(post.id, "test-user-id");
+      const result = await likePost(post.id, userId);
       if (result === "Liked") {
         setLikes((prev) => prev + 1);
         setLikeByMe(true);
@@ -96,13 +111,13 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
 
   // 게시글 삭제 핸들러
   const handleDelete = async () => {
-    if (!post || !user?.id) return;
+    if (!post || !userId) return;
   // 삭제 팝업
     const confirmDelete = window.confirm("정말 이 게시글을 삭제하시겠습니까?");
     if (!confirmDelete) return;
   
     try {
-      await todayAPI.deletePost(post.id, user.id);
+      await deletePost(post.id, userId);
       alert("게시글이 삭제되었습니다.");
       router.push("/today");
     } catch (error) {
@@ -189,7 +204,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
 
         {/* 댓글 섹션 */}
         <div className="bg-white p-4">
-          <CommentSection postId={post.id} isLoggedIn={isLoggedIn} />
+          <CommentSection postId={post.id} userId={userId} />
         </div>
       </main>
     </div>
