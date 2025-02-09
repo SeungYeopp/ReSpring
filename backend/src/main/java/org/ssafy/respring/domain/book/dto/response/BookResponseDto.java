@@ -20,9 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookResponseDto {
-	@JsonProperty("id")
 	private Long id;
-	@JsonProperty("authorId")
 	private UUID authorId;
 	private String title;
 	private String coverImage;
@@ -33,19 +31,6 @@ public class BookResponseDto {
 	private Set<UUID> likedUsers;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
-
-//	@JsonCreator // ✅ JSON 역직렬화를 위해 추가
-//	public BookResponseDto(
-//	  @JsonProperty("id") Long bookId,
-//	  @JsonProperty("title") String title,
-//	  @JsonProperty("authorId") UUID authorId,
-//	  @JsonProperty("tags") Set<String> tags
-//	) {
-//		this.id = bookId;
-//		this.title = title;
-//		this.authorId = authorId;
-//		this.tags = tags;
-//	}
 
 	public static BookResponseDto toResponseDto(Book book, boolean isLiked, Long likeCount, Set<UUID> likedUsers, Long viewCount) {
 		return BookResponseDto.builder()

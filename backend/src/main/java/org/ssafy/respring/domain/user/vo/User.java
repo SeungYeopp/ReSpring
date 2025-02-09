@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.persistence.*;
 import lombok.*;
+import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.challenge.vo.Challenge;
 import org.ssafy.respring.domain.challenge.vo.UserChallenge;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
@@ -45,6 +46,10 @@ public class User {
     // 내가 참가한 챌린지 (N:M)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChallenge> joinedChallenges;
+
+    // 내가 작성한 봄날의 서 (1:N)
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Book> myBooks;
 
     // ✅ 소셜 계정 정보 (1:N)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
