@@ -146,7 +146,8 @@ export default function BookDetail({ bookId }: BookDetailProps) {
                 <span>김싸피</span>
             </button>
 
-            <div className="flex gap-2">
+            {userId !== book?.userId && 
+              <div className="flex gap-2">
                 <Button
                 variant="outline"
                 className={`transition-all ${isSubscribed ? "bg-brand/10 text-brand border-brand" : "bg-brand text-white hover:bg-brand-dark"}`}
@@ -164,8 +165,9 @@ export default function BookDetail({ bookId }: BookDetailProps) {
                 <Button variant="outline" className="border-brand text-brand hover:bg-brand/10 transition-all" onClick={handleChatButtonClick}>
                 <MessageSquare className="w-4 h-4" />
                 </Button>
-            </div>
-            </div>
+              </div>
+            }
+          </div>
         </div>
         </div>
 
