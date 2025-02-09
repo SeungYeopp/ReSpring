@@ -9,6 +9,7 @@ import {
   type CompiledBook,
   type Chapter,
   type Image,
+  Book,
 } from "@/lib/api"
 import { getSessionInfo } from "@/lib/api"
 import { useRouter } from "next/navigation"
@@ -161,7 +162,7 @@ export default function CreateBook() {
     setIsFinalizingBook(true)
     try {
       const jsonifiedBookContent = JSON.stringify(compiledBook!.chapters)
-      const result = await makeBook(
+      const result : string= await makeBook(
         userId,
         compiledBook!.title,
         jsonifiedBookContent,
@@ -170,7 +171,7 @@ export default function CreateBook() {
         bookCoverImg!,
       )
       setGeneratedCompiledBookId(result)
-      router.push("/yesterday")
+      router.push(`/yesterday/book/${result}`)
     } catch (error: any) {
       console.error(error)
     } finally {
