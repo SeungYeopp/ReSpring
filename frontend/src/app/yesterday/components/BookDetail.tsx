@@ -23,21 +23,23 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   useEffect(() => {
     if(!userId)
         return;
+
     const getBook = async () => {
       try {
         const result = await getBookById(bookId)
-        setLikeCount(result.likeCount)
         setBook(result)
+        setLikeCount(result.likeCount)
+        
+        const resultLiked = await likeOrUnlikeBook(bookId, userId);
 
-        // const resultLiked = await likeOrUnlikeBook(bookId, userId);
-        // console.log(resultLiked)
-        // if(resultLiked === 'Liked'){
-        //     setIsLiked(false)
-        //     await likeOrUnlikeBook(book!.id, userId);
-        // }else if(resultLiked === 'Unliked'){
-        //     setIsLiked(true)
-        //     await likeOrUnlikeBook(book!.id, userId);
-        // }
+        if(resultLiked === 'Liked'){ // 좋아요를 안 누른 경우 확인.
+            setIsLiked(false)
+            await likeOrUnlikeBook(bookId, userId); // 좋아요를 누른 경우 확인.
+        }else if(resultLiked === 'Unliked'){
+            setIsLiked(true)
+            await likeOrUnlikeBook(bookId, userId);
+        }
+        
       } catch (error) {
         console.error(error)
       }
