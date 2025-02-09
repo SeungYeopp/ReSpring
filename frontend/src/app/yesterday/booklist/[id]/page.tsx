@@ -1,14 +1,16 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/custom/TabGreen";
-import BookShelf from "../components/BookShelf";
-import StoryShelf from "../components/StoryShelf";
-import { useSearchParams } from "next/navigation";
+import BookShelf from "../../components/BookShelf";
+import StoryShelf from "../../components/StoryShelf";
+import { useParams, useSearchParams } from "next/navigation";
 
 export default function BookList() {
-  const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
+  const myId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
   const searchParams = useSearchParams();
   const tab = searchParams?.get("tab") || "books";
+  const { id: id } = useParams();
+  const targetId = id && !Array.isArray(id) ? id : myId;
 
   return (
     <div className="flex flex-col items-center w-full p-4">
@@ -19,11 +21,11 @@ export default function BookList() {
         </TabsList>
 
         <TabsContent value="books">
-          <BookShelf userId={userId} />
+          <BookShelf userId={targetId} />
         </TabsContent>
 
         <TabsContent value="stories">
-          <StoryShelf userId={userId} />
+          <StoryShelf userId={targetId} />
         </TabsContent>
       </Tabs>
     </div>

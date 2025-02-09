@@ -1,6 +1,7 @@
 import axiosAPI from "@/lib/api/axios";
 import { posts, popularPosts, followedPosts } from "@/app/today/mocks/posts";
 import { Image } from "./story";
+import axios from "axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
@@ -229,5 +230,37 @@ export async function checkIfUserLiked(postId: number, userId: string): Promise<
     return response.data;
   }catch(error){
     throw new Error("게시글 좋아요 확인 실패");
+  }
+}
+
+/**
+ * 특정 사용자의 게시물 목록을 가져오는 함수
+ * @param userId - 게시물을 가져올 사용자 ID
+ * @returns Promise<PostDetails[]> - 해당 사용자의 게시물 배열
+ */
+export async function getPostsByUserId(userId: string): Promise<Post[]> {
+  try {
+    const response = await axios.get<Post[]>(`${API_BASE_URL}/posts/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching posts for user ${userId}:`, error);
+    throw new Error("게시물을 불러오는 데 실패했습니다.");
+  }
+}
+
+/**
+ * 특정 사용자의 댓글 목록을 가져오는 함수
+ * @param userId - 댓글을 가져올 사용자 ID
+ * @returns Promise<CommentDetails[]> - 해당 사용자의 댓글 배열
+ */
+export async function getCommentsByUserId(userId: string): Promise<Comment[]> {
+  try {
+    const response = await axios.get<Comment[]>(`${API_BASE_URL}/comments/posts`, {
+      params: { userId }, // userId를 query parameter로 전달
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching comments for user ${userId}:`, error);
+    throw new Error("댓글을 불러오는 데 실패했습니다.");
   }
 }

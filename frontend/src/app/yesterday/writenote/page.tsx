@@ -84,7 +84,7 @@ export default function WriteStoryPage() {
 
       if (storyId) {
         await updateStory(storyId, userId, title, content, eventId!, deleteImageIds, []);
-        router.push("/yesterday/booklist?tab=stories");
+        router.push(`/yesterday/booklist/${userId}?tab=stories`);
       } else {
         if (stage === "select") {
           setStage("editor");
@@ -102,7 +102,7 @@ export default function WriteStoryPage() {
 
   const handleBack = () => {
     if (stage === "editor") {
-      router.push("/yesterday/booklist?tab=stories");
+      router.push(`/yesterday/booklist/${userId}?tab=stories`);
     } else {
       router.back();
     }
