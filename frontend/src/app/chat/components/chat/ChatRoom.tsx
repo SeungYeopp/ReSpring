@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -8,54 +8,89 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Send, Smile, Settings, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Send, Smile, Settings, Plus, Minus, Video, VideoOff } from "lucide-react";
 import { useMediaQuery } from "../../hooks/chatUseMediaQuery";
 import { themeColors } from "../../types/chatTheme";
 import { useTheme } from "../../contexts/ChatThemeContext";
 import dynamic from "next/dynamic";
-import type { ChatData } from "../../lib/chatMockData";
+import { type ChatData, fetchChatData, fetchMoreMessages } from "../../lib/chatMockData";
+import { ChatSkeleton } from "./ChatSkeleton";
+import VideoChat from "./VideoChat";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
-export default function ChatRoomClient({ initialChatData }: { initialChatData: ChatData }) {
-  if (!initialChatData) {
-    return <div>채팅 데이터를 불러올 수 없습니다.</div>;
-  }
-  const [chatData, setChatData] = useState(initialChatData);
-  const [messages, setMessages] = useState(initialChatData.messages || []);
+export default function ChatRoom({ initialChatData }: { initialChatData: ChatData }) {
+  const [chatData, setChatData] = useState<ChatData | null>(initialChatData);
+  const [messages, setMessages] = useState(initialChatData.messages);
   const [newMessage, setNewMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [font, setFont] = useState("sans");
   const [fontSize, setFontSize] = useState(16);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [showVideoChat, setShowVideoChat] = useState(false);
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const scrollRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
+  const loadMoreMessages = useCallback(async () => {
+    if (isLoading || !hasMore || !chatData) return;
+    setIsLoading(true);
+    try {
+      const oldestMessageId = messages[0]?.id;
+      const newMessages = await fetchMoreMessages(chatData.id, oldestMessageId);
+      if (newMessages.length === 0) {
+        setHasMore(false);
+      } else {
+        setMessages((prevMessages) => [...newMessages, ...prevMessages]);
+      }
+    } catch (error) {
+      console.error("메시지를 불러오는 중 오류가 발생했습니다:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoading, hasMore, chatData, messages]); // Added messages to dependencies
+
+  useEffect(() => {
+    const loadChatData = async () => {
+      setIsLoading(true);
+      const data = await fetchChatData(initialChatData.id);
+      if (data) {
+        setChatData(data);
+        setMessages(data.messages);
+      }
+      setIsLoading(false);
+    };
+    loadChatData();
+  }, [initialChatData.id]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [scrollRef, messages]); //Corrected dependency
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
-        setShowEmojiPicker(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
   }, []);
 
   useEffect(() => {
-    setChatData(initialChatData);
-    setMessages(initialChatData.messages);
-  }, [initialChatData]);
+    const handleScroll = () => {
+      const scrollArea = scrollRef.current;
+      if (scrollArea && scrollArea.scrollTop === 0 && !isLoading) {
+        loadMoreMessages();
+      }
+    };
+
+    const scrollArea = scrollRef.current;
+    if (scrollArea) {
+      scrollArea.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      if (scrollArea) {
+        scrollArea.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [loadMoreMessages, isLoading]);
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
@@ -82,6 +117,14 @@ export default function ChatRoomClient({ initialChatData }: { initialChatData: C
     });
   };
 
+  const toggleVideoChat = () => {
+    setShowVideoChat(!showVideoChat);
+  };
+
+  if (!chatData) {
+    return <div>채팅 데이터를 불러올 수 없습니다.</div>;
+  }
+
   return (
     <div className={`flex flex-col h-full ${themeColors[theme].background} ${themeColors[theme].text}`}>
       <div className="flex items-center p-4 border-b">
@@ -95,87 +138,95 @@ export default function ChatRoomClient({ initialChatData }: { initialChatData: C
           <AvatarFallback>{chatData.name[0]}</AvatarFallback>
         </Avatar>
         <h2 className="text-lg font-semibold">{chatData.name}</h2>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className={`ml-auto hover:${themeColors[theme].secondary}`}>
-              <Settings className={`h-5 w-5 ${themeColors[theme].text}`} />
-              <span className="sr-only">설정</span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className={`w-72 ${themeColors[theme].background} ${themeColors[theme].text}`} align="end" side="bottom">
-            <div className="grid gap-3">
-              <div className="grid grid-cols-12 items-center gap-2">
-                <label htmlFor="theme" className="col-span-4">
-                  테마
-                </label>
-                <div className="col-span-8">
-                  <Select onValueChange={setTheme} value={theme}>
-                    <SelectTrigger id="theme" className={`w-full min-w-[8rem] ${themeColors[theme].background} ${themeColors[theme].text}`}>
-                      <SelectValue placeholder="테마 선택" />
-                    </SelectTrigger>
-                    <SelectContent className={`${themeColors[theme].background} ${themeColors[theme].text} min-w-[8rem] w-full`}>
-                      <SelectItem value="light">라이트 모드</SelectItem>
-                      <SelectItem value="dark">다크 모드</SelectItem>
-                      <SelectItem value="spring">봄</SelectItem>
-                      <SelectItem value="summer">여름</SelectItem>
-                    </SelectContent>
-                  </Select>
+        <div className="ml-auto flex items-center space-x-2">
+          <Button variant="ghost" size="icon" onClick={toggleVideoChat}>
+            {showVideoChat ? <VideoOff className={`h-5 w-5 ${themeColors[theme].text}`} /> : <Video className={`h-5 w-5 ${themeColors[theme].text}`} />}
+            <span className="sr-only">화상 채팅 {showVideoChat ? "끄기" : "켜기"}</span>
+          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className={`hover:${themeColors[theme].secondary}`}>
+                <Settings className={`h-5 w-5 ${themeColors[theme].text}`} />
+                <span className="sr-only">설정</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className={`w-72 ${themeColors[theme].background} ${themeColors[theme].text}`} align="end" side="bottom">
+              <div className="grid gap-3">
+                <div className="grid grid-cols-12 items-center gap-2">
+                  <label htmlFor="theme" className="col-span-4">
+                    테마
+                  </label>
+                  <div className="col-span-8">
+                    <Select onValueChange={setTheme} value={theme}>
+                      <SelectTrigger id="theme" className={`w-full min-w-[8rem] ${themeColors[theme].background} ${themeColors[theme].text}`}>
+                        <SelectValue placeholder="테마 선택" />
+                      </SelectTrigger>
+                      <SelectContent className={`${themeColors[theme].background} ${themeColors[theme].text} min-w-[8rem] w-full`}>
+                        <SelectItem value="light">라이트 모드</SelectItem>
+                        <SelectItem value="dark">다크 모드</SelectItem>
+                        <SelectItem value="spring">봄</SelectItem>
+                        <SelectItem value="summer">여름</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-12 items-center gap-2">
+                  <label htmlFor="font" className="col-span-4">
+                    폰트
+                  </label>
+                  <div className="col-span-8">
+                    <Select onValueChange={setFont} value={font}>
+                      <SelectTrigger id="font" className={`w-full min-w-[8rem] ${themeColors[theme].background} ${themeColors[theme].text}`}>
+                        <SelectValue placeholder="폰트 선택" />
+                      </SelectTrigger>
+                      <SelectContent className={`${themeColors[theme].background} ${themeColors[theme].text} min-w-[8rem] w-full`}>
+                        <SelectItem value="sans">Sans-serif</SelectItem>
+                        <SelectItem value="serif">Serif</SelectItem>
+                        <SelectItem value="mono">Monospace</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-12 items-center gap-2">
+                  <label htmlFor="fontSize" className="col-span-4">
+                    글자 크기
+                  </label>
+                  <div className="col-span-8 flex items-center justify-between gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleFontSizeChange(false)}
+                      disabled={fontSize <= 12}
+                      className={`h-8 w-8 ${themeColors[theme].background} ${themeColors[theme].text}`}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="min-w-[3ch] text-center">{fontSize}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleFontSizeChange(true)}
+                      disabled={fontSize >= 24}
+                      className={`h-8 w-8 ${themeColors[theme].background} ${themeColors[theme].text}`}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-12 items-center gap-2">
-                <label htmlFor="font" className="col-span-4">
-                  폰트
-                </label>
-                <div className="col-span-8">
-                  <Select onValueChange={setFont} value={font}>
-                    <SelectTrigger id="font" className={`w-full min-w-[8rem] ${themeColors[theme].background} ${themeColors[theme].text}`}>
-                      <SelectValue placeholder="폰트 선택" />
-                    </SelectTrigger>
-                    <SelectContent className={`${themeColors[theme].background} ${themeColors[theme].text} min-w-[8rem] w-full`}>
-                      <SelectItem value="sans">Sans-serif</SelectItem>
-                      <SelectItem value="serif">Serif</SelectItem>
-                      <SelectItem value="mono">Monospace</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-12 items-center gap-2">
-                <label htmlFor="fontSize" className="col-span-4">
-                  글자 크기
-                </label>
-                <div className="col-span-8 flex items-center justify-between gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleFontSizeChange(false)}
-                    disabled={fontSize <= 12}
-                    className={`h-8 w-8 ${themeColors[theme].background} ${themeColors[theme].text}`}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="min-w-[3ch] text-center">{fontSize}</span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleFontSizeChange(true)}
-                    disabled={fontSize >= 24}
-                    className={`h-8 w-8 ${themeColors[theme].background} ${themeColors[theme].text}`}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
+      {showVideoChat && <VideoChat partnerName={chatData.name} />}
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+        {isLoading && <ChatSkeleton />}
         {messages.map((message) => (
           <div key={message.id} className={`flex ${message.senderId === "user" ? "justify-end" : "justify-start"} mb-4`}>
             <div
-              className={`max-w-[70%] p-3 rounded-lg ${
+              className={`max-w-[80%] p-3 rounded-lg ${
                 message.senderId === "user" ? `${themeColors[theme].primary} text-white rounded-br-none` : `${themeColors[theme].secondary} ${themeColors[theme].text} rounded-bl-none`
               }`}
               style={{
