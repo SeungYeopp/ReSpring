@@ -29,7 +29,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
         const result = await getBookById(bookId)
         setBook(result)
         setLikeCount(result.likeCount)
-        
+
         const resultLiked = await likeOrUnlikeBook(bookId, userId);
 
         if(resultLiked === 'Liked'){ // 좋아요를 안 누른 경우 확인.
@@ -104,10 +104,10 @@ export default function BookDetail({ bookId }: BookDetailProps) {
             <Eye className="w-5 h-5" />
             <span>{book?.viewCount}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Heart className="w-5 h-5" />
-            <span>{likeCount}</span>
-          </div>
+        <div className="flex items-center gap-1">
+        <Heart className={`w-5 h-5 ${isLiked ? "text-red-500 fill-red-500" : ""}`} />
+        <span>{likeCount}</span>
+        </div>
         </div>
 
         {/* Author Section */}
@@ -151,16 +151,16 @@ export default function BookDetail({ bookId }: BookDetailProps) {
             <BookIcon className="w-5 h-5 mr-2" />
             읽기
           </Button>
-          <Button
+            <Button
             variant="outline"
             className={`w-full py-6 text-lg ${
-              isLiked ? "bg-brand text-white hover:bg-brand-dark" : "border-brand text-brand hover:bg-brand/10"
+                isLiked ? "bg-brand text-white hover:bg-brand-dark" : "border-brand text-brand hover:bg-brand/10"
             } transition-all`}
             onClick={handleLike}
-          >
-            <Heart className={`w-5 h-5 mr-2 ${isLiked ? "fill-white" : ""}`} />
+            >
+            <Heart className={`w-5 h-5 mr-2`} />
             {isLiked ? "좋아요 취소" : "좋아요"}
-          </Button>
+            </Button>
         </div>
       </div>
     </div>
