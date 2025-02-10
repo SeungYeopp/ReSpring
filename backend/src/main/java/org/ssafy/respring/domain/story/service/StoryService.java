@@ -14,8 +14,10 @@ import org.ssafy.respring.domain.story.dto.request.StoryUpdateRequestDto;
 import org.ssafy.respring.domain.story.dto.response.StoryResponseDto;
 import org.ssafy.respring.domain.story.repository.StoryRepository;
 import org.ssafy.respring.domain.story.vo.Story;
+import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,6 +28,8 @@ import java.util.stream.Collectors;
 public class StoryService {
     private final StoryRepository storyRepository;
     private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+
     private final ImageService imageService;
 
     /**
@@ -33,11 +37,9 @@ public class StoryService {
      */
     public Long createStory(StoryRequestDto requestDto, List<MultipartFile> imageFiles) {
         // 사용자 정보 설정
-//		User user = userRepository.findById(requestDto.getUserId())
-//				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + requestDto.getUserId()));
+		User user = userRepository.findById(requestDto.getUserId())
+				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + requestDto.getUserId()));
 
-        User user = new User();
-        user.setId(requestDto.getUserId());
 
         // 이벤트 조회
         Event event = eventRepository.findById(requestDto.getEventId())
@@ -164,6 +166,9 @@ public class StoryService {
                         imageService.generatePresignedUrl(image.getS3Key(), 60)
                 ))
                 .collect(Collectors.toList());
+
+        LocalDateTime occurredAt = story.getEvent().getOccurredAt();
+
         return new StoryResponseDto(
                 story.getId(),
                 story.getTitle(),
@@ -171,6 +176,7 @@ public class StoryService {
                 story.getCreatedAt(),
                 story.getUpdatedAt(),
                 story.getEvent().getId(),
+                occurredAt,
                 imageDtos
         );
     }
