@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import type { Post } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -8,16 +8,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { getAllPosts } from "@/lib/api";
+import { getPostsByUserId } from "@/lib/api/";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/custom/TabGreen";
 import { Button } from "@/components/ui/button";
 
 export default function ActivitiesPage() {
-  const router = useRouter();
   const handleBack = () => {
     router.back();
   };
 
+  const router = useRouter();
+  const { id: id } = useParams();
+  const userId = Array.isArray(id) ? id[0] : id;
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsToShow, setPostsToShow] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +27,7 @@ export default function ActivitiesPage() {
 
   const fetchPosts = async () => {
     setIsLoading(true);
-    const allPosts = await getAllPosts();
+    const allPosts = await getPostsByUserId(userId);
     setPosts(allPosts);
     setIsLoading(false);
   };
@@ -39,7 +41,7 @@ export default function ActivitiesPage() {
   };
 
   return (
-    <div className="relative p-6">
+    <div className="relative p-6 -mt-4">
       <button
         onClick={handleBack}
         className="absolute top-6 left-6 p-2 text-xl text-gray-600 hover:text-gray-800"
