@@ -45,7 +45,7 @@ const SocialFeatureIntro: React.FC<SocialFeatureIntroProps> = ({ onNext, onPrevi
               <p className="text-sm text-[#7b7878]">{friend.story}</p>
             </div>
             <Button variant="outline" className="text-[#638d3e] hover:text-[#96b23c] border-[#dfeaa5]">
-              팔로우하기
+              구독하기
             </Button>
           </motion.div>
         ))}

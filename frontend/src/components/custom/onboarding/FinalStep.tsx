@@ -4,15 +4,23 @@ import type React from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Home, BookOpen, ArrowLeft, Check } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 interface FinalStepProps {
-  onWriteRecord: () => void
-  onGoToMainPage: () => void
   onGoBack: () => void
 }
 
-const FinalStep: React.FC<FinalStepProps> = ({ onWriteRecord, onGoToMainPage, onGoBack }) => {
+const FinalStep: React.FC<FinalStepProps> = ({ onGoBack }) => {
+  const router = useRouter()
   const completedSteps = ["봄날의 여정 시작", "타임라인 생성", "친구들과 연결", "목표 설정"]
+
+  const onWriteRecord = () => {
+    router.push("/yesterday")
+  }
+
+  const onGoToMainPage = () => {
+    router.push("/main")
+  }
 
   return (
     <div className="space-y-6 md:space-y-6 text-center max-w-2xl mx-auto px-4">
@@ -107,7 +115,7 @@ const FinalStep: React.FC<FinalStepProps> = ({ onWriteRecord, onGoToMainPage, on
             <Home className="w-6 h-6 mr-3" />
             <div>
               <div className="font-semibold">메인 페이지로 이동</div>
-              <div className="text-sm opacity-80">타임라인에서 여정 시작하기</div>
+              <div className="text-sm opacity-80">첫 번째 여정 시작하기</div>
             </div>
           </Button>
         </motion.div>

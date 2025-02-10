@@ -16,9 +16,9 @@ const GoalSetting: React.FC<GoalSettingProps> = ({ onNext, onPrevious }) => {
   const [selectedGoals, setSelectedGoals] = useState<string[]>([])
 
   const goals = [
-    "첫 번째 봄날의 기록 완성하기",
+    "첫 번째 봄날의 서 완성하기",
     "5명의 친구와 연결하기",
-    "타임라인에 사건 3개 추가하기",
+    "내 발자취에 사건 3개 추가하기",
     "매주 한 편의 글 작성하기",
     "가족 역사 기록 시작하기",
   ]

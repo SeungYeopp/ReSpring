@@ -36,10 +36,10 @@ const TimelineCreation: React.FC<TimelineCreationProps> = ({ onNext, onPrevious 
     <div className="space-y-6 md:space-y-8 max-w-2xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-[#000000] text-center">
-          당신의 인생을 타임라인으로 시각화해보세요!
+          당신의 인생을 발자취로 남겨보세요!
         </h2>
         <p className="text-sm md:text-base text-[#7b7878] text-center mt-2">
-          중요한 사건들을 추가하여 나만의 타임라인을 만들어보세요.
+          중요한 사건들을 추가해 내 발자취를 한 번에 확인해보세요.
         </p>
       </motion.div>
 
@@ -130,7 +130,7 @@ const TimelineCreation: React.FC<TimelineCreationProps> = ({ onNext, onPrevious 
               className="w-full bg-[#96b23c] text-[#ffffff] hover:bg-[#638d3e] flex items-center justify-center"
             >
               <Plus className="w-4 h-4 mr-2" />
-              타임라인에 추가하기
+              발자취 남기기
             </Button>
           </form>
         </div>

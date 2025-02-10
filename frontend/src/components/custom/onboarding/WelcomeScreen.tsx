@@ -4,13 +4,19 @@ import type React from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Sprout } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 interface WelcomeScreenProps {
   onStart: () => void
-  onSkip: () => void
 }
 
-const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, onSkip }) => {
+const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
+  const router = useRouter()
+
+  const onSkip = () => {
+    router.push("/main")
+  }
+
   return (
     <div className="text-center space-y-6 md:space-y-8 max-w-md mx-auto">
       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5 }}>

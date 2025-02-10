@@ -23,25 +23,14 @@ const Onboarding: React.FC = () => {
       return Math.min(prevStep + 1, totalSteps - 1)
     })
   const prevStep = () => setStep((prevStep) => Math.max(prevStep - 1, 0))
-  const skipToHome = () => {
-    console.log("Skipping to home")
-  }
-
-  const handleWriteRecord = () => {
-    console.log("Navigating to write spring record")
-  }
-
-  const handleGoToMainPage = () => {
-    console.log("Navigating to main page")
-  }
 
   const components = [
-    <WelcomeScreen key="welcome" onStart={nextStep} onSkip={skipToHome} />,
+    <WelcomeScreen key="welcome" onStart={nextStep} />,
     <StorytellingIntro key="storytelling" onNext={nextStep} onPrevious={prevStep} />,
     <TimelineCreation key="timeline" onNext={nextStep} onPrevious={prevStep} />,
     <SocialFeatureIntro key="social" onNext={nextStep} onPrevious={prevStep} />,
     <GoalSetting key="goal" onNext={nextStep} onPrevious={prevStep} />,
-    <FinalStep key="final" onWriteRecord={handleWriteRecord} onGoToMainPage={handleGoToMainPage} onGoBack={prevStep} />,
+    <FinalStep key="final" onGoBack={prevStep} />,
   ]
 
   return (
