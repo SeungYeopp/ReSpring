@@ -1,6 +1,6 @@
 package org.ssafy.respring.config;
 
-import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,18 +14,22 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableCaching
 public class RedisConfig {
 
+    @Value("${redis.host}")
+    private String redisHost;
+
+    @Value("${redis.port}")
+    private int redisPort;
+
+    @Value("${redis.password:}") // 기본값을 빈 문자열("")로 설정
+    private String redisPassword;
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        // .env 파일에서 환경 변수 로드
-        Dotenv dotenv = Dotenv.load();
-        String redisHost = dotenv.get("REDIS_HOST", "i12a307.p.ssafy.io"); // 기본값 설정 가능
-        int redisPort = Integer.parseInt(dotenv.get("REDIS_PORT", "6379"));
-        String redisPassword = dotenv.get("REDIS_PASSWORD", ""); // 비밀번호가 설정되지 않았다면 빈 문자열
-
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(redisHost);
         config.setPort(redisPort);
-        if (!redisPassword.isEmpty()) {
+
+        if (!redisPassword.isBlank()) { // 비밀번호가 설정된 경우만 적용
             config.setPassword(redisPassword);
         }
 
@@ -37,7 +41,7 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new StringRedisSerializer()); // JSON을 저장하려면 Jackson Serializer 사용 가능
+        template.setValueSerializer(new StringRedisSerializer()); // JSON 저장을 위해 Jackson Serializer 사용 가능
         return template;
     }
 }
