@@ -77,6 +77,124 @@
     @apply bg-background text-foreground;
   }
 }
+/* public/fonts에 추가한 폰트들 추가(무료이고, 
+따로 저작권이나 출처를 표시할 필요는 없다고 합니다.) */
+
+@font-face {
+  font-family: 'GodoB';
+  src: url('/fonts/고도 B.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GodoM';
+  src: url('/fonts/고도 M.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GodoMaum';
+  src: url('/fonts/고도 마음체.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NunuGothic';
+  src: url('/fonts/누누 기본 고딕체.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SamLipBasic';
+  src: url('/fonts/삼립호빵 베이직.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SamLipOutline';
+  src: url('/fonts/삼립호빵 아웃라인.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OngleLeafParkDaHyun';
+  src: url('/fonts/온글잎 박다현체.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* 폰트 추가 2차 */
+@font-face {
+  font-family: 'BinggraeTaom';
+  src: url('/fonts/BinggraeTaom.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'BinggraeTaomBold';
+  src: url('/fonts/BinggraeTaom-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'MapoBackpacking';
+  src: url('/fonts/MapoBackpacking.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GoodNeighborsBold';
+  src: url('/fonts/굿네이버스 좋은이웃체 Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GoodNeighborsRegular';
+  src: url('/fonts/굿네이버스 좋은이웃체 Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'LaundryGothicBold';
+  src: url('/fonts/런드리고딕 Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'LaundryGothicRegular';
+  src: url('/fonts/런드리고딕 Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Handon300';
+  src: url('/fonts/한돈 삼겹살체 300g.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Handon600';
+  src: url('/fonts/한돈 삼겹살체 600g.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+
+
 
 /* ✅ 스크롤바 제거 (기존 유지) */
 * {

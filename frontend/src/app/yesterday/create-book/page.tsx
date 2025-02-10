@@ -11,7 +11,7 @@ import {
   type Image,
   Book,
 } from "@/lib/api"
-import { getSessionInfo } from "@/lib/api"
+import { getSessionInfo, Content } from "@/lib/api"
 import { useRouter } from "next/navigation"
 import { Plus, ChevronLeft, ChevronRight, Loader2, CheckCircle } from "lucide-react"
 import NextImage from "next/image"
@@ -161,11 +161,28 @@ export default function CreateBook() {
   const handleSubmit = async () => {
     setIsFinalizingBook(true)
     try {
-      const jsonifiedBookContent = JSON.stringify(compiledBook!.chapters)
+      console.log(compiledBook?.chapters[0])
+      //const jsonifiedBookContent = JSON.stringify(compiledBook!.chapters)
+
+      // Chapter를 Content로 변환..
+      // export interface Chapter{
+      //   chapterTitle : string,
+      //   content : string
+      // }
+      
+      // interface Content {
+      //     [key: string]: string;
+      // }
+
+      const convertedContent = compiledBook?.chapters.reduce((acc, chapter) => {
+        acc[chapter.chapterTitle] = chapter.content;
+        return acc;
+      }, {} as Content);
+    
       const result : string= await makeBook(
         userId,
         compiledBook!.title,
-        jsonifiedBookContent,
+        convertedContent!,
         bookTags,
         selectedStorieIds,
         bookCoverImg!,
