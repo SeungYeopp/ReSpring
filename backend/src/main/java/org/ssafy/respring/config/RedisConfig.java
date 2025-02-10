@@ -14,13 +14,13 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableCaching
 public class RedisConfig {
 
-    @Value("${redis.host}")
+    @Value("${spring.data.redis.host}")
     private String redisHost;
 
-    @Value("${redis.port}")
+    @Value("${spring.data.redis.port}")
     private int redisPort;
 
-    @Value("${redis.password:}") // 기본값을 빈 문자열("")로 설정
+    @Value("${spring.data.redis.password:}") // 기본값을 빈 문자열("")로 설정
     private String redisPassword;
 
     @Bean
