@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import StatSummary from "../components/stat-summary";
 import TabBar from "../components/tabbar";
-import { getAllSubscribers, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
+import { isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
+import SubscribersModal from "../components/subscribers";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -13,7 +14,8 @@ export default function ProfilePage() {
   const { id } = useParams();
   const targetId = Array.isArray(id) ? id[0] : id;
 
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscribedState, setIsSubscribedState] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleBack = () => {
     router.back();
@@ -21,33 +23,24 @@ export default function ProfilePage() {
 
   const checkIfSubscribed = async () => {
     try {
-      const subscribers = await getAllSubscribers(myId);
-      const targetIsSubscribed = subscribers.some((subscriber) => subscriber.id === targetId);
-      setIsSubscribed(targetIsSubscribed);
+      const subscribed = await isSubscribed(myId, targetId);
+      setIsSubscribedState(subscribed);
     } catch (error) {
-      console.error("Error fetching subscribers:", error);
+      console.error("Error checking subscription status:", error);
     }
   };
 
   const handleSubscribeUnsubscribe = async () => {
-    if (isSubscribed) {
-      try {
+    try {
+      if (isSubscribedState) {
         const success = await cancelSubscription(myId, targetId);
-        if (success) {
-          setIsSubscribed(false);
-        }
-      } catch (error) {
-        console.error("Failed to unsubscribe:", error);
-      }
-    } else {
-      try {
+        if (success) setIsSubscribedState(false);
+      } else {
         const success = await newSubscription(myId, targetId);
-        if (success) {
-          setIsSubscribed(true);
-        }
-      } catch (error) {
-        console.error("Failed to subscribe:", error);
+        if (success) setIsSubscribedState(true);
       }
+    } catch (error) {
+      console.error("Failed to update subscription status:", error);
     }
   };
 
@@ -104,18 +97,18 @@ export default function ProfilePage() {
           {myId === targetId ? (
             <button
               className="bg-blue-500 text-white text-xl px-4 py-2 w-[50%] rounded-md mt-4 mx-auto block"
-              onClick={() => window.location.href = "#"}
+              onClick={() => setIsModalOpen(true)}
             >
               구독자 목록
             </button>
           ) : (
             <button
               className={`${
-                isSubscribed ? "bg-red-500" : "bg-green-500"
+                isSubscribedState ? "bg-red-500" : "bg-green-500"
               } text-white text-xl px-4 py-2 w-[50%] rounded-md mt-4 mx-auto block`}
               onClick={handleSubscribeUnsubscribe}
             >
-              {isSubscribed ? "구독 취소하기" : "구독하기"}
+              {isSubscribedState ? "구독 취소하기" : "구독하기"}
             </button>
           )}
         </div>
@@ -124,6 +117,8 @@ export default function ProfilePage() {
           <TabBar userId={targetId} />
         </div>
       </div>
+
+      {isModalOpen && <SubscribersModal userId={myId} onClose={() => setIsModalOpen(false)} />}
     </main>
   );
 }

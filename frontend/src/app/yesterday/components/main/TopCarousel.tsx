@@ -12,6 +12,7 @@ import { weeklyBooks, latestBooks } from "@/app/yesterday/components/main/mocks/
 
 import {getTopThreeWeeklyBooks, getAllBooksByUserId, Book} from "@/lib/api"
 import {getAllSubscribers} from "@/lib/api/subscribe"
+import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -97,7 +98,7 @@ const getRandomImage = () => {
 function BookCarousel({ books }: BookCarouselProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
-
+  const router = useRouter();
   const scrollToNext = useCallback(() => {
     if (api) {
       api.scrollNext();
@@ -124,6 +125,10 @@ function BookCarousel({ books }: BookCarouselProps) {
     return () => clearInterval(timer);
   }, [scrollToNext]);
 
+  const handleOnClickBook = (bookId : string) => {
+    router.push(`/yesterday/book/${bookId}`)
+  }
+
   return (
     <Carousel className="w-full" setApi={setApi}>
       <CarouselContent>
@@ -136,7 +141,9 @@ function BookCarousel({ books }: BookCarouselProps) {
                   <img
                     src={"/placeholder_bookcover.jpg"}
                     alt={book.title}
-                    className="w-full h-full object-cover rounded-lg shadow-md"
+                    className="w-full h-full object-cover rounded-lg shadow-md cursor-pointer"
+                    onClick={() => handleOnClickBook(book.id)}
+
                   />
                 </div>
                 {/* 오른쪽: 텍스트 콘텐츠 */}
