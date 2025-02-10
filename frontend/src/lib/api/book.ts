@@ -135,7 +135,7 @@ export const updateBook = async (
 // 봄날의 서 삭제
 // 입력 : 봄날의 서 ID, 유저 ID
 // 출력 : 삭제 성공 시 true, 그외 false
-export const deleteBook = async (bookId : string, userId : string) : Promise<boolean>=> {
+export const deleteBook = async (bookId : number, userId : string) : Promise<boolean>=> {
     try{
         const response = await axiosAPI.delete(`/books/${bookId}`, {headers : {'X-User-Id' : `${userId}`}})
 
