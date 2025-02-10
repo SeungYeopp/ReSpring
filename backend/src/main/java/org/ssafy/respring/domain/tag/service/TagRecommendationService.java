@@ -88,34 +88,4 @@ public class TagRecommendationService {
 
         return recommendedChallenges;
     }
-
-//    @Transactional
-//    public List<Challenge> recommendChallenges(UUID userId) {
-//        String cacheKey = "recommend:challenge:" + userId;
-//        List<Challenge> cachedResult = challengeRedisTemplate.opsForValue().get(cacheKey);
-//
-//        if (cachedResult == null) {
-//            cachedResult = tagRepository.recommendChallenges(userId);
-//
-//            // ✅ Hibernate Proxy 초기화 (Lazy Loading 문제 해결)
-//            cachedResult.forEach(challenge -> {
-//                Hibernate.initialize(challenge.getOwner()); // 🔥 `owner` 필드를 초기화
-//                challenge.setOwner(
-//                  User.builder()
-//                    .id(challenge.getOwner().getId()) // ✅ ID만 저장하여 직렬화 문제 방지
-//                    .userNickname(challenge.getOwner().getUserNickname())
-//                    .profileImage(challenge.getOwner().getProfileImage())
-//                    .build()
-//                );
-//            });
-//
-//            challengeRedisTemplate.opsForValue().set(cacheKey, cachedResult, Duration.ofHours(1));
-//        }
-//        for (Challenge c : cachedResult) {
-//            System.out.println("챌린지 ID: " + c.getId() + ", 제목: " + c.getTitle());
-//        }
-//
-//        return cachedResult;
-//    }
-
 }

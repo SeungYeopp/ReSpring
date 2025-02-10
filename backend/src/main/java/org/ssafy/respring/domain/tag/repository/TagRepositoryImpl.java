@@ -44,25 +44,6 @@ public class TagRepositoryImpl implements TagRepositoryQueryDsl {
           .groupBy(ct.tag.id)
           .orderBy(ct.tag.count().desc())
           .fetch();
-
-//        return queryFactory
-//                .select(ct.tag.id)
-//                .from(uc)
-//                .join(ct).on(uc.challenge.id.eq(ct.challenge.id))
-//                .where(uc.user.id.eq(userId))
-//                .union(
-//                        queryFactory
-//                                .select(bt.tag.id)
-//                                .from(bt)
-//                                .where(bt.book.id.in(
-//                                        queryFactory.select(bl.book.id)
-//                                                .from(bl)
-//                                                .where(bl.user.id.eq(userId))
-//                                ))
-//                )
-//                .groupBy(ct.tag.id)
-//                .orderBy(ct.tag.count().desc())
-//                .fetch();
     }
 
     /**
