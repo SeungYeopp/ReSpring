@@ -16,6 +16,7 @@ import org.ssafy.respring.domain.story.repository.StoryRepository;
 import org.ssafy.respring.domain.story.vo.Story;
 import org.ssafy.respring.domain.user.vo.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -154,6 +155,8 @@ public class StoryService {
     private StoryResponseDto toResponseDto(Story story) {
         // ✅ Image 테이블에서 스토리에 해당하는 이미지 조회 후 변환
         List<ImageResponseDto> imageDtos = imageService.getImagesByEntity(ImageType.STORY, story.getId());
+
+        LocalDateTime occurredAt = story.getEvent().getOccurredAt();
 
         return new StoryResponseDto(
                 story.getId(),
