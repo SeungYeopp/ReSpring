@@ -64,7 +64,7 @@ public class ChallengeService {
     public ChallengeResponseDto createChallenge(ChallengeRequestDto challengeDto, MultipartFile image) throws IOException {
         // User 가져오기
         User owner = userRepository.findById(challengeDto.getOwnerId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + challengeDto.getOwnerId()));
 
         // 업로드 폴더 생성
         File uploadDirFolder = new File(uploadDir);
@@ -75,19 +75,7 @@ public class ChallengeService {
         // 이미지 저장 후 URL 반환
         String imageUrl = imageService.saveCoverImage(image);
 
-        Set<String> tagNames = challengeDto.getTags();
-        Set<ChallengeTag> challengeTags = tagNames.stream()
-                .map(tagName -> {
-                    Tag tag = tagRepository.findByName(tagName)
-                            .orElseGet(() -> tagRepository.save(Tag.builder().name(tagName).build()));
-
-                    return ChallengeTag.builder()
-                            .challenge(challenge)
-                            .tag(tag)
-                            .build();
-                })
-                .collect(Collectors.toSet());
-
+        // ✅ 1️⃣ Challenge 먼저 저장
         Challenge challenge = Challenge.builder()
                 .title(challengeDto.getTitle())
                 .description(challengeDto.getDescription())
@@ -100,32 +88,26 @@ public class ChallengeService {
                 .views(0L)
                 .participantCount(1L)
                 .chatRoomUUID(challengeDto.getTitle())
-                .tags(challengeTags) // ✅ 태그 추가!
                 .build();
 
-        challengeRepository.save(challenge);
+        Challenge savedChallenge = challengeRepository.save(challenge); // ✅ Challenge 먼저 저장
 
-        // 🔹 UserChallenge 저장 (Owner가 자동 참가)
-        UserChallenge userChallenge = UserChallenge.builder()
-                .user(owner)
-                .challenge(challenge)
-                .build();
-        userChallengeRepository.save(userChallenge);
-
-        // ✅ 태그 매핑 추가 (String → Tag 엔티티 변환 후 ChallengeTag 저장)
+        // ✅ 2️⃣ ChallengeTags 생성 (Challenge 저장 후)
         Set<String> tagNames = challengeDto.getTags();
-        for (String tagName : tagNames) {
-            // 1️⃣ 기존 태그 조회 또는 새 태그 생성
-            Tag tag = tagRepository.findByName(tagName)
-                    .orElseGet(() -> tagRepository.save(Tag.builder().name(tagName).build()));
+        Set<ChallengeTag> challengeTags = tagNames.stream()
+                .map(tagName -> {
+                    Tag tag = tagRepository.findByName(tagName)
+                            .orElseGet(() -> tagRepository.save(Tag.builder().name(tagName).build()));
 
-            // 2️⃣ ChallengeTag 저장
-            ChallengeTag challengeTag = ChallengeTag.builder()
-                    .challenge(challenge)
-                    .tag(tag)
-                    .build();
-            challengeTagRepository.save(challengeTag);
-        }
+                    return ChallengeTag.builder()
+                            .challenge(savedChallenge) // ✅ 람다식에서 사용 가능한 "effectively final" 변수
+                            .tag(tag)
+                            .build();
+                })
+                .collect(Collectors.toSet());
+
+        // ✅ ChallengeTag 저장
+        challengeTagRepository.saveAll(challengeTags);
 
         // ✅ 챌린지 생성 시 UUID 기반 오픈채팅방 생성
         ChatRoom chatRoom = chatService.createRoom(ChatRoomRequest.builder()
@@ -135,8 +117,10 @@ public class ChallengeService {
                 .build());
         chatRoomRepository.save(chatRoom);
 
-        return mapToDto(challenge);
+        return mapToDto(savedChallenge);
     }
+
+
 
     // ✅ 챌린지 리스트 조회 (필터링 가능)
     public List<ChallengeListResponseDto> getAllChallenges(ChallengeSortType sortType) {
@@ -196,7 +180,7 @@ public class ChallengeService {
                 .image(challenge.getImage())
                 .startDate(challenge.getStartDate())
                 .endDate(challenge.getEndDate())
-                .tags(challenge.get)
+                .tags(challenge.getTags())
                 .participantCount(challenge.getParticipantCount())
                 .likes(challenge.getLikes())
                 .views(challenge.getViews())
@@ -519,8 +503,8 @@ public class ChallengeService {
 
     // 🆕 mapToDto 추가: Challenge -> ChallengeResponseDto 변환
     private ChallengeResponseDto mapToDto(Challenge challenge) {
-        Set<String> tagNames = challenge.getTags().stream()
-                .map(challengeTag -> challengeTag.getTag().getName()) // ✅ 태그 이름만 추출
+        Set<Tag> tags = challenge.getTags().stream()
+                .map(challengeTag -> challengeTag.getTag()) // ✅ 태그 이름만 추출
                 .collect(Collectors.toSet());
 
         return new ChallengeResponseDto(
@@ -531,7 +515,7 @@ public class ChallengeService {
                 challenge.getRegisterDate(),
                 challenge.getStartDate(),
                 challenge.getEndDate(),
-                tagNames, // ✅ 태그 리스트 추가
+                tags, // ✅ 태그 리스트 추가
                 challenge.getLikes(),
                 challenge.getViews(),
                 challenge.getParticipantCount(),

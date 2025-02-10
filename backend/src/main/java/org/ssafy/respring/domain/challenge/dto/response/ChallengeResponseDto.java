@@ -17,7 +17,7 @@ public class ChallengeResponseDto {
     private LocalDateTime registerDate;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private Set<String> tags;
+    private Set<Tag> tags;
     private Long likes;
     private Long views;
     private Long participantCount;

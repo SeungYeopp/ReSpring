@@ -1,6 +1,8 @@
 package org.ssafy.respring.domain.challenge.dto.response;
 
 import lombok.*;
+import org.ssafy.respring.domain.tag.vo.ChallengeTag;
+import org.ssafy.respring.domain.tag.vo.Tag;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -18,7 +20,7 @@ public class ChallengeDetailResponseDto {
     private String image;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private Set<String> tags;
+    private Set<ChallengeTag> tags;
     private Long participantCount;
     private Long likes;
     private Long views;
