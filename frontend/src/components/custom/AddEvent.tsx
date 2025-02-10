@@ -17,7 +17,7 @@ interface AddEventProps {
 }
 
 const AddEvent = ({ onEventAdded }: AddEventProps) => {
-  const [userId, setUserId] = useState<string>("b3470d7d-ab19-4514-9abe-9c3ffaf0a616");
+  const [userId, setUserId] = useState<string>("beb9ebc2-9d32-4039-8679-5d44393b7252");
   const [eventName, setEventName] = useState<string>("");
   const [date, setDate] = useState<Date | undefined>();
   const [category, setCategory] = useState<string>("");

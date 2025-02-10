@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Heart } from "lucide-react";
-import type { Post } from "@/lib/api";
+import { getPopularPosts, Post } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -10,21 +10,38 @@ import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/com
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-
-interface PopularPostsProps {
-  posts: Post[];
-}
-
 // ✅ 랜덤 프로필 이미지 생성 함수
 const getRandomImage = () => {
   const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
   return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
 };
 
-export default function PopularPosts({ posts }: PopularPostsProps) {
+export default function PopularPosts() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
+  const [posts, setPosts] = useState<Post[]>();
+
+  const CATEGORY_MAP: Record<string, string> = {
+    INFORMATION_SHARING: "정보 공유",
+    QUESTION_DISCUSSION: "고민/질문",
+  };
+
+  useEffect(() => {
+    const handlePopularPosts =  async() => {
+      const result = await getPopularPosts();
+  
+        // 카테고리를 한글로 변환
+      const formattedPosts = result.map((post) => ({
+        ...post,
+        category: CATEGORY_MAP[post.category] || post.category, // 변환되지 않으면 원래 값 유지
+      }));
+
+      setPosts(formattedPosts);
+    }
+  
+    handlePopularPosts();
+  }, [])
 
   // ✅ 카테고리 색상 함수
   const getCategoryColor = (category: string): string => {
@@ -33,7 +50,7 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
         return "bg-[#dfeaa5] text-[#638d3e]";
       case "고민/질문":
         return "bg-[#96b23c] text-white";
-      case "INFORMATION_SHARING":
+      case "정보 공유":
         return "bg-[#f2cedd] text-[#665048]";
       default:
         return "bg-gray-200 text-gray-800";
@@ -67,7 +84,7 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
   return (
     <Carousel setApi={setApi} className="w-full" opts={{ loop: true }}>
       <CarouselContent>
-        {posts.map((post) => (
+        {posts?.map((post) => (
           <CarouselItem key={post.id}>
             {/* ✅ 게시물 클릭 시 상세 페이지로 이동 */}
             <Link href={`/today/${post.id}`} className="block">
@@ -104,7 +121,7 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
 
       {/* 🔹 페이지네이션 (점 UI) */}
       <div className="py-2 text-center">
-        {Array.from({ length: count }).map((_, index) => (
+        {posts?.map((_, index) => (
           <span key={index} className={`inline-block h-2 w-2 mx-1 rounded-full ${index === current - 1 ? "bg-primary" : "bg-gray-300"}`} />
         ))}
       </div>

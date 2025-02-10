@@ -5,6 +5,7 @@ import { useViewerSettings } from "../../context/ViewerSettingsContext";
 import { TableOfContents } from "../TableOfContents";
 import { CommentsPanel } from "../CommentsPanel";
 import { TTSPanel } from "../TTSPanel";
+import { Chapter } from "@/lib/api";
 
 interface BottomToolbarProps {
   bookId: string; // ✅ bookId를 props로 받음

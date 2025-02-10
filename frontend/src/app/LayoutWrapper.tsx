@@ -6,7 +6,6 @@ import SplashScreen from "@/components/custom/SplashScreen";
 import { TopNav } from "@/components/layout/top-nav";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Sidebar } from "@/components/layout/sidebar";
-
 import { useAuth } from "@/hooks/useAuth";
 
 const SPLASH_EXPIRE_HOURS = 24;
@@ -15,17 +14,30 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const [showSplash, setShowSplash] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+
   const isViewerPage = pathname.startsWith("/viewer");
 
-  const { isAuthenticated } = useAuth(false); // 페이지가 바뀔때 마다 로그인 인증 확인.
+  // 정규표현식 설명:
+  // ^         : 문자열의 시작을 의미 ("/"로 시작해야 함)
+  // \/chat\/  : "/chat/" 문자열과 정확히 일치해야 함
+  // \w+       : 하나 이상의 문자, 숫자, 또는 밑줄(_)과 일치 (chatID 부분)
+  // $         : 문자열의 끝을 의미 (추가 경로 없이 끝나야 함)
+
+  // 예시:
+  // - "/chat/123"  => 감지 (O)
+  // - "/chat/abc"  => 감지 (O)
+  // - "/chat/abc123" => 감지 (O)
+  // - "/chat/settings" => 감지 안 됨 (X)
+  // - "/chat/123/more" => 감지 안 됨 (X)
+  const isChatPage = /^\/chat\/\w+$/.test(pathname); // "/chat/ID" 형식만 감지
+
+  const { isAuthenticated } = useAuth(false);
 
   useEffect(() => {
-    console.log("전체 조회", isAuthenticated);
-    // 인증이 되지 않은 경우 auth로 라우팅.
-    if (isAuthenticated === null){
+    if (isAuthenticated === null) {
       return;
-    }else if(isAuthenticated === false){
-      router.push('/auth');
+    } else if (isAuthenticated === false) {
+      router.push("/auth");
       return;
     }
 
@@ -62,12 +74,15 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   return (
     <>
-      {isAuthenticated && !isViewerPage && <TopNav />}
-      {isAuthenticated && !isViewerPage && <Sidebar />}
-      <main className={isViewerPage ? "pt pb md:py-4" : "md:ml-64 pt-14 pb-16 md:py-4"}>
-        {children}
-      </main>
-      {isAuthenticated && !isViewerPage && <BottomNav />}
+      {/* TopNav를 /viewer, /chat 페이지에서 숨김 */}
+      {isAuthenticated && !isViewerPage && !isChatPage && <TopNav />}
+      {/* Sidebar는 항상 표시 */}
+      {isAuthenticated && <Sidebar />}
+
+      <main className={`md:ml-64 ${isViewerPage || isChatPage ? "pt-0 pb-0" : "pt-14 pb-16"} md:py-4`}>{children}</main>
+
+      {/* BottomNav를 /viewer, /chat 페이지에서 숨김 */}
+      {isAuthenticated && !isViewerPage && !isChatPage && <BottomNav />}
     </>
   );
 }

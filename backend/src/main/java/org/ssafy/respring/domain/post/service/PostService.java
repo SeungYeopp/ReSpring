@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
+import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
 import org.ssafy.respring.domain.post.dto.request.PostUpdateRequestDto;
@@ -169,11 +170,12 @@ public class PostService {
                 ))
                 .collect(Collectors.toList());
 
-        List<CommentResponseDto> commentDtos = (post.getComments() == null) ?
+        List<CommentDto> commentDtos = (post.getComments() == null) ?
           List.of() : post.getComments().stream()
-          .map(comment -> new CommentResponseDto(
+          .map(comment -> new CommentDto(
             comment.getId(),
             comment.getContent(),
+            comment.getUser().getUserId(),
             comment.getUser().getUserNickname(),
             comment.getCreatedAt(),
             comment.getUpdatedAt(),

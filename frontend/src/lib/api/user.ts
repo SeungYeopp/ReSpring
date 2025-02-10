@@ -67,3 +67,19 @@ export const getSessionInfo = async () : Promise<SessionInfo> => {
         throw new Error(error.response?.data?.message || "getSessionInfos() 함수 호출 에러 발생!");
     }
 }
+
+// 사용자 로그아웃 함수
+// 입력 : X
+// 출력 : 로그아웃 성공 시 true, 그 외 false.
+export const logout = async() : Promise<boolean> => {
+    try{
+        const response = await axiosAPI.post('/user/logout');
+
+        if(response.status === 200 || response.status === 204)
+            return true;
+        else
+            return false;
+    }catch(error){
+        throw new Error("logout() 함수 호출 에러 발생!");
+    }
+}

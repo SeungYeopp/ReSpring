@@ -3,10 +3,14 @@ package org.ssafy.respring.domain.subscribe.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.ssafy.respring.domain.book.repository.BookRepository;
+import org.ssafy.respring.domain.book.service.BookLikesRedisService;
+import org.ssafy.respring.domain.book.service.BookViewsRedisService;
 import org.ssafy.respring.domain.challenge.repository.ChallengeRepository;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
+import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
 import org.ssafy.respring.domain.post.repository.PostRepository;
+import org.ssafy.respring.domain.subscribe.dto.response.SubscribedBookResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedChallengeResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedPostResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedUserResponseDto;
@@ -27,6 +31,10 @@ public class SubscribeService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final ChallengeRepository challengeRepository;
+    private final BookRepository bookRepository;
+
+    private final BookLikesRedisService bookLikesRedisService;
+    private final BookViewsRedisService bookViewsRedisService;
 
     // ✅ 구독 기능 추가 (사용자 구독)
     public void subscribeUser(UUID subscriberId, UUID subscribedToId) {
@@ -125,6 +133,35 @@ public class SubscribeService {
                 .collect(Collectors.toList());
     }
 
+    // ✅ 내가 구독한 사용자의 봄날의 서 조회
+    public List<SubscribedBookResponseDto> getSubscribedUsersBooks(UUID userId) {
+        User user = userRepository.findById(userId)
+          .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
+
+        // 구독한 사용자 목록 가져오기
+        List<User> subscribedUsers = subscribeRepository.findBySubscriber(user).stream()
+          .map(Subscribe::getSubscribedTo)
+          .collect(Collectors.toList());
+
+        // 구독한 사용자가 작성한 책 조회 후 DTO 변환
+        return bookRepository.findByAuthorIn(subscribedUsers).stream()
+          .map(book -> SubscribedBookResponseDto.builder()
+            .id(book.getId())
+            .title(book.getTitle())
+            .coverImage(book.getCoverImage())
+            .tags(book.getTags())
+            .isLiked(bookLikesRedisService.isLiked(book.getId(), userId)) // ✅ 좋아요 여부
+            .likeCount(bookLikesRedisService.getLikeCount(book.getId())) // ✅ 좋아요 수
+            .viewCount(bookViewsRedisService.getViewCount(book.getId())) // ✅ 조회 수
+            .likedUsers(bookLikesRedisService.getLikedUsers(book.getId())) // ✅ 좋아요 누른 사용자 목록
+            .createdAt(book.getCreatedAt())
+            .updatedAt(book.getUpdatedAt())
+            .authorId(book.getAuthor().getId()) // ✅ 작성자 ID
+            .authorName(book.getAuthor().getUserNickname()) // ✅ 작성자 이름
+            .build())
+          .collect(Collectors.toList());
+    }
+
     // ✅ 내가 구독한 사용자 전체 조회
     public List<SubscribedUserResponseDto> getSubscribedUsers(UUID userId) {
         User user = userRepository.findById(userId)
@@ -141,4 +178,15 @@ public class SubscribeService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    // ✅ 내가 특정 사용자를 구독했는지 여부 확인
+    public boolean isSubscribed(UUID subscriberId, UUID subscribedToId) {
+        User subscriber = userRepository.findById(subscriberId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 구독하는 사용자를 찾을 수 없습니다."));
+        User subscribedTo = userRepository.findById(subscribedToId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 구독 대상 사용자를 찾을 수 없습니다."));
+
+        return subscribeRepository.existsBySubscriberAndSubscribedTo(subscriber, subscribedTo);
+    }
+
 }

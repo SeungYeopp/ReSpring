@@ -1,5 +1,6 @@
 package org.ssafy.respring.domain.challenge.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.ssafy.respring.domain.user.vo.User;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"user", "challenge"})
 public class Records {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,9 +42,17 @@ public class Records {
     private UUID recordKey;
 
     private boolean isSuccess; // ✅ 오늘 성공 여부 (하루가 지나면 자동으로 false)
+    private LocalDate recordStartDate; // ✅ 새로운 기록이 시작된 날짜
     private LocalDate lastUpdatedDate; // ✅ 마지막 성공 여부 업데이트 날짜
 
     public void setIsSuccess(boolean isSuccess) {
         this.isSuccess = isSuccess;
+    }
+
+    @PrePersist
+    public void generateRecordKey() {
+        if (this.recordKey == null) {
+            this.recordKey = UUID.randomUUID();
+        }
     }
 }

@@ -40,6 +40,7 @@ public class Story {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Image> images = new ArrayList<>();
 
 

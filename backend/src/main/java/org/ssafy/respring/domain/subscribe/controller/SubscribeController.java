@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.ssafy.respring.domain.subscribe.dto.response.SubscribedBookResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedChallengeResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedPostResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedUserResponseDto;
@@ -47,9 +48,25 @@ public class SubscribeController {
         return ResponseEntity.ok(subscribeService.getSubscribedUsersChallenges(userId));
     }
 
+    @GetMapping("/{userId}/books")
+    @Operation(summary = "구독한 사용자의 봄날의 서 조회", description = "내가 구독한 사용자가 작성한 봄날의 서를 조회합니다.")
+    public ResponseEntity<List<SubscribedBookResponseDto>> getSubscribedUsersBooks(@PathVariable UUID userId) {
+        return ResponseEntity.ok(subscribeService.getSubscribedUsersBooks(userId));
+    }
+
     @GetMapping("/{userId}/users")
     @Operation(summary = "내가 구독한 사용자 전체 조회", description = "내가 구독한 모든 사용자의 정보를 반환합니다.")
     public ResponseEntity<List<SubscribedUserResponseDto>> getSubscribedUsers(@PathVariable UUID userId) {
         return ResponseEntity.ok(subscribeService.getSubscribedUsers(userId));
     }
+
+    @GetMapping("/{subscriberId}/{subscribedToId}/check")
+    @Operation(summary = "특정 사용자를 내가 구독했는지 확인", description = "내가 특정 사용자를 구독했는지 여부를 반환합니다.")
+    public ResponseEntity<Boolean> checkSubscription(
+            @PathVariable UUID subscriberId,
+            @PathVariable UUID subscribedToId) {
+        boolean isSubscribed = subscribeService.isSubscribed(subscriberId, subscribedToId);
+        return ResponseEntity.ok(isSubscribed);
+    }
+
 }
