@@ -89,7 +89,7 @@ public class SubscribeService {
                         post.getUpdatedAt(),
                         post.getLikes(),
                         post.getImages().stream()
-                                .map(image -> new ImageResponseDTO(image.getImageId(), image.getS3Key()))
+                                .map(image -> new ImageResponseDto(image.getImageId(), image.getS3Key()))
                                 .collect(Collectors.toList()),
                         post.getComments().size(),
                         post.getComments().stream()
