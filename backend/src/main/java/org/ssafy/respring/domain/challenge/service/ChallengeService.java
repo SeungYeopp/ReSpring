@@ -18,6 +18,9 @@ import org.ssafy.respring.domain.chat.vo.ChatRoom;
 import org.ssafy.respring.domain.chat.vo.ChatRoomUser;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.ImageType;
+import org.ssafy.respring.domain.notification.service.NotificationService;
+import org.ssafy.respring.domain.notification.vo.NotificationType;
+import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 import org.ssafy.respring.domain.challenge.repository.RecordsRepository;
@@ -45,6 +48,9 @@ public class ChallengeService {
     private final ChatService chatService;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomUserRepository chatRoomUserRepository;
+    private final NotificationService notificationService;
+
+
 
 
 
@@ -424,9 +430,24 @@ public class ChallengeService {
                             .build();
                     challengeLikesRepository.save(userLikes);
                     challenge.setLikes(challenge.getLikes() + 1);
+
+                    // ✅ 챌린지 소유자에게 알림 전송
+                    UUID ownerId = challenge.getOwner().getId();
+
+                    // ✅ 본인이 만든 챌린지에 좋아요를 누르면 알림을 보내지 않음
+                    if (!ownerId.equals(userId)) {
+                        notificationService.sendNotification(
+                                ownerId, // ✅ 알림 받는 사람 (챌린지 작성자)
+                                NotificationType.LIKE,
+                                TargetType.CHALLENGE,
+                                challengeId,
+                                "🔥 " + user.getUserNickname() + "님이 당신의 챌린지를 좋아합니다!"
+                        );
+                    }
                 }
         );
     }
+
 
 
 

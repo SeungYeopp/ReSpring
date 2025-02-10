@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.ssafy.respring.domain.comment.dto.request.CommentRequestDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentDetailResponseDto;
+import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.comment.service.CommentService;
 
@@ -86,14 +87,14 @@ public class CommentController {
     @Operation(summary = "게시글 댓글 조회", description = "특정 게시글에 작성된 댓글 목록을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
     @GetMapping("/posts/{postId}")
-    public ResponseEntity<List<CommentResponseDto>> getPostComments(@PathVariable Long postId) {
+    public ResponseEntity<List<CommentDto>> getPostComments(@PathVariable Long postId) {
         return ResponseEntity.ok(commentService.getCommentsByPostId(postId));
     }
 
     @Operation(summary = "책 댓글 조회", description = "특정 책에 작성된 댓글 목록을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
     @GetMapping("/books/{bookId}")
-    public ResponseEntity<List<CommentResponseDto>> getBookComments(@PathVariable Long bookId) {
+    public ResponseEntity<List<CommentDto>> getBookComments(@PathVariable Long bookId) {
         return ResponseEntity.ok(commentService.getCommentsByBookId(bookId));
     }
 
@@ -107,8 +108,8 @@ public class CommentController {
     @Operation(summary = "자식 댓글 조회", description = "특정 댓글의 자식 댓글들을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "자식 댓글 조회 성공")
     @GetMapping("/children/{parentId}")
-    public ResponseEntity<List<CommentResponseDto>> getChildrenByParentId(@PathVariable Long parentId) {
-        List<CommentResponseDto> children = commentService.getChildrenByParentId(parentId);
+    public ResponseEntity<List<CommentDetailResponseDto>> getChildrenByParentId(@PathVariable Long parentId) {
+        List<CommentDetailResponseDto> children = commentService.getChildrenByParentId(parentId);
         return ResponseEntity.ok(children);
     }
 }

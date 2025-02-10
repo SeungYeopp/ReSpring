@@ -38,6 +38,9 @@ import org.ssafy.respring.domain.comment.service.CommentService;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.image.vo.ImageType;
+import org.ssafy.respring.domain.notification.service.NotificationService;
+import org.ssafy.respring.domain.notification.vo.NotificationType;
+import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.story.repository.StoryRepository;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
@@ -46,7 +49,6 @@ import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class BookService {
 
@@ -57,6 +59,7 @@ public class BookService {
 	private final StoryRepository storyRepository;
 	@Lazy
 	private final MongoBookContentRepository bookContentRepository;
+	private final ObjectMapper objectMapper;
 
 	private final CommentService commentService;
 	private final ImageService imageService;
@@ -64,38 +67,40 @@ public class BookService {
 	private final BookLikesRedisService bookLikesRedisService;
 	private final RedisTemplate<String, Object> redisTemplate;
 	private final ElasticsearchClient esClient;
+	private final NotificationService notificationService;
 
 	private static final String RECENT_VIEW_KEY = "user:recent:books:";
 
-	public Long createBook(BookRequestDto requestDto, MultipartFile coverImage) {
-		User user = getUserById(requestDto.getUserId());
+	@Transactional
+    public Long createBook(BookRequestDto requestDto, MultipartFile coverImage) {
+        User user = getUserById(requestDto.getUserId());
 
-		Book book = Book.builder()
-				.author(user)
-				.title(requestDto.getTitle())
-				.tags(requestDto.getTags())
-				.storyIds(requestDto.getStoryIds())
-				.createdAt(LocalDateTime.now())
-				.updatedAt(LocalDateTime.now())
-				.build();
+        Book book = Book.builder()
+                .author(user)
+                .title(requestDto.getTitle())
+                .tags(requestDto.getTags())
+                .storyIds(requestDto.getStoryIds())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
 
-		bookRepository.save(book);
+        bookRepository.save(book);
 
-		String coverImageUrl = imageService.saveImage(coverImage, ImageType.BOOK, book.getId());
+        String coverImageUrl = imageService.saveImage(coverImage, ImageType.BOOK, book.getId());
 
-		book.setCoverImage(coverImageUrl);
-		bookRepository.save(book);
+        book.setCoverImage(coverImageUrl);
+        bookRepository.save(book);
 
-		BookContent bookContent = new BookContent();
-		bookContent.setBookId(book.getId());
-		bookContent.setContent(new LinkedHashMap<>(requestDto.getContent()));
-		bookContentRepository.save(bookContent);
+        BookContent bookContent = new BookContent();
+        bookContent.setBookId(book.getId());
+        bookContent.setContent(new LinkedHashMap<>(requestDto.getContent()));
+        bookContentRepository.save(bookContent);
 
-		// ✅ Elasticsearch 색인 수행
-		indexBookData(book, "book_title");
+        // ✅ Elasticsearch 색인 수행
+        indexBookData(book, "book_title");
 
-		return book.getId();
-	}
+        return book.getId();
+    }
 
 	@Transactional
 	public void updateBook(BookUpdateRequestDto requestDto, MultipartFile coverImage) {
@@ -207,7 +212,7 @@ public class BookService {
 		  .map(comment -> new CommentResponseDto(
 			comment.getId(),
 			comment.getContent(),
-			comment.getUsername(),
+			comment.getUserNickname(),
 			comment.getCreatedAt(),
 			comment.getUpdatedAt(),
 			comment.getParentId()
@@ -480,6 +485,20 @@ public class BookService {
 			book.getBookLikes().add(newLike);
 			bookLikesRepository.save(newLike);
 			bookLikesRedisService.addLike(bookId, userId);
+
+			// ✅ 자서전 작성자에게 알림 전송
+			UUID authorId = book.getAuthor().getId();
+
+			// ✅ 본인이 작성한 자서전에 좋아요를 누르면 알림을 보내지 않음
+			if (!authorId.equals(userId)) {
+				notificationService.sendNotification(
+						authorId, // ✅ 알림 받는 사람 (자서전 작성자)
+						NotificationType.LIKE,
+						TargetType.BOOK,
+						bookId,
+						"📖 " + user.getUserNickname() + "님이 당신의 자서전을 좋아합니다!"
+				);
+			}
 			return true; // 좋아요 추가됨
 		}
 	}

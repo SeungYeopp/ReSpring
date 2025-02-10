@@ -53,6 +53,7 @@ public class StoryService {
                 .event(event)
                 .build();
 
+        // 스토리 저장
         storyRepository.save(story);
 
         // ✅ Image 테이블에 이미지 저장
@@ -161,6 +162,7 @@ public class StoryService {
                 story.getCreatedAt(),
                 story.getUpdatedAt(),
                 story.getEvent().getId(),
+                occurredAt,
                 imageDtos
         );
     }

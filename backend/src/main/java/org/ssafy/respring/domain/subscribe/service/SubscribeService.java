@@ -11,6 +11,8 @@ import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.ImageType;
+import org.ssafy.respring.domain.notification.service.NotificationService;
+import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.post.repository.PostRepository;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedBookResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedChallengeResponseDto;
@@ -20,6 +22,7 @@ import org.ssafy.respring.domain.subscribe.repository.SubscribeRepository;
 import org.ssafy.respring.domain.subscribe.vo.Subscribe;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
+import org.ssafy.respring.domain.notification.vo.NotificationType;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +41,7 @@ public class SubscribeService {
 
     private final BookLikesRedisService bookLikesRedisService;
     private final BookViewsRedisService bookViewsRedisService;
+    private final NotificationService notificationService; // ✅ 알림 서비스 추가
 
     // ✅ 구독 기능 추가 (사용자 구독)
     public void subscribeUser(UUID subscriberId, UUID subscribedToId) {
@@ -57,6 +61,16 @@ public class SubscribeService {
                 .build();
 
         subscribeRepository.save(subscription);
+
+// ✅ 구독된 사용자(subscribedToId)에게 알림 전송 (구독한 사용자 ID 포함)
+        notificationService.sendNotification(
+                subscribedToId, // ✅ receiverId (구독된 사용자)
+                subscriberId, // ✅ initiatorId (구독한 사용자)
+                NotificationType.FOLLOW,
+                TargetType.USER,
+                subscription.getId(),
+                subscriber.getUserNickname() + "님이 당신을 구독했습니다!"
+        );
     }
 
     // ✅ 구독 취소 기능
@@ -78,7 +92,6 @@ public class SubscribeService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
 
-        // 구독한 사용자 목록 가져오기
         List<User> subscribedUsers = subscribeRepository.findBySubscriber(user).stream()
                 .map(Subscribe::getSubscribedTo)
                 .collect(Collectors.toList());
