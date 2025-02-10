@@ -52,4 +52,14 @@ public class SubscribeController {
     public ResponseEntity<List<SubscribedUserResponseDto>> getSubscribedUsers(@PathVariable UUID userId) {
         return ResponseEntity.ok(subscribeService.getSubscribedUsers(userId));
     }
+
+    @GetMapping("/{subscriberId}/{subscribedToId}/check")
+    @Operation(summary = "특정 사용자를 내가 구독했는지 확인", description = "내가 특정 사용자를 구독했는지 여부를 반환합니다.")
+    public ResponseEntity<Boolean> checkSubscription(
+            @PathVariable UUID subscriberId,
+            @PathVariable UUID subscribedToId) {
+        boolean isSubscribed = subscribeService.isSubscribed(subscriberId, subscribedToId);
+        return ResponseEntity.ok(isSubscribed);
+    }
+
 }

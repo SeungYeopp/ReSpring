@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface RecordsRepository extends JpaRepository<Records, Long> {
     Optional<Records> findByUserAndChallengeAndStartDateAndEndDate(User user, Challenge challenge, LocalDate startDate, LocalDate endDate);
     Optional<Records> findTopByUserAndChallengeOrderByStartDateDesc(User user, Challenge challenge);
+    Optional<Records> findTopByUserAndChallengeOrderByRecordStartDateDesc(User user, Challenge challenge);
 }

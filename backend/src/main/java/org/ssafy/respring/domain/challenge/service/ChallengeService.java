@@ -141,15 +141,18 @@ public class ChallengeService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
+        // 🔹 챌린지 소유자 ID 가져오기
+        UUID ownerId = challenge.getOwner().getId();
+
         LocalDate startDate = challenge.getStartDate().toLocalDate();
         LocalDate endDate = challenge.getEndDate().toLocalDate();
 
-        Optional<Records> record = recordsRepository.findByUserAndChallengeAndStartDateAndEndDate(user, challenge, startDate, endDate);
+        Optional<Records> records = recordsRepository.findByUserAndChallengeAndStartDateAndEndDate(user, challenge, startDate, endDate);
 
-        int successCount = record.map(Records::getSuccessCount).orElse(0);
-        int totalDays = record.map(Records::getTotalDays).orElse((int) (endDate.toEpochDay() - startDate.toEpochDay() + 1));
-        int longestStreak = record.map(Records::getLongestStreak).orElse(0);
-        int currentStreak = record.map(Records::getCurrentStreak).orElse(0);
+        int successCount = records.map(Records::getSuccessCount).orElse(0);
+        int totalDays = records.map(Records::getTotalDays).orElse((int) (endDate.toEpochDay() - startDate.toEpochDay() + 1));
+        int longestStreak = records.map(Records::getLongestStreak).orElse(0);
+        int currentStreak = records.map(Records::getCurrentStreak).orElse(0);
         double successRate = (totalDays > 0) ? ((double) successCount / totalDays) * 100 : 0.0;
         challenge.setViews(challenge.getViews() + 1);
 
@@ -167,9 +170,12 @@ public class ChallengeService {
                 .isSuccessToday(successCount > 0)
                 .longestStreak(longestStreak) // ✅ 연속 성공 기록
                 .currentStreak(currentStreak) // ✅ 현재 연속 성공 기록
-                .successRate(successRate) // ✅ 성공률 계산
+                .successRate(successRate) // ✅ records 있으면 성공한 기록 있음
+                .ownerId(ownerId) // ✅ 챌린지 OwnerId 추가
+                .records(records) // ✅ 그대로 넘기기
                 .build();
     }
+
 
 
 //    public void deleteChallenge(Long id, UUID ownerId) {
@@ -410,17 +416,25 @@ public class ChallengeService {
         Challenge challenge = challengeRepository.findById(challengeId)
                 .orElseThrow(() -> new IllegalArgumentException("챌린지를 찾을 수 없습니다."));
 
-        List<UUID> participantIds = userChallengeRepository.findByChallenge(challenge)
+        List<ParticipantInfoDto> participantList = userChallengeRepository.findByChallenge(challenge)
                 .stream()
-                .map(userChallenge -> userChallenge.getUser().getId()) // ✅ 유저 ID 리스트 추출
+                .map(userChallenge -> {
+                    User user = userChallenge.getUser();
+                    return new ParticipantInfoDto(
+                            user.getId(),
+                            user.getUserNickname(),       // ✅ 닉네임 가져오기
+                            user.getProfileImage()    // ✅ 프로필 이미지 가져오기
+                    );
+                })
                 .collect(Collectors.toList());
 
         return new ChallengeParticipantsResponseDto(
                 challenge.getId(),
-                participantIds.size(), // ✅ 총 참여자 수
-                participantIds // ✅ 참여자 UUID 목록
+                participantList.size(),  // ✅ 총 참여자 수
+                participantList          // ✅ 닉네임, 프로필 이미지 포함된 리스트
         );
     }
+
 
     public List<ChallengeStatusResponseDto> getChallengesByStatus(ChallengeStatus status) {
         LocalDateTime now = LocalDateTime.now();

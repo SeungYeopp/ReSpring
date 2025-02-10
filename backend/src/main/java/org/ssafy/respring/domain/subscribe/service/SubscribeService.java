@@ -143,4 +143,15 @@ public class SubscribeService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    // ✅ 내가 특정 사용자를 구독했는지 여부 확인
+    public boolean isSubscribed(UUID subscriberId, UUID subscribedToId) {
+        User subscriber = userRepository.findById(subscriberId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 구독하는 사용자를 찾을 수 없습니다."));
+        User subscribedTo = userRepository.findById(subscribedToId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 구독 대상 사용자를 찾을 수 없습니다."));
+
+        return subscribeRepository.existsBySubscriberAndSubscribedTo(subscriber, subscribedTo);
+    }
+
 }
