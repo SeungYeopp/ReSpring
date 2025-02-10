@@ -159,9 +159,11 @@ public class StoryService {
      */
     private StoryResponseDto toResponseDto(Story story) {
         List<ImageResponseDto> imageDtos = story.getImages().stream()
-                .map(image -> new ImageResponseDto(image.getImageId(), image.getS3Key()))
+                .map(image -> new ImageResponseDto(
+                        image.getImageId(),
+                        imageService.generatePresignedUrl(image.getS3Key(), 60)
+                ))
                 .collect(Collectors.toList());
-
         return new StoryResponseDto(
                 story.getId(),
                 story.getTitle(),

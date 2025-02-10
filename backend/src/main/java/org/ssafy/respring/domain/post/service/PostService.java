@@ -163,8 +163,11 @@ public class PostService {
 
     private PostResponseDto toResponseDto(Post post) {
         List<ImageResponseDto> imageDtos = post.getImages().stream()
-          .map(image -> new ImageResponseDto(image.getImageId(), image.getS3Key()))
-          .collect(Collectors.toList());
+                .map(image -> new ImageResponseDto(
+                        image.getImageId(),
+                        imageService.generatePresignedUrl(image.getS3Key(), 60) // ✅ Presigned URL 변환 적용
+                ))
+                .collect(Collectors.toList());
 
         List<CommentResponseDto> commentDtos = (post.getComments() == null) ?
           List.of() : post.getComments().stream()
