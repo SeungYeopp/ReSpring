@@ -12,7 +12,6 @@ import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.comment.repository.CommentRepository;
 import org.ssafy.respring.domain.comment.vo.Comment;
-import org.ssafy.respring.domain.notification.service.NotificationSender;
 import org.ssafy.respring.domain.notification.service.NotificationService;
 import org.ssafy.respring.domain.notification.vo.NotificationType;
 import org.ssafy.respring.domain.notification.vo.TargetType;
@@ -33,7 +32,7 @@ public class CommentService {
     private final UserRepository userRepository;
 
     @Lazy
-    private final NotificationSender notificationService;
+    private final NotificationService notificationService;
     private final PostRepository postRepository;
     private final BookRepository bookRepository;
 

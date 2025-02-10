@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.ssafy.respring.domain.notification.dto.NotificationDto;
+import org.ssafy.respring.domain.notification.dto.NotificationSubscriptionDto;
 import org.ssafy.respring.domain.notification.repository.NotificationRepository;
 import org.ssafy.respring.domain.notification.vo.Notification;
 import org.ssafy.respring.domain.notification.vo.NotificationType;
@@ -22,13 +23,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class NotificationService implements NotificationSender{
+public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final SseService sseService; // ✅ SSE 서비스 전담
     private final UserRepository userRepository;
 
 
-    @Override
     public void sendNotification(UUID receiverId, NotificationType type, TargetType targetType, Long targetId, String message) {
         User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자 정보를 찾을 수 없습니다."));
@@ -48,6 +48,29 @@ public class NotificationService implements NotificationSender{
         // ✅ SSE를 통해 실시간으로 알림 전송
         sseService.sendNotification(receiverId, toDto(notification));
     }
+
+    public void sendNotification(UUID receiverId, UUID initiatorId, NotificationType type, TargetType targetType, Long targetId, String message) {
+        User receiver = userRepository.findById(receiverId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자 정보를 찾을 수 없습니다."));
+        User initiator = userRepository.findById(initiatorId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 알림을 발생시킨 사용자를 찾을 수 없습니다."));
+
+        Notification notification = Notification.builder()
+                .receiver(receiver)
+                .type(type)
+                .targetType(targetType)
+                .targetId(targetId) // ✅ targetId 그대로 Long 사용
+                .message(message)
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationRepository.save(notification);
+
+        // ✅ `initiatorId` 포함하여 DTO 변환 후 SSE 전송
+        sseService.sendNotification(receiverId, NotificationSubscriptionDto.from(notification, initiator.getId()));
+    }
+
 
     public List<NotificationDto> getUnreadNotifications(UUID userId) {
         User user = userRepository.findById(userId)

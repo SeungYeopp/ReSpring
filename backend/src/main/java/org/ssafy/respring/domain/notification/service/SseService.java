@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.ssafy.respring.domain.notification.dto.NotificationDto;
+import org.ssafy.respring.domain.notification.dto.NotificationSubscriptionDto;
 
 import java.io.IOException;
 import java.util.Map;
@@ -41,4 +42,16 @@ public class SseService {
             }
         }
     }
+
+    public void sendNotification(UUID userId, NotificationSubscriptionDto notificationDto) {
+        SseEmitter emitter = emitters.get(userId);
+        if (emitter != null) {
+            try {
+                emitter.send(SseEmitter.event().name("notification").data(notificationDto));
+            } catch (IOException e) {
+                emitters.remove(userId);
+            }
+        }
+    }
+
 }
