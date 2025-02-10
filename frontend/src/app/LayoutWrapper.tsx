@@ -6,17 +6,41 @@ import SplashScreen from "@/components/custom/SplashScreen";
 import { TopNav } from "@/components/layout/top-nav";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Sidebar } from "@/components/layout/sidebar";
+import { useAuth } from "@/hooks/useAuth";
 
-const SPLASH_EXPIRE_HOURS = 24; // ✅ 24시간 후 다시 표시
+const SPLASH_EXPIRE_HOURS = 24;
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const [showSplash, setShowSplash] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+
   const isViewerPage = pathname.startsWith("/viewer");
 
-  // ✅ 1. 렌더링 전에 로컬 스토리지 확인 후 즉시 리디렉션
+  // 정규표현식 설명:
+  // ^         : 문자열의 시작을 의미 ("/"로 시작해야 함)
+  // \/chat\/  : "/chat/" 문자열과 정확히 일치해야 함
+  // \w+       : 하나 이상의 문자, 숫자, 또는 밑줄(_)과 일치 (chatID 부분)
+  // $         : 문자열의 끝을 의미 (추가 경로 없이 끝나야 함)
+
+  // 예시:
+  // - "/chat/123"  => 감지 (O)
+  // - "/chat/abc"  => 감지 (O)
+  // - "/chat/abc123" => 감지 (O)
+  // - "/chat/settings" => 감지 안 됨 (X)
+  // - "/chat/123/more" => 감지 안 됨 (X)
+  const isChatPage = /^\/chat\/\w+$/.test(pathname); // "/chat/ID" 형식만 감지
+
+  const { isAuthenticated } = useAuth(false);
+
   useEffect(() => {
+    if (isAuthenticated === null) {
+      return;
+    } else if (isAuthenticated === false) {
+      router.push("/auth");
+      return;
+    }
+
     const lastSeenTimestamp = localStorage.getItem("splashTimestamp");
     const now = Date.now();
 
@@ -24,36 +48,41 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       const elapsedHours = (now - Number(lastSeenTimestamp)) / (1000 * 60 * 60);
       if (elapsedHours < SPLASH_EXPIRE_HOURS) {
         if (pathname === "/") {
-          router.replace("/today"); // ✅ 스플래시 없이 즉시 이동
+          router.replace("/today");
         }
         return;
       }
     }
 
-    // ✅ 2. 스플래시가 필요한 경우 상태 업데이트
     setShowSplash(true);
     const timer = setTimeout(() => {
       setShowSplash(false);
-      localStorage.setItem("splashTimestamp", String(now)); // ✅ 현재 시간을 저장
-      router.replace("/today"); // ✅ /today로 이동
-    }, 4000); // 4초간 표시
+      localStorage.setItem("splashTimestamp", String(now));
+      router.replace("/today");
+    }, 4000);
 
     return () => clearTimeout(timer);
-  }, [router, pathname]);
+  }, [router, pathname, isAuthenticated]);
 
-  // ✅ 3. 스플래시가 필요한 경우만 표시
+  if (isAuthenticated === null) {
+    return <p>로딩 중...</p>;
+  }
+
   if (showSplash) {
     return <SplashScreen />;
   }
 
   return (
     <>
-      {!isViewerPage && <TopNav />}
-      {!isViewerPage && <Sidebar />}
-      <main className={isViewerPage ? "pt pb md:py-4" : "md:ml-64 pt-14 pb-16 md:py-4"}>
-        {children}
-      </main>
-      {!isViewerPage && <BottomNav />}
+      {/* TopNav를 /viewer, /chat 페이지에서 숨김 */}
+      {isAuthenticated && !isViewerPage && !isChatPage && <TopNav />}
+      {/* Sidebar는 항상 표시 */}
+      {isAuthenticated && <Sidebar />}
+
+      <main className={`md:ml-64 ${isViewerPage || isChatPage ? "pt-0 pb-0" : "pt-14 pb-16"} md:py-4`}>{children}</main>
+
+      {/* BottomNav를 /viewer, /chat 페이지에서 숨김 */}
+      {isAuthenticated && !isViewerPage && !isChatPage && <BottomNav />}
     </>
   );
 }

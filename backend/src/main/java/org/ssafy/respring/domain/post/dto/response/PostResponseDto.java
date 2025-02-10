@@ -2,6 +2,7 @@ package org.ssafy.respring.domain.post.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
 import org.ssafy.respring.domain.image.vo.Image;
@@ -25,5 +26,5 @@ public class PostResponseDto {
     private Long likes;
     private List<ImageResponseDTO> images;
     private int commentCount;
-    private List<CommentResponseDto> comments;
+    private List<CommentDto> comments;
 }

@@ -1,13 +1,12 @@
 // src/app/today/mocks/posts.ts
-import type { Post } from "@/lib/api/today";
+import type { Post, Image } from "@/lib/api";
 
 // ✅ 랜덤 이미지 생성 함수
-const getRandomImage = () => {
+const getRandomImage = () : Image => {
   const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
-  return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
+  const newImg : Image = {imageId : 1, imageUrl : `/corgis/placeholder${imageNumber}.jpg`};
+  return newImg; // public 폴더 내 이미지 경로
 };
-
-
 
 // 인기 게시글 목데이터 (예: popularPosts)
 export const popularPosts: Post[] = [

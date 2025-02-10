@@ -9,9 +9,11 @@ import { todayAPI, type Comment } from "@/app/today/api/todayDetail";
 import { useAuth } from "@/lib/hooks/tempUseAuth";
 import { Loader2 } from "lucide-react";
 
+import { getCommentsByPostId, getChildrenComments, createNewCommunityComment } from "@/lib/api";
+
 interface CommentSectionProps {
   postId: number;
-  isLoggedIn: boolean;
+  userId: string;
 }
 
 interface CommentWithReplies extends Comment {
@@ -24,7 +26,7 @@ const getRandomImage = () => {
   return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
 };
 
-export function CommentSection({ postId, isLoggedIn }: CommentSectionProps) {
+export function CommentSection({ postId, userId }: CommentSectionProps) {
   const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -47,10 +49,12 @@ export function CommentSection({ postId, isLoggedIn }: CommentSectionProps) {
     if (isLoading || !hasMore) return;
     setIsLoading(true);
     try {
-      const parentComments = await todayAPI.getComments(postId);
+      const parentComments = await getCommentsByPostId(postId);
+
+      console.log(parentComments)
       const commentsWithReplies = await Promise.all(
         parentComments.map(async (comment) => {
-          const replies = await todayAPI.getChildrenComments(comment.id);
+          const replies = await getChildrenComments(comment.id);
           return {
             ...comment,
             replies,
@@ -72,7 +76,7 @@ export function CommentSection({ postId, isLoggedIn }: CommentSectionProps) {
 
     setIsLoading(true);
     try {
-      const comment = await todayAPI.createComment(postId, newComment, "test-user-id", replyTo?.id || null);
+      const comment = await createNewCommunityComment(postId, newComment, userId, "string", replyTo?.id || null);
 
       if (replyTo) {
         setComments((prev) =>
@@ -161,7 +165,7 @@ export function CommentSection({ postId, isLoggedIn }: CommentSectionProps) {
 
       {/* 하단 입력 폼 */}
       <div className="fixed bottom-16 left-0 w-full p-4 bg-white border-t md:static md:border-none md:bg-transparent">
-        {isLoggedIn ? (
+        {true ? (
           <form onSubmit={handleSubmit} className="flex flex-col gap-2">
             {replyTo && (
               <div className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-md">

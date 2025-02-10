@@ -45,47 +45,64 @@ public class RecordsService {
             throw new IllegalStateException("챌린지가 이미 종료되었습니다.");
         }
 
-        Optional<Records> existingRecord = recordsRepository.findByUserAndChallengeAndStartDateAndEndDate(
-                user, challenge, startDate, endDate);
+        // ✅ 기존 기록 가져오기 (recordStartDate를 기준으로 최신 데이터 조회)
+        Optional<Records> existingRecordOpt = recordsRepository.findTopByUserAndChallengeOrderByRecordStartDateDesc(user, challenge);
 
-        if (existingRecord.isPresent()) {
-            // ✅ 기존 기록이 있는 경우
-            Records record = existingRecord.get();
+        if (existingRecordOpt.isPresent()) {
+            Records record = existingRecordOpt.get();
 
-            // ✅ 날짜가 변경되었으면 isSuccess 초기화
-            if (!record.getLastUpdatedDate().equals(today)) {
-                record.setIsSuccess(false);
-                record.setLastUpdatedDate(today);
-            }
-
+            // ✅ 어제 기록이 false였고 오늘 true이면 새로운 record 생성
             if (!record.isSuccess() && isSuccess) {
-                // ✅ 실패에서 성공으로 변경 가능
-                record.setSuccessCount(record.getSuccessCount() + 1);
-                record.setCurrentStreak(record.getCurrentStreak() + 1);
-                record.setLongestStreak(Math.max(record.getLongestStreak(), record.getCurrentStreak()));
-                record.setIsSuccess(true); // ✅ 오늘 성공 여부 true
-                record.setLastUpdatedDate(today); // ✅ 마지막 업데이트 날짜 변경
-            } else if (record.isSuccess() && !isSuccess) {
-                // ❌ 이미 성공한 경우 실패로 변경 불가
-                throw new IllegalStateException("이미 성공한 기록은 실패로 변경할 수 없습니다.");
+                // 🔥 새로운 기록 생성
+                Records newRecord = Records.builder()
+                        .user(user)
+                        .challenge(challenge)
+                        .recordStartDate(today) // ✅ 새로운 시작 날짜 설정
+                        .lastUpdatedDate(today)
+                        .startDate(startDate)
+                        .endDate(endDate)
+                        .successCount(1)
+                        .totalDays((int) (endDate.toEpochDay() - startDate.toEpochDay() + 1))
+                        .currentStreak(1)
+                        .longestStreak(1)
+                        .isSuccess(true)
+                        .build();
+
+                recordsRepository.save(newRecord);
+            } else {
+                // ✅ 기존 기록 업데이트
+                if (!record.getLastUpdatedDate().equals(today)) {
+                    record.setIsSuccess(false); // ✅ 하루 지나면 초기화
+                }
+
+                if (isSuccess) {
+                    record.setSuccessCount(record.getSuccessCount() + 1);
+                    record.setCurrentStreak(record.getCurrentStreak() + 1);
+                    record.setLongestStreak(Math.max(record.getLongestStreak(), record.getCurrentStreak()));
+                    record.setIsSuccess(true);
+                }
+
+                record.setLastUpdatedDate(today);
+                recordsRepository.save(record);
             }
         } else {
             // ✅ 기존 기록이 없으면 새 기록 생성
             Records newRecord = Records.builder()
                     .user(user)
                     .challenge(challenge)
+                    .recordStartDate(today) // ✅ 새로운 시작 날짜 설정
+                    .lastUpdatedDate(today)
                     .startDate(startDate)
                     .endDate(endDate)
                     .successCount(isSuccess ? 1 : 0)
                     .totalDays((int) (endDate.toEpochDay() - startDate.toEpochDay() + 1))
                     .currentStreak(isSuccess ? 1 : 0)
                     .longestStreak(isSuccess ? 1 : 0)
-                    .recordKey(UUID.randomUUID())
-                    .isSuccess(isSuccess) // ✅ 성공 여부 저장
-                    .lastUpdatedDate(today) // ✅ 오늘 날짜 저장
+                    .isSuccess(isSuccess)
                     .build();
 
             recordsRepository.save(newRecord);
         }
     }
+
 }

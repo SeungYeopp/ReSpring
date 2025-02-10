@@ -331,7 +331,7 @@ const mockComments: Comment[] = [
 // =========================================
 // 3. useMock 설정
 // =========================================
-const useMock = true; // false로 바꾸면 Real API로 동작
+const useMock = false; // false로 바꾸면 Real API로 동작
 
 // =========================================
 // 4. Mock API 구현
@@ -452,6 +452,7 @@ async function getPostDetail(postId: number): Promise<Post> {
   });
   if (!response.ok) throw new Error("게시글 상세 조회 실패");
   const data = await response.json();
+  console.log(data);
   return data;
 }
 
