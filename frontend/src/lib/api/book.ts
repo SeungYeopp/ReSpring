@@ -27,16 +27,20 @@ export interface Book{
     imageUrls : string[]
 }
 
+// AI로 생성된 봄날의 서에 대한 인터페이스.
+export interface CompiledBook{
+    title : string,
+    chapters : Chapter[]
+}
+
 // AI로 생성된 봄날의 서의 각 챕터에 대한 인터페이스.
 export interface Chapter{
     chapterTitle : string,
     content : string
 }
 
-// AI로 생성된 봄날의 서에 대한 인터페이스.
-export interface CompiledBook{
-    title : string,
-    chapters : Chapter[]
+export interface Content {
+    [key: string]: string;
 }
 
 // 봄날의 서 생성 함수
@@ -45,7 +49,7 @@ export interface CompiledBook{
 export const makeBook = async (
     userId : string,
     title : string,
-    content : string,
+    content : Content,
     tags: string[],
     storyIds : number[],
     coverImg : File
@@ -60,6 +64,7 @@ export const makeBook = async (
         formData.append('표지 이미지', coverImg);
         const response = await axiosAPI.post('/books', formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
+        console.log(response.data)
         return response.data;
     }catch(error : any){
         console.error('makeBook 에러 발생!', error);
