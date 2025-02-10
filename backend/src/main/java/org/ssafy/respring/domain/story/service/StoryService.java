@@ -8,7 +8,7 @@ import org.ssafy.respring.domain.event.repository.EventRepository;
 import org.ssafy.respring.domain.event.vo.Event;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
-import org.ssafy.respring.domain.image.vo.Image;
+import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.story.dto.request.StoryRequestDto;
 import org.ssafy.respring.domain.story.dto.request.StoryUpdateRequestDto;
 import org.ssafy.respring.domain.story.dto.response.StoryResponseDto;
@@ -33,9 +33,6 @@ public class StoryService {
      */
     public Long createStory(StoryRequestDto requestDto, List<MultipartFile> imageFiles) {
         // 사용자 정보 설정
-//		User user = userRepository.findById(requestDto.getUserId())
-//				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + requestDto.getUserId()));
-
         User user = new User();
         user.setId(requestDto.getUserId());
 
@@ -48,7 +45,7 @@ public class StoryService {
             throw new IllegalArgumentException("You are not allowed to access this event.");
         }
 
-        // 스토리 생성
+        // 스토리 생성 및 저장
         Story story = Story.builder()
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
@@ -56,12 +53,11 @@ public class StoryService {
                 .event(event)
                 .build();
 
-        // 스토리 저장
         storyRepository.save(story);
 
-        // 이미지 저장 및 연결
+        // ✅ Image 테이블에 이미지 저장
         if (imageFiles != null && !imageFiles.isEmpty()) {
-            imageService.saveImages(imageFiles, story);
+            imageService.saveImages(imageFiles, ImageType.STORY, story.getId());
         }
 
         return story.getId();
@@ -94,15 +90,15 @@ public class StoryService {
         story.setContent(requestDto.getContent());
         story.setEvent(event);
 
-        // 특정 이미지 삭제
+        // ✅ 기존 이미지 삭제
         List<Long> deleteImageIds = requestDto.getDeleteImageIds();
         if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-            imageService.deleteImages(deleteImageIds);
+            imageService.deleteImages(ImageType.STORY, storyId);
         }
 
-        // 새로운 이미지 추가
+        // ✅ 새로운 이미지 추가
         if (imageFiles != null && !imageFiles.isEmpty()) {
-            imageService.saveImages(imageFiles, story);
+            imageService.saveImages(imageFiles, ImageType.STORY, storyId);
         }
     }
 
@@ -119,11 +115,8 @@ public class StoryService {
             throw new IllegalArgumentException("You are not allowed to delete this story.");
         }
 
-        // 이미지 삭제
-        List<Long> imageIds = story.getImages().stream()
-                .map(Image::getImageId)
-                .collect(Collectors.toList());
-        imageService.deleteImages(imageIds);
+        // ✅ Image 테이블에서 관련 이미지 삭제
+        imageService.deleteImages(ImageType.STORY, storyId);
 
         // 스토리 삭제
         storyRepository.deleteById(storyId);
@@ -158,12 +151,9 @@ public class StoryService {
      * Story -> StoryResponseDto 변환
      */
     private StoryResponseDto toResponseDto(Story story) {
-        List<ImageResponseDto> imageDtos = story.getImages().stream()
-                .map(image -> new ImageResponseDto(
-                        image.getImageId(),
-                        imageService.generatePresignedUrl(image.getS3Key(), 60)
-                ))
-                .collect(Collectors.toList());
+        // ✅ Image 테이블에서 스토리에 해당하는 이미지 조회 후 변환
+        List<ImageResponseDto> imageDtos = imageService.getImagesByEntity(ImageType.STORY, story.getId());
+
         return new StoryResponseDto(
                 story.getId(),
                 story.getTitle(),

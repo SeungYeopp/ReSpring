@@ -37,6 +37,7 @@ import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.comment.service.CommentService;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.Image;
+import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.story.repository.StoryRepository;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
@@ -45,6 +46,7 @@ import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class BookService {
 
@@ -55,7 +57,6 @@ public class BookService {
 	private final StoryRepository storyRepository;
 	@Lazy
 	private final MongoBookContentRepository bookContentRepository;
-	private final ObjectMapper objectMapper;
 
 	private final CommentService commentService;
 	private final ImageService imageService;
@@ -66,22 +67,23 @@ public class BookService {
 
 	private static final String RECENT_VIEW_KEY = "user:recent:books:";
 
-	@Transactional
 	public Long createBook(BookRequestDto requestDto, MultipartFile coverImage) {
 		User user = getUserById(requestDto.getUserId());
-
-		String coverImageUrl = imageService.saveCoverImage(coverImage);
 
 		Book book = Book.builder()
 				.author(user)
 				.title(requestDto.getTitle())
-				.coverImage(coverImageUrl)
 				.tags(requestDto.getTags())
-		  		.storyIds(requestDto.getStoryIds())
+				.storyIds(requestDto.getStoryIds())
 				.createdAt(LocalDateTime.now())
 				.updatedAt(LocalDateTime.now())
 				.build();
 
+		bookRepository.save(book);
+
+		String coverImageUrl = imageService.saveImage(coverImage, ImageType.BOOK, book.getId());
+
+		book.setCoverImage(coverImageUrl);
 		bookRepository.save(book);
 
 		BookContent bookContent = new BookContent();
@@ -103,7 +105,7 @@ public class BookService {
 		Book book = getBookById(requestDto.getBookId(), requestDto.getUserId());
 
 		// 2️⃣ 커버 이미지 처리
-		String coverImageUrl = coverImage != null ? imageService.saveCoverImage(coverImage) : book.getCoverImage();
+		String coverImageUrl = coverImage != null ? imageService.saveImage(coverImage,ImageType.BOOK,book.getId()) : book.getCoverImage();
 
 		// 3️⃣ 제목(title) 업데이트
 		isUpdated |= Optional.ofNullable(requestDto.getTitle())
@@ -530,10 +532,10 @@ public class BookService {
 	}
 
 	private List<String> getImagesFromStories(List<Long> storyIds) {
-		return storyRepository.findAllById(storyIds).stream()
-		  .flatMap(story -> story.getImages() != null ? story.getImages().stream() : List.<Image>of().stream())
-		  .map(Image::getS3Key)
-		  .collect(Collectors.toList());
+		return storyIds.stream()
+				.map(storyId -> imageService.getSingleImageByEntity(ImageType.STORY, storyId)) // ✅ ImageService에서 가져오기
+				.filter(imageUrl -> imageUrl != null) // ✅ Null 값 제거
+				.collect(Collectors.toList());
 	}
 
 
