@@ -8,7 +8,11 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.ssafy.respring.domain.challenge.vo.Challenge;
+
+import java.util.List;
 
 @Configuration
 @EnableCaching
@@ -44,4 +48,14 @@ public class RedisConfig {
         template.setValueSerializer(new StringRedisSerializer()); // JSON 저장을 위해 Jackson Serializer 사용 가능
         return template;
     }
+
+    @Bean
+    public RedisTemplate<String, List<Challenge>> challengeRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, List<Challenge>> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
+    }
+
 }

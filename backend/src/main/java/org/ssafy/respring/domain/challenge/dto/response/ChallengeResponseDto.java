@@ -1,6 +1,7 @@
 package org.ssafy.respring.domain.challenge.dto.response;
 
 import lombok.*;
+import org.ssafy.respring.domain.tag.vo.Tag;
 
 import java.time.LocalDateTime;
 import java.util.Set;

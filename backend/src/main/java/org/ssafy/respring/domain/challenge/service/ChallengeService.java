@@ -23,6 +23,10 @@ import org.ssafy.respring.domain.chat.vo.ChatRoom;
 import org.ssafy.respring.domain.chat.vo.ChatRoomUser;
 import org.ssafy.respring.domain.image.service.ImageService;
 
+import org.ssafy.respring.domain.tag.repository.ChallengeTagRepository;
+import org.ssafy.respring.domain.tag.repository.TagRepository;
+import org.ssafy.respring.domain.tag.vo.ChallengeTag;
+import org.ssafy.respring.domain.tag.vo.Tag;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
@@ -32,6 +36,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,6 +49,9 @@ public class ChallengeService {
     private final ChallengeLikesRepository challengeLikesRepository;
     private final RecordsRepository recordsRepository;
     private final UserRepository userRepository;
+    private final TagRepository tagRepository;
+    private final ChallengeTagRepository challengeTagRepository;
+
     private final ChatService chatService;
     private final ImageService imageService;
     private final ChatRoomRepository chatRoomRepository;
@@ -53,50 +61,75 @@ public class ChallengeService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    // 챌린지 생성 (Owner 지정)
     public ChallengeResponseDto createChallenge(ChallengeRequestDto challengeDto, MultipartFile image) throws IOException {
-        User owner = new User();
-        owner.setId(challengeDto.getOwnerId());
+        // User 가져오기
+        User owner = userRepository.findById(challengeDto.getOwnerId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+        // 업로드 폴더 생성
         File uploadDirFolder = new File(uploadDir);
-        if (!uploadDirFolder.exists()) {
-            if (!uploadDirFolder.mkdirs()) {
-                throw new RuntimeException("Failed to create upload directory: " + uploadDir);
-            }
+        if (!uploadDirFolder.exists() && !uploadDirFolder.mkdirs()) {
+            throw new RuntimeException("Failed to create upload directory: " + uploadDir);
         }
 
         // 이미지 저장 후 URL 반환
         String imageUrl = imageService.saveCoverImage(image);
 
+        Set<String> tagNames = challengeDto.getTags();
+        Set<ChallengeTag> challengeTags = tagNames.stream()
+                .map(tagName -> {
+                    Tag tag = tagRepository.findByName(tagName)
+                            .orElseGet(() -> tagRepository.save(Tag.builder().name(tagName).build()));
 
+                    return ChallengeTag.builder()
+                            .challenge(challenge)
+                            .tag(tag)
+                            .build();
+                })
+                .collect(Collectors.toSet());
 
         Challenge challenge = Challenge.builder()
                 .title(challengeDto.getTitle())
                 .description(challengeDto.getDescription())
-                .image(imageUrl) // ✅ 저장된 이미지 URL 추가
+                .image(imageUrl)
                 .startDate(challengeDto.getStartDate())
                 .endDate(challengeDto.getEndDate())
-                .tags(challengeDto.getTags())
                 .owner(owner)
                 .registerDate(LocalDateTime.now())
                 .likes(0L)
                 .views(0L)
                 .participantCount(1L)
                 .chatRoomUUID(challengeDto.getTitle())
+                .tags(challengeTags) // ✅ 태그 추가!
                 .build();
 
         challengeRepository.save(challenge);
 
+        // 🔹 UserChallenge 저장 (Owner가 자동 참가)
         UserChallenge userChallenge = UserChallenge.builder()
                 .user(owner)
                 .challenge(challenge)
                 .build();
-
         userChallengeRepository.save(userChallenge);
+
+        // ✅ 태그 매핑 추가 (String → Tag 엔티티 변환 후 ChallengeTag 저장)
+        Set<String> tagNames = challengeDto.getTags();
+        for (String tagName : tagNames) {
+            // 1️⃣ 기존 태그 조회 또는 새 태그 생성
+            Tag tag = tagRepository.findByName(tagName)
+                    .orElseGet(() -> tagRepository.save(Tag.builder().name(tagName).build()));
+
+            // 2️⃣ ChallengeTag 저장
+            ChallengeTag challengeTag = ChallengeTag.builder()
+                    .challenge(challenge)
+                    .tag(tag)
+                    .build();
+            challengeTagRepository.save(challengeTag);
+        }
 
         // ✅ 챌린지 생성 시 UUID 기반 오픈채팅방 생성
         ChatRoom chatRoom = chatService.createRoom(ChatRoomRequest.builder()
-                .name(challengeDto.getTitle()) // ✅ UUID를 채팅방 이름으로 사용
+                .name(challengeDto.getTitle())
                 .userIds(List.of(owner.getId().toString()))
                 .isOpenChat(true)
                 .build());
@@ -163,7 +196,7 @@ public class ChallengeService {
                 .image(challenge.getImage())
                 .startDate(challenge.getStartDate())
                 .endDate(challenge.getEndDate())
-                .tags(challenge.getTags())
+                .tags(challenge.get)
                 .participantCount(challenge.getParticipantCount())
                 .likes(challenge.getLikes())
                 .views(challenge.getViews())
@@ -486,6 +519,10 @@ public class ChallengeService {
 
     // 🆕 mapToDto 추가: Challenge -> ChallengeResponseDto 변환
     private ChallengeResponseDto mapToDto(Challenge challenge) {
+        Set<String> tagNames = challenge.getTags().stream()
+                .map(challengeTag -> challengeTag.getTag().getName()) // ✅ 태그 이름만 추출
+                .collect(Collectors.toSet());
+
         return new ChallengeResponseDto(
                 challenge.getId(),
                 challenge.getTitle(),
@@ -494,7 +531,7 @@ public class ChallengeService {
                 challenge.getRegisterDate(),
                 challenge.getStartDate(),
                 challenge.getEndDate(),
-                challenge.getTags(),
+                tagNames, // ✅ 태그 리스트 추가
                 challenge.getLikes(),
                 challenge.getViews(),
                 challenge.getParticipantCount(),

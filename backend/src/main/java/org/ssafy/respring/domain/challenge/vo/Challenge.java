@@ -2,13 +2,13 @@ package org.ssafy.respring.domain.challenge.vo;
 
 import jakarta.persistence.*;
 import lombok.*;
-import net.minidev.json.annotate.JsonIgnore;
+
+import org.ssafy.respring.domain.tag.vo.ChallengeTag;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -29,8 +29,8 @@ public class Challenge {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    private Set<String> tags;
+    @OneToMany(mappedBy = "challenge", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ChallengeTag> tags;
 
     private Long likes;
     private Long views;
