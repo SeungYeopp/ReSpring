@@ -5,7 +5,8 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { BookOpen, Sprout, Video, TypeOutline } from "lucide-react"
+import { BookOpen, Sprout, Video } from "lucide-react"
+import { FontExperienceSection } from "@/components/custom/FontExperienceSection"
 
 export default function TestPage() {
   const [mounted, setMounted] = useState(false)
@@ -94,54 +95,8 @@ export default function TestPage() {
           </Card>
         </motion.div>
 
-        {/* 🌸 폰트 체험 섹션 */}
-        <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: 0.8 }}
-    >
-      <Card className="rounded-3xl shadow-lg p-6 bg-white border-2 border-[#dfeaa5] mt-10">
-        <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-[#638d3e] text-center flex items-center justify-center">
-          <TypeOutline className="mr-2" size={28} /> 폰트 체험하기
-        </h2>
-        <p className="text-center text-[#7b7878] mb-6">추가한 폰트들을 직접 체험해보세요!</p>
-
-        <div className="space-y-4">
-          <p className="font-godob text-xl md:text-2xl text-center text-[#4a6d2e]">
-            이 텍스트는 <strong>고도 B</strong> 폰트입니다.
-          </p>
-          <p className="font-godom text-xl md:text-2xl text-center text-[#4a6d2e]">
-            이 텍스트는 <strong>고도 M</strong> 폰트입니다.
-          </p>
-          <p className="font-godomaum text-xl md:text-2xl text-center text-[#4a6d2e]">
-            이 텍스트는 <strong>고도 마음체</strong> 폰트입니다.
-          </p>
-          <p className="font-nunugothic text-xl md:text-2xl text-center text-[#4a6d2e]">
-            이 텍스트는 <strong>누누 기본 고딕체</strong> 폰트입니다.
-          </p>
-          <p className="font-samlipbasic text-xl md:text-2xl text-center text-[#4a6d2e]">
-            이 텍스트는 <strong>삼립호빵 베이직</strong> 폰트입니다.
-          </p>
-          <p className="font-samlipoutline text-xl md:text-2xl text-center text-[#4a6d2e]">
-            이 텍스트는 <strong>삼립호빵 아웃라인</strong> 폰트입니다.
-          </p>
-          <p className="font-ongle text-xl md:text-2xl text-center text-[#4a6d2e]">
-            이 텍스트는 <strong>온글잎 박다현체</strong> 폰트입니다.
-          </p>
-          <div className="space-y-4 p-6">
-      <p className="font-binggraetaom text-2xl text-[#4a6d2e]">이 텍스트는 빙그레 타옴 폰트입니다.</p>
-      <p className="font-binggraetaombold text-2xl text-[#4a6d2e]">이 텍스트는 빙그레 타옴 볼드 폰트입니다.</p>
-      <p className="font-mapobackpacking text-2xl text-[#4a6d2e]">이 텍스트는 마포 백패킹 폰트입니다.</p>
-      <p className="font-goodneighborsbold text-2xl text-[#4a6d2e]">이 텍스트는 굿네이버스 좋은이웃체 Bold 폰트입니다.</p>
-      <p className="font-goodneighborsregular text-2xl text-[#4a6d2e]">이 텍스트는 굿네이버스 좋은이웃체 Regular 폰트입니다.</p>
-      <p className="font-laundrygothicbold text-2xl text-[#4a6d2e]">이 텍스트는 런드리고딕 Bold 폰트입니다.</p>
-      <p className="font-laundrygothicregular text-2xl text-[#4a6d2e]">이 텍스트는 런드리고딕 Regular 폰트입니다.</p>
-      <p className="font-handon300 text-2xl text-[#4a6d2e]">이 텍스트는 한돈 삼겹살체 300g 폰트입니다.</p>
-      <p className="font-handon600 text-2xl text-[#4a6d2e]">이 텍스트는 한돈 삼겹살체 600g 폰트입니다.</p>
-    </div>
-        </div>
-      </Card>
-    </motion.div>
+        {/* 폰트 체험 섹션 */}
+        <FontExperienceSection />
 
         {/* 푸터 */}
         <motion.div
@@ -159,3 +114,4 @@ export default function TestPage() {
     </div>
   )
 }
+
