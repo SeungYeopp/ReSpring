@@ -17,7 +17,7 @@ export default function TestPage() {
   if (!mounted) return null
 
   return (
-    <div className="min-h-screen bg-[#f0f0f0] p-4 space-y-8 font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-[#f0f0f0] p-4 space-y-8 font-sans relative overflow-hidden -mt-14 -mb-16 md:-my-4">
       {/* 배경 잎사귀 효과 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
@@ -47,7 +47,7 @@ export default function TestPage() {
         ))}
       </div>
 
-      <div className="container mx-auto max-w-4xl relative z-10">
+      <div className="container mx-auto max-w-4xl relative z-10 px-4 py-6 md:px-8 md:py-12">
         <motion.h1
           className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#638d3e] text-center mb-2 leading-tight"
           initial={{ opacity: 0, y: -20 }}
