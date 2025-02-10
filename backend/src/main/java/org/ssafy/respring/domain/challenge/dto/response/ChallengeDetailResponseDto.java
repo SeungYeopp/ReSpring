@@ -20,7 +20,7 @@ public class ChallengeDetailResponseDto {
     private String image;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private Set<ChallengeTag> tags;
+    private Set<Tag> tags;
     private Long participantCount;
     private Long likes;
     private Long views;

@@ -44,8 +44,6 @@ public class QChallenge extends EntityPathBase<Challenge> {
 
     public final DateTimePath<java.time.LocalDateTime> startDate = createDateTime("startDate", java.time.LocalDateTime.class);
 
-    public final SetPath<org.ssafy.respring.domain.tag.vo.ChallengeTag, org.ssafy.respring.domain.tag.vo.QChallengeTag> tags = this.<org.ssafy.respring.domain.tag.vo.ChallengeTag, org.ssafy.respring.domain.tag.vo.QChallengeTag>createSet("tags", org.ssafy.respring.domain.tag.vo.ChallengeTag.class, org.ssafy.respring.domain.tag.vo.QChallengeTag.class, PathInits.DIRECT2);
-
     public final StringPath title = createString("title");
 
     public final NumberPath<Long> views = createNumber("views", Long.class);
