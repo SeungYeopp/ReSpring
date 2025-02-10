@@ -4,8 +4,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 @Getter
 @Setter
@@ -17,5 +16,5 @@ public class BookContent {
     @Id
     private String id; // MongoDB의 기본 ID
     private Long bookId; // MySQL book 테이블과 매칭될 ID
-    private Map<String, String> content; // ✅ JSON 형태로 저장할 content (chapterTitle: chapterContent)
+    private LinkedHashMap<String, String> content; // ✅ JSON 형태로 저장할 content (chapterTitle: chapterContent)
 }

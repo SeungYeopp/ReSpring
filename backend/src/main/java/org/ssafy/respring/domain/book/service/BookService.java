@@ -4,12 +4,10 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.mail.Multipart;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +77,6 @@ public class BookService {
 				.title(requestDto.getTitle())
 				.coverImage(coverImageUrl)
 				.tags(requestDto.getTags())
-		  		.content(convertContentToJson(requestDto.getContent()))
 		  		.storyIds(requestDto.getStoryIds())
 				.createdAt(LocalDateTime.now())
 				.updatedAt(LocalDateTime.now())
@@ -89,7 +86,7 @@ public class BookService {
 
 		BookContent bookContent = new BookContent();
 		bookContent.setBookId(book.getId());
-		bookContent.setContent(requestDto.getContent());
+		bookContent.setContent(new LinkedHashMap<>(requestDto.getContent()));
 		bookContentRepository.save(bookContent);
 
 		// ✅ Elasticsearch 색인 수행
@@ -100,64 +97,71 @@ public class BookService {
 
 	@Transactional
 	public void updateBook(BookUpdateRequestDto requestDto, MultipartFile coverImage) {
-
 		boolean isUpdated = false; // 변경 여부 추적
 
 		// 1️⃣ 기존 책 조회 및 권한 검증
 		Book book = getBookById(requestDto.getBookId(), requestDto.getUserId());
 
-		String coverImageUrl = imageService.saveCoverImage(coverImage);
+		// 2️⃣ 커버 이미지 처리
+		String coverImageUrl = coverImage != null ? imageService.saveCoverImage(coverImage) : book.getCoverImage();
 
-		// 2️⃣ 제목(title) 업데이트
+		// 3️⃣ 제목(title) 업데이트
 		isUpdated |= Optional.ofNullable(requestDto.getTitle())
 				.filter(title -> !title.equals(book.getTitle()))
 				.map(title -> { book.setTitle(title); return true; })
 				.orElse(false);
 
-		// 3️⃣ 커버 이미지(coverImage) 업데이트
+		// 4️⃣ 커버 이미지(coverImage) 업데이트
 		isUpdated |= Optional.ofNullable(coverImageUrl)
-				.filter(image -> !coverImage.equals(book.getCoverImage()))
+				.filter(image -> !image.equals(book.getCoverImage()))
 				.map(image -> { book.setCoverImage(image); return true; })
 				.orElse(false);
 
-		// 4️⃣ 태그(tags) 업데이트
+		// 5️⃣ 태그(tags) 업데이트
 		isUpdated |= Optional.ofNullable(requestDto.getTags())
 				.filter(tags -> !tags.equals(book.getTags()))
 				.map(tags -> { book.setTags(tags); return true; })
 				.orElse(false);
 
-		// 5️⃣ Story ID 리스트 업데이트
+		// 6️⃣ Story ID 리스트 업데이트
 		isUpdated |= Optional.ofNullable(requestDto.getStoryIds())
 				.filter(storyIds -> !storyIds.equals(book.getStoryIds()))
 				.map(storyIds -> { book.setStoryIds(storyIds); return true; })
 				.orElse(false);
 
-		// ✅ 6️⃣ 본문(content) 업데이트
-		isUpdated |= Optional.ofNullable(requestDto.getContent())
-				.filter(content -> !content.equals(book.getContent()))
-				.map(content -> { book.setContent(convertContentToJson(escapeDots(content)));  return true; })
-				.orElse(false);
+		// ✅ 7️⃣ 본문(content) 업데이트
+		if (requestDto.getContent() != null) {
+			BookContent bookContent = bookContentRepository.findByBookId(requestDto.getBookId());
+			if (bookContent == null) {
+				bookContent = new BookContent();
+				bookContent.setBookId(requestDto.getBookId());
+			}
 
-		// ✅ 7️⃣ 변경 사항이 있으면 updatedAt 갱신 후 저장
+			LinkedHashMap<String, String> sanitizedContent = escapeDots(requestDto.getContent());
+			if (!sanitizedContent.equals(bookContent.getContent())) {
+				bookContent.setContent(sanitizedContent);
+				bookContentRepository.save(bookContent);
+				isUpdated = true;
+			}
+		}
+
+		// ✅ 8️⃣ 변경 사항이 있으면 updatedAt 갱신 후 저장
 		if (isUpdated) {
 			book.setUpdatedAt(LocalDateTime.now());
 			bookRepository.save(book);
-
-			BookContent bookContent = bookContentRepository.findByBookId(requestDto.getBookId());
-			bookContent.setContent(escapeDots(requestDto.getContent())); // MongoDB 저장용 변환 적용
-			bookContentRepository.save(bookContent);
 
 			// ✅ Elasticsearch 색인 업데이트 (검색 최적화를 위해)
 			indexBookData(book, "book_title");
 		}
 	}
 
+
 	// JSON 변환을 위한 헬퍼 메서드
 	private BookContent parseJsonContent(String jsonContent, Long bookId) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		try {
 
-			Map<String, String> contentMap = objectMapper.readValue(jsonContent, new TypeReference<Map<String, String>>() {});
+			LinkedHashMap<String, String> contentMap = objectMapper.readValue(jsonContent, new TypeReference<LinkedHashMap<String, String>>() {});
 
 			// ✅ 키 값에서 '.'을 '_DOT_'로 변환
 			Map<String, String> sanitizedContent = new HashMap<>();
@@ -208,6 +212,10 @@ public class BookService {
 		  ))
 		  .collect(Collectors.toList());
 
+		for (String image: imageUrls) {
+			System.out.println(image);
+		}
+
 		return BookDetailResponseDto.toResponseDto(
 				book,
 				bookContent,  // ✅ 순서 수정: contentJson
@@ -253,15 +261,15 @@ public class BookService {
 	}
 
 	@Transactional(readOnly = true)
-	public Map<String, String> getBookContent(Long bookId) {
+	public LinkedHashMap<String, String> getBookContent(Long bookId) {
 		return Optional.ofNullable(bookContentRepository.findByBookId(bookId))
 				.map(bookContent -> restoreDots(bookContent.getContent())) // ✅ '_DOT_' → '.' 복구
-				.orElse(Collections.emptyMap()); // MongoDB에 값이 없을 경우 빈 Map 반환
+				.orElse(new LinkedHashMap<>()); // ✅ 빈 LinkedHashMap 반환
 	}
 
 	// ✅ MongoDB 저장 시 '.' → '_DOT_' 변환
-	private Map<String, String> escapeDots(Map<String, String> content) {
-		Map<String, String> sanitizedContent = new HashMap<>();
+	private LinkedHashMap<String, String> escapeDots(Map<String, String> content) {
+		LinkedHashMap<String, String> sanitizedContent = new LinkedHashMap<>();
 		for (Map.Entry<String, String> entry : content.entrySet()) {
 			String sanitizedKey = entry.getKey().replace(".", "_DOT_");
 			sanitizedContent.put(sanitizedKey, entry.getValue());
@@ -269,15 +277,17 @@ public class BookService {
 		return sanitizedContent;
 	}
 
+
 	// ✅ MongoDB 조회 후 '_DOT_' → '.' 복구
-	private Map<String, String> restoreDots(Map<String, String> content) {
-		Map<String, String> restoredContent = new HashMap<>();
+	private LinkedHashMap<String, String> restoreDots(Map<String, String> content) {
+		LinkedHashMap<String, String> restoredContent = new LinkedHashMap<>();
 		for (Map.Entry<String, String> entry : content.entrySet()) {
 			String originalKey = entry.getKey().replace("_DOT_", ".");
 			restoredContent.put(originalKey, entry.getValue());
 		}
 		return restoredContent;
 	}
+
 
 
 
@@ -478,7 +488,6 @@ public class BookService {
 	private BookResponseDto mapToBookResponseDto(Book book, UUID userId) {
 		// MongoDB에서 책 본문 조회
 		Map<String, String> bookContent = getBookContent(book.getId());
-		book.setContent(convertContentToJson(bookContent));
 
 		Set<UUID> likedUserIds = book.getBookLikes()
 		  .stream()
@@ -495,7 +504,7 @@ public class BookService {
 		);
 	}
 
-	private static String convertContentToJson(Map<String, String> content) {
+	private static String convertContentToJson(LinkedHashMap<String, String> content) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		try {
 			return objectMapper.writeValueAsString(content);
@@ -520,7 +529,7 @@ public class BookService {
 				.orElseThrow(()-> new IllegalArgumentException("❌ 존재하지 않는 사용자입니다."));
 	}
 
-	private List<String> getImagesFromStories(Set<Long> storyIds) {
+	private List<String> getImagesFromStories(List<Long> storyIds) {
 		return storyRepository.findAllById(storyIds).stream()
 		  .flatMap(story -> story.getImages() != null ? story.getImages().stream() : List.<Image>of().stream())
 		  .map(Image::getS3Key)

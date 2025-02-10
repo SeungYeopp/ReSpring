@@ -22,13 +22,12 @@ public class Book {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    // @JsonIgnoreProperties({"createdChallenges", "joinedChallenges"})
     private User author;
 
     private String title;
 
-    @Column(columnDefinition = "TEXT")
-    private String content;
+//    @Column(columnDefinition = "TEXT")
+//    private String content;
 
     private Set<String> tags;
 
@@ -50,7 +49,7 @@ public class Book {
     @CollectionTable(name = "book_story", joinColumns = @JoinColumn(name = "book_id"))
     @Column(name = "story_id")
     @Builder.Default
-    private Set<Long> storyIds = new HashSet<>();
+    private List<Long> storyIds = new ArrayList<>();
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
