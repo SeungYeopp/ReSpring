@@ -34,6 +34,20 @@ export interface Book{
     liked : boolean,
 }
 
+export interface BookInfo{
+    id : number,
+    authorId : string,
+    title : string,
+    coverImage : string,
+    tags : string[],
+    likeCount : number,
+    viewCount : number,
+    likedUsers : string[],
+    createdAt : Date,
+    updatedAt : Date,
+    liked : boolean,
+}
+
 // AI로 생성된 봄날의 서에 대한 인터페이스.
 export interface CompiledBook{
     title : string,
@@ -166,7 +180,7 @@ export const likeOrUnlikeBook = async(bookId : number, userId : string) : Promis
 // 봄날의 서 최근 일주일 간 top 3 반환.
 // 입력 : X
 // 출력 : 봄날의 서 배열
-export const getTopThreeWeeklyBooks = async(userId : string) : Promise<Book[]> => {
+export const getTopThreeWeeklyBooks = async(userId : string) : Promise<BookInfo[]> => {
     try{
         const response = await axiosAPI.get('/books/weeklyTop3', {headers : {'X-User-Id' : `${userId}`}});
         return response.data;
