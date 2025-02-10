@@ -8,6 +8,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.image.service.ImageService;
+import org.ssafy.respring.domain.notification.service.NotificationService;
+import org.ssafy.respring.domain.notification.vo.NotificationType;
+import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
 import org.ssafy.respring.domain.post.dto.request.PostUpdateRequestDto;
 import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
@@ -29,6 +32,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final ImageService imageService;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public Long createPostWithImages(PostRequestDto requestDto, List<MultipartFile> imageFiles) {
@@ -155,6 +159,22 @@ public class PostService {
 
         boolean isLiked = post.toggleLike(userId);
         post.setLikes((long) post.getLikedUsers().size());
+
+        // ✅ 좋아요를 누른 경우만 알림 전송
+        if (isLiked) {
+            UUID postOwnerId = post.getUser().getId();
+
+            // ✅ 본인 게시글에 좋아요를 눌렀을 경우 알림 전송 X
+            if (!postOwnerId.equals(userId)) {
+                notificationService.sendNotification(
+                        postOwnerId, // ✅ 알림 받는 사람 (게시글 작성자)
+                        NotificationType.LIKE,
+                        TargetType.POST,
+                        postId,
+                        "🔥 " + userRepository.findById(userId).get().getUserNickname() + "님이 당신의 게시글을 좋아합니다!"
+                );
+            }
+        }
         return isLiked;
     }
 
