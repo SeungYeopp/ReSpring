@@ -153,9 +153,9 @@ export const deleteBook = async (bookId : number, userId : string) : Promise<boo
 // 봄날의 서 좋아요 또는 좋아요 해제
 // 입력 : 봄날의 서 ID, 유저 ID
 // 출력 : 좋아요는 Liked, 좋아요 해제는 Unliked 반환.
-export const likeOrUnlikeBook = async(bookId : string, userId : string) : Promise<string> => {
+export const likeOrUnlikeBook = async(bookId : number, userId : string) : Promise<string> => {
     try{
-        const response = await axiosAPI.patch(`/books/likes/${bookId}?userId=${userId}`)
+        const response = await axiosAPI.patch(`/books/likes/${bookId}`, null, {headers : {'X-User-Id' : `${userId}`}})
 
         return response.data; // Liked 또는 Unliked가 string 형식으로 반환됨.
     }catch(error : any){
