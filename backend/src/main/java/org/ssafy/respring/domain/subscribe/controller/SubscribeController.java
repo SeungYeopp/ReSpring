@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.ssafy.respring.domain.subscribe.dto.response.SubscribedBookResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedChallengeResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedPostResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedUserResponseDto;
@@ -45,6 +46,12 @@ public class SubscribeController {
     @Operation(summary = "구독한 사용자의 챌린지 조회", description = "내가 구독한 사용자의 챌린지를 조회합니다.")
     public ResponseEntity<List<SubscribedChallengeResponseDto>> getSubscribedUsersChallenges(@PathVariable UUID userId) {
         return ResponseEntity.ok(subscribeService.getSubscribedUsersChallenges(userId));
+    }
+
+    @GetMapping("/{userId}/books")
+    @Operation(summary = "구독한 사용자의 봄날의 서 조회", description = "내가 구독한 사용자가 작성한 봄날의 서를 조회합니다.")
+    public ResponseEntity<List<SubscribedBookResponseDto>> getSubscribedUsersBooks(@PathVariable UUID userId) {
+        return ResponseEntity.ok(subscribeService.getSubscribedUsersBooks(userId));
     }
 
     @GetMapping("/{userId}/users")

@@ -93,7 +93,7 @@ public class CommentController {
     @Operation(summary = "책 댓글 조회", description = "특정 책에 작성된 댓글 목록을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
     @GetMapping("/books/{bookId}")
-    public ResponseEntity<List<CommentResponseDto>> getBookComments(@PathVariable String bookId) {
+    public ResponseEntity<List<CommentResponseDto>> getBookComments(@PathVariable Long bookId) {
         return ResponseEntity.ok(commentService.getCommentsByBookId(bookId));
     }
 
