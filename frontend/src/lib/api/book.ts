@@ -57,7 +57,7 @@ export const makeBook = async (
     content : Content,
     tags: string[],
     storyIds : number[],
-    coverImg : File
+    coverImage : File
 ) : Promise<string> => {
     try{
         const formData = new FormData();
@@ -66,7 +66,7 @@ export const makeBook = async (
         ], {type : 'application/json'}
         ));
         
-        formData.append('표지 이미지', coverImg);
+        formData.append('coverImg', coverImage);
         const response = await axiosAPI.post('/books', formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
         console.log(response.data)
