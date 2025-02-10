@@ -128,6 +128,17 @@ export default function TestPage() {
           <p className="font-ongle text-xl md:text-2xl text-center text-[#4a6d2e]">
             이 텍스트는 <strong>온글잎 박다현체</strong> 폰트입니다.
           </p>
+          <div className="space-y-4 p-6">
+      <p className="font-binggraetaom text-2xl text-[#4a6d2e]">이 텍스트는 빙그레 타옴 폰트입니다.</p>
+      <p className="font-binggraetaombold text-2xl text-[#4a6d2e]">이 텍스트는 빙그레 타옴 볼드 폰트입니다.</p>
+      <p className="font-mapobackpacking text-2xl text-[#4a6d2e]">이 텍스트는 마포 백패킹 폰트입니다.</p>
+      <p className="font-goodneighborsbold text-2xl text-[#4a6d2e]">이 텍스트는 굿네이버스 좋은이웃체 Bold 폰트입니다.</p>
+      <p className="font-goodneighborsregular text-2xl text-[#4a6d2e]">이 텍스트는 굿네이버스 좋은이웃체 Regular 폰트입니다.</p>
+      <p className="font-laundrygothicbold text-2xl text-[#4a6d2e]">이 텍스트는 런드리고딕 Bold 폰트입니다.</p>
+      <p className="font-laundrygothicregular text-2xl text-[#4a6d2e]">이 텍스트는 런드리고딕 Regular 폰트입니다.</p>
+      <p className="font-handon300 text-2xl text-[#4a6d2e]">이 텍스트는 한돈 삼겹살체 300g 폰트입니다.</p>
+      <p className="font-handon600 text-2xl text-[#4a6d2e]">이 텍스트는 한돈 삼겹살체 600g 폰트입니다.</p>
+    </div>
         </div>
       </Card>
     </motion.div>

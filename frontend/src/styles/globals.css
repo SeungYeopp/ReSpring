@@ -129,6 +129,71 @@
   font-style: normal;
 }
 
+/* 폰트 추가 2차 */
+@font-face {
+  font-family: 'BinggraeTaom';
+  src: url('/fonts/BinggraeTaom.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'BinggraeTaomBold';
+  src: url('/fonts/BinggraeTaom-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'MapoBackpacking';
+  src: url('/fonts/MapoBackpacking.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GoodNeighborsBold';
+  src: url('/fonts/굿네이버스 좋은이웃체 Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GoodNeighborsRegular';
+  src: url('/fonts/굿네이버스 좋은이웃체 Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'LaundryGothicBold';
+  src: url('/fonts/런드리고딕 Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'LaundryGothicRegular';
+  src: url('/fonts/런드리고딕 Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Handon300';
+  src: url('/fonts/한돈 삼겹살체 300g.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Handon600';
+  src: url('/fonts/한돈 삼겹살체 600g.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+
 
 
 /* ✅ 스크롤바 제거 (기존 유지) */
