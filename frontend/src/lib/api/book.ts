@@ -58,7 +58,7 @@ export const makeBook = async (
     tags: string[],
     storyIds : number[],
     coverImage : File
-) : Promise<string> => {
+) : Promise<number> => {
     try{
         const formData = new FormData();
         formData.append('requestDto', new Blob([

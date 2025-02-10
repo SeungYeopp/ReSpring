@@ -80,7 +80,7 @@ export default function BookCreatePage() {
       setCreationStatus({
         success: true,
         message: '책이 성공적으로 생성되었습니다!',
-        bookId: bookId
+        bookId: bookId.toString()
       });
 
       // Optional: Reset form after successful creation
