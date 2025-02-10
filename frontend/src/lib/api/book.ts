@@ -166,9 +166,9 @@ export const likeOrUnlikeBook = async(bookId : number, userId : string) : Promis
 // 봄날의 서 최근 일주일 간 top 3 반환.
 // 입력 : X
 // 출력 : 봄날의 서 배열
-export const getTopThreeWeeklyBooks = async() : Promise<Book[]> => {
+export const getTopThreeWeeklyBooks = async(userId : string) : Promise<Book[]> => {
     try{
-        const response = await axiosAPI.get('/books/weeklyTop3');
+        const response = await axiosAPI.get('/books/weeklyTop3', {headers : {'X-User-Id' : `${userId}`}});
         return response.data;
     }catch(error: any){
         throw new Error(error.response?.data?.message || 'getTopThreeWeeklyBooks 함수 API 호출에서 오류가 발생했습니다.');
