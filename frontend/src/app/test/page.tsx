@@ -5,7 +5,7 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { BookOpen, Sprout, Video } from "lucide-react"
+import { BookOpen, Sprout, Video, TypeOutline } from "lucide-react"
 
 export default function TestPage() {
   const [mounted, setMounted] = useState(false)
@@ -48,6 +48,7 @@ export default function TestPage() {
       </div>
 
       <div className="container mx-auto max-w-4xl relative z-10 px-4 py-6 md:px-8 md:py-12">
+        {/* 메인 타이틀 */}
         <motion.h1
           className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#638d3e] text-center mb-2 leading-tight"
           initial={{ opacity: 0, y: -20 }}
@@ -56,6 +57,7 @@ export default function TestPage() {
         >
           다시, 봄(Re:Spring)
         </motion.h1>
+
         <motion.p
           className="text-center text-[#7b7878] mb-8 text-lg md:text-xl"
           initial={{ opacity: 0, y: -20 }}
@@ -65,6 +67,7 @@ export default function TestPage() {
           당신의 새로운 이야기를 시작하세요
         </motion.p>
 
+        {/* 체험 카드 */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -91,6 +94,45 @@ export default function TestPage() {
           </Card>
         </motion.div>
 
+        {/* 🌸 폰트 체험 섹션 */}
+        <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.8 }}
+    >
+      <Card className="rounded-3xl shadow-lg p-6 bg-white border-2 border-[#dfeaa5] mt-10">
+        <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-[#638d3e] text-center flex items-center justify-center">
+          <TypeOutline className="mr-2" size={28} /> 폰트 체험하기
+        </h2>
+        <p className="text-center text-[#7b7878] mb-6">추가한 폰트들을 직접 체험해보세요!</p>
+
+        <div className="space-y-4">
+          <p className="font-godob text-xl md:text-2xl text-center text-[#4a6d2e]">
+            이 텍스트는 <strong>고도 B</strong> 폰트입니다.
+          </p>
+          <p className="font-godom text-xl md:text-2xl text-center text-[#4a6d2e]">
+            이 텍스트는 <strong>고도 M</strong> 폰트입니다.
+          </p>
+          <p className="font-godomaum text-xl md:text-2xl text-center text-[#4a6d2e]">
+            이 텍스트는 <strong>고도 마음체</strong> 폰트입니다.
+          </p>
+          <p className="font-nunugothic text-xl md:text-2xl text-center text-[#4a6d2e]">
+            이 텍스트는 <strong>누누 기본 고딕체</strong> 폰트입니다.
+          </p>
+          <p className="font-samlipbasic text-xl md:text-2xl text-center text-[#4a6d2e]">
+            이 텍스트는 <strong>삼립호빵 베이직</strong> 폰트입니다.
+          </p>
+          <p className="font-samlipoutline text-xl md:text-2xl text-center text-[#4a6d2e]">
+            이 텍스트는 <strong>삼립호빵 아웃라인</strong> 폰트입니다.
+          </p>
+          <p className="font-ongle text-xl md:text-2xl text-center text-[#4a6d2e]">
+            이 텍스트는 <strong>온글잎 박다현체</strong> 폰트입니다.
+          </p>
+        </div>
+      </Card>
+    </motion.div>
+
+        {/* 푸터 */}
         <motion.div
           className="mt-8 text-center text-[#638d3e]"
           initial={{ opacity: 0 }}
@@ -106,4 +148,3 @@ export default function TestPage() {
     </div>
   )
 }
-

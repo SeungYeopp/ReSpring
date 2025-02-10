@@ -11,6 +11,15 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {                                        // public/fonts 에 설치한 폰트 추가
+        godob: ['"GodoB"', 'sans-serif'],                  // 고도 B
+        godom: ['"GodoM"', 'sans-serif'],                  // 고도 M
+        godomaum: ['"GodoMaum"', 'sans-serif'],            // 고도 마음체
+        nunugothic: ['"NunuGothic"', 'sans-serif'],        // 누누 기본 고딕체
+        samlipbasic: ['"SamLipBasic"', 'sans-serif'],      // 삼립호빵 베이직
+        samlipoutline: ['"SamLipOutline"', 'sans-serif'],  // 삼립호빵 아웃라인
+        ongle: ['"OngleLeafParkDaHyun"', 'sans-serif'],    // 온글잎 박다현체
+      },
       animation:{
         "spin-slow": "spin 20s linear infinite",
         "spin-slow-medium": "spin 22s linear infinite",
