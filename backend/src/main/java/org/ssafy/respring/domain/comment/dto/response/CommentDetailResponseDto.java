@@ -17,5 +17,5 @@ public class CommentDetailResponseDto {
     private LocalDateTime updatedAt;
     private Long parentId;
     private Long postId;   // ✅ 게시글 ID 추가
-    private String bookId; // ✅ 책 ID 추가
+    private Long bookId; // ✅ 책 ID 추가
 }

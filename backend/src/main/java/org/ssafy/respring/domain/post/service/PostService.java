@@ -175,7 +175,7 @@ public class PostService {
           .map(comment -> new CommentDto(
             comment.getId(),
             comment.getContent(),
-            comment.getUser().getUserId(),
+            comment.getUser().getId(),
             comment.getUser().getUserNickname(),
             comment.getCreatedAt(),
             comment.getUpdatedAt(),

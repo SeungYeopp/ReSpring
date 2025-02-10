@@ -152,7 +152,7 @@ public class CommentService {
                 comment.getUpdatedAt(),
                 comment.getParent() != null ? comment.getParent().getId() : null,
                 comment.getPost() != null ? comment.getPost().getId() : null,   // ✅ 게시글 ID 추가
-                comment.getBookId() != null ? comment.getBookId() : null
+                comment.getBook() != null ? comment.getBook().getId() : null
         );
     }
 

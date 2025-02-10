@@ -8,7 +8,7 @@ import org.ssafy.respring.domain.book.service.BookLikesRedisService;
 import org.ssafy.respring.domain.book.service.BookViewsRedisService;
 import org.ssafy.respring.domain.challenge.repository.ChallengeRepository;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
+import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.post.repository.PostRepository;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedBookResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedChallengeResponseDto;
