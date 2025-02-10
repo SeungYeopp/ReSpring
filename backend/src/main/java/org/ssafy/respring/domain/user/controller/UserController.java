@@ -1,5 +1,7 @@
 package org.ssafy.respring.domain.user.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.AuthenticationFailedException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -17,6 +19,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/user")
+@Tag(name = "User API", description = "유저 관련 API")
 public class UserController {
     private final UserService userService;
 
@@ -25,6 +28,7 @@ public class UserController {
     }
 
     // ✅ 회원가입 (일반 로그인)
+    @Operation(summary = "유저 회원가입 기능", description = "유저 회원가입 기능입니다.")
     @PostMapping("/signup")
     public ResponseEntity<Void> signupUser(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
         userService.addUser(signUpRequestDto);
@@ -32,6 +36,8 @@ public class UserController {
     }
 
     // ✅ 일반 로그인
+
+    @Operation(summary = "유저 로그인 기능", description = "일반 로그인 기능입니다.")
     @PostMapping("/login")
     public ResponseEntity<Void> login(@RequestBody LoginRequestDto loginRequestDto, HttpSession session)
             throws AuthenticationFailedException {
@@ -42,6 +48,7 @@ public class UserController {
     }
 
     // ✅ 로그인 상태 확인 (OAuth2 + 일반 로그인 통합)
+    @Operation(summary = "회원정보 조회 기능", description = "세션의 정보로 정보를 조회하는 기능입니다")
     @GetMapping("/me")
     public ResponseEntity<Map<String, Object>> getUserProfile(HttpSession session) {
         Object userId = session.getAttribute("userId");
@@ -58,6 +65,7 @@ public class UserController {
     }
 
     // ✅ 로그아웃 (OAuth2 + 일반 로그인 통합)
+    @Operation(summary = "유저 로그아웃 기능", description = "세션을 만료시키는 기능입니다.")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpSession session) {
         session.invalidate();

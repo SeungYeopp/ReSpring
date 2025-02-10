@@ -1,10 +1,8 @@
 package org.ssafy.respring.domain.story.vo;
 
-import co.elastic.clients.elasticsearch.watcher.SlackAttachment;
 import jakarta.persistence.*;
 import lombok.*;
 import org.ssafy.respring.domain.event.vo.Event;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDTO;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.user.vo.User;
 

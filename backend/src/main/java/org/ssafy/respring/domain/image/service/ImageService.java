@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
+import org.ssafy.respring.domain.image.mapper.ImageMapper;
 import org.ssafy.respring.domain.image.repository.ImageRepository;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.post.vo.Post;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
 public class ImageService {
 
     private final ImageRepository imageRepository;
+    private final ImageMapper imageMapper;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
@@ -209,8 +212,8 @@ public class ImageService {
     //✅ DB에 저장 (이미지 업로드 후 객체 Key 저장)
     public String saveImageToDatabase(MultipartFile file, String folder, Post post, Story story) {
         String s3Key = uploadImageToS3(file, folder);
-        String unsignedUrl = getUnsignedS3Url(s3Key); // ✅ Unsigned URL 생성
-        String presignedUrl = generatePresignedUrl(s3Key, 20);
+//        String unsignedUrl = getUnsignedS3Url(s3Key); // ✅ Unsigned URL 생성
+//        String presignedUrl = generatePresignedUrl(s3Key, 20);
 
         Image image = Image.builder()
                 .s3Key(s3Key)
@@ -225,4 +228,21 @@ public class ImageService {
 
         return s3Key;
     }
+
+    // ✅ 특정 Post에 속한 이미지 리스트 반환 (Presigned URL 변환)
+    public List<ImageResponseDto> getImagesByPostId(Long postId) {
+        List<Image> images = imageRepository.findImagesByPostId(postId);
+        return images.stream()
+                .map(image -> imageMapper.toResponseDto(image, generatePresignedUrl(image.getS3Key(), 20))) // ✅ 인스턴스 메서드 사용
+                .collect(Collectors.toList());
+    }
+
+    // ✅ 특정 Story에 속한 이미지 리스트 반환 (Presigned URL 변환)
+    public List<ImageResponseDto> getImagesByStoryId(Long storyId) {
+        List<Image> images = imageRepository.findImagesByStoryId(storyId);
+        return images.stream()
+                .map(image -> imageMapper.toResponseDto(image, generatePresignedUrl(image.getS3Key(), 20))) // ✅ 인스턴스 메서드 사용
+                .collect(Collectors.toList());
+    }
+
 }
