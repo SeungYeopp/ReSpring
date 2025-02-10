@@ -192,7 +192,7 @@ export const getTopThreeWeeklyBooks = async(userId : string) : Promise<BookInfo[
 // 특정 유저에 대한 봄날의 서 전체
 // 입력 : 유저 ID
 // 출력 : 봄날의 서 배열
-export const getAllBooksByUserId = async(userId : string) : Promise<Book[]> => {
+export const getAllBooksByUserId = async(userId : string) : Promise<BookInfo[]> => {
     try{
         const response = await axiosAPI.get(`/books/user/${userId}`);
 
