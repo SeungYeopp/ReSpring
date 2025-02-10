@@ -103,17 +103,17 @@ export const getBookById = async (bookId : number, userId : string) : Promise<Bo
 // 입력 : 봄날의 서 ID, 유저 Id, 제목, 내용, 태그들, 봄날의 서 내 스토리 Id들, 봄날의 서 커버 이미지
 // 출력 : 봄날의 서가 성공적으로 업데이트 되었을 시 true, 그외 false
 export const updateBook = async (
-    bookId : string, 
     userId : string, 
+    bookId : number, 
     title : string, 
-    content : string, 
+    content : Content, 
     tags : string[], 
     storyIds : number[], 
     image : File) : Promise<boolean> => {
         try{
             const formData = new FormData();
             formData.append('requestDto', new Blob([
-                JSON.stringify({title, content, tags, storyIds})
+                JSON.stringify({userId, bookId, title, content, tags, storyIds})
             ], {type : 'application/json'}
             ));
 
