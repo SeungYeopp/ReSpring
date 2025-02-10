@@ -205,7 +205,7 @@ public class BookService {
 		  .map(comment -> new CommentResponseDto(
 			comment.getId(),
 			comment.getContent(),
-			comment.getUsername(),
+			comment.getUserNickname(),
 			comment.getCreatedAt(),
 			comment.getUpdatedAt(),
 			comment.getParentId()

@@ -1,14 +1,22 @@
 package org.ssafy.respring.domain.comment.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.ssafy.respring.domain.book.repository.BookRepository;
 import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.comment.dto.request.CommentRequestDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentDetailResponseDto;
+import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.comment.repository.CommentRepository;
 import org.ssafy.respring.domain.comment.vo.Comment;
+import org.ssafy.respring.domain.notification.service.NotificationSender;
+import org.ssafy.respring.domain.notification.service.NotificationService;
+import org.ssafy.respring.domain.notification.vo.NotificationType;
+import org.ssafy.respring.domain.notification.vo.TargetType;
+import org.ssafy.respring.domain.post.repository.PostRepository;
 import org.ssafy.respring.domain.post.vo.Post;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
@@ -23,6 +31,11 @@ import java.util.stream.Collectors;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+
+    @Lazy
+    private final NotificationSender notificationService;
+    private final PostRepository postRepository;
+    private final BookRepository bookRepository;
 
     public List<CommentDetailResponseDto> getMyPostComments(UUID userId) {
         return commentRepository.findByUserIdAndPostNotNull(userId)
@@ -44,15 +57,16 @@ public class CommentService {
 
         // 3. 게시글 또는 책 설정
         if (dto.getPostId() != null) {
-            Post post = new Post();
-            post.setId(dto.getPostId());
+            Post post = postRepository.findById(dto.getPostId())
+                    .orElseThrow(() -> new IllegalArgumentException("❌ 게시글을 찾을 수 없습니다. ID: " + dto.getPostId()));
             comment.setPost(post);
         }
 
         if (dto.getBookId() != null) {
-            Book book = new Book();
-            book.setId(dto.getBookId());
+            Book book = bookRepository.findById(dto.getBookId())
+                    .orElseThrow(() -> new IllegalArgumentException("❌ 게시글을 찾을 수 없습니다. ID: " + dto.getBookId()));
             comment.setBook(book);
+
         }
 
         // 4. 부모 댓글 설정
@@ -65,7 +79,64 @@ public class CommentService {
 
         // 5. 저장 및 반환
         Comment savedComment = commentRepository.save(comment);
+
+        // ✅ 알림 전송 로직 추가
+        sendNotificationForComment(savedComment, user);
+
         return mapToResponseDto(savedComment);
+    }
+
+    // ✅ 알림 전송 메서드 추가
+    private void sendNotificationForComment(Comment comment, User commenter) {
+        if (comment.getPost() != null) {
+            Post post = comment.getPost();
+            if (post.getUser() == null) {
+                throw new IllegalStateException("❌ 게시글의 작성자 정보가 없습니다. postId=" + post.getId());
+            }
+            User postOwner = post.getUser();
+            if (!postOwner.getId().equals(commenter.getId())) {
+                notificationService.sendNotification(
+                        postOwner.getId(),
+                        NotificationType.COMMENT,
+                        TargetType.POST,
+                        post.getId(),
+                        commenter.getUserNickname() + "님이 당신의 게시글에 댓글을 남겼습니다."
+                );
+            }
+        }
+
+        if (comment.getBook() != null) {
+            Book book = comment.getBook();
+            if(book.getAuthor() == null){
+                throw new IllegalStateException("❌ 자서전의 작성자 정보가 없습니다. postId=" + book.getId());
+            }
+            User bookOwner = book.getAuthor();
+            if (!bookOwner.getId().equals(commenter.getId())) {
+                // 책 작성자에게 알림 전송
+                notificationService.sendNotification(
+                        bookOwner.getId(),
+                        NotificationType.COMMENT,
+                        TargetType.BOOK,
+                        book.getId(),
+                        commenter.getUserNickname() + "님이 당신의 책에 댓글을 남겼습니다."
+                );
+            }
+        }
+
+        if (comment.getParent() != null) {
+            Comment parentComment = comment.getParent();
+            User parentUser = parentComment.getUser();
+            if (!parentUser.getId().equals(commenter.getId())) {
+                // 부모 댓글 작성자에게 알림 전송 (대댓글 알림)
+                notificationService.sendNotification(
+                        parentUser.getId(),
+                        NotificationType.REPLY,
+                        TargetType.COMMENT,
+                        parentComment.getId(),
+                        commenter.getUserNickname() + "님이 당신의 댓글에 답글을 남겼습니다."
+                );
+            }
+        }
     }
 
     @Transactional
@@ -101,24 +172,24 @@ public class CommentService {
         comment.setDeleted(true);
     }
 
-    public List<CommentResponseDto> getCommentsByPostId(Long postId) {
+    public List<CommentDto> getCommentsByPostId(Long postId) {
         return commentRepository.findByPostIdWithFetchJoin(postId)
                 .stream()
-                .map(this::mapToResponseDto)
+                .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
-    public List<CommentResponseDto> getCommentsByBookId(Long bookId) {
+    public List<CommentDto> getCommentsByBookId(Long bookId) {
         return commentRepository.findByBookIdWithFetchJoin(bookId)
                 .stream()
-                .map(this::mapToResponseDto)
+                .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
-    public List<CommentResponseDto> getChildrenByParentId(Long parentId) {
+    public List<CommentDetailResponseDto> getChildrenByParentId(Long parentId) {
         List<Comment> children = commentRepository.findChildrenByParentId(parentId);
         return children.stream()
-                .map(this::mapToResponseDto)
+                .map(this::mapToDetailResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -153,6 +224,19 @@ public class CommentService {
                 comment.getParent() != null ? comment.getParent().getId() : null,
                 comment.getPost() != null ? comment.getPost().getId() : null,   // ✅ 게시글 ID 추가
                 comment.getBook() != null ? comment.getBook().getId() : null
+        );
+    }
+
+    private CommentDto mapToDto(Comment comment) {
+        String content = comment.isDeleted() ? "삭제된 댓글입니다." : comment.getContent();
+        return new CommentDto(
+                comment.getId(),
+                content,
+                comment.getUser().getId(),
+                comment.getUser().getUserNickname(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt(),
+                comment.getParent() != null ? comment.getParent().getId() : null
         );
     }
 
