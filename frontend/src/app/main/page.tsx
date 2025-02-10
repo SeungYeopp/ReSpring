@@ -9,6 +9,14 @@ export default function Home() {
   const [visibleCount, setVisibleCount] = useState(1);
 
   useEffect(() => {
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+
+  useEffect(() => {
     if (visibleCount < images.length) {
       const timeout = setTimeout(() => {
         setVisibleCount((prev) => prev + 1);
@@ -19,7 +27,7 @@ export default function Home() {
   }, [visibleCount]);
 
   return (
-    <div className="relative flex flex-col md:flex-row h-screen bg-gradient-to-r from-gray-50 to-white">
+    <div className="relative flex flex-col md:flex-row md:-my-4 h-screen bg-gradient-to-r md:from-white md:to-gray-100">
       <div className="absolute bottom-0 mb-24 -ml-12 md:hidden w-full h-[70%] overflow-hidden">
         {images.slice(0, visibleCount).map((src, i) => (
           <motion.div
