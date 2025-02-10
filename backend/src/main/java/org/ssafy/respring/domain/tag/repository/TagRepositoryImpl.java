@@ -100,7 +100,10 @@ public class TagRepositoryImpl implements TagRepositoryQueryDsl {
                   .where(uc.user.id.eq(userId))
               ))
           )
-          .orderBy(ct.tag.count().desc()) // 태그가 많이 연결된 챌린지를 우선 추천
+          .orderBy(ct.tag.count().desc(),
+                    ct.tag.id.count().divide( // ✅ Jaccard 유사도 기반 정렬
+                        queryFactory.select(ct.tag.id.count()).from(ct).where(ct.challenge.id.eq(c.id))
+                      ).desc())
           .limit(10)
           .fetch();
     }
