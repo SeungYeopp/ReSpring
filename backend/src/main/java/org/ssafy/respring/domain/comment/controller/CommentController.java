@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.ssafy.respring.domain.comment.dto.request.CommentRequestDto;
+import org.ssafy.respring.domain.comment.dto.response.CommentDetailResponseDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.comment.service.CommentService;
 
@@ -24,7 +25,7 @@ public class CommentController {
     @Operation(summary = "나의 게시글 댓글 조회", description = "사용자가 작성한 모든 게시글 댓글을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
     @GetMapping("/posts")
-    public ResponseEntity<List<CommentResponseDto>> getMyPostComments(@RequestParam UUID userId) {
+    public ResponseEntity<List<CommentDetailResponseDto>> getMyPostComments(@RequestParam UUID userId) {
         return ResponseEntity.ok(commentService.getMyPostComments(userId));
     }
 
@@ -99,7 +100,7 @@ public class CommentController {
     @Operation(summary = "나의 책 댓글 조회", description = "사용자가 작성한 모든 책 댓글을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
     @GetMapping("/books")
-    public ResponseEntity<List<CommentResponseDto>> getMyBookComments(@RequestParam UUID userId) {
+    public ResponseEntity<List<CommentDetailResponseDto>> getMyBookComments(@RequestParam UUID userId) {
         return ResponseEntity.ok(commentService.getMyBookComments(userId));
     }
 
