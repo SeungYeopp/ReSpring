@@ -177,19 +177,3 @@ export const getAllSubscribersChallenges = async (userId: string): Promise<Chall
     throw new Error("getAllSubscribersChallenges 에러 발생");
   }
 };
-
-/**
- * 특정 사용자가 다른 사용자를 구독하고 있는지 확인하는 함수
- * @param subscriberId - 구독하는 사용자 ID
- * @param subscribedToId - 구독 대상 사용자 ID
- * @returns Promise<boolean> - 구독 여부 반환
- */
-export const isSubscribed = async (subscriberId: string, subscribedToId: string): Promise<boolean> => {
-  try {
-    const response = await axiosAPI.get(`/subscriptions/${subscriberId}/${subscribedToId}/check`);
-    return response.data.isSubscribed;
-  } catch (error) {
-    console.error(`isSubscribed 에러 발생, 발생한 subscriberId: ${subscriberId}, subscribedToId: ${subscribedToId}`, error);
-    throw new Error("isSubscribed 에러 발생");
-  }
-};

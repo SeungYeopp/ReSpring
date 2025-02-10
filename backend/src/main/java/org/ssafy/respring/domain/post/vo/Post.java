@@ -3,7 +3,6 @@ package org.ssafy.respring.domain.post.vo;
 import jakarta.persistence.*;
 import lombok.*;
 import org.ssafy.respring.domain.comment.vo.Comment;
-import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
@@ -43,10 +42,6 @@ public class Post {
     @CollectionTable(name = "post_likes", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "user_id")
     private Set<UUID> likedUsers = new HashSet<>();
-
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Image> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

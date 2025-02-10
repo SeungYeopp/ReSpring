@@ -1,7 +1,5 @@
-"use client"
-
-import type React from "react"
-import { motion } from "framer-motion"
+import React from 'react'
+import { motion } from 'framer-motion'
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
@@ -18,16 +16,16 @@ const SocialFeatureIntro: React.FC<SocialFeatureIntroProps> = ({ onNext, onPrevi
   ]
 
   return (
-    <div className="space-y-6 md:space-y-8 max-w-2xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-[#000000] text-center">
-          다른 사용자들과 연결하고 공감해보세요!
-        </h2>
-        <p className="text-sm md:text-base text-[#7b7878] text-center mt-2">
-          당신의 이야기를 통해 새로운 친구를 만들어보세요.
-        </p>
+    <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h2 className="text-xl font-semibold text-[#000000] text-center">다른 사용자들과 연결하고 공감해보세요!</h2>
+        <p className="text-sm text-[#7b7878] text-center mt-2">당신의 이야기를 통해 새로운 친구를 만들어보세요.</p>
       </motion.div>
-      <div className="space-y-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
+      <div className="space-y-4">
         {sampleFriends.map((friend, index) => (
           <motion.div
             key={index}
@@ -45,23 +43,24 @@ const SocialFeatureIntro: React.FC<SocialFeatureIntroProps> = ({ onNext, onPrevi
               <p className="text-sm text-[#7b7878]">{friend.story}</p>
             </div>
             <Button variant="outline" className="text-[#638d3e] hover:text-[#96b23c] border-[#dfeaa5]">
-              구독하기
+              팔로우하기
             </Button>
           </motion.div>
         ))}
       </div>
-      <div className="space-y-4 md:flex md:flex-row-reverse md:space-y-0 md:space-x-4 md:space-x-reverse">
-        <Button onClick={onNext} className="w-full md:w-1/2 bg-[#96b23c] text-[#ffffff] hover:bg-[#638d3e]">
-          다음 단계로
-        </Button>
-        <Button
-          onClick={onPrevious}
-          variant="outline"
-          className="w-full md:w-1/2 text-[#638d3e] hover:text-[#96b23c] border-[#dfeaa5]"
-        >
-          이전 단계로
-        </Button>
-      </div>
+      <Button
+        onClick={onNext}
+        className="w-full bg-[#96b23c] text-[#ffffff] hover:bg-[#638d3e]"
+      >
+        다음 단계로
+      </Button>
+      <Button
+        onClick={onPrevious}
+        variant="outline"
+        className="w-full text-[#638d3e] hover:text-[#96b23c] border-[#dfeaa5] mt-2"
+      >
+        이전 단계로
+      </Button>
     </div>
   )
 }

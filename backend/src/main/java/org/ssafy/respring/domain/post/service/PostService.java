@@ -8,9 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.image.service.ImageService;
-import org.ssafy.respring.domain.notification.service.NotificationService;
-import org.ssafy.respring.domain.notification.vo.NotificationType;
-import org.ssafy.respring.domain.notification.vo.TargetType;
+import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
 import org.ssafy.respring.domain.post.dto.request.PostUpdateRequestDto;
 import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
@@ -32,111 +30,145 @@ public class PostService {
     private final PostRepository postRepository;
     private final ImageService imageService;
     private final UserRepository userRepository;
-    private final NotificationService notificationService;
 
+    /**
+     * 📝 포스트 생성
+     */
     @Transactional
     public Long createPostWithImages(PostRequestDto requestDto, List<MultipartFile> imageFiles) {
+        // ✅ 유저 조회
         User user = userRepository.findById(requestDto.getUserId())
-          .orElseThrow(() -> new RuntimeException("User not found with ID: " + requestDto.getUserId()));
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + requestDto.getUserId()));
 
+        // ✅ 포스트 저장
         Post post = Post.builder()
-          .title(requestDto.getTitle())
-          .content(requestDto.getContent())
-          .category(requestDto.getCategory())
-          .likes(0L)
-          .user(user)
-          .build();
+                .title(requestDto.getTitle())
+                .content(requestDto.getContent())
+                .category(requestDto.getCategory())
+                .likes(0L)
+                .user(user)
+                .build();
 
         postRepository.save(post);
 
+        // ✅ 이미지 저장
         if (imageFiles != null && !imageFiles.isEmpty()) {
-            imageService.saveImages(imageFiles, post);
+            imageService.saveImages(imageFiles, ImageType.POST, post.getId());
         }
 
         return post.getId();
     }
 
+    /**
+     * 📝 포스트 수정
+     */
     @Transactional
     public void updatePost(Long postId, PostUpdateRequestDto requestDto, List<MultipartFile> imageFiles) {
+        // ✅ 포스트 조회
         Post post = postRepository.findById(postId)
-          .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
+                .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
 
+        // ✅ 작성자 검증
         if (!post.getUser().getId().equals(requestDto.getUserId())) {
             throw new IllegalArgumentException("You are not authorized to modify this post.");
         }
 
-        post.setTitle(requestDto.getTitle());
-        post.setContent(requestDto.getContent());
-        post.setCategory(requestDto.getCategory());
+        boolean isUpdated = false;
 
-        List<Long> deleteImageIds = requestDto.getDeleteImageIds();
-        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-            imageService.deleteImages(deleteImageIds);
+        if (!post.getTitle().equals(requestDto.getTitle())) {
+            post.setTitle(requestDto.getTitle());
+            isUpdated = true;
+        }
+        if (!post.getContent().equals(requestDto.getContent())) {
+            post.setContent(requestDto.getContent());
+            isUpdated = true;
+        }
+        if (!post.getCategory().equals(requestDto.getCategory())) {
+            post.setCategory(requestDto.getCategory());
+            isUpdated = true;
         }
 
+        // ✅ 기존 이미지 삭제
+        List<Long> deleteImageIds = requestDto.getDeleteImageIds();
+        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+            imageService.deleteImages(ImageType.POST, postId);
+        }
+
+        // ✅ 새로운 이미지 추가
         if (imageFiles != null && !imageFiles.isEmpty()) {
-            imageService.saveImages(imageFiles, post);
+            imageService.saveImages(imageFiles, ImageType.POST, postId);
+        }
+
+        // ✅ 변경된 경우만 업데이트
+        if (isUpdated) {
+            postRepository.save(post);
         }
     }
 
+    /**
+     * 📝 포스트 삭제
+     */
     @Transactional
     public void deletePost(Long postId, UUID requestUserId) {
+        // ✅ 포스트 조회
         Post post = postRepository.findById(postId)
-          .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
+                .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
 
+        // ✅ 작성자 검증
         if (!post.getUser().getId().equals(requestUserId)) {
             throw new IllegalArgumentException("You are not authorized to delete this post.");
         }
 
-        List<Long> imageIds = post.getImages().stream()
-          .map(image -> image.getImageId())
-          .collect(Collectors.toList());
-        imageService.deleteImages(imageIds);
+        // ✅ 관련 이미지 삭제
+        imageService.deleteImages(ImageType.POST, postId);
 
+        // ✅ 포스트 삭제
         postRepository.delete(post);
     }
 
+    /**
+     * 📝 포스트 상세 조회
+     */
     public PostResponseDto getPost(Long id) {
-        Post post = postRepository.findPostWithComments(id);
-        if (post == null) {
-            throw new IllegalArgumentException("Post not found with id: " + id);
-        }
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + id));
+
         return toResponseDto(post);
     }
 
     public List<PostResponseDto> getAllPosts() {
         return postRepository.findAll()
-          .stream()
-          .map(this::toResponseDto)
-          .collect(Collectors.toList());
+                .stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> getMyPosts(UUID userId) {
         return postRepository.findByUser_Id(userId)
-          .stream()
-          .map(this::toResponseDto)
-          .collect(Collectors.toList());
+                .stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> getPostsByCursor(Long lastId, int limit) {
         return postRepository.findByCursor(lastId, limit)
-          .stream()
-          .map(this::toResponseDto)
-          .collect(Collectors.toList());
+                .stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> searchPostsByTitle(String title) {
         return postRepository.searchByTitle(title)
-          .stream()
-          .map(this::toResponseDto)
-          .collect(Collectors.toList());
+                .stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> filterPostsByCategory(String category) {
         return postRepository.filterByCategory(category)
-          .stream()
-          .map(this::toResponseDto)
-          .collect(Collectors.toList());
+                .stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> getPopularPosts() {
@@ -144,37 +176,21 @@ public class PostService {
         List<Tuple> results = postRepository.findTop3ByLikesInPastWeekWithComments(oneWeekAgo);
 
         return results.stream()
-          .map(tuple -> {
-              Post post = tuple.get(0, Post.class);
-              Long commentCount = tuple.get(1, Long.class);
-              return toResponseDto(post);
-          })
-          .collect(Collectors.toList());
+                .map(tuple -> {
+                    Post post = tuple.get(0, Post.class);
+                    Long commentCount = tuple.get(1, Long.class);
+                    return toResponseDto(post);
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional
     public boolean toggleLike(Long postId, UUID userId) {
         Post post = postRepository.findById(postId)
-          .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
+                .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
 
         boolean isLiked = post.toggleLike(userId);
         post.setLikes((long) post.getLikedUsers().size());
-
-        // ✅ 좋아요를 누른 경우만 알림 전송
-        if (isLiked) {
-            UUID postOwnerId = post.getUser().getId();
-
-            // ✅ 본인 게시글에 좋아요를 눌렀을 경우 알림 전송 X
-            if (!postOwnerId.equals(userId)) {
-                notificationService.sendNotification(
-                        postOwnerId, // ✅ 알림 받는 사람 (게시글 작성자)
-                        NotificationType.LIKE,
-                        TargetType.POST,
-                        postId,
-                        "🔥 " + userRepository.findById(userId).get().getUserNickname() + "님이 당신의 게시글을 좋아합니다!"
-                );
-            }
-        }
         return isLiked;
     }
 
@@ -182,40 +198,38 @@ public class PostService {
         return postRepository.isPostLikedByUser(postId, userId);
     }
 
+    /**
+     * 📝 Post → PostResponseDto 변환
+     */
     private PostResponseDto toResponseDto(Post post) {
-        List<ImageResponseDto> imageDtos = post.getImages().stream()
-                .map(image -> new ImageResponseDto(
-                        image.getImageId(),
-                        imageService.generatePresignedUrl(image.getS3Key(), 60) // ✅ Presigned URL 변환 적용
+        // ✅ Image 테이블에서 Post에 해당하는 이미지 조회
+        List<ImageResponseDto> imageDtos = imageService.getImagesByEntity(ImageType.POST, post.getId());
+
+        List<CommentDto> commentDtos = post.getComments().stream()
+                .map(comment -> new CommentDto(
+                        comment.getId(),
+                        comment.getContent(),
+                        comment.getUser().getId(),
+                        comment.getUser().getUserNickname(),
+                        comment.getCreatedAt(),
+                        comment.getUpdatedAt(),
+                        comment.getParent() != null ? comment.getParent().getId() : null
                 ))
                 .collect(Collectors.toList());
 
-        List<CommentDto> commentDtos = (post.getComments() == null) ?
-          List.of() : post.getComments().stream()
-          .map(comment -> new CommentDto(
-            comment.getId(),
-            comment.getContent(),
-            comment.getUser().getId(),
-            comment.getUser().getUserNickname(),
-            comment.getCreatedAt(),
-            comment.getUpdatedAt(),
-            comment.getParent() != null ? comment.getParent().getId() : null
-          ))
-          .collect(Collectors.toList());
-
         return new PostResponseDto(
-          post.getId(),
-          post.getTitle(),
-          post.getContent(),
-          post.getCategory(),
-          post.getUser().getId(),
-          post.getUser().getUserNickname(),
-          post.getCreatedAt(),
-          post.getUpdatedAt(),
-          post.getLikes(),
-          imageDtos,
-          commentDtos.size(),
-          commentDtos
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getCategory(),
+                post.getUser().getId(),
+                post.getUser().getUserNickname(),
+                post.getCreatedAt(),
+                post.getUpdatedAt(),
+                post.getLikes(),
+                imageDtos,
+                commentDtos.size(),
+                commentDtos
         );
     }
 }

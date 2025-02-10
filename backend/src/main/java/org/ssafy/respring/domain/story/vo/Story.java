@@ -3,12 +3,9 @@ package org.ssafy.respring.domain.story.vo;
 import jakarta.persistence.*;
 import lombok.*;
 import org.ssafy.respring.domain.event.vo.Event;
-import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "story")
@@ -18,7 +15,7 @@ import java.util.List;
 @Builder
 public class Story {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // AUTO_INCREMENT와 연결
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -29,7 +26,6 @@ public class Story {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-
     private String title;
     private String content;
 
@@ -38,11 +34,6 @@ public class Story {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Image> images = new ArrayList<>();
-
 
     @PrePersist
     public void prePersist() {

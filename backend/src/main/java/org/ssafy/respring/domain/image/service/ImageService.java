@@ -9,6 +9,7 @@ import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.mapper.ImageMapper;
 import org.ssafy.respring.domain.image.repository.ImageRepository;
 import org.ssafy.respring.domain.image.vo.Image;
+import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.post.vo.Post;
 import org.ssafy.respring.domain.story.vo.Story;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -25,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -50,99 +52,6 @@ public class ImageService {
 
     private final S3Client s3Client;
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
-
-
-
-
-
-    /**
-     * 단일 이미지 저장 (커버 이미지용)
-     */
-    public String saveCoverImage(MultipartFile coverImg) {
-        if (coverImg == null || coverImg.isEmpty()) return null;
-
-        File uploadDirFolder = new File(uploadDir);
-        if (!uploadDirFolder.exists() && !uploadDirFolder.mkdirs()) {
-            throw new RuntimeException("Failed to create upload directory: " + uploadDir);
-        }
-
-        try {
-            String extension = coverImg.getOriginalFilename() != null
-                    ? coverImg.getOriginalFilename().substring(coverImg.getOriginalFilename().lastIndexOf("."))
-                    : "";
-            String uniqueFileName = UUID.randomUUID() + extension;
-            File file = new File(uploadDirFolder, uniqueFileName);
-
-            coverImg.transferTo(file);
-            return file.getAbsolutePath();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save file: " + coverImg.getOriginalFilename(), e);
-        }
-    }
-//
-//    /**
-//     * 다중 이미지 저장 (Post에 연결)
-//     */
-    public List<String> saveImages(List<MultipartFile> images, Post post) {
-        return images.stream()
-                .map(image -> saveAndPersistImage(image, post, null))
-                .collect(Collectors.toList());
-    }
-//
-//    /**
-//     * 다중 이미지 저장 (Story에 연결)
-//     */
-    public List<String> saveImages(List<MultipartFile> images, Story story) {
-        return images.stream()
-                .map(image -> saveAndPersistImage(image, null, story))
-                .collect(Collectors.toList());
-    }
-//
-//    /**
-//     * 이미지 저장 후 DB에 Image 엔티티 저장
-//     */
-    private String saveAndPersistImage(MultipartFile image, Post post, Story story) {
-        if (image == null || image.isEmpty()) return null;
-
-        String imageUrl = saveCoverImage(image);
-
-        Image imgEntity = Image.builder()
-                .s3Key(imageUrl)
-                .post(post)
-                .story(story)
-                .build();
-
-        imageRepository.save(imgEntity);
-        return imageUrl;
-    }
-//
-//    /**
-//     * 특정 이미지 삭제 (파일 및 DB에서 삭제)
-//     */
-    public void deleteImages(List<Long> imageIds) {
-        if (imageIds == null || imageIds.isEmpty()) {
-            return;
-        }
-
-        // DB에서 이미지 조회
-        List<Image> imagesToDelete = imageRepository.findAllById(imageIds);
-
-        // 이미지 파일 삭제
-        for (Image image : imagesToDelete) {
-            File file = new File(image.getS3Key());
-            if (file.exists() && !file.delete()) {
-                throw new RuntimeException("Failed to delete file: " + file.getAbsolutePath());
-            }
-        }
-
-        // DB에서 이미지 삭제
-        imageRepository.deleteAll(imagesToDelete);
-    }
-
-
-
     private S3Presigner createPresigner() {
         return S3Presigner.builder()
                 .region(Region.of(region))
@@ -156,7 +65,6 @@ public class ImageService {
             throw new IllegalArgumentException("파일이 비어 있습니다.");
         }
 
-        // 파일명 생성 (UUID + 확장자 유지)
         String extension = file.getOriginalFilename() != null
                 ? file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."))
                 : "";
@@ -176,14 +84,6 @@ public class ImageService {
         }
 
         return objectKey; // ✅ S3 객체 Key 반환
-    }
-
-     // ✅ Unsigned URL 반환 (S3 객체 키를 정적인 URL로 변환)
-    public String getUnsignedS3Url(String objectKey) {
-        if (objectKey == null) {
-            return null;
-        }
-        return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + objectKey;
     }
 
      //✅ Presigned URL 생성 (제한된 시간 동안만 접근 가능)
@@ -210,39 +110,69 @@ public class ImageService {
     }
 
     //✅ DB에 저장 (이미지 업로드 후 객체 Key 저장)
-    public String saveImageToDatabase(MultipartFile file, String folder, Post post, Story story) {
+    public String saveImageToDatabase(MultipartFile file, String folder, ImageType imageType, Long entityId) {
         String s3Key = uploadImageToS3(file, folder);
-//        String unsignedUrl = getUnsignedS3Url(s3Key); // ✅ Unsigned URL 생성
-//        String presignedUrl = generatePresignedUrl(s3Key, 20);
 
         Image image = Image.builder()
                 .s3Key(s3Key)
-                .post(post)
-                .story(story)
+                .imageType(imageType)
+                .entityId(entityId)
                 .build();
 
         imageRepository.save(image);
 
-//        System.out.println("S3 객체 키: " + s3Key);
-//        System.out.println("생성된 Presigned URL: " + presignedUrl);
-
         return s3Key;
     }
 
-    // ✅ 특정 Post에 속한 이미지 리스트 반환 (Presigned URL 변환)
-    public List<ImageResponseDto> getImagesByPostId(Long postId) {
-        List<Image> images = imageRepository.findImagesByPostId(postId);
-        return images.stream()
-                .map(image -> imageMapper.toResponseDto(image, generatePresignedUrl(image.getS3Key(), 20))) // ✅ 인스턴스 메서드 사용
+    public List<String> saveImages(List<MultipartFile> files, ImageType imageType, Long entityId) {
+        String folder = imageType.name().toLowerCase() + "s"; // ✅ 폴더명 자동 생성
+        return files.stream()
+                .map(file -> saveImageToDatabase(file, folder, imageType, entityId)) // ✅ 자동 생성된 폴더명 사용
                 .collect(Collectors.toList());
     }
 
-    // ✅ 특정 Story에 속한 이미지 리스트 반환 (Presigned URL 변환)
-    public List<ImageResponseDto> getImagesByStoryId(Long storyId) {
-        List<Image> images = imageRepository.findImagesByStoryId(storyId);
+    public String saveImage(MultipartFile file, ImageType imageType, Long entityId) {
+        String folder = imageType.name().toLowerCase() + "s"; // ✅ 폴더명 자동 생성
+        return saveImageToDatabase(file, folder, imageType, entityId);
+    }
+
+    public void deleteImages(ImageType imageType, Long entityId) {
+        List<Image> imagesToDelete = imageRepository.findByImageTypeAndEntityId(imageType, entityId);
+
+        for (Image image : imagesToDelete) {
+            String objectKey = image.getS3Key();
+            if (objectKey != null && !objectKey.isEmpty()) {
+                deleteImageFromS3(objectKey);
+            }
+        }
+
+        imageRepository.deleteAll(imagesToDelete);
+    }
+
+    private void deleteImageFromS3(String objectKey) {
+        try {
+            s3Client.deleteObject(builder -> builder
+                    .bucket(bucketName)
+                    .key(objectKey)
+                    .build());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public List<ImageResponseDto> getImagesByEntity(ImageType imageType, Long entityId) {
+        List<Image> images = imageRepository.findByImageTypeAndEntityId(imageType, entityId);
         return images.stream()
-                .map(image -> imageMapper.toResponseDto(image, generatePresignedUrl(image.getS3Key(), 20))) // ✅ 인스턴스 메서드 사용
+                .map(image -> new ImageResponseDto(image.getImageId(), generatePresignedUrl(image.getS3Key(), 60)))
                 .collect(Collectors.toList());
+    }
+
+    public String getSingleImageByEntity(ImageType imageType, Long entityId) {
+        Optional<Image> image = imageRepository.findByImageTypeAndEntityId(imageType, entityId).stream().findFirst();
+
+        return image.map(img -> generatePresignedUrl(img.getS3Key(), 60)).orElse(null);
     }
 
 }

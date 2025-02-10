@@ -11,28 +11,24 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.elasticsearch.client.RestClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ElasticSearchConfig {
 
+    @Value("${spring.elasticsearch.uris}")
+    private String elasticUri;
+
+    @Value("${spring.elasticsearch.username}")
+    private String elasticUser;
+
+    @Value("${spring.elasticsearch.password}")
+    private String elasticPassword;
+
     @Bean
     public ElasticsearchClient elasticsearchClient() {
-
-        String elasticUri = System.getenv("ELASTICSEARCH_URI");
-        String elasticUser = System.getenv("ELASTICSEARCH_USERNAME");
-        String elasticPassword = System.getenv("ELASTICSEARCH_PASSWORD");
-
-        if (elasticUri == null || elasticUri.isEmpty()) {
-            throw new IllegalArgumentException("Environment variable 'ELASTICSEARCH_URI' is missing or empty.");
-        }
-        if (elasticUser == null || elasticUser.isEmpty()) {
-            throw new IllegalArgumentException("Environment variable 'ELASTICSEARCH_USERNAME' is missing or empty.");
-        }
-        if (elasticPassword == null || elasticPassword.isEmpty()) {
-            throw new IllegalArgumentException("Environment variable 'ELASTICSEARCH_PASSWORD' is missing or empty.");
-        }
 
         BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY,
