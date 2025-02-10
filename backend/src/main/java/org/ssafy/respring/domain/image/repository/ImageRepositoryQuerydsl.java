@@ -5,6 +5,5 @@ import org.ssafy.respring.domain.image.vo.Image;
 import java.util.List;
 
 public interface ImageRepositoryQuerydsl {
-    List<Image> findImagesByPostId(Long postId);
-    List<Image> findImagesByStoryId(Long storyId);
+    List<Image> findImagesByTypeAndEntityId(String imageType, Long entityId);
 }
