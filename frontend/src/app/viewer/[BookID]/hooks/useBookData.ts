@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Chapter, getBookById } from "@/lib/api";
-import {Book, CompiledBook} from "@/lib/api"
+import { getBookById } from "@/lib/api";
+import {Book, Content} from "@/lib/api"
 
 // ✅ 기본 목업 데이터 (API 실패 시 사용)
 const fallbackBookData = `
@@ -576,11 +576,9 @@ const fallbackBookData = `
 
 // ✅ API에서 책 데이터 가져오기
   export function useBookData(bookId: string) {
-      const [bookContent, setBookContent] = useState<string>(fallbackBookData);
+      const [bookContent, setBookContent] = useState<Content>();
       const [bookTitle, setBookTitle] = useState<string>();
       const [isLoading, setIsLoading] = useState<boolean>(true);
-      const [bookChapters, setBookChapters] = useState<Chapter[]>();
-      const [plainBookContent, setPlainBookContent] = useState<string>(); // 챕터1 -> 내용 -> 챕터2 -> 내용 -> ..  이렇게 이어져 있는 string.
     
       useEffect(() => {
         const fetchBookData = async () => {
@@ -588,26 +586,27 @@ const fallbackBookData = `
             setIsLoading(true);
             console.log(`📢 API 요청 시작: /books/${bookId}`);
     
-            const book : Book = await getBookById(bookId);
+            const tempUserId = ""
+            const book : Book = await getBookById(parseInt(bookId), tempUserId);
     
-            if (!book.content || book.content.trim() === "") {
+            if (!book.content || Object.keys(book.content).length === 0) {
               throw new Error("📢 책 내용이 비어 있습니다. 목업 데이터를 사용합니다.");
             }
 
             setBookTitle(book.title);
             setBookContent(book.content);
 
-            const chapters = JSON.parse(book.content) as Chapter[];
-            setBookChapters(chapters);
+            // const chapters = JSON.parse(book.content) as Chapter[];
+            // setBookChapters(chapters);
 
-            const newContentText = chapters.map((chapter) => `${chapter.chapterTitle}\n${chapter.content}`).join('\n');
-            setPlainBookContent(newContentText);
+            // const newContentText = chapters.map((chapter) => `${chapter.chapterTitle}\n${chapter.content}`).join('\n');
+            // setPlainBookContent(newContentText);
 
             console.log("✅ API 요청 성공, 책 데이터 적용됨.");
           } catch (err) {
             console.error("🚨 책 데이터 가져오기 실패:", err);
             setBookTitle("임시 제목");
-            setBookContent(fallbackBookData); // ✅ 실패 시 기본 데이터 적용
+            setBookContent({}); // ✅ 실패 시 기본 데이터 적용
           } finally {
             setIsLoading(false);
           }
@@ -621,5 +620,5 @@ const fallbackBookData = `
         console.log("📖 현재 bookContent 상태:", bookContent);
       }, [bookContent]);
     
-      return { bookContent, isLoading, bookTitle, bookChapters, plainBookContent };
+      return { bookContent, isLoading, bookTitle };
     }

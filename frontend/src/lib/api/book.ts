@@ -34,6 +34,20 @@ export interface Book{
     liked : boolean,
 }
 
+export interface BookInfo{
+    id : number,
+    authorId : string,
+    title : string,
+    coverImage : string,
+    tags : string[],
+    likeCount : number,
+    viewCount : number,
+    likedUsers : string[],
+    createdAt : Date,
+    updatedAt : Date,
+    liked : boolean,
+}
+
 // AI로 생성된 봄날의 서에 대한 인터페이스.
 export interface CompiledBook{
     title : string,
@@ -57,8 +71,8 @@ export const makeBook = async (
     content : Content,
     tags: string[],
     storyIds : number[],
-    coverImg : File
-) : Promise<string> => {
+    coverImage : File
+) : Promise<number> => {
     try{
         const formData = new FormData();
         formData.append('requestDto', new Blob([
@@ -66,7 +80,7 @@ export const makeBook = async (
         ], {type : 'application/json'}
         ));
         
-        formData.append('표지 이미지', coverImg);
+        formData.append('coverImg', coverImage);
         const response = await axiosAPI.post('/books', formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
         console.log(response.data)
@@ -103,17 +117,17 @@ export const getBookById = async (bookId : number, userId : string) : Promise<Bo
 // 입력 : 봄날의 서 ID, 유저 Id, 제목, 내용, 태그들, 봄날의 서 내 스토리 Id들, 봄날의 서 커버 이미지
 // 출력 : 봄날의 서가 성공적으로 업데이트 되었을 시 true, 그외 false
 export const updateBook = async (
-    bookId : string, 
     userId : string, 
+    bookId : number, 
     title : string, 
-    content : string, 
+    content : Content, 
     tags : string[], 
     storyIds : number[], 
     image : File) : Promise<boolean> => {
         try{
             const formData = new FormData();
             formData.append('requestDto', new Blob([
-                JSON.stringify({title, content, tags, storyIds})
+                JSON.stringify({userId, bookId, title, content, tags, storyIds})
             ], {type : 'application/json'}
             ));
 
@@ -135,7 +149,7 @@ export const updateBook = async (
 // 봄날의 서 삭제
 // 입력 : 봄날의 서 ID, 유저 ID
 // 출력 : 삭제 성공 시 true, 그외 false
-export const deleteBook = async (bookId : string, userId : string) : Promise<boolean>=> {
+export const deleteBook = async (bookId : number, userId : string) : Promise<boolean>=> {
     try{
         const response = await axiosAPI.delete(`/books/${bookId}`, {headers : {'X-User-Id' : `${userId}`}})
 
@@ -153,9 +167,9 @@ export const deleteBook = async (bookId : string, userId : string) : Promise<boo
 // 봄날의 서 좋아요 또는 좋아요 해제
 // 입력 : 봄날의 서 ID, 유저 ID
 // 출력 : 좋아요는 Liked, 좋아요 해제는 Unliked 반환.
-export const likeOrUnlikeBook = async(bookId : string, userId : string) : Promise<string> => {
+export const likeOrUnlikeBook = async(bookId : number, userId : string) : Promise<string> => {
     try{
-        const response = await axiosAPI.patch(`/books/likes/${bookId}?userId=${userId}`)
+        const response = await axiosAPI.patch(`/books/likes/${bookId}`, null, {headers : {'X-User-Id' : `${userId}`}})
 
         return response.data; // Liked 또는 Unliked가 string 형식으로 반환됨.
     }catch(error : any){
@@ -166,9 +180,9 @@ export const likeOrUnlikeBook = async(bookId : string, userId : string) : Promis
 // 봄날의 서 최근 일주일 간 top 3 반환.
 // 입력 : X
 // 출력 : 봄날의 서 배열
-export const getTopThreeWeeklyBooks = async() : Promise<Book[]> => {
+export const getTopThreeWeeklyBooks = async(userId : string) : Promise<BookInfo[]> => {
     try{
-        const response = await axiosAPI.get('/books/weeklyTop3');
+        const response = await axiosAPI.get('/books/weeklyTop3', {headers : {'X-User-Id' : `${userId}`}});
         return response.data;
     }catch(error: any){
         throw new Error(error.response?.data?.message || 'getTopThreeWeeklyBooks 함수 API 호출에서 오류가 발생했습니다.');
@@ -178,7 +192,7 @@ export const getTopThreeWeeklyBooks = async() : Promise<Book[]> => {
 // 특정 유저에 대한 봄날의 서 전체
 // 입력 : 유저 ID
 // 출력 : 봄날의 서 배열
-export const getAllBooksByUserId = async(userId : string) : Promise<Book[]> => {
+export const getAllBooksByUserId = async(userId : string) : Promise<BookInfo[]> => {
     try{
         const response = await axiosAPI.get(`/books/user/${userId}`);
 
@@ -191,7 +205,7 @@ export const getAllBooksByUserId = async(userId : string) : Promise<Book[]> => {
 // 내 봄날의 서 전체
 // 입력 : 유저 Id(본인 ID)
 // 출력 : 봄날의 서 배열열
-export const getMyBooks = async(userId : string) : Promise<Book[]> => {
+export const getMyBooks = async(userId : string) : Promise<BookInfo[]> => {
     try{
         const response = await axiosAPI.get('/books/my', {headers : {'X-User-Id': `${userId}`}});
 
@@ -204,11 +218,20 @@ export const getMyBooks = async(userId : string) : Promise<Book[]> => {
 // 데이터베이스 상 모든 봄날의 서
 // 입력 : X
 // 출력 : 봄날의 서 배열
-export const getAllBooks = async () : Promise<Book[]> => {
+export const getAllBooks = async (userId : string) : Promise<BookInfo[]> => {
     try{
-        const response = await axiosAPI.get('/books/all');
+        const response = await axiosAPI.get('/books/all', {headers : {'X-User-Id': `${userId}`}});
 
-        return response.data;
+        const responseBooks : BookInfo[] = response.data as BookInfo[];
+
+        responseBooks.map((book : BookInfo) => ({
+                ...book,
+                createdAt : new Date(book.createdAt),
+                updatedAt : new Date(book.updatedAt)
+            }
+        ));
+
+        return responseBooks;
     }catch(error : any){
         throw new Error(error.response?.data?.message || 'getAllBooks 함수 API 호출에서 오류가 발생했습니다.');
     }
@@ -218,7 +241,7 @@ export const getAllBooks = async () : Promise<Book[]> => {
 // 입력 : sortFields -> 봄날의 서 내 필드 종류(ex. title, likes, view) string 배열, directions -> 오름차순('asc') 또는 내림차순('desc') string 배열
 // 추가 설명 ) sortFields를 각각 ['title', 'likes']로 하고 directions를 ['desc', 'asc']로 한다면 제목으로 먼저 내림차순, 그다음 좋아요 수로 오름차순하는 것.
 // 출력 : 봄날의 서 배열
-export const getAllBooksSorted = async (sortFields:string[], directions:string[]) : Promise<Book[]> => {
+export const getAllBooksSorted = async (sortFields:string[], directions:string[], userId : string) : Promise<BookInfo[]> => {
     try{
         let url = '/books/all/sorted?';
         
@@ -233,9 +256,19 @@ export const getAllBooksSorted = async (sortFields:string[], directions:string[]
                 url += '&';
         }
 
-        const response = await axiosAPI.get(url);
+        const response = await axiosAPI.get(url, {headers : {'X-User-Id': `${userId}`}});
 
-        return response.data;
+        const responseBooks : BookInfo[] = response.data as BookInfo[];
+
+        responseBooks.map((book : BookInfo) => ({
+                ...book,
+                createdAt : new Date(book.createdAt),
+                updatedAt : new Date(book.updatedAt)
+            }
+        ));
+
+        console.log(responseBooks)
+        return responseBooks;
     }catch(error : any){
         throw new Error(error.response?.data?.message || 'getAllBooksSorted 함수 API 호출에서 오류가 발생했습니다.');
     }
@@ -277,12 +310,13 @@ export const compileBookByAIMock = (content : string) : CompiledBook => {
     return jsonedData as CompiledBook; // JSON에서 CompiledBook 형으로 변환.
 }
 
-export const searchBook = async (keyword : string) : Promise<Book[]> => {
+export const searchBook = async (keyword : string, userId : string) : Promise<BookInfo[]> => {
     try{
-        const response = await axiosAPI.get(`/books/search?keyword=${keyword}`)
-        const responseBooks : Book[] = response.data as Book[];
+        const response = await axiosAPI.get(`/books/search?keyword=${keyword}`, {headers : {'X-User-Id': `${userId}`}})
 
-        responseBooks.map((book : Book) => ({
+        const responseBooks : BookInfo[] = response.data as BookInfo[];
+
+        responseBooks.map((book : BookInfo) => ({
                 ...book,
                 createdAt : new Date(book.createdAt),
                 updatedAt : new Date(book.updatedAt)
@@ -292,5 +326,24 @@ export const searchBook = async (keyword : string) : Promise<Book[]> => {
         return responseBooks;
     }catch(error : any){
         throw new Error(error.response?.data?.message || 'searchBook 함수 API 호출에서 오류가 발생했습니다.')
+    }
+}
+
+export const getLikedBooks = async (userId : string) : Promise<BookInfo[]> => {
+    try{
+        const response = await axiosAPI.get('/books/liked', {headers : {'X-User-Id': `${userId}`}})
+    
+        const responseBooks : BookInfo[] = response.data as BookInfo[];
+
+        responseBooks.map((book : BookInfo) => ({
+                ...book,
+                createdAt : new Date(book.createdAt),
+                updatedAt : new Date(book.updatedAt)
+            }
+        ));
+
+        return responseBooks;
+    }catch(error : any){
+        throw new Error(error.response?.data?.message || 'getLikedBooks 함수 API 호출에서 오류가 발생했습니다.')
     }
 }

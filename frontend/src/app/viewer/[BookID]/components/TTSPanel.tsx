@@ -31,7 +31,8 @@ export function TTSPanel({ bookId }: TTSPanelProps) {
 
     const pitchValue = pitch === "김민순" ? 0.5 : pitch === "김민영" ? 2.0 : 4.0
 
-    const utterance = new SpeechSynthesisUtterance(bookContent)
+    // const utterance = new SpeechSynthesisUtterance(bookContent) 나중에 수정 필요.
+    const utterance = new SpeechSynthesisUtterance("")
     utterance.rate = rate
     utterance.pitch = pitchValue
 
