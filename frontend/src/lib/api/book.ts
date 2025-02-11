@@ -309,3 +309,23 @@ export const searchBook = async (keyword : string, userId : string) : Promise<Bo
         throw new Error(error.response?.data?.message || 'searchBook 함수 API 호출에서 오류가 발생했습니다.')
     }
 }
+
+export const getLikedBooks = async (userId : string) : Promise<BookInfo[]> => {
+    try{
+        const response = await axiosAPI.get('/books/liked', {headers : {'X-User-Id': `${userId}`}})
+    
+        const responseBooks : BookInfo[] = response.data as BookInfo[];
+
+        responseBooks.map((book : BookInfo) => ({
+                ...book,
+                createdAt : new Date(book.createdAt),
+                updatedAt : new Date(book.updatedAt)
+            }
+        ));
+
+        console.log(responseBooks)
+        return responseBooks;
+    }catch(error : any){
+        throw new Error(error.response?.data?.message || 'getLikedBooks 함수 API 호출에서 오류가 발생했습니다.')
+    }
+}
