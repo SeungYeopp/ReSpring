@@ -44,31 +44,23 @@ export function useDynamicPages(bookContent: Content) {
 
       finalChapters.push({ title: chapterTitle, page: pageCount });
 
-      currentPage += `<h2 class="chapter-title">${chapterTitle}</h2>`;
-      wordCount = currentPage.split(" ").length;
+      // 챕터 제목 추가
+      currentPage += `📖 ${chapterTitle}`;
+      wordCount = currentPage.split(" ").length; // 단어 수 업데이트
 
+      // 챕터 본문 내용 처리
       const words = content.split(" ");
       words.forEach((word) => {
         if (wordCount + 1 <= maxWordsPerPage) {
-          if (!currentPage.includes("<p>")) {
-            currentPage += "<p>";
-          }
           currentPage += " " + word;
           wordCount += 1;
         } else {
-          if (currentPage.includes("<p>")) {
-            currentPage += "</p>";
-          }
+          // 페이지가 꽉 차면 새로운 페이지로 넘어감
           finalPages.push(currentPage);
-          pageCount++;
-          currentPage = "<p>" + word;
+          currentPage = word;
           wordCount = 1;
         }
       });
-      
-      if (currentPage.includes("<p>")) {
-        currentPage += "</p>";
-      }
     });
 
     if (currentPage) {
