@@ -25,10 +25,7 @@ import org.ssafy.respring.domain.challenge.vo.QUserChallenge;
 import org.ssafy.respring.domain.tag.vo.QTag;
 import org.ssafy.respring.domain.tag.vo.Tag;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -137,8 +134,6 @@ public class TagRepositoryImpl implements TagRepositoryQueryDsl {
                 .limit(10)
                 .fetch();
     }
-
-
 
     @Override
     public List<Tag> findTagsByChallengeId(Long challengeId) {
