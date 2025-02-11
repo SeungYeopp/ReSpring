@@ -218,11 +218,20 @@ export const getMyBooks = async(userId : string) : Promise<BookInfo[]> => {
 // 데이터베이스 상 모든 봄날의 서
 // 입력 : X
 // 출력 : 봄날의 서 배열
-export const getAllBooks = async () : Promise<Book[]> => {
+export const getAllBooks = async (userId : string) : Promise<BookInfo[]> => {
     try{
-        const response = await axiosAPI.get('/books/all');
+        const response = await axiosAPI.get('/books/all', {headers : {'X-User-Id': `${userId}`}});
 
-        return response.data;
+        const responseBooks : BookInfo[] = response.data as BookInfo[];
+
+        responseBooks.map((book : BookInfo) => ({
+                ...book,
+                createdAt : new Date(book.createdAt),
+                updatedAt : new Date(book.updatedAt)
+            }
+        ));
+        console.log(responseBooks)
+        return responseBooks;
     }catch(error : any){
         throw new Error(error.response?.data?.message || 'getAllBooks 함수 API 호출에서 오류가 발생했습니다.');
     }
@@ -323,7 +332,6 @@ export const getLikedBooks = async (userId : string) : Promise<BookInfo[]> => {
             }
         ));
 
-        console.log(responseBooks)
         return responseBooks;
     }catch(error : any){
         throw new Error(error.response?.data?.message || 'getLikedBooks 함수 API 호출에서 오류가 발생했습니다.')
