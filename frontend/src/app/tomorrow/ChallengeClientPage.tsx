@@ -118,7 +118,7 @@ export default function ChallengeClientPage({ serverChallenges }: ChallengeClien
 
             {/* 모든 도전 리스트 (서버에서 받아온 데이터) */}
             <section>
-              <ChallengeList challenges={allChallenges} />
+              <ChallengeList initialChallenges={allChallenges} />
             </section>
           </>
         )}

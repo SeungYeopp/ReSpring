@@ -7,20 +7,23 @@ import mockParticipants from "@/app/tomorrow/mocks/ChallengeParticipantsMock";
 import mockParticipatedChallenges from "@/app/tomorrow/mocks/ParticipatedChallengesMock";
 import mockSubscribedUserChallenges from "@/app/tomorrow/mocks/SubscribedUserChallengesMock";
 import mockSubscribedUsers from "@/app/tomorrow/mocks/SubscribedUsersMock";
+import type {SortOption } from "@/app/tomorrow/types/challenge";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 /**
- * 📌 1. 챌린지 목록 조회 (정렬 가능)
+ * 📌 1. 챌린지 목록 조회 (정렬 가능) //Available values : LATEST, MOST_LIKED, MOST_VIEWED, MOST_PARTICIPATED
  */
-export const fetchChallenges = async (sort: "LATEST" | "MOST_LIKED" | "MOST_VIEWED" | "MOST_PARTICIPATED"): Promise<Challenge[]> => {
+export const fetchChallenges = async (
+  sort: SortOption = "LATEST"
+): Promise<Challenge[]> => {
   try {
     const response = await fetch(`${BASE_URL}/challenges?sort=${sort}`);
     if (!response.ok) throw new Error("챌린지 목록 조회 실패");
     return await response.json();
   } catch (error) {
     console.error("챌린지 목록 조회 실패, Mock 데이터 반환:", error);
-    return mockChallenges;
+    return [];  // 실패 시 빈 배열 반환
   }
 };
 
