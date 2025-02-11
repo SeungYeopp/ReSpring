@@ -55,7 +55,7 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
                       <div className="flex aspect-square items-center justify-center p-6">
                         <NextImage
                           src={image.imageUrl}
-                          alt={`Image ${image.imageId}`}
+                          alt={image.imageUrl}
                           width={200}
                           height={200}
                           objectFit="cover"
@@ -319,8 +319,8 @@ export default function CreateBook() {
                   <div className="flex flex-col items-center">
                     <div className="w-32 h-32 relative mb-4">
                       <NextImage
-                        src={story.images[0]?.imageUrl || "/placeholder/gardening.jpg"}
-                        alt={story.title}
+                        src={story.images[0]?.imageUrl}
+                        alt={story.images[0]?.imageUrl}
                         layout="fill"
                         objectFit="cover"
                         className="rounded-lg"
@@ -446,8 +446,8 @@ export default function CreateBook() {
                   >
                     <div className="aspect-[2/3] relative">
                       <NextImage
-                        src={image || "/placeholder.svg"}
-                        alt={`표지 ${index + 1}`}
+                        src={image}
+                        alt={image}
                         layout="fill"
                         objectFit="cover"
                         className="rounded-lg"
@@ -467,8 +467,8 @@ export default function CreateBook() {
                   >
                     <div className="aspect-[2/3] relative">
                       <NextImage
-                        src={image.imageUrl || "/placeholder.svg"}
-                        alt={`추가된 이미지 ${index + 1}`}
+                        src={image.imageUrl}
+                        alt={image.imageUrl}
                         layout="fill"
                         objectFit="cover"
                         className="rounded-lg"
