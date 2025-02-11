@@ -1,21 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { getAllBooksSorted, BookInfo } from '@/lib/api';
+import { getLikedBooks, BookInfo } from '@/lib/api';
 
 export default function Page() {
     const [userId, setUserId] = useState('');
     const [books, setBooks] = useState<BookInfo[] | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [sortFields, setSortFields] = useState<string>('title');
-    const [directions, setDirections] = useState<string>('asc');
 
     const fetchBooks = async () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await getAllBooksSorted(sortFields.split(','), directions.split(','), userId);
+            const data = await getLikedBooks(userId);
             setBooks(data);
         } catch (err: any) {
             setError(err.message);
@@ -26,7 +24,7 @@ export default function Page() {
 
     return (
         <div className="p-6 max-w-lg mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Sorted Books</h1>
+            <h1 className="text-2xl font-bold mb-4">Liked Books</h1>
             <input
                 type="text"
                 value={userId}
@@ -34,26 +32,12 @@ export default function Page() {
                 placeholder="Enter Your User ID"
                 className="w-full p-2 border rounded mb-4"
             />
-            <input
-                type="text"
-                value={sortFields}
-                onChange={(e) => setSortFields(e.target.value)}
-                placeholder="Enter Sort Fields (comma separated)"
-                className="w-full p-2 border rounded mb-4"
-            />
-            <input
-                type="text"
-                value={directions}
-                onChange={(e) => setDirections(e.target.value)}
-                placeholder="Enter Directions (comma separated)"
-                className="w-full p-2 border rounded mb-4"
-            />
             <button
                 onClick={fetchBooks}
                 disabled={loading}
                 className="w-full p-2 bg-blue-500 text-white rounded"
             >
-                {loading ? 'Loading...' : 'Fetch Sorted Books'}
+                {loading ? 'Loading...' : 'Fetch Liked Books'}
             </button>
             {error && <p className="text-red-500 mt-2">{error}</p>}
             <div className="mt-4">
@@ -67,7 +51,7 @@ export default function Page() {
                         </div>
                     ))
                 ) : (
-                    <p className="text-gray-500">No books found.</p>
+                    <p className="text-gray-500">No liked books found.</p>
                 )}
             </div>
         </div>

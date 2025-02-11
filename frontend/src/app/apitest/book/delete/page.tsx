@@ -11,7 +11,7 @@ const TestPage = () => {
   const handleDelete = async () => {
     try {
       setStatusMessage('삭제 중...');
-      const result = await deleteBook(bookId, userId);
+      const result = await deleteBook(parseInt(bookId, 10), userId);
 
       if (result) {
         setStatusMessage('책이 성공적으로 삭제되었습니다.');

@@ -1,39 +1,58 @@
 'use client';
 
 import { useState } from 'react';
-import { getMyBooks, Book } from '@/lib/api';
+import { getMyBooks, BookInfo } from '@/lib/api';
 
-export default function MyBooks() {
-    const [books, setBooks] = useState<Book[]>([]);
-    const [userId, setUserId] = useState<string>("");
+export default function Page() {
+    const [userId, setUserId] = useState('');
+    const [books, setBooks] = useState<BookInfo[] | null>(null);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const handleGet = async () => {
-        try{
-            const result = await getMyBooks(userId);
-
-            setBooks(result);
-        }catch(error){
-            console.error(error)
+    const fetchBooks = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await getMyBooks(userId);
+            setBooks(data);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">내 User ID로 모든 봄날의 서 가져오기</h1>
-            <label>유저 ID : </label>
-            <input value = {userId} onChange={(event) => (setUserId(event.target.value))}></input>
-            <button onClick={handleGet}>입력</button>
-            {error && <p className="text-red-500">{error}</p>}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {books.map((book) => (
-                    <div key={book.id} className="border rounded-lg p-4 shadow-md">
-                        <img src={book.coverImg} alt={book.title} className="w-full h-48 object-cover rounded-md" />
-                        <h2 className="text-lg font-semibold mt-2">{book.title}</h2>
-                        <p className="text-sm text-gray-600">조회수: {book.viewCount} | 좋아요: {book.likeCount}</p>
-                        <p className="mt-2 text-sm">{book.tags.join(', ')}</p>
-                    </div>
-                ))}
+        <div className="p-6 max-w-lg mx-auto">
+            <h1 className="text-2xl font-bold mb-4">My Books</h1>
+            <input
+                type="text"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                placeholder="Enter Your User ID"
+                className="w-full p-2 border rounded mb-4"
+            />
+            <button
+                onClick={fetchBooks}
+                disabled={loading}
+                className="w-full p-2 bg-blue-500 text-white rounded"
+            >
+                {loading ? 'Loading...' : 'Fetch My Books'}
+            </button>
+            {error && <p className="text-red-500 mt-2">{error}</p>}
+            <div className="mt-4">
+                {books && books.length > 0 ? (
+                    books.map((book) => (
+                        <div key={book.id} className="border p-4 rounded mb-2">
+                            <h2 className="text-lg font-semibold">{book.title}</h2>
+                            <p className="text-sm text-gray-600">By {book.authorId}</p>
+                            <img src={book.coverImage} alt={book.title} className="w-full h-40 object-cover mt-2 rounded" />
+                            <p className="text-sm mt-2">Likes: {book.likeCount} | Views: {book.viewCount}</p>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-gray-500">No books found.</p>
+                )}
             </div>
         </div>
     );

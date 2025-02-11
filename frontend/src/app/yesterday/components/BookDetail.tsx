@@ -28,18 +28,18 @@ export default function BookDetail({ bookId }: BookDetailProps) {
 
     const getBook = async () => {
       try {
-        const result = await getBookById(bookId)
+        const result = await getBookById(parseInt(bookId, 10), userId)
         setBook(result)
         setLikeCount(result.likeCount)
 
-        const resultLiked = await likeOrUnlikeBook(bookId, userId);
+        const resultLiked = await likeOrUnlikeBook(parseInt(bookId, 10), userId);
 
         if(resultLiked === 'Liked'){ // 좋아요를 안 누른 경우 확인.
             setIsLiked(false)
-            await likeOrUnlikeBook(bookId, userId); // 좋아요를 누른 경우 확인.
+            await likeOrUnlikeBook(parseInt(bookId, 10), userId); // 좋아요를 누른 경우 확인.
         }else if(resultLiked === 'Unliked'){
             setIsLiked(true)
-            await likeOrUnlikeBook(bookId, userId);
+            await likeOrUnlikeBook(parseInt(bookId, 10), userId);
         }
         
       } catch (error) {
@@ -81,7 +81,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   }
 
   const handleProfileClick = () => {
-    router.push(`/profile/${book?.userId}`);
+    router.push(`/profile/${book?.authorId}`);
   }
 
   return (
@@ -146,7 +146,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
                 <span>김싸피</span>
             </button>
 
-            {userId !== book?.userId && 
+            {userId !== book?.authorId && 
               <div className="flex gap-2">
                 <Button
                 variant="outline"

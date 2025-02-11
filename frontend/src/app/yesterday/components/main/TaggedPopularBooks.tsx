@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { MainBookCarousel } from "./MainBookCarousel";
 import { likedBooks } from "./mocks/books";
 import { Tag } from "lucide-react";
-import { getAllBooks } from "@/lib/api/book";
+import { getAllBooks, BookInfo } from "@/lib/api/book";
 import type { Book as BookType } from "../../types/maintypes";
+import { useAuth } from "@/hooks/useAuth"
 
 // 랜덤한 고유 태그를 최대 n개 선택하는 함수
 const getUniqueRandomTags = (tags: string[], n: number): string[] => {
@@ -17,19 +18,24 @@ const getUniqueRandomTags = (tags: string[], n: number): string[] => {
 };
 
 // 태그별로 책을 필터링하고 상위 10개만 반환하는 함수
-const filterBooksByTag = (books: BookType[], tag: string): BookType[] => {
+const filterBooksByTag = (books: BookInfo[], tag: string): BookInfo[] => {
   return books.filter((book) => book.tags.includes(tag)).slice(0, 10);
 };
 
 export default function TaggedPopularBooks() {
-  const [taggedBooks, setTaggedBooks] = useState<{ [key: string]: BookType[] }>({});
+  const [taggedBooks, setTaggedBooks] = useState<{ [key: string]: BookInfo[] }>({});
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const {userId} = useAuth(true);
+
   useEffect(() => {
+    if(!userId)
+      return;
+
     const fetchBooks = async () => {
       try {
-        const allBooks = await getAllBooks();
+        const allBooks = await getAllBooks(userId);
 
         // 모든 책에서 태그 수집 후 고유한 5개 선택
         const allTags = allBooks.flatMap((book) => book.tags);
@@ -37,7 +43,7 @@ export default function TaggedPopularBooks() {
         setSelectedTags(randomTags);
 
         // 태그별로 책 필터링
-        const booksByTag: { [key: string]: BookType[] } = {};
+        const booksByTag: { [key: string]: BookInfo[] } = {};
         randomTags.forEach((tag) => {
           booksByTag[tag] = filterBooksByTag(allBooks, tag);
         });
@@ -52,18 +58,18 @@ export default function TaggedPopularBooks() {
         );
         setSelectedTags(mockTags);
 
-        const mockBooksByTag: { [key: string]: BookType[] } = {};
-        mockTags.forEach((tag) => {
-          mockBooksByTag[tag] = filterBooksByTag(likedBooks, tag);
-        });
-        setTaggedBooks(mockBooksByTag);
+        // const mockBooksByTag: { [key: string]: BookType[] } = {};
+        // mockTags.forEach((tag) => {
+        //   mockBooksByTag[tag] = filterBooksByTag(likedBooks, tag);
+        // });
+        // setTaggedBooks(mockBooksByTag);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchBooks();
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     // 중복 태그가 포함되지 않았는지 검증 로그
@@ -80,9 +86,9 @@ export default function TaggedPopularBooks() {
         <Tag className="mr-2 h-6 w-6" />
         태그별 인기 서적 TOP 10
       </h2>
-      {selectedTags.map((tag) => (
+      {/* {selectedTags.map((tag) => (
         <MainBookCarousel key={tag} title={`#${tag} TOP 10`} books={taggedBooks[tag]} />
-      ))}
+      ))} */}
     </div>
   );
 }

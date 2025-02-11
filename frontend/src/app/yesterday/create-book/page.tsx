@@ -85,7 +85,7 @@ export default function CreateBook() {
   const [bookTags, setBookTags] = useState<string[]>([])
   const [bookCoverImg, setBookCoverImg] = useState<File>()
   const [compiledBook, setCompiledBook] = useState<CompiledBook>()
-  const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<string>("")
+  const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<number>()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [tagInput, setTagInput] = useState("")
   const [pages, setPages] = useState<string[]>([])
@@ -179,7 +179,7 @@ export default function CreateBook() {
         return acc;
       }, {} as Content);
     
-      const result : string= await makeBook(
+      const result : number= await makeBook(
         userId,
         compiledBook!.title,
         convertedContent!,
