@@ -30,7 +30,7 @@ export default function SubscribersModal({ userId, onClose, }: SubscribersModalP
     };
 
     fetchSubscribers();
-  }, [userId, userId]);
+  }, [userId, subscriptions]);
 
   const handleSubscribeToggle = async (subscriberId: string) => {
     try {

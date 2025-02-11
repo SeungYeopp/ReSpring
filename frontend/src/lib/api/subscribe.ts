@@ -187,7 +187,7 @@ export const getAllSubscribersChallenges = async (userId: string): Promise<Chall
 export const isSubscribed = async (subscriberId: string, subscribedToId: string): Promise<boolean> => {
   try {
     const response = await axiosAPI.get(`/subscriptions/${subscriberId}/${subscribedToId}/check`);
-    return response.data.isSubscribed;
+    return response.data;
   } catch (error) {
     console.error(`isSubscribed 에러 발생, 발생한 subscriberId: ${subscriberId}, subscribedToId: ${subscribedToId}`, error);
     throw new Error("isSubscribed 에러 발생");
