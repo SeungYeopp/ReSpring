@@ -64,7 +64,7 @@ function MainLayout({ BookID, bookContent, isLoading, BookTitle}: { BookID: stri
         {isLoading ? (
           <p className="text-gray-500 h-full flex items-center justify-center">📖 책 데이터를 불러오는 중...</p>
         ) : (
-          <Reader textData={bookContent}/> // ✅ Reader 내부에서도 높이 유지되도록 설정 필요
+          <Reader content={bookContent}/> // ✅ Reader 내부에서도 높이 유지되도록 설정 필요
           // <Reader textData={bookContent} bookChapters={BookChapters} plainBookContent = {plainBookContent}/> // ✅ Reader 내부에서도 높이 유지되도록 설정 필요
       )}
       </div>
