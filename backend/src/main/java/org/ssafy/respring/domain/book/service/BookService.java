@@ -206,6 +206,7 @@ public class BookService {
 		List<String> imageUrls = getImagesFromStories(book.getStoryIds());
 		Map<String, String> bookContent = getBookContent(bookId);
 		Set<UUID> likedUsers = bookLikesRedisService.getLikedUsers(book.getId());
+		String imageUrl = imageService.getSingleImageByEntity(ImageType.BOOK, bookId);
 
 		// ✅ 댓글 조회
 		List<CommentResponseDto> comments = commentService.getCommentsByBookId(bookId).stream()
@@ -219,9 +220,6 @@ public class BookService {
 		  ))
 		  .collect(Collectors.toList());
 
-		for (String image: imageUrls) {
-			System.out.println(image);
-		}
 
 		return BookDetailResponseDto.toResponseDto(
 				book,
@@ -231,7 +229,8 @@ public class BookService {
 		  		likedUsers,
 				viewCount,
 				imageUrls,
-				comments
+				comments,
+				imageUrl
 		);
 	}
 
@@ -518,10 +517,11 @@ public class BookService {
 
 		return BookResponseDto.toResponseDto(
 				book,
-				isBookLiked(book.getId(), userId),  // 좋아요 여부 확인
-				bookLikesRedisService.getLikeCount(book.getId()), // 좋아요
-		  		likedUserIds,
-				bookViewsRedisService.getViewCount(book.getId())  // 조회 수
+				isBookLiked(book.getId(), userId),
+				bookLikesRedisService.getLikeCount(book.getId()), // 좋아요 수
+				likedUserIds,
+				bookViewsRedisService.getViewCount(book.getId()),
+				imageService.getSingleImageByEntity(ImageType.BOOK, book.getId())
 		);
 	}
 
