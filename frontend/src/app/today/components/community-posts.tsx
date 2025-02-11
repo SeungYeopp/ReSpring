@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Heart } from 'lucide-react'
-import { formatDistanceToNow } from "date-fns"
+import { formatDistanceToNowStrict } from "date-fns"
 import { ko } from "date-fns/locale"
 import { getAllPosts, Post } from "@/lib/api"
 import { TodayCommunitySkeleton } from "./ui/TodayCommunitySkeleton"
@@ -130,7 +130,7 @@ function PostList({
                   <div>
                     <p className="text-sm font-medium">{post.userName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
+                      {formatDistanceToNowStrict(new Date(post.createdAt), { addSuffix: true, locale: ko })}
                     </p>
                   </div>
                 </div>

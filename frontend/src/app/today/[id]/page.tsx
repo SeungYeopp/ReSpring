@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
 import { notFound, useRouter } from "next/navigation";
 import { ArrowLeft, MessageSquare, Heart, ChevronDown, Edit } from "lucide-react";
@@ -97,7 +97,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
   if (!post) return null;
 
   // 게시 시간을 "~전" 형식으로 변환
-  const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
+  const timeAgo = formatDistanceToNowStrict(new Date(post.createdAt), {
     locale: ko,
     addSuffix: true,
   });

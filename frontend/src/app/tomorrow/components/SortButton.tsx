@@ -17,13 +17,14 @@ export default function SortButton({ currentSort, setCurrentSort }: SortButtonPr
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="border-[#96b23c] text-[#96b23c] hover:bg-[#96b23c]/10 hover:text-[#96b23c] hover:border-[#96b23c]">
-          {currentLabel} <ChevronDown className="ml-2 h-4 w-4" />
+          <p className="font-laundrygothicregular">{currentLabel}</p> 
+          <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
         {sortOptions.map((option) => (
           <DropdownMenuItem key={option.value} onClick={() => setCurrentSort(option.value)} className={currentSort === option.value ? "bg-[#96b23c]/10 text-[#96b23c]" : ""}>
-            {option.label}
+            <p className="font-laundrygothicregular">{option.label}</p>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 import { useEffect, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
 import { TodaySkeletonCarousel } from "./ui/TodaySkeletonCarousel";
 
@@ -104,8 +104,10 @@ export default function PopularPosts() {
                       </Avatar>
                       <div>
                         <p className="text-sm font-medium">{post.userName}</p>
-                        <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}</p>
-                      </div>
+                        <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNowStrict(new Date(post.createdAt), { addSuffix: true, locale: ko })}
+                      </p>                      
+                    </div>
                     </div>
                     <Badge className={`text-xs px-2 py-1 rounded-lg shadow-sm ${getCategoryColor(post.category)}`}>{post.category}</Badge>
                   </div>
