@@ -291,12 +291,13 @@ export const compileBookByAIMock = (content : string) : CompiledBook => {
     return jsonedData as CompiledBook; // JSON에서 CompiledBook 형으로 변환.
 }
 
-export const searchBook = async (keyword : string) : Promise<Book[]> => {
+export const searchBook = async (keyword : string, userId : string) : Promise<BookInfo[]> => {
     try{
-        const response = await axiosAPI.get(`/books/search?keyword=${keyword}`)
-        const responseBooks : Book[] = response.data as Book[];
+        const response = await axiosAPI.get(`/books/search?keyword=${keyword}`, {headers : {'X-User-Id': `${userId}`}})
 
-        responseBooks.map((book : Book) => ({
+        const responseBooks : BookInfo[] = response.data as BookInfo[];
+
+        responseBooks.map((book : BookInfo) => ({
                 ...book,
                 createdAt : new Date(book.createdAt),
                 updatedAt : new Date(book.updatedAt)
