@@ -205,7 +205,7 @@ export const getAllBooksByUserId = async(userId : string) : Promise<BookInfo[]> 
 // 내 봄날의 서 전체
 // 입력 : 유저 Id(본인 ID)
 // 출력 : 봄날의 서 배열열
-export const getMyBooks = async(userId : string) : Promise<Book[]> => {
+export const getMyBooks = async(userId : string) : Promise<BookInfo[]> => {
     try{
         const response = await axiosAPI.get('/books/my', {headers : {'X-User-Id': `${userId}`}});
 
