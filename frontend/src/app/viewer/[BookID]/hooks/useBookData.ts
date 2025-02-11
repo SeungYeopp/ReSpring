@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getBookById } from "@/lib/api";
 import {Book, Content} from "@/lib/api"
+import { useAuth } from "@/hooks/useAuth";
 
 // ✅ 기본 목업 데이터 (API 실패 시 사용)
 const fallbackBookData = `
@@ -579,19 +580,24 @@ const fallbackBookData = `
       const [bookContent, setBookContent] = useState<Content>();
       const [bookTitle, setBookTitle] = useState<string>();
       const [isLoading, setIsLoading] = useState<boolean>(true);
+      const {userId} = useAuth(true)
     
       useEffect(() => {
+        if(!userId)
+          return;
+
         const fetchBookData = async () => {
           try {
             setIsLoading(true);
             console.log(`📢 API 요청 시작: /books/${bookId}`);
     
-            const tempUserId = ""
-            const book : Book = await getBookById(parseInt(bookId), tempUserId);
+            const book : Book = await getBookById(parseInt(bookId), userId);
     
             if (!book.content || Object.keys(book.content).length === 0) {
               throw new Error("📢 책 내용이 비어 있습니다. 목업 데이터를 사용합니다.");
             }
+
+            console.log('요청 받은 봄날의 서 데이터', book)
 
             setBookTitle(book.title);
             setBookContent(book.content);
@@ -613,7 +619,7 @@ const fallbackBookData = `
         };
     
         fetchBookData();
-      }, [bookId]);
+      }, [bookId, userId]);
     
       // ✅ 디버깅용: 상태 변화 로깅
       useEffect(() => {
