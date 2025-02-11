@@ -86,10 +86,10 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
                 <div className="lg:hidden">
                   <Tabs defaultValue="detail" className="w-full">
                     <TabsList className="w-full rounded-none h-12 border-b">
-                      <TabsTrigger value="detail" className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-[#8BC34A]">
+                      <TabsTrigger value="detail" className="flex-1 data-[state=active]:border-b-2 ">
                         도전 상세
                       </TabsTrigger>
-                      <TabsTrigger value="chat" className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-[#8BC34A]">
+                      <TabsTrigger value="chat" className="flex-1 data-[state=active]:border-b-2 ">
                         다른 사람 채팅
                       </TabsTrigger>
                     </TabsList>
