@@ -7,12 +7,20 @@ import { getPopularPosts } from "@/lib/api";
 import { posts as mockFollowedPosts } from "./mocks/posts";
 import BubbleMenuToday from "@/components/custom/BubbleMenuToday";
 import { Button } from "@/components/ui/button";
+import { CarouselHeader } from "@/components/custom/CarouselHeader";
+import { carouselMessages } from "@/lib/constants";
 
 export default async function TodayPage() {
   const popularPosts = await getPopularPosts();
 
   return (
     <div className="h-full flex flex-col space-y-4 overflow-y-auto relative">
+
+      {/* 캐러셀 헤더 추가 */}
+      <div className="">
+        <CarouselHeader messages={carouselMessages.today} />
+      </div>
+      
       {/* 🔹 인기글 섹션 */}
       <section className="px-4 py-2 sm:px-6 sm:py-4">
         <h2 className="text-lg font-semibold mb-2 text-primary">인기글</h2>

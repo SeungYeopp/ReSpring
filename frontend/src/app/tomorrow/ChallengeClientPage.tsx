@@ -11,7 +11,8 @@ import { SearchBar } from "./components/SearchBar";
 import MyChallenges from "./components/MyChallenges";
 import FollowedChallenges from "./components/FollowedChallenges";
 import ChallengeList from "./components/ChallengeList";
-import { CarouselHeader } from "./components/CarouselHeader";
+import { CarouselHeader } from "../../components/custom/CarouselHeader";
+import { carouselMessages } from "@/lib/constants";
 
 // ✅ 서버 컴포넌트에서 넘겨온 props 타입
 interface ChallengeClientPageProps {
@@ -66,7 +67,7 @@ export default function ChallengeClientPage({ serverChallenges }: ChallengeClien
       
       {/* 캐러셀 헤더 추가 */}
       <div className="">
-        <CarouselHeader />
+        <CarouselHeader messages={carouselMessages.tomorrow} />
       </div>
       
       {/* 검색창 */}
