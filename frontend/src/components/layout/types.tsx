@@ -5,6 +5,7 @@ export type NavItem = {
   iconName: string; // 아이콘 이름을 문자열로 저장
   isAction?: boolean;
   isLogo?: boolean;
+  isPopover?: boolean;
 };
 
 // 네비게이션 섹션 타입 정의
