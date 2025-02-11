@@ -6,7 +6,7 @@ import { useBookData } from "../hooks/useBookData"
 import { Button } from "@/components/ui/button"
 import { Volume2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
+import { Content } from "@/lib/api"
 interface TTSPanelProps {
   bookId: string
 }
@@ -21,6 +21,12 @@ export function TTSPanel({ bookId }: TTSPanelProps) {
 
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null)
 
+  function contentToString(content: Content): string {
+    return Object.entries(content)
+      .map(([chapterTitle, chapterContent]) => `📖 ${chapterTitle}\n${chapterContent}`)
+      .join("\n\n"); // 각 챕터 사이에 개행 추가
+  }
+
   const startTTS = () => {
     if (isLoading) {
       console.warn("📢 책 데이터를 불러오는 중입니다. 잠시 후 다시 시도하세요.")
@@ -31,8 +37,9 @@ export function TTSPanel({ bookId }: TTSPanelProps) {
 
     const pitchValue = pitch === "김민순" ? 0.5 : pitch === "김민영" ? 2.0 : 4.0
 
+    const bookContentStr = contentToString(bookContent ?? {})
     // const utterance = new SpeechSynthesisUtterance(bookContent) 나중에 수정 필요.
-    const utterance = new SpeechSynthesisUtterance("")
+    const utterance = new SpeechSynthesisUtterance(bookContentStr)
     utterance.rate = rate
     utterance.pitch = pitchValue
 
