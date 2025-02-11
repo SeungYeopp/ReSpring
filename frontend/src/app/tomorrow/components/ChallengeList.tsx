@@ -34,7 +34,7 @@ export default function ChallengeList({ challenges, isLoading }: ChallengeListPr
         <div className="flex justify-between items-center mb-3 sm:mb-4">
           <div className="flex items-center">
             <List className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-[#96b23c]" />
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">모든 도전</h2>
+            <h2 className="text-xl sm:text-2xl font-bold font-laundrygothicbold text-gray-800">모든 도전</h2>
           </div>
           <SortButton currentSort={currentSort} setCurrentSort={setCurrentSort} />
         </div>
@@ -48,7 +48,7 @@ export default function ChallengeList({ challenges, isLoading }: ChallengeListPr
   }
 
   if (challenges.length === 0) {
-    return <div className="text-center py-4">현재 진행 중인 챌린지가 없습니다.</div>;
+    return <div className="text-center font-samlipoutline py-4">현재 진행 중인 챌린지가 없습니다.</div>;
   }
 
   return (
@@ -56,7 +56,7 @@ export default function ChallengeList({ challenges, isLoading }: ChallengeListPr
       <div className="flex justify-between items-center mb-3 sm:mb-4">
         <div className="flex items-center">
           <List className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-[#96b23c]" />
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">모든 도전</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 font-laundrygothicbold">모든 도전</h2>
         </div>
         <SortButton currentSort={currentSort} setCurrentSort={setCurrentSort} />
       </div>

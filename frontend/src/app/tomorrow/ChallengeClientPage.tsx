@@ -64,12 +64,13 @@ export default function ChallengeClientPage({ serverChallenges }: ChallengeClien
       <main className="flex-grow px-4 sm:px-6 space-y-8 sm:space-y-10 pb-14">
         <section>
           <div className="flex justify-between items-center mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
+            <h2 className="font-laundrygothicbold text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
               <Trophy className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-[#96b23c]" />
               나의 도전 이야기
             </h2>
             <Button
-              className="bg-[#96b23c] hover:bg-[#638d3e] text-white font-semibold text-sm sm:text-base px-3 py-1.5 sm:px-4 sm:py-2"
+              className="bg-[#96b23c] hover:bg-[#638d3e] text-white text-sm sm:text-base px-3 py-1.5 sm:px-4 sm:py-2 font-laundrygothicregular
+"
               onClick={() => {
                 if (userId) {
                   router.push("/tomorrow/create");
@@ -89,7 +90,7 @@ export default function ChallengeClientPage({ serverChallenges }: ChallengeClien
         </section>
 
         <section>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center">
+          <h2 className="font-laundrygothicbold text-xl sm:text-2xl  text-gray-800 mb-4 sm:mb-6 flex items-center">
             <Users className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-[#96b23c]" />
             구독한 사람의 도전
           </h2>

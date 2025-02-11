@@ -39,7 +39,9 @@ export function SliderChallengeCard({ id, title, description, tags = [], image =
                 </span>
               ))}
             </div>
-            <Button variant="default" className="bg-[#96b23c] hover:bg-[#638d3e] text-white px-2 sm:px-3 py-1 sm:py-1.5 h-auto rounded-full text-xs sm:text-sm font-medium shadow-sm flex-shrink-0">
+            <Button 
+            variant="default" 
+            className="bg-[#96b23c] hover:bg-[#638d3e] text-white px-2 sm:px-3 py-1 sm:py-1.5 h-auto rounded-full text-xs sm:text-sm font-medium shadow-sm flex-shrink-0 font-laundrygothicregular">
               {window.innerWidth < 360 ? "보기" : "자세히 보기"}
             </Button>
           </div>

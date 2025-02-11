@@ -61,17 +61,17 @@ export function GridChallengeCard({ id, title, description, image, like, partici
           </div>
 
           {status === "ONGOING" && (
-            <Button size="sm" className="bg-green-500 hover:bg-green-700 text-white text-[10px] xs:text-xs sm:text-sm px-1 xs:px-2 sm:px-3 py-0.5 xs:py-1 sm:py-2 h-auto">
+            <Button size="sm" className="bg-green-500 hover:bg-green-700 text-white text-[10px] xs:text-xs sm:text-sm px-1 xs:px-2 sm:px-3 py-0.5 xs:py-1 sm:py-2 h-auto font-laundrygothicregular">
               이어하기
             </Button>
           )}
           {status === "UPCOMING" && (
-            <Button size="sm" className="bg-gray-300 text-gray-600 cursor-not-allowed text-[10px] xs:text-xs sm:text-sm px-1 xs:px-2 sm:px-3 py-0.5 xs:py-1 sm:py-2 h-auto">
+            <Button size="sm" className="bg-gray-300 text-gray-600 cursor-not-allowed text-[10px] xs:text-xs sm:text-sm px-1 xs:px-2 sm:px-3 py-0.5 xs:py-1 sm:py-2 h-auto font-laundrygothicregular">
               준비 중
             </Button>
           )}
           {status === "ENDED" && (
-            <Button size="sm" disabled className="bg-gray-400 text-white text-[10px] xs:text-xs sm:text-sm px-1 xs:px-2 sm:px-3 py-0.5 xs:py-1 sm:py-2 h-auto">
+            <Button size="sm" disabled className="bg-gray-400 text-white text-[10px] xs:text-xs sm:text-sm px-1 xs:px-2 sm:px-3 py-0.5 xs:py-1 sm:py-2 h-auto font-laundrygothicregular">
               종료됨
             </Button>
           )}

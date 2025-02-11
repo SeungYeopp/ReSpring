@@ -21,7 +21,7 @@ export default async function TodayPage() {
       </div>
       
       {/* 인기글 섹션 */}
-      <section className="px-4 pb-4 sm:px-6 sm:py-6 md:px-8 md:py-8 transition-all duration-300 hover:bg-accent/5">
+      <section className="px-4 pb-4 sm:px-6 sm:py-2 md:px-8 md:py-8 transition-all duration-300 hover:bg-accent/5">
         <h2 className="font-laundrygothicbold text-lg sm:text-xl md:text-2xl font-semibold mb-4 text-primary">인기글</h2>
         <PopularPosts />
       </section>
