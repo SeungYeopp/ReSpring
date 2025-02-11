@@ -12,7 +12,7 @@ import type {SortOption } from "@/app/tomorrow/types/challenge";
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 /**
- * 📌 1. 챌린지 목록 조회 (정렬 가능) //Available values : LATEST, MOST_LIKED, MOST_VIEWED, MOST_PARTICIPATED
+ * 📌 1. 챌린지 목록 조회 (정렬 가능)
  */
 export const fetchChallenges = async (
   sort: SortOption = "LATEST"
@@ -23,9 +23,10 @@ export const fetchChallenges = async (
     return await response.json();
   } catch (error) {
     console.error("챌린지 목록 조회 실패, Mock 데이터 반환:", error);
-    return [];  // 실패 시 빈 배열 반환
+    return mockChallenges;  // 실패 시 빈 배열 대신 목데이터 반환
   }
 };
+
 
 /**
  * 📌 2. 챌린지 상세 조회

@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
 import {getAllSubscribersActivities, Post} from "@/lib/api/subscribe"
 import { useAuth } from "@/hooks/useAuth";
@@ -142,7 +142,7 @@ function PostList({
                   <div>
                     <p className="text-sm font-medium">{post.authorName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(post.createdAt), {
+                      {formatDistanceToNowStrict(new Date(post.createdAt), {
                         addSuffix: true,
                         locale: ko,
                       })}

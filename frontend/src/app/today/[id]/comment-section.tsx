@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -107,7 +107,7 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
           <div className="flex items-baseline gap-1">
             <span className="text-sm font-semibold">{comment.username}</span>
             <time className="text-xs text-gray-500">
-              {formatDistanceToNow(new Date(comment.createdAt), {
+              {formatDistanceToNowStrict(new Date(comment.createdAt), {
                 locale: ko,
                 addSuffix: true,
               })}

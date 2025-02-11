@@ -3,7 +3,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { PenTool, ChevronUp } from "lucide-react"
 
-export default function BubbleMenuToday() {
+export default function BubbleMenuTomorrow() {
   // 페이지 상단으로 스크롤 이동 함수
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" })
@@ -12,13 +12,13 @@ export default function BubbleMenuToday() {
   return (
     <div className="fixed bottom-20 right-6 flex flex-col space-y-2">
       {/* 글 작성하기 버튼 (today/create 경로로 이동) */}
-      <Link href="/today/create" passHref>
+      <Link href="/tomorrow/create" passHref>
         <Button
           variant="default"
           className="flex items-center gap-2 rounded-full bg-brand text-white hover:bg-brand-dark"
         >
           <PenTool className="h-5 w-5" />
-          <span className="font-laundrygothicregular sm:inline">글 쓰기</span>
+          <span className="font-laundrygothicregular sm:inline">도전 만들기</span>
         </Button>
       </Link>
 

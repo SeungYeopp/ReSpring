@@ -4,7 +4,7 @@ import type { Post } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
 import { getPostsByUserId } from "@/lib/api";
 import { useInView } from "react-intersection-observer";
@@ -52,7 +52,7 @@ function PostList({ posts }: { posts: Post[] }) {
                 <Badge variant="outline" className="text-xs px-2 py-1">{post.category}</Badge>
                 <h3 className="text-sm font-semibold flex-1 text-center truncate">{post.title}</h3>
                 <p className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
+                  {formatDistanceToNowStrict(new Date(post.createdAt), { addSuffix: true, locale: ko })}
                 </p>
               </div>
               <p className="text-xs text-muted-foreground mt-2">{post.content}</p>
