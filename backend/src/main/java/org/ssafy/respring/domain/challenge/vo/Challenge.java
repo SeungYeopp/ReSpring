@@ -1,13 +1,16 @@
 package org.ssafy.respring.domain.challenge.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+
+import org.ssafy.respring.domain.tag.vo.ChallengeTag;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -15,6 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"owner", "participants"})
 public class Challenge {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,12 +26,13 @@ public class Challenge {
 
     private String title;
     private String description;
-    private LocalDateTime registerDate;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    private Set<String> tags;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime registerDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime startDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime endDate;
 
     private Long likes;
     private Long views;

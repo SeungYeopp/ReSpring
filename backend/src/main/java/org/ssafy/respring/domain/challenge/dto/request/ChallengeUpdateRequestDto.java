@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -11,4 +12,5 @@ public class ChallengeUpdateRequestDto {
     private String description;
     private LocalDate endDate;
     private UUID ownerId; // ✅ Owner 검증용
+    private Set<String> tags;
 }
