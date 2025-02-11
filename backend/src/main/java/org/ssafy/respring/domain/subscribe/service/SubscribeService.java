@@ -9,6 +9,10 @@ import org.ssafy.respring.domain.book.service.BookViewsRedisService;
 import org.ssafy.respring.domain.challenge.repository.ChallengeRepository;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
+import org.ssafy.respring.domain.image.service.ImageService;
+import org.ssafy.respring.domain.image.vo.ImageType;
+import org.ssafy.respring.domain.notification.service.NotificationService;
+import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.post.repository.PostRepository;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedBookResponseDto;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedChallengeResponseDto;
@@ -18,6 +22,7 @@ import org.ssafy.respring.domain.subscribe.repository.SubscribeRepository;
 import org.ssafy.respring.domain.subscribe.vo.Subscribe;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
+import org.ssafy.respring.domain.notification.vo.NotificationType;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,9 +37,11 @@ public class SubscribeService {
     private final PostRepository postRepository;
     private final ChallengeRepository challengeRepository;
     private final BookRepository bookRepository;
+    private final ImageService imageService;
 
     private final BookLikesRedisService bookLikesRedisService;
     private final BookViewsRedisService bookViewsRedisService;
+    private final NotificationService notificationService; // ✅ 알림 서비스 추가
 
     // ✅ 구독 기능 추가 (사용자 구독)
     public void subscribeUser(UUID subscriberId, UUID subscribedToId) {
@@ -54,6 +61,16 @@ public class SubscribeService {
                 .build();
 
         subscribeRepository.save(subscription);
+
+// ✅ 구독된 사용자(subscribedToId)에게 알림 전송 (구독한 사용자 ID 포함)
+        notificationService.sendNotification(
+                subscribedToId, // ✅ receiverId (구독된 사용자)
+                subscriberId, // ✅ initiatorId (구독한 사용자)
+                NotificationType.FOLLOW,
+                TargetType.USER,
+                subscription.getId(),
+                subscriber.getUserNickname() + "님이 당신을 구독했습니다!"
+        );
     }
 
     // ✅ 구독 취소 기능
@@ -80,31 +97,33 @@ public class SubscribeService {
                 .collect(Collectors.toList());
 
         return postRepository.findByUserIn(subscribedUsers).stream()
-                .map(post -> new SubscribedPostResponseDto(
-                        post.getId(),
-                        post.getTitle(),
-                        post.getContent(),
-                        post.getCategory(),
-                        post.getCreatedAt(),
-                        post.getUpdatedAt(),
-                        post.getLikes(),
-                        post.getImages().stream()
-                                .map(image -> new ImageResponseDto(image.getImageId(), image.getS3Key()))
-                                .collect(Collectors.toList()),
-                        post.getComments().size(),
-                        post.getComments().stream()
-                                .map(comment -> new CommentResponseDto(
-                                        comment.getId(),
-                                        comment.getContent(),
-                                        comment.getUser().getUserNickname(),
-                                        comment.getCreatedAt(),
-                                        comment.getUpdatedAt(),
-                                        comment.getParent() != null ? comment.getParent().getId() : null
-                                ))
-                                .collect(Collectors.toList()),
-                        post.getUser().getId(),
-                        post.getUser().getUserNickname()
-                ))
+                .map(post -> {
+                    List<ImageResponseDto> imageDtos = imageService.getImagesByEntity(ImageType.POST, post.getId());
+
+                    return new SubscribedPostResponseDto(
+                            post.getId(),
+                            post.getTitle(),
+                            post.getContent(),
+                            post.getCategory(),
+                            post.getCreatedAt(),
+                            post.getUpdatedAt(),
+                            post.getLikes(),
+                            imageDtos,
+                            post.getComments().size(),
+                            post.getComments().stream()
+                                    .map(comment -> new CommentResponseDto(
+                                            comment.getId(),
+                                            comment.getContent(),
+                                            comment.getUser().getUserNickname(),
+                                            comment.getCreatedAt(),
+                                            comment.getUpdatedAt(),
+                                            comment.getParent() != null ? comment.getParent().getId() : null
+                                    ))
+                                    .collect(Collectors.toList()),
+                            post.getUser().getId(),
+                            post.getUser().getUserNickname()
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
@@ -118,18 +137,22 @@ public class SubscribeService {
                 .collect(Collectors.toList());
 
         return challengeRepository.findByOwnerIn(subscribedUsers).stream()
-                .map(challenge -> new SubscribedChallengeResponseDto(
-                        challenge.getId(),
-                        challenge.getTitle(),
-                        challenge.getDescription(),
-                        challenge.getImage(),
-                        challenge.getRegisterDate(),
-                        challenge.getLikes(),
-                        challenge.getViews(),
-                        challenge.getParticipantCount(),
-                        challenge.getOwner().getId(),
-                        challenge.getOwner().getUserNickname()
-                ))
+                .map(challenge -> {
+                    List<ImageResponseDto> imageDtos = imageService.getImagesByEntity(ImageType.CHALLENGE, challenge.getId());
+
+                    return new SubscribedChallengeResponseDto(
+                            challenge.getId(),
+                            challenge.getTitle(),
+                            challenge.getDescription(),
+                            imageDtos.isEmpty() ? null : imageDtos.get(0).getImageUrl(), // ✅ 첫 번째 이미지 URL 사용
+                            challenge.getRegisterDate(),
+                            challenge.getLikes(),
+                            challenge.getViews(),
+                            challenge.getParticipantCount(),
+                            challenge.getOwner().getId(),
+                            challenge.getOwner().getUserNickname()
+                    );
+                })
                 .collect(Collectors.toList());
     }
 

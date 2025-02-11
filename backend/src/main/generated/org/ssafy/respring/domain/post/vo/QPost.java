@@ -32,8 +32,6 @@ public class QPost extends EntityPathBase<Post> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final ListPath<org.ssafy.respring.domain.image.vo.Image, org.ssafy.respring.domain.image.vo.QImage> images = this.<org.ssafy.respring.domain.image.vo.Image, org.ssafy.respring.domain.image.vo.QImage>createList("images", org.ssafy.respring.domain.image.vo.Image.class, org.ssafy.respring.domain.image.vo.QImage.class, PathInits.DIRECT2);
-
     public final SetPath<java.util.UUID, ComparablePath<java.util.UUID>> likedUsers = this.<java.util.UUID, ComparablePath<java.util.UUID>>createSet("likedUsers", java.util.UUID.class, ComparablePath.class, PathInits.DIRECT2);
 
     public final NumberPath<Long> likes = createNumber("likes", Long.class);

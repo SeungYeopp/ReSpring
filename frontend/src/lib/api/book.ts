@@ -1,6 +1,7 @@
 // 이벤트 관련 API를 호출하는 함수의 모음.
 import { StringToBoolean } from "class-variance-authority/types";
 import axiosAPI from "./axios";
+import { Comment } from "./today";
 
 // 봄날의 서 생성, 수정과 관련된 인터페이스.
 export interface BookPostDto{
@@ -11,26 +12,26 @@ export interface BookPostDto{
     storyIds : number[],
 }
 
+export interface Content {
+    [key: string]: string;
+}
+
 // 봄날의 서에 관한 인터페이스.
 export interface Book{
-    id : string,
-    userId : string,
+    id : number,
+    authorId : string,
     title : string,
-    content : string,
-    coverImg : string,
+    content : Content,
+    coverImage : string,
     tags : string[],
     likeCount : number,
     viewCount : number,
+    likedUsers : string[],
     createdAt : Date,
     updatedAt : Date,
-    storyIds : number[],
-    imageUrls : string[]
-}
-
-// AI로 생성된 봄날의 서의 각 챕터에 대한 인터페이스.
-export interface Chapter{
-    chapterTitle : string,
-    content : string
+    imageUrls : string[],
+    comments : Comment[],
+    liked : boolean,
 }
 
 // AI로 생성된 봄날의 서에 대한 인터페이스.
@@ -39,13 +40,21 @@ export interface CompiledBook{
     chapters : Chapter[]
 }
 
+// AI로 생성된 봄날의 서의 각 챕터에 대한 인터페이스.
+export interface Chapter{
+    chapterTitle : string,
+    content : string
+}
+
+
+
 // 봄날의 서 생성 함수
 // 입력 : 유저 Id, 제목, 내용, 태그들, 커버 이미지
 // 출력 : 봄날의 서 ID
 export const makeBook = async (
     userId : string,
     title : string,
-    content : string,
+    content : Content,
     tags: string[],
     storyIds : number[],
     coverImg : File
@@ -60,6 +69,7 @@ export const makeBook = async (
         formData.append('표지 이미지', coverImg);
         const response = await axiosAPI.post('/books', formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
+        console.log(response.data)
         return response.data;
     }catch(error : any){
         console.error('makeBook 에러 발생!', error);
@@ -70,15 +80,16 @@ export const makeBook = async (
 // 봄날의 서를 봄날의 서 ID로 검색
 // 입력 : 봄날의 서 ID
 // 출력 : 봄날의 서
-export const getBookById = async (bookId : string) : Promise<Book>=> {
+export const getBookById = async (bookId : number, userId : string) : Promise<Book>=> {
     try{
-        const response = await axiosAPI.get(`/books/${bookId}`);
+        const response = await axiosAPI.get(`/books/${bookId}`, {headers : {'X-User-Id' : `${userId}`}});
 
         // Date 형 변환.
         const bookdata : Book= {
             ...response.data,
             createdAt : new Date(response.data.createdAt),
-            updatedAt : new Date(response.data.updatedAt)
+            updatedAt : new Date(response.data.updatedAt),
+            content : response.data.content as Content
         }
 
         return bookdata;

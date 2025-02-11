@@ -30,8 +30,6 @@ public class QChallenge extends EntityPathBase<Challenge> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final StringPath image = createString("image");
-
     public final NumberPath<Long> likes = createNumber("likes", Long.class);
 
     public final org.ssafy.respring.domain.user.vo.QUser owner;

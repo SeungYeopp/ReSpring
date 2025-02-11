@@ -30,8 +30,6 @@ public class QStory extends EntityPathBase<Story> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final ListPath<org.ssafy.respring.domain.image.vo.Image, org.ssafy.respring.domain.image.vo.QImage> images = this.<org.ssafy.respring.domain.image.vo.Image, org.ssafy.respring.domain.image.vo.QImage>createList("images", org.ssafy.respring.domain.image.vo.Image.class, org.ssafy.respring.domain.image.vo.QImage.class, PathInits.DIRECT2);
-
     public final StringPath title = createString("title");
 
     public final DateTimePath<java.time.LocalDateTime> updatedAt = createDateTime("updatedAt", java.time.LocalDateTime.class);

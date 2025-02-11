@@ -1,7 +1,6 @@
 package org.ssafy.respring.domain.challenge.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,6 @@ import org.ssafy.respring.domain.chat.repository.ChatRoomRepository;
 import org.ssafy.respring.domain.chat.repository.ChatRoomUserRepository;
 import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
-
 import org.ssafy.respring.domain.chat.vo.ChatRoomUser;
 import org.ssafy.respring.domain.image.service.ImageService;
 
@@ -28,10 +26,15 @@ import org.ssafy.respring.domain.tag.repository.ChallengeTagRepository;
 import org.ssafy.respring.domain.tag.repository.TagRepository;
 import org.ssafy.respring.domain.tag.vo.ChallengeTag;
 import org.ssafy.respring.domain.tag.vo.Tag;
+import org.ssafy.respring.domain.image.vo.ImageType;
+import org.ssafy.respring.domain.notification.service.NotificationService;
+import org.ssafy.respring.domain.notification.vo.NotificationType;
+import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
+import org.ssafy.respring.domain.challenge.repository.RecordsRepository;
+import org.ssafy.respring.domain.chat.repository.ChatRoomRepository;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -48,19 +51,16 @@ public class ChallengeService {
     private final ChallengeLikesRepository challengeLikesRepository;
     private final RecordsRepository recordsRepository;
     private final UserRepository userRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final TagRepository tagRepository;
     private final ChallengeTagRepository challengeTagRepository;
 
     private final ChatService chatService;
     private final ImageService imageService;
-    private final ChatRoomRepository chatRoomRepository;
-    private final ChatRoomUserRepository chatRoomUserRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
-
-
+    private final ChatRoomUserRepository chatRoomUserRepository;
+    private final NotificationService notificationService;
 
     // ✅ RedisTemplate 추가
     private final RedisTemplate<String, List<Challenge>> challengeRedisTemplate;
@@ -70,25 +70,25 @@ public class ChallengeService {
         User owner = userRepository.findById(challengeDto.getOwnerId())
           .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + challengeDto.getOwnerId()));
 
-        // ✅ 2️⃣ 이미지 저장 후 URL 반환
-        String imageUrl = imageService.saveCoverImage(image);
-
-        // ✅ 3️⃣ Challenge 저장 (tags 없이)
         Challenge challenge = Challenge.builder()
-          .title(challengeDto.getTitle())
-          .description(challengeDto.getDescription())
-          .image(imageUrl)
-          .startDate(challengeDto.getStartDate())
-          .endDate(challengeDto.getEndDate())
-          .owner(owner)
-          .registerDate(LocalDateTime.now())
-          .likes(0L)
-          .views(0L)
-          .participantCount(1L)
-          .chatRoomUUID(UUID.randomUUID().toString()) // ✅ 채팅방 UUID 생성
-          .build();
+                      .title(challengeDto.getTitle())
+                      .description(challengeDto.getDescription())
+                      .startDate(challengeDto.getStartDate())
+                      .endDate(challengeDto.getEndDate())
+                      .owner(owner)
+                      .registerDate(LocalDateTime.now())
+                      .likes(0L)
+                      .views(0L)
+                      .participantCount(1L)
+                      .chatRoomUUID(UUID.randomUUID().toString()) // ✅ 채팅방 UUID 생성
+                      .build();
 
         Challenge savedChallenge = challengeRepository.save(challenge);
+
+        // ✅ Image 테이블에 이미지 저장 (단일 이미지)
+        if (image != null) {
+            imageService.saveImage(image, ImageType.CHALLENGE, challenge.getId());
+        }
 
         // ✅ 4️⃣ ChallengeTag 생성 및 저장
         Set<String> tagNames = challengeDto.getTags();
@@ -107,21 +107,6 @@ public class ChallengeService {
         // ✅ ChallengeTag 저장
         challengeTagRepository.saveAll(challengeTags);
 
-        // ✅ 5️⃣ Redis 업데이트 (기존 챌린지 목록 가져오기)
-        String cacheKey = "recommend:challenge:" + owner.getId();
-        List<Challenge> cachedChallenges = challengeRedisTemplate.opsForValue().get(cacheKey);
-
-        if (cachedChallenges != null) {
-            // ✅ 기존 챌린지 리스트가 존재하면 추가
-            cachedChallenges.add(savedChallenge);
-            challengeRedisTemplate.opsForValue().set(cacheKey, cachedChallenges, Duration.ofHours(1));
-            System.out.println("🚀 Redis 업데이트 완료: 챌린지 개수 = " + cachedChallenges.size());
-        } else {
-            // ✅ Redis에 값이 없으면 새 리스트 생성
-            challengeRedisTemplate.opsForValue().set(cacheKey, List.of(savedChallenge), Duration.ofHours(1));
-            System.out.println("🚀 Redis 새 챌린지 저장 완료");
-        }
-
         // ✅ 6️⃣ 오픈채팅방 생성
         ChatRoom chatRoom = chatService.createRoom(ChatRoomRequest.builder()
           .name(challengeDto.getTitle())
@@ -133,9 +118,6 @@ public class ChallengeService {
         // ✅ 7️⃣ DTO 변환
         return mapToDto(savedChallenge, challengeTags);
     }
-
-
-
 
     // ✅ 챌린지 리스트 조회 (필터링 가능)
     public List<ChallengeListResponseDto> getAllChallenges(ChallengeSortType sortType) {
@@ -158,7 +140,8 @@ public class ChallengeService {
 
         return challenges.stream()
                 .map(ch -> new ChallengeListResponseDto(
-                        ch.getId(), ch.getTitle(), ch.getDescription(), ch.getImage(), ch.getRegisterDate(), ch.getLikes(), ch.getViews(), ch.getParticipantCount(), getChallengeStatus(ch)
+                        ch.getId(), ch.getTitle(), ch.getDescription(), imageService.getSingleImageByEntity(ImageType.CHALLENGE, ch.getId()), ch.getRegisterDate(),
+                        tagRepository.findTagsByChallengeId(ch.getId()).stream().collect(Collectors.toSet()), ch.getLikes(), ch.getViews(), ch.getParticipantCount(), getChallengeStatus(ch)
                 ))
                 .collect(Collectors.toList());
     }
@@ -193,11 +176,13 @@ public class ChallengeService {
         // ✅ ChallengeTag -> Tag 변환 (JOIN FETCH 사용)
         List<Tag> tags = tagRepository.findTagsByChallengeId(challengeId);
 
+        String imageUrl = imageService.getSingleImageByEntity(ImageType.CHALLENGE, challenge.getId());
+
         return ChallengeDetailResponseDto.builder()
           .id(challenge.getId())
           .title(challenge.getTitle())
           .description(challenge.getDescription())
-          .image(challenge.getImage())
+          .imageUrl(imageUrl)
           .startDate(challenge.getStartDate())
           .endDate(challenge.getEndDate())
           .tags(new HashSet<>(tags)) // ✅ 중복 제거된 태그 리스트 반환
@@ -368,6 +353,20 @@ public class ChallengeService {
                             .build();
                     challengeLikesRepository.save(userLikes);
                     challenge.setLikes(challenge.getLikes() + 1);
+
+                    // ✅ 챌린지 소유자에게 알림 전송
+                    UUID ownerId = challenge.getOwner().getId();
+
+                    // ✅ 본인이 만든 챌린지에 좋아요를 누르면 알림을 보내지 않음
+                    if (!ownerId.equals(userId)) {
+                        notificationService.sendNotification(
+                                ownerId, // ✅ 알림 받는 사람 (챌린지 작성자)
+                                NotificationType.LIKE,
+                                TargetType.CHALLENGE,
+                                challengeId,
+                                "🔥 " + user.getUserNickname() + "님이 당신의 챌린지를 좋아합니다!"
+                        );
+                    }
                 }
         );
     }
@@ -388,16 +387,20 @@ public class ChallengeService {
 
               // ✅ Challenge에 연결된 태그 조회 (ChallengeTagRepository 사용)
               List<ChallengeTag> challengeTags = challengeTagRepository.findByChallengeId(challenge.getId());
+              System.out.println("✅ Challenge ID: " + challenge.getId() + " 에 대한 태그 개수: " + challengeTags.size());
 
               // ✅ ChallengeTag → Tag 변환
               Set<Tag> tags = challengeTags.stream()
                 .map(ChallengeTag::getTag)
                 .collect(Collectors.toSet());
 
+
+
+
               return new ChallengeMyListResponseDto(
                 challenge.getId(),
                 challenge.getTitle(),
-                challenge.getImage(),
+                imageService.getSingleImageByEntity(ImageType.CHALLENGE, challenge.getId()),
                 challenge.getRegisterDate(),
                 tags, // ✅ `Set<Tag>` 반환
                 tags.size(), // ✅ 태그 개수 추가
@@ -406,7 +409,6 @@ public class ChallengeService {
           })
           .collect(Collectors.toList());
     }
-
 
     // ✅ 챌린지 수정 (Owner만 가능)
     public ChallengeResponseDto updateChallenge(Long challengeId, ChallengeUpdateRequestDto updateDto, MultipartFile image) throws IOException {
@@ -433,10 +435,10 @@ public class ChallengeService {
             challenge.setEndDate(updateDto.getEndDate().atStartOfDay());
         }
 
-        // ✅ 이미지 수정 (새로운 이미지가 있을 경우 저장)
-        if (image != null && !image.isEmpty()) {
-            String imageUrl = imageService.saveCoverImage(image);
-            challenge.setImage(imageUrl);
+        // ✅ 기존 이미지 삭제 후 새 이미지 저장
+        if (image != null) {
+            imageService.deleteImages(ImageType.CHALLENGE, challengeId);
+            imageService.saveImage(image, ImageType.CHALLENGE, challengeId);
         }
 
         // ✅ 태그 업데이트 처리 (새로운 태그가 제공된 경우)
@@ -471,7 +473,11 @@ public class ChallengeService {
         return challengeRepository.findByTitleContainingIgnoreCase(keyword).stream()
                 .sorted((c1, c2) -> c2.getRegisterDate().compareTo(c1.getRegisterDate())) // 최신순 정렬
                 .map(ch -> new ChallengeListResponseDto(
-                        ch.getId(), ch.getTitle(), ch.getDescription(), ch.getImage(), ch.getRegisterDate(), ch.getLikes(), ch.getViews(), ch.getParticipantCount(), getChallengeStatus(ch)
+                        ch.getId(), ch.getTitle(), ch.getDescription(),
+                        imageService.getSingleImageByEntity(ImageType.CHALLENGE, ch.getId()),
+                        ch.getRegisterDate(),
+                        tagRepository.findTagsByChallengeId(ch.getId()).stream().collect(Collectors.toSet()),
+                        ch.getLikes(), ch.getViews(), ch.getParticipantCount(), getChallengeStatus(ch)
                 ))
                 .collect(Collectors.toList());
     }
@@ -522,20 +528,25 @@ public class ChallengeService {
         }
 
         return challenges.stream()
-                .map(ch -> ChallengeStatusResponseDto.builder()
-                        .id(ch.getId())
-                        .title(ch.getTitle())
-                        .description(ch.getDescription())
-                        .image(ch.getImage())
-                        .registerDate(ch.getRegisterDate())
-                        .startDate(ch.getStartDate())
-                        .endDate(ch.getEndDate())
-                        .status(getChallengeStatus(ch))
-                        .likes(ch.getLikes())
-                        .views(ch.getViews())
-                        .participantCount(ch.getParticipantCount())
-                        .chatRoomUUID(ch.getChatRoomUUID()) // ✅ 오픈채팅방 UUID 추가
-                        .build())
+                .map(challenge -> {
+                    // ✅ Image 테이블에서 챌린지에 해당하는 단일 이미지 가져오기
+                    String imageUrl = imageService.getSingleImageByEntity(ImageType.CHALLENGE, challenge.getId());
+
+                    return ChallengeStatusResponseDto.builder()
+                            .id(challenge.getId())
+                            .title(challenge.getTitle())
+                            .description(challenge.getDescription())
+                            .image(imageUrl) // ✅ Presigned URL 적용
+                            .registerDate(challenge.getRegisterDate())
+                            .startDate(challenge.getStartDate())
+                            .endDate(challenge.getEndDate())
+                            .status(getChallengeStatus(challenge))
+                            .likes(challenge.getLikes())
+                            .views(challenge.getViews())
+                            .participantCount(challenge.getParticipantCount())
+                            .chatRoomUUID(challenge.getChatRoomUUID()) // ✅ 오픈채팅방 UUID 추가
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
@@ -553,15 +564,16 @@ public class ChallengeService {
 
     // 🆕 mapToDto 추가: Challenge -> ChallengeResponseDto 변환
     private ChallengeResponseDto mapToDto(Challenge challenge, List<ChallengeTag> challengeTags) {
+        String imageUrl = imageService.getSingleImageByEntity(ImageType.CHALLENGE, challenge.getId());
         Set<Tag> tags = challengeTags.stream()
-          .map(challengeTag -> new Tag(challengeTag.getTag().getId(), challengeTag.getTag().getName()))
-          .collect(Collectors.toSet());
+                .map(challengeTag -> new Tag(challengeTag.getTag().getId(), challengeTag.getTag().getName()))
+                .collect(Collectors.toSet());
 
         return new ChallengeResponseDto(
           challenge.getId(),
           challenge.getTitle(),
           challenge.getDescription(),
-          challenge.getImage(),
+          imageUrl,
           challenge.getRegisterDate(),
           challenge.getStartDate(),
           challenge.getEndDate(),
@@ -573,6 +585,5 @@ public class ChallengeService {
           challenge.getChatRoomUUID()
         );
     }
-
 }
 

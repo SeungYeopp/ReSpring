@@ -7,6 +7,7 @@ import org.ssafy.respring.domain.event.dto.request.EventRequestDto;
 import org.ssafy.respring.domain.event.dto.response.EventResponseDto;
 import org.ssafy.respring.domain.event.repository.EventRepository;
 import org.ssafy.respring.domain.event.vo.Event;
+import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EventService {
 	private final EventRepository eventRepository;
+	private final UserRepository userRepository;
 
 	public Long createEvent(EventRequestDto requestDto) {
 
@@ -27,10 +29,8 @@ public class EventService {
 		event.setDisplay(requestDto.isDisplay());
 		event.setOccurredAt(requestDto.getOccurredAt());
 
-//		User user = userRepository.findById(requestDto.getUserId())
-//				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + requestDto.getUserId()));
-		User user = new User();
-		user.setId(requestDto.getUserId());
+		User user = userRepository.findById(requestDto.getUserId())
+				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + requestDto.getUserId()));
 		event.setUser(user);
 
 		eventRepository.save(event);
@@ -61,7 +61,7 @@ public class EventService {
 	}
 
 	public List<EventResponseDto> getMyEvents(UUID userId) {
-		return eventRepository.findByUserId(userId)
+		return eventRepository.getEventsSortedByOccurredAt(userId)
 		  .stream()
 		  .map(this::toResponseDto)
 		  .collect(Collectors.toList());
