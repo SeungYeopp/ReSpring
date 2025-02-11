@@ -20,14 +20,15 @@ export function useDynamicPages(bookContent: Content) {
   useEffect(() => {
     if (!bookContent || Object.keys(bookContent).length === 0) return;
 
+    
     const viewportHeight = containerRef.current?.clientHeight || window.innerHeight;
     const lineHeightPx = fontSize * lineHeight;
     const maxLinesPerPage = Math.floor(viewportHeight / lineHeightPx);
-
     console.log(`📌 한 페이지당 최대 줄 수: ${maxLinesPerPage}`);
 
     const wordsPerLine = Math.floor(50 / (fontSize + letterSpacing));
     const maxWordsPerPage = wordsPerLine * maxLinesPerPage;
+    console.log(`📌 한 페이지당 최대 단어 수: ${maxWordsPerPage}`);
 
     const finalPages: string[] = [];
     const finalChapters: Chapter[] = [];
@@ -59,6 +60,7 @@ export function useDynamicPages(bookContent: Content) {
           finalPages.push(currentPage);
           currentPage = word;
           wordCount = 1;
+          pageCount++;
         }
       });
     });
@@ -73,5 +75,6 @@ export function useDynamicPages(bookContent: Content) {
     setTotalPages(pageCount);
   }, [bookContent, fontSize, lineHeight, letterSpacing, setTotalPages]);
 
+  
   return { pages, chapters, containerRef };
 }
