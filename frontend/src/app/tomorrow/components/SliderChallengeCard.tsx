@@ -31,7 +31,7 @@ export function SliderChallengeCard({
     >
       <div className="flex p-2 xs:p-3 sm:p-4">
         {/* 이미지 섹션 */}
-        <div className="w-[80px] xs:w-[100px] sm:w-[120px] mr-2 xs:mr-3 sm:mr-4 flex-shrink-0">
+        <div className="w-[80px] xs:w-[100px] sm:w-[120px] mr-4 xs:mr-3 sm:mr-4 flex-shrink-0">
           <div className="relative w-full aspect-square">
             <Image src={image || "/placeholder.svg"} alt={title} fill className="rounded-xl object-cover" />
           </div>
