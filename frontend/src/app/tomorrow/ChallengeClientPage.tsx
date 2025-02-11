@@ -11,6 +11,8 @@ import { SearchBar } from "./components/SearchBar";
 import MyChallenges from "./components/MyChallenges";
 import FollowedChallenges from "./components/FollowedChallenges";
 import ChallengeList from "./components/ChallengeList";
+import { CarouselHeader } from "../../components/custom/CarouselHeader";
+import { carouselMessages } from "@/lib/constants";
 
 // ✅ 서버 컴포넌트에서 넘겨온 props 타입
 interface ChallengeClientPageProps {
@@ -61,7 +63,13 @@ export default function ChallengeClientPage({ serverChallenges }: ChallengeClien
   }, []);
 
   return (
-    <div className="h-full flex flex-col flex-grow overflow-y-auto bg-white bg-opacity-50 bg-[url('/subtle-prism.svg')]">
+    <div className="h-full flex flex-col flex-grow overflow-y-auto bg-white bg-opacity-50 bg-[url('/subtle-prism.svg')]  md:-my-4">
+      
+      {/* 캐러셀 헤더 추가 */}
+      <div className="">
+        <CarouselHeader messages={carouselMessages.tomorrow} />
+      </div>
+      
       {/* 검색창 */}
       <div className="px-4 sm:px-6 py-4">
         <SearchBar placeholder="도전을 검색하세요!" />

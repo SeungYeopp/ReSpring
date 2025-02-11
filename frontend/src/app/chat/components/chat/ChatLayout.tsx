@@ -21,17 +21,18 @@ export default function ChatLayout({ children, showChatList = true }: ChatLayout
 
   return (
     <ThemeProvider>
-      <div className="flex h-screen bg-background">
+      <div className="flex h-screen bg-background 
+      ">
         {isMobileView ? (
           // 모바일 레이아웃
           <div className="w-full h-full">{children}</div>
         ) : (
           // 데스크탑 레이아웃
           <>
-            <div className="w-1/3 h-full border-r md:-my-4">
+            <div className="w-1/3 h-full border-r ">
               <ChatList />
             </div>
-            <div className="w-2/3 h-full md:-my-4">{children}</div>
+            <div className="w-2/3 h-full ">{children}</div>
           </>
         )}
       </div>
