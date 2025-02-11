@@ -58,7 +58,7 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
                 .orderBy(
                         bookLikes.count().desc(),  // 1순위: 좋아요 수 내림차순
                         bookViews.count().desc(),  // 2순위: 조회수 내림차순
-                        book.createdAt.desc()      // 3순위: 최신순 정렬
+                        book.createdAt.desc()      // 3순위: 최신순 정렬W
                 )
                 .limit(3)
                 .fetch();
