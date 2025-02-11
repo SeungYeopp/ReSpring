@@ -203,7 +203,7 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
                 <span className="text-sm text-gray-500">도전 제목</span>
               </div>
               <Input value={challenge.title} disabled className="bg-gray-50 border-[#8BC34A] text-gray-500" />
-              <p className="text-xs text-right text-gray-500 mt-1">{challenge.title.length}/100</p>
+              <p className="text-xs text-right text-gray-500 mt-1">{challenge.title.length}/15</p>
             </div>
 
             <div>

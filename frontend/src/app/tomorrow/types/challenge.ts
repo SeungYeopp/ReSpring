@@ -116,10 +116,10 @@ export interface ChallengePreviewProps {
   preview?: string;
 }
 // 📌 챌린지 생성에 줘야 함.
-export const MAX_TITLE_LENGTH = 100;
+export const MAX_TITLE_LENGTH = 15;
 export const MIN_TITLE_LENGTH = 5;
-export const MAX_DESCRIPTION_LENGTH = 500;
-export const MIN_DESCRIPTION_LENGTH = 20;
+export const MAX_DESCRIPTION_LENGTH = 50;
+export const MIN_DESCRIPTION_LENGTH = 10;
 export const MAX_TAGS = 5;
 
 export interface CreateChallenge {
