@@ -83,9 +83,9 @@ export default function CommunityPosts() {
     <div className="space-y-4">
       <Tabs defaultValue="전체" onValueChange={(value) => setSelectedCategory(value as Category)}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="전체">전체</TabsTrigger>
-          <TabsTrigger value="고민/질문">고민/질문</TabsTrigger>
-          <TabsTrigger value="정보 공유">정보공유</TabsTrigger>
+          <TabsTrigger value="전체" className="font-laundrygothicregular">전체</TabsTrigger>
+          <TabsTrigger value="고민/질문" className="font-laundrygothicregular">고민/질문</TabsTrigger>
+          <TabsTrigger value="정보 공유" className="font-laundrygothicregular">정보공유</TabsTrigger>
         </TabsList>
       </Tabs>
 
