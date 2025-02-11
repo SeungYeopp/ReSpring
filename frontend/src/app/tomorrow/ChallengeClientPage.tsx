@@ -22,6 +22,7 @@ interface ChallengeClientPageProps {
 }
 
 export default function ChallengeClientPage({ serverChallenges }: ChallengeClientPageProps) {
+  console.log("ChallengeClientPage 렌더링 시작");
   const router = useRouter()
   const [allChallenges, setAllChallenges] = useState<Challenge[]>(serverChallenges)
   const [myChallenges, setMyChallenges] = useState<ParticipatedChallenge[]>([])
@@ -54,63 +55,51 @@ export default function ChallengeClientPage({ serverChallenges }: ChallengeClien
   }, [])
 
   return (
-    <div className="h-full flex flex-col flex-grow overflow-y-auto bg-white bg-opacity-50 bg-[url('/subtle-prism.svg')] md:-my-4">
+    <div className="h-full flex flex-col flex-grow overflow-y-auto bg-white bg-opacity-50 bg-[url('/subtle-prism.svg')]  md:-my-4">
+      
+      {/* 캐러셀 헤더 추가 */}
       <div className="">
         <CarouselHeader messages={carouselMessages.tomorrow} />
       </div>
 
+      {/* 검색창 */}
       <div className="px-4 sm:px-6 py-4">
         <SearchBar placeholder="도전을 검색하세요!" />
       </div>
 
       <main className="flex-grow px-4 sm:px-6 space-y-8 sm:space-y-10 pb-14">
+        {/* 나의 도전 이야기 섹션 */}
         <section>
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h2 className="font-laundrygothicbold text-lg sm:text-2xl font-bold text-gray-800 flex items-center">
               <Trophy className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-yellow-600" />
               나의 도전 이야기
             </h2>
-            {/* <Button
-              className="bg-[#96b23c] hover:bg-[#638d3e] text-white text-sm sm:text-base px-3 py-1.5 sm:px-4 sm:py-2 font-laundrygothicregular"
-              onClick={() => {
-                if (userId) {
-                  router.push("/tomorrow/create")
-                } else {
-                  toast({
-                    title: "로그인이 필요합니다",
-                    description: "새로운 도전을 생성하려면 먼저 로그인해주세요.",
-                    variant: "destructive",
-                  })
-                }
-              }}
-            >
-              도전 만들기
-            </Button> */}
           </div>
           {isLoading ? <SkeletonCarousel /> : <MyChallenges userId={userId} challenges={myChallenges} />}
         </section>
 
-        {/* 첫 번째 구분선 추가 */}
-        <Separator className="" />
+        <Separator />
 
+        {/* 구독한 사람의 도전 섹션 */}
         <section>
-          <h2 className="font-laundrygothicbold text-lg sm:text-2xl  text-gray-800 mb-4 sm:mb-6 flex items-center">
+          <h2 className="font-laundrygothicbold text-lg sm:text-2xl text-gray-800 mb-4 sm:mb-6 flex items-center">
             <Users className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-[#96b23c]" />
             구독한 사람의 도전
           </h2>
           {isLoading ? <SkeletonCarousel /> : <FollowedChallenges challenges={followedChallenges} />}
         </section>
 
-        {/* 두 번째 구분선 추가 */}
-        <Separator className="" />
+        <Separator />
 
+        {/* 모든 도전 리스트 섹션 (서버에서 받아온 데이터) */}
         <section>
-          <ChallengeList challenges={allChallenges} isLoading={isLoading} />
+          <ChallengeList initialChallenges={allChallenges} />
         </section>
       </main>
-            {/* 우측 하단 플로팅 버튼 (버블 메뉴) */}
-            <BubbleMenuTomorrow />
+
+      {/* 우측 하단 플로팅 버튼 (버블 메뉴) */}
+      <BubbleMenuTomorrow />
     </div>
   )
 }
-

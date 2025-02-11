@@ -1,6 +1,6 @@
 package org.ssafy.respring.domain.user.vo;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,8 +8,6 @@ import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.challenge.vo.Challenge;
 import org.ssafy.respring.domain.challenge.vo.UserChallenge;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +18,9 @@ import java.util.UUID;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // 🔥 Hibernate Proxy 필드 직렬화 방지
+@JsonInclude(JsonInclude.Include.NON_NULL) // 🔥 NULL 필드 직렬화 방지 (Redis 캐싱 최적화)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -40,10 +41,12 @@ public class User {
 
 
     // 내가 만든 챌린지 (1:N)
+    @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Challenge> createdChallenges;
 
     // 내가 참가한 챌린지 (N:M)
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChallenge> joinedChallenges;
 

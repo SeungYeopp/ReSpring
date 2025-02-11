@@ -17,10 +17,11 @@ public class UserMapper {
     }
 
     // 유저로 로그인 객체 생성
-    public LoginResponseDto entityToDto(User user) {
+    public LoginResponseDto entityToDto(User user, String profileImageUrl) {
         return new LoginResponseDto(
                 user.getId(),
-                user.getUserNickname()
+                user.getUserNickname(),
+                profileImageUrl
         );
     }
 }

@@ -6,12 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
-import org.ssafy.respring.domain.image.mapper.ImageMapper;
 import org.ssafy.respring.domain.image.repository.ImageRepository;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.image.vo.ImageType;
-import org.ssafy.respring.domain.post.vo.Post;
-import org.ssafy.respring.domain.story.vo.Story;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -22,7 +19,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
@@ -36,7 +32,6 @@ import java.util.stream.Collectors;
 public class ImageService {
 
     private final ImageRepository imageRepository;
-    private final ImageMapper imageMapper;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
@@ -52,6 +47,26 @@ public class ImageService {
 
     private final S3Client s3Client;
 
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    private static final long MAX_TOTAL_FILE_SIZE = 20 * 1024 * 1024;
+
+
+    private void validateFileSize(MultipartFile file) {
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("파일 크기는 5MB를 초과할 수 없어요.");
+        }
+    }
+
+    private void validateTotalFileSize(List<MultipartFile> files) {
+        long totalSize = files.stream().mapToLong(MultipartFile::getSize).sum();
+        if (totalSize > MAX_TOTAL_FILE_SIZE) {
+            throw new IllegalArgumentException("전체 파일 크기의 합은 20MB를 초과할 수 없어요.");
+        }
+    }
+
+
+
+
     private S3Presigner createPresigner() {
         return S3Presigner.builder()
                 .region(Region.of(region))
@@ -59,7 +74,7 @@ public class ImageService {
                 .build();
     }
 
-     // ✅ S3에 파일 업로드 후 객체 Key 반환
+     //  S3에 파일 업로드 후 객체 Key 반환
     public String uploadImageToS3(MultipartFile file, String folder) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("파일이 비어 있습니다.");
@@ -83,13 +98,13 @@ public class ImageService {
             throw new RuntimeException("S3 파일 업로드 실패: " + file.getOriginalFilename(), e);
         }
 
-        return objectKey; // ✅ S3 객체 Key 반환
+        return objectKey;
     }
 
-     //✅ Presigned URL 생성 (제한된 시간 동안만 접근 가능)
-    public String generatePresignedUrl(String objectKey, int expirationMinutes) {
+     // Presigned URL 생성
+    public String generatePresignedUrl(String objectKey) {
         if (objectKey == null || objectKey.isEmpty()) {
-            throw new IllegalArgumentException("Invalid S3 object key");
+            throw new IllegalArgumentException("올바른 S3Key가 아니에요");
         }
 
         S3Presigner presigner = createPresigner();
@@ -100,7 +115,7 @@ public class ImageService {
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(expirationMinutes))
+                .signatureDuration(Duration.ofMinutes(60))
                 .getObjectRequest(getObjectRequest)
                 .build();
 
@@ -109,7 +124,7 @@ public class ImageService {
         return presignedUrl;
     }
 
-    //✅ DB에 저장 (이미지 업로드 후 객체 Key 저장)
+    // DB에 저장 (이미지 업로드 후 객체 Key 저장)
     public String saveImageToDatabase(MultipartFile file, String folder, ImageType imageType, Long entityId) {
         String s3Key = uploadImageToS3(file, folder);
 
@@ -125,14 +140,19 @@ public class ImageService {
     }
 
     public List<String> saveImages(List<MultipartFile> files, ImageType imageType, Long entityId) {
-        String folder = imageType.name().toLowerCase() + "s"; // ✅ 폴더명 자동 생성
+
+        validateTotalFileSize(files);
+
+        String folder = imageType.name().toLowerCase() + "s";
+
         return files.stream()
-                .map(file -> saveImageToDatabase(file, folder, imageType, entityId)) // ✅ 자동 생성된 폴더명 사용
+                .map(file -> saveImageToDatabase(file, folder, imageType, entityId))
                 .collect(Collectors.toList());
     }
 
     public String saveImage(MultipartFile file, ImageType imageType, Long entityId) {
-        String folder = imageType.name().toLowerCase() + "s"; // ✅ 폴더명 자동 생성
+        validateFileSize(file);
+        String folder = imageType.name().toLowerCase() + "s";
         return saveImageToDatabase(file, folder, imageType, entityId);
     }
 
@@ -165,14 +185,22 @@ public class ImageService {
     public List<ImageResponseDto> getImagesByEntity(ImageType imageType, Long entityId) {
         List<Image> images = imageRepository.findByImageTypeAndEntityId(imageType, entityId);
         return images.stream()
-                .map(image -> new ImageResponseDto(image.getImageId(), generatePresignedUrl(image.getS3Key(), 60)))
+                .map(image -> new ImageResponseDto(image.getImageId(), generatePresignedUrl(image.getS3Key())))
                 .collect(Collectors.toList());
     }
 
     public String getSingleImageByEntity(ImageType imageType, Long entityId) {
         Optional<Image> image = imageRepository.findByImageTypeAndEntityId(imageType, entityId).stream().findFirst();
 
-        return image.map(img -> generatePresignedUrl(img.getS3Key(), 60)).orElse(null);
+        return image.map(img -> generatePresignedUrl(img.getS3Key())).orElse(null);
+    }
+
+    public boolean isPresignedUrlExpired(Long timestamp) {
+        if (timestamp == null) {
+            return true;
+        }
+        long expirationTimeMillis = 60 * 60 * 1000;
+        return System.currentTimeMillis() - timestamp > expirationTimeMillis;
     }
 
 }

@@ -39,14 +39,15 @@ public class BookDetailResponseDto {
 	  Set<UUID> likedUsers,
 	  Long viewCount,
 	  List<String> imageUrls,
-	  List<CommentResponseDto> comments
+	  List<CommentResponseDto> comments,
+	  String coverImage
 	) {
 		return BookDetailResponseDto.builder()
 		  .id(book.getId())
 		  .authorId(book.getAuthor().getId()) // 유저 닉네임 반환
 		  .title(book.getTitle())
 		  .content(contentJson) // ✅ 책 내용 포함
-		  .coverImage(book.getCoverImage())
+		  .coverImage(coverImage)
 		  .tags(book.getTags())
 		  .isLiked(isLiked)
 		  .likedUsers(likedUsers)

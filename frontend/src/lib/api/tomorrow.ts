@@ -1,5 +1,5 @@
 // src/lib/api/tomorrow.ts
-import { Challenge, ChallengeDetail, ChallengeParticipant, ParticipatedChallenge, SubscribedUser, SubscribedUserChallenge } from "@/app/tomorrow/types/challenge";
+import { Challenge, ChallengeCreateRequest, ChallengeDetail, ChallengeParticipant, ChallengeUpdateRequest, ParticipatedChallenge, SubscribedUser, SubscribedUserChallenge } from "@/app/tomorrow/types/challenge";
 
 import mockChallenges from "@/app/tomorrow/mocks/ChallengeMocks";
 import mockChallengeDetail from "@/app/tomorrow/mocks/ChallengeDetailMocks";
@@ -7,22 +7,26 @@ import mockParticipants from "@/app/tomorrow/mocks/ChallengeParticipantsMock";
 import mockParticipatedChallenges from "@/app/tomorrow/mocks/ParticipatedChallengesMock";
 import mockSubscribedUserChallenges from "@/app/tomorrow/mocks/SubscribedUserChallengesMock";
 import mockSubscribedUsers from "@/app/tomorrow/mocks/SubscribedUsersMock";
+import type {SortOption } from "@/app/tomorrow/types/challenge";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 /**
  * 📌 1. 챌린지 목록 조회 (정렬 가능)
  */
-export const fetchChallenges = async (sort: string = "LATEST"): Promise<Challenge[]> => {
+export const fetchChallenges = async (
+  sort: SortOption = "LATEST"
+): Promise<Challenge[]> => {
   try {
     const response = await fetch(`${BASE_URL}/challenges?sort=${sort}`);
     if (!response.ok) throw new Error("챌린지 목록 조회 실패");
     return await response.json();
   } catch (error) {
     console.error("챌린지 목록 조회 실패, Mock 데이터 반환:", error);
-    return mockChallenges;
+    return mockChallenges;  // 실패 시 빈 배열 대신 목데이터 반환
   }
 };
+
 
 /**
  * 📌 2. 챌린지 상세 조회
@@ -39,9 +43,9 @@ export const getChallengeDetail = async (challengeId: number, userId: string): P
 };
 
 /**
- * 📌 3. 챌린지 상태별 조회 (UPCOMING, ONGOING, ENDED)
+ * 📌 3. 챌린지 상태별 조회 (UPCOMING, ONGOING, COMPLETED)
  */
-export const fetchChallengesByStatus = async (status: "UPCOMING" | "ONGOING" | "ENDED"): Promise<Challenge[]> => {
+export const fetchChallengesByStatus = async (status: "UPCOMING" | "ONGOING" | "COMPLETED"): Promise<Challenge[]> => {
   try {
     const response = await fetch(`${BASE_URL}/challenges/status?status=${status}`);
     if (!response.ok) throw new Error(`챌린지 상태별 조회(${status}) 실패`);
@@ -151,11 +155,28 @@ export const searchChallenges = async (keyword: string): Promise<Challenge[]> =>
 /**
  * 📌 9. 챌린지 생성 (multipart/form-data 처리)
  */
-export const createChallenge = async (challengeData: FormData): Promise<ChallengeDetail> => {
+export const createChallenge = async (challengeData: ChallengeCreateRequest): Promise<ChallengeDetail> => {
   try {
+    const formData = new FormData();
+    
+    const challengeDto = {
+      title: challengeData.title,
+      description: challengeData.description,
+      startDate: challengeData.startDate,
+      endDate: challengeData.endDate,
+      tags: challengeData.tags,
+      ownerId: challengeData.ownerId,
+    };
+
+    formData.append("challengeDto", JSON.stringify(challengeDto));
+
+    if (challengeData.image) {
+      formData.append("image", challengeData.image);
+    }
+
     const response = await fetch(`${BASE_URL}/challenges`, {
       method: "POST",
-      body: challengeData,
+      body: formData,
     });
     if (!response.ok) throw new Error("챌린지 생성 실패");
     return await response.json();
@@ -168,11 +189,24 @@ export const createChallenge = async (challengeData: FormData): Promise<Challeng
 /**
  * 📌 10. 챌린지 수정 (Owner만 가능)
  */
-export const updateChallenge = async (challengeId: number, updateData: FormData): Promise<ChallengeDetail> => {
+export const updateChallenge = async (challengeId: number, updateData: ChallengeUpdateRequest): Promise<ChallengeDetail> => {
   try {
+    const formData = new FormData();
+    const updateDto: any = {};
+    if (updateData.description) {
+      updateDto.description = updateData.description;
+    }
+    if (updateData.endDate) {
+      updateDto.endDate = updateData.endDate;
+    }
+    updateDto.ownerId = updateData.ownerId;
+    formData.append("updateDto", JSON.stringify(updateDto));
+    if (updateData.image) {
+      formData.append("image", updateData.image);
+    }
     const response = await fetch(`${BASE_URL}/challenges/${challengeId}`, {
       method: "PATCH",
-      body: updateData,
+      body: formData,
     });
     if (!response.ok) throw new Error("챌린지 수정 실패");
     return await response.json();

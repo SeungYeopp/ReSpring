@@ -108,5 +108,5 @@ tasks.withType(JavaCompile) {
 }
 
 compileJava {
-    dependsOn clean
+//    dependsOn clean
 }

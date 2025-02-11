@@ -65,7 +65,7 @@ export interface ChallengeUpdateRequest {
 export interface ChallengeParticipant {
   challengeId: number; // 📌 챌린지 ID 추가
   participantCount: number;
-  participantIds: string[];
+  participantIds: Participant[];
 }
 
 // 📌 7. 챌린지 정렬 옵션 타입
@@ -130,4 +130,10 @@ export interface CreateChallenge {
   endDate: Date;
   image?: File;
   preview?: string; // preview 속성 추가
+}
+
+export interface Participant {
+  userId: string;
+  nickname: string;
+  profileImage: string;
 }

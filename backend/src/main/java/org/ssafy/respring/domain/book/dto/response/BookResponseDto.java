@@ -32,15 +32,15 @@ public class BookResponseDto {
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 
-	public static BookResponseDto toResponseDto(Book book, boolean isLiked, Long likeCount, Set<UUID> likedUsers, Long viewCount) {
+	public static BookResponseDto toResponseDto(Book book, boolean isLiked, Long likeCount, Set<UUID> likedUsers, Long viewCount, String coverImage) {
 		return BookResponseDto.builder()
 				.id(book.getId())
 				.authorId(book.getAuthor().getId())
 				.title(book.getTitle())
-				.coverImage(book.getCoverImage())
+				.coverImage(coverImage)
 				.tags(book.getTags())
 				.isLiked(isLiked)
-		  		.likedUsers(likedUsers)
+				.likedUsers(likedUsers)
 				.likeCount(likeCount)
 				.viewCount(viewCount)
 				.createdAt(book.getCreatedAt())
