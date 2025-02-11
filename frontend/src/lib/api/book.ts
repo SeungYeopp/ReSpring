@@ -230,7 +230,7 @@ export const getAllBooks = async (userId : string) : Promise<BookInfo[]> => {
                 updatedAt : new Date(book.updatedAt)
             }
         ));
-        console.log(responseBooks)
+
         return responseBooks;
     }catch(error : any){
         throw new Error(error.response?.data?.message || 'getAllBooks 함수 API 호출에서 오류가 발생했습니다.');
@@ -241,7 +241,7 @@ export const getAllBooks = async (userId : string) : Promise<BookInfo[]> => {
 // 입력 : sortFields -> 봄날의 서 내 필드 종류(ex. title, likes, view) string 배열, directions -> 오름차순('asc') 또는 내림차순('desc') string 배열
 // 추가 설명 ) sortFields를 각각 ['title', 'likes']로 하고 directions를 ['desc', 'asc']로 한다면 제목으로 먼저 내림차순, 그다음 좋아요 수로 오름차순하는 것.
 // 출력 : 봄날의 서 배열
-export const getAllBooksSorted = async (sortFields:string[], directions:string[]) : Promise<Book[]> => {
+export const getAllBooksSorted = async (sortFields:string[], directions:string[], userId : string) : Promise<BookInfo[]> => {
     try{
         let url = '/books/all/sorted?';
         
@@ -256,9 +256,19 @@ export const getAllBooksSorted = async (sortFields:string[], directions:string[]
                 url += '&';
         }
 
-        const response = await axiosAPI.get(url);
+        const response = await axiosAPI.get(url, {headers : {'X-User-Id': `${userId}`}});
 
-        return response.data;
+        const responseBooks : BookInfo[] = response.data as BookInfo[];
+
+        responseBooks.map((book : BookInfo) => ({
+                ...book,
+                createdAt : new Date(book.createdAt),
+                updatedAt : new Date(book.updatedAt)
+            }
+        ));
+
+        console.log(responseBooks)
+        return responseBooks;
     }catch(error : any){
         throw new Error(error.response?.data?.message || 'getAllBooksSorted 함수 API 호출에서 오류가 발생했습니다.');
     }

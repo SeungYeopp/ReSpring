@@ -1,56 +1,74 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getAllBooksSorted, Book } from '@/lib/api';
+import { useState } from 'react';
+import { getAllBooksSorted, BookInfo } from '@/lib/api';
 
-export default function SortedBooksPage() {
-    const [books, setBooks] = useState<Book[]>([]);
+export default function Page() {
+    const [userId, setUserId] = useState('');
+    const [books, setBooks] = useState<BookInfo[] | null>(null);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [sortFields, setSortFields] = useState<string[]>(['view']);
-    const [directions, setDirections] = useState<string[]>(['desc']);
+    const [sortFields, setSortFields] = useState<string>('title');
+    const [directions, setDirections] = useState<string>('asc');
 
-    useEffect(() => {
-        const fetchBooks = async () => {
-            try {
-                const sortedBooks = await getAllBooksSorted(sortFields, directions);
-                setBooks(sortedBooks);
-            } catch (err: any) {
-                setError(err.message);
-            }
-        };
-
-        fetchBooks();
-    }, [sortFields, directions]);
+    const fetchBooks = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await getAllBooksSorted(sortFields.split(','), directions.split(','), userId);
+            setBooks(data);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">정렬된 책 목록</h1>
-            {error && <p className="text-red-500">{error}</p>}
-
-            <div className="mb-4">
-                <label className="mr-2">정렬 기준:</label>
-                <select onChange={(e) => setSortFields([e.target.value])}>
-                    <option value="view">조회수</option>
-                    <option value="title">제목</option>
-                    <option value="likes">좋아요</option>
-                </select>
-
-                <label className="ml-4 mr-2">정렬 방향:</label>
-                <select onChange={(e) => setDirections([e.target.value])}>
-                    <option value="asc">오름차순</option>
-                    <option value="desc">내림차순</option>
-                </select>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {books.map((book) => (
-                    <div key={book.id} className="border rounded-lg p-4 shadow-md">
-                        <img src={book.coverImg} alt={book.title} className="w-full h-48 object-cover rounded-md" />
-                        <h2 className="text-lg font-semibold mt-2">{book.title}</h2>
-                        <p className="text-sm text-gray-600">조회수: {book.viewCount} | 좋아요: {book.likeCount}</p>
-                        <p className="mt-2 text-sm">{book.tags.join(', ')}</p>
-                    </div>
-                ))}
+        <div className="p-6 max-w-lg mx-auto">
+            <h1 className="text-2xl font-bold mb-4">Sorted Books</h1>
+            <input
+                type="text"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                placeholder="Enter Your User ID"
+                className="w-full p-2 border rounded mb-4"
+            />
+            <input
+                type="text"
+                value={sortFields}
+                onChange={(e) => setSortFields(e.target.value)}
+                placeholder="Enter Sort Fields (comma separated)"
+                className="w-full p-2 border rounded mb-4"
+            />
+            <input
+                type="text"
+                value={directions}
+                onChange={(e) => setDirections(e.target.value)}
+                placeholder="Enter Directions (comma separated)"
+                className="w-full p-2 border rounded mb-4"
+            />
+            <button
+                onClick={fetchBooks}
+                disabled={loading}
+                className="w-full p-2 bg-blue-500 text-white rounded"
+            >
+                {loading ? 'Loading...' : 'Fetch Sorted Books'}
+            </button>
+            {error && <p className="text-red-500 mt-2">{error}</p>}
+            <div className="mt-4">
+                {books && books.length > 0 ? (
+                    books.map((book) => (
+                        <div key={book.id} className="border p-4 rounded mb-2">
+                            <h2 className="text-lg font-semibold">{book.title}</h2>
+                            <p className="text-sm text-gray-600">By {book.authorId}</p>
+                            <img src={book.coverImage} alt={book.title} className="w-full h-40 object-cover mt-2 rounded" />
+                            <p className="text-sm mt-2">Likes: {book.likeCount} | Views: {book.viewCount}</p>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-gray-500">No books found.</p>
+                )}
             </div>
         </div>
     );
