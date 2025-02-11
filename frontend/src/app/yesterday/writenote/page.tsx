@@ -25,7 +25,7 @@ export default function WriteStoryPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [story, setStory] = useState<{ title: string; content: string } | null>(null);
 
-  const userId = "b3470d7d-ab19-4514-9abe-9c3ffaf0a616";
+  const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
 
   const storyId = searchParams?.get("storyId") ? Number(searchParams.get("storyId")) : null;
 
@@ -84,10 +84,14 @@ export default function WriteStoryPage() {
 
       if (storyId) {
         await updateStory(storyId, userId, title, content, eventId!, deleteImageIds, []);
-        router.push("/yesterday/booklist?tab=stories");
+        router.push(`/yesterday/booklist/${userId}?tab=stories`);
       } else {
-        const newStoryId = await makeStory(userId, title, content, selected!, []);
-        router.push(`/stories/${newStoryId}`);
+        if (stage === "select") {
+          setStage("editor");
+        } else {
+          const newStoryId = await makeStory(userId, title, content, selected!, []);
+          router.push(`/stories/${newStoryId}`);
+        }
       }
     } catch (error) {
       console.error("Error saving story:", error);
@@ -98,7 +102,7 @@ export default function WriteStoryPage() {
 
   const handleBack = () => {
     if (stage === "editor") {
-      router.push("/yesterday/booklist?tab=stories");
+      router.push(`/yesterday/booklist/${userId}?tab=stories`);
     } else {
       router.back();
     }
@@ -109,7 +113,7 @@ export default function WriteStoryPage() {
   };
 
   return (
-    <div className="relative p-6">
+    <div className="relative p-6 -mt-4">
       <div className="flex items-center justify-between">
         <button
           onClick={handleBack}

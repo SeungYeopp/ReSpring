@@ -11,10 +11,32 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {                                        // public/fonts 에 설치한 폰트 추가
+        godob: ['"GodoB"', 'sans-serif'],                  // 고도 B
+        godom: ['"GodoM"', 'sans-serif'],                  // 고도 M
+        godomaum: ['"GodoMaum"', 'sans-serif'],            // 고도 마음체
+        nunugothic: ['"NunuGothic"', 'sans-serif'],        // 누누 기본 고딕체
+        samlipbasic: ['"SamLipBasic"', 'sans-serif'],      // 삼립호빵 베이직
+        samlipoutline: ['"SamLipOutline"', 'sans-serif'],  // 삼립호빵 아웃라인
+        ongle: ['"OngleLeafParkDaHyun"', 'sans-serif'],    // 온글잎 박다현체
+
+        // 새로운 폰트
+        binggraetaom: ['"BinggraeTaom"', 'sans-serif'],                 // 빙그레 타옴 (기본)
+        binggraetaombold: ['"BinggraeTaomBold"', 'sans-serif'],         // 빙그레 타옴 (볼드)
+        mapobackpacking: ['"MapoBackpacking"', 'sans-serif'],           // 마포 백패킹 (개성 있는 디자인 폰트)
+        goodneighborsbold: ['"GoodNeighborsBold"', 'sans-serif'],       // 굿네이버스 좋은이웃체 (볼드)
+        goodneighborsregular: ['"GoodNeighborsRegular"', 'sans-serif'], // 굿네이버스 좋은이웃체 (레귤러)
+        laundrygothicbold: ['"LaundryGothicBold"', 'sans-serif'],       // 런드리고딕 (볼드, 깔끔한 고딕체)
+        laundrygothicregular: ['"LaundryGothicRegular"', 'sans-serif'], // 런드리고딕 (레귤러, 심플한 고딕체)
+        handon300: ['"Handon300"', 'sans-serif'],                       // 한돈 삼겹살체 (300g, 얇은 두께)
+        handon600: ['"Handon600"', 'sans-serif'],                       // 한돈 삼겹살체 (600g, 굵은 두께)
+      },
       animation:{
         "spin-slow": "spin 20s linear infinite",
         "spin-slow-medium": "spin 22s linear infinite",
         "spin-slow-reverse": "spin 25s linear infinite reverse",
+        'accordion-down': 'accordion-down 0.2s ease-out',
+  			'accordion-up': 'accordion-up 0.2s ease-out'
       },
       colors: {
         background: "hsl(var(--background))",
@@ -104,10 +126,6 @@ export default {
   				}
   			}
   		},
-  		animation: {
-  			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
-  		}
     },
   },
   plugins: [require("tailwindcss-animate")],

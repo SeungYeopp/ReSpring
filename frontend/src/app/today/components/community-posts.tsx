@@ -10,22 +10,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Heart } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ko } from "date-fns/locale"
-import { getAllPosts } from "@/lib/api"
+import { getAllPosts, Post } from "@/lib/api"
 
-type Category = "전체" | "고민/질문" | "INFORMATION_SHARING"
-
-interface Post {
-  id: number
-  title: string
-  content: string
-  category: Category
-  userId: string
-  userName: string
-  createdAt: string
-  updatedAt: string
-  likes: number
-  images: string[]
-}
+type Category = "전체" | "고민/질문" | "정보 공유"
 
 export default function CommunityPosts() {
   const [allPosts, setAllPosts] = useState<Post[]>([])
@@ -35,20 +22,25 @@ export default function CommunityPosts() {
   const [error, setError] = useState<string | null>(null)
   const [ref, inView] = useInView()
 
-  const VALID_CATEGORIES: Category[] = ["전체", "고민/질문", "INFORMATION_SHARING"]
+  const VALID_CATEGORIES: Category[] = ["전체", "고민/질문", "정보 공유"]
+
+  const CATEGORY_MAP: Record<string, string> = {
+    INFORMATION_SHARING: "정보 공유",
+    QUESTION_DISCUSSION: "고민/질문",
+  };
 
   const getRandomImage = () => {
     const imageNumber = Math.floor(Math.random() * 9) + 1
     return `/corgis/placeholder${imageNumber}.jpg`
   }
 
-  const getCategoryColor = (category: Category): string => {
+  const getCategoryColor = (category: string): string => {
     switch (category) {
       case "전체":
         return "bg-[#dfeaa5] text-[#638d3e]"
       case "고민/질문":
         return "bg-[#96b23c] text-white"
-      case "INFORMATION_SHARING":
+      case "정보 공유":
         return "bg-[#f2cedd] text-[#665048]"
       default:
         return "bg-gray-200 text-gray-800"
@@ -60,10 +52,10 @@ export default function CommunityPosts() {
       setIsLoading(true)
       setError(null)
       try {
-        const newPosts = await getAllPosts()
+        const newPosts = await getAllPosts(50, 10)
         const formattedPosts = newPosts.map((post) => ({
           ...post,
-          category: VALID_CATEGORIES.includes(post.category as Category) ? (post.category as Category) : "전체",
+          category: CATEGORY_MAP[post.category] || post.category,
         }))
 
         setAllPosts(formattedPosts)
@@ -93,7 +85,7 @@ export default function CommunityPosts() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="전체">전체</TabsTrigger>
           <TabsTrigger value="고민/질문">고민/질문</TabsTrigger>
-          <TabsTrigger value="INFORMATION_SHARING">정보공유</TabsTrigger>
+          <TabsTrigger value="정보 공유">정보공유</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -114,7 +106,7 @@ function PostList({
   getRandomImage,
 }: {
   posts: Post[]
-  getCategoryColor: (category: Category) => string
+  getCategoryColor: (category: string) => string
   getRandomImage: () => string
 }) {
   return (
@@ -142,9 +134,10 @@ function PostList({
               </div>
               <h3 className="font-bold text-sm mb-1">{post.title}</h3>
               <p className="text-xs text-muted-foreground line-clamp-2 mb-2 flex-grow">{post.content}</p>
+              {/* 이미지 목 데이터, 나중에 바꿔야함*/}
               {post.images.length > 0 && (
                 <img
-                  src={post.images[0] || "/placeholder.svg"}
+                  src="/corgis/placeholder3.jpg"
                   alt="게시물 이미지"
                   className="w-full h-32 object-cover rounded-lg mb-2"
                 />

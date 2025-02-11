@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 import org.ssafy.respring.domain.image.vo.Image;
+import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.image.vo.QImage;
 
 import java.util.List;
@@ -12,7 +13,6 @@ import java.util.List;
 public class ImageRepositoryImpl implements ImageRepositoryQuerydsl {
     private final JPAQueryFactory queryFactory;
 
-
     public ImageRepositoryImpl(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
     }
@@ -20,18 +20,12 @@ public class ImageRepositoryImpl implements ImageRepositoryQuerydsl {
     QImage image = new QImage("i");
 
     @Override
-    public List<Image> findImagesByPostId(Long postId) {
-
+    public List<Image> findImagesByTypeAndEntityId(String imageType, Long entityId) {
         return queryFactory.selectFrom(image)
-                .where(image.post.id.eq(postId))
-                .fetch();
-    }
-
-    @Override
-    public List<Image> findImagesByStoryId(Long storyId) {
-
-        return queryFactory.selectFrom(image)
-                .where(image.story.id.eq(storyId))
+                .where(
+                        image.imageType.eq(ImageType.valueOf(imageType)),
+                        image.entityId.eq(entityId)
+                )
                 .fetch();
     }
 }

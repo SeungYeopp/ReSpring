@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { useViewerSettings } from "../../context/ViewerSettingsContext";
 import { SettingsPanel } from "../SettingsPannel";
 
-export function TopToolbar() {
+interface ReaderProps {
+  title: string;
+}
+
+export function TopToolbar({ title }: ReaderProps) {
   const router = useRouter();
   const { theme } = useViewerSettings();
 
@@ -22,7 +26,7 @@ export function TopToolbar() {
         </button>
 
         {/* 책 제목 (가운데) */}
-        <div className="font-bold text-sm">책 제목 (임시)</div>
+        <div className="font-bold text-sm">{title}</div>
 
         {/* ✅ 설정 패널 자체에서 버튼을 포함하고 상태 관리 */}
         <SettingsPanel />

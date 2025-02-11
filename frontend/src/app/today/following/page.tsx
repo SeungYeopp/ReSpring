@@ -9,11 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { getAllPosts } from "@/lib/api";
-import type { Post } from "@/lib/api";
+import {getAllSubscribersActivities, Post} from "@/lib/api/subscribe"
+import { useAuth } from "@/hooks/useAuth";
 
 /** 카테고리 타입 */
-type Category = "전체" | "고민/질문" | "INFORMATION_SHARING";
+type Category = "전체" | "고민/질문" | "정보 공유";
 
 /** ✅ 랜덤 프로필 이미지 생성 함수 */
 const getRandomImage = () => {
@@ -25,13 +25,22 @@ const getRandomImage = () => {
  * 커뮤니티 게시글 목록 페이지
  */
 export default function CommunityPosts() {
+  const {userId} = useAuth(true);
+
+  
+
   const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [displayedPosts, setDisplayedPosts] = useState<Post[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category>("전체");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const VALID_CATEGORIES: Category[] = ["전체", "고민/질문", "INFORMATION_SHARING"];
+  const VALID_CATEGORIES: Category[] = ["전체", "고민/질문", "정보 공유"];
+
+  const CATEGORY_MAP: Record<string, string> = {
+    INFORMATION_SHARING: "정보 공유",
+    QUESTION_DISCUSSION: "고민/질문",
+  }
 
   /** ✅ 카테고리에 따른 뱃지 색상 */
   const getCategoryColor = (category: Category): string => {
@@ -40,7 +49,7 @@ export default function CommunityPosts() {
         return "bg-[#dfeaa5] text-[#638d3e]";
       case "고민/질문":
         return "bg-[#96b23c] text-white";
-      case "INFORMATION_SHARING":
+      case "정보 공유":
         return "bg-[#f2cedd] text-[#665048]";
       default:
         return "bg-gray-200 text-gray-800";
@@ -49,17 +58,18 @@ export default function CommunityPosts() {
 
   /** ✅ 전체 게시물 불러오기 */
   useEffect(() => {
+    if(!userId)
+      return;
+
     const fetchPosts = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const newPosts = await getAllPosts();
-
-        const formattedPosts: Post[] = newPosts.map((post) => ({
+        const newPosts = await getAllSubscribersActivities(userId);
+        const formattedPosts = newPosts.map((post) => ({
           ...post,
-          category: VALID_CATEGORIES.includes(post.category as Category) ? post.category as Category : "전체",
+          category: CATEGORY_MAP[post.category] || post.category, // 변환되지 않으면 원래 값 유지
         }));
-
         setAllPosts(formattedPosts);
         setDisplayedPosts(formattedPosts);
       } catch (error) {
@@ -70,7 +80,7 @@ export default function CommunityPosts() {
       }
     };
     fetchPosts();
-  }, []);
+  }, [userId]);
 
   /** ✅ 카테고리 변경 시 필터링 */
   useEffect(() => {
@@ -89,7 +99,7 @@ export default function CommunityPosts() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="전체">전체</TabsTrigger>
           <TabsTrigger value="고민/질문">고민/질문</TabsTrigger>
-          <TabsTrigger value="INFORMATION_SHARING">정보공유</TabsTrigger>
+          <TabsTrigger value="정보 공유">정보공유</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -119,18 +129,18 @@ function PostList({
   return (
     <div className="space-y-3">
       {posts.map((post) => (
-        <Link key={post.id} href={`/today/${post.id}`} className="block">
+        <Link key={post.postId} href={`/today/${post.postId}`} className="block">
           <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200">
             <CardContent className="p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
                   <Avatar>
-                    <AvatarFallback>{post.userName?.[0] ?? "?"}</AvatarFallback>
+                    <AvatarFallback>{post.authorName?.[0] ?? "?"}</AvatarFallback>
                     {/* ✅ 랜덤 프로필 이미지 적용 */}
-                    <AvatarImage src={getRandomImage()} alt={post.userName} />
+                    <AvatarImage src={getRandomImage()} alt={post.authorName} />
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium">{post.userName}</p>
+                    <p className="text-sm font-medium">{post.authorName}</p>
                     <p className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(post.createdAt), {
                         addSuffix: true,

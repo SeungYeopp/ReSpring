@@ -11,6 +11,6 @@ public class CommentRequestDto {
     private UUID userId;
     private String content;
     private Long postId;
-    private String bookId;
+    private Long bookId;
     private Long parentId;
 }

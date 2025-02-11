@@ -29,6 +29,7 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
 
+
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}

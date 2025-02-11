@@ -1,51 +1,68 @@
 package org.ssafy.respring.domain.book.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.ssafy.respring.domain.image.vo.Image;
+import lombok.*;
+import org.ssafy.respring.domain.comment.vo.Comment;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Document(collection = "book")
+@Entity
+@Table(name = "book")
 @Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Book {
     @Id
-    private String id; // MongoDB는 기본적으로 ObjectId 사용
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User author;
+
     private String title;
-    private String content;
-    private String coverImg;
+
+//    @Column(columnDefinition = "TEXT")
+//    private String content;
+
     private Set<String> tags;
-    private Long likeCount;
-    private Long viewCount;
+
+    @Column(name = "cover_image")
+    private String coverImage;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Set<Long> storyIds; // MySQL에서 관리되는 Story ID 리스트
-    private Set<UUID> likedUsers = new HashSet<>();
 
-    // 좋아요 추가/취소 로직
-    public boolean toggleLike(UUID userId) {
-        boolean isLiked;
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<BookLikes> bookLikes = new HashSet<>();
 
-        if (likedUsers.remove(userId)) {
-            isLiked = false; // 좋아요 취소됨
-        } else {
-            likedUsers.add(userId);
-            isLiked = true; // 좋아요 추가됨
-        }
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<BookViews> views = new HashSet<>();
 
-        likeCount = (long) likedUsers.size(); // likes 값을 likedUsers 크기와 동기화
-        return isLiked;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "book_story", joinColumns = @JoinColumn(name = "book_id"))
+    @Column(name = "story_id")
+    @Builder.Default
+    private List<Long> storyIds = new ArrayList<>();
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public void increaseView() {
-        this.viewCount = (this.viewCount == null) ? 1 : this.viewCount + 1;
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

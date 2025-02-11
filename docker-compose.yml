@@ -15,8 +15,16 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-
-
+      - S3_ACCESSKEY=${S3_ACCESSKEY}
+      - S3_SECRETKEY=${S3_SECRETKEY}
+      - S3_BUCKET=${S3_BUCKET}
+      - S3_REGION=${S3_REGION}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+      - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
+      - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
+      - KAKAO_REDIRECT_URI=${KAKAO_REDIRECT_URI}
     volumes:
       - ~/.gradle:/home/gradle/.gradle
     depends_on:
@@ -137,6 +145,7 @@ services:
       - "9200:9200"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+      - elasticsearch_plugins:/usr/share/elasticsearch/plugins
     networks:
       - project-network
     healthcheck:
@@ -177,4 +186,5 @@ volumes:
   mongo_data:
   redis_data:
   elasticsearch_data:
+  elasticsearch_plugins:
 

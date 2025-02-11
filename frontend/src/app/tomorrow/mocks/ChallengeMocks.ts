@@ -131,4 +131,5 @@ const mockChallenges: Challenge[] = [
   },
 ];
 
+
 export default mockChallenges;
