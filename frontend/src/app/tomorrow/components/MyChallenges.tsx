@@ -28,10 +28,10 @@ export default function MyChallenges({ userId }: MyChallengesProps) {
 
     api.on("select", onSelect);
 
-    // 5초마다 다음 슬라이드로 이동
+    // 50초마다 다음 슬라이드로 이동
     const autoplayInterval = setInterval(() => {
       api.scrollNext();
-    }, 5000);
+    }, 50000);
 
     return () => {
       api.off("select", onSelect);
