@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { BookOpen, Clock } from "lucide-react";
 import type {CarouselIndicatorProps } from "../../types/maintypes";
-import { weeklyBooks, latestBooks } from "@/app/yesterday/components/main/mocks/books";
 
 import {getTopThreeWeeklyBooks, getAllBooksByUserId, Book, BookInfo} from "@/lib/api"
 import {getAllSubscribers} from "@/lib/api/subscribe"
@@ -139,8 +138,8 @@ function BookCarousel({ books }: BookCarouselProps) {
                 {/* 왼쪽: 책 표지 */}
                 <div className="w-1/3 aspect-[3/4] flex-shrink-0">
                   <img
-                    src={"/placeholder_bookcover.jpg"}
-                    alt={book.title}
+                    src={book.coverImage}
+                    alt={book.coverImage}
                     className="w-full h-full object-cover rounded-lg shadow-md cursor-pointer"
                     onClick={() => handleOnClickBook(book.id)}
 
