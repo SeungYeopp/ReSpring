@@ -59,7 +59,7 @@ public class ImageService {
                 .build();
     }
 
-     // ✅ S3에 파일 업로드 후 객체 Key 반환
+     //  S3에 파일 업로드 후 객체 Key 반환
     public String uploadImageToS3(MultipartFile file, String folder) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("파일이 비어 있습니다.");
@@ -86,8 +86,8 @@ public class ImageService {
         return objectKey; // ✅ S3 객체 Key 반환
     }
 
-     //✅ Presigned URL 생성 (제한된 시간 동안만 접근 가능)
-    public String generatePresignedUrl(String objectKey, int expirationMinutes) {
+     // Presigned URL 생성
+    public String generatePresignedUrl(String objectKey) {
         if (objectKey == null || objectKey.isEmpty()) {
             throw new IllegalArgumentException("Invalid S3 object key");
         }
@@ -100,7 +100,7 @@ public class ImageService {
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(expirationMinutes))
+                .signatureDuration(Duration.ofMinutes(60))
                 .getObjectRequest(getObjectRequest)
                 .build();
 
@@ -109,7 +109,7 @@ public class ImageService {
         return presignedUrl;
     }
 
-    //✅ DB에 저장 (이미지 업로드 후 객체 Key 저장)
+    // DB에 저장 (이미지 업로드 후 객체 Key 저장)
     public String saveImageToDatabase(MultipartFile file, String folder, ImageType imageType, Long entityId) {
         String s3Key = uploadImageToS3(file, folder);
 
@@ -125,14 +125,14 @@ public class ImageService {
     }
 
     public List<String> saveImages(List<MultipartFile> files, ImageType imageType, Long entityId) {
-        String folder = imageType.name().toLowerCase() + "s"; // ✅ 폴더명 자동 생성
+        String folder = imageType.name().toLowerCase() + "s";
         return files.stream()
-                .map(file -> saveImageToDatabase(file, folder, imageType, entityId)) // ✅ 자동 생성된 폴더명 사용
+                .map(file -> saveImageToDatabase(file, folder, imageType, entityId))
                 .collect(Collectors.toList());
     }
 
     public String saveImage(MultipartFile file, ImageType imageType, Long entityId) {
-        String folder = imageType.name().toLowerCase() + "s"; // ✅ 폴더명 자동 생성
+        String folder = imageType.name().toLowerCase() + "s";
         return saveImageToDatabase(file, folder, imageType, entityId);
     }
 
@@ -165,14 +165,23 @@ public class ImageService {
     public List<ImageResponseDto> getImagesByEntity(ImageType imageType, Long entityId) {
         List<Image> images = imageRepository.findByImageTypeAndEntityId(imageType, entityId);
         return images.stream()
-                .map(image -> new ImageResponseDto(image.getImageId(), generatePresignedUrl(image.getS3Key(), 60)))
+                .map(image -> new ImageResponseDto(image.getImageId(), generatePresignedUrl(image.getS3Key())))
                 .collect(Collectors.toList());
     }
 
     public String getSingleImageByEntity(ImageType imageType, Long entityId) {
         Optional<Image> image = imageRepository.findByImageTypeAndEntityId(imageType, entityId).stream().findFirst();
 
-        return image.map(img -> generatePresignedUrl(img.getS3Key(), 60)).orElse(null);
+        return image.map(img -> generatePresignedUrl(img.getS3Key())).orElse(null);
     }
+
+    public boolean isPresignedUrlExpired(Long timestamp) {
+        if (timestamp == null) {
+            return true;
+        }
+        long expirationTimeMillis = 60 * 60 * 1000;
+        return System.currentTimeMillis() - timestamp > expirationTimeMillis;
+    }
+
 
 }

@@ -1,27 +1,18 @@
 package org.ssafy.respring.domain.user.dto.response;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+
 import java.util.UUID;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class LoginResponseDto {
     private UUID userId;
     private String userNickname;
-
-    public LoginResponseDto() {
-        // TODO Auto-generated constructor stub
-    }
-
-    public LoginResponseDto(UUID userId, String userNickname) {
-        super();
-        this.userId = userId;
-        this.userNickname = userNickname;
-    }
-
-    public String getUserNickname() {
-        return userNickname;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
+    private String profileImageUrl;
 
 }
