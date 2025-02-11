@@ -14,13 +14,15 @@ import {
     CarouselApi
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
-import { getTopThreeWeeklyBooks, Book, CompiledBook, Chapter} from "@/lib/api";
+import { getTopThreeWeeklyBooks, Book, BookInfo, CompiledBook, Chapter} from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth"
 
 export const TodaysBook = () => {
     const [api, setApi] = useState<CarouselApi | null>(null);
-    const [bookData, setBookData] = useState<Book[]>([]);
-    const [compiledBooks, setCompiledBooks] = useState<CompiledBook[]>([]);
+    const [bookData, setBookData] = useState<BookInfo[]>([]);
     const [current, setCurrent] = useState(0);
+
+    const {userId} = useAuth(true);
 
     const onSelect = useCallback(() => {
         if (!api) return;
@@ -28,27 +30,21 @@ export const TodaysBook = () => {
     }, [api]);
 
     useEffect(() => {
+        if(!userId)
+            return
         const setInitials = async () => {
             try {
-                const result: Book[] = await getTopThreeWeeklyBooks();
+                const result: BookInfo[] = await getTopThreeWeeklyBooks(userId);
     
                 console.log(result);
                 setBookData(result);
-    
-                // Book 배열을 CompiledBook 배열로 변환
-                const compiledResult: CompiledBook[] = result.map((book) => ({
-                    title: book.title,
-                    chapters: JSON.parse(book.content) as Chapter[], // JSON 문자열을 객체 배열로 변환
-                }));
-    
-                setCompiledBooks(compiledResult);
             } catch (error) {
                 console.error(error);
             }
         };
     
         setInitials();
-    }, []);
+    }, [userId]);
     
 
     useEffect(() => {
@@ -80,12 +76,12 @@ export const TodaysBook = () => {
                     setApi={setApi}
                 >
                     <CarouselContent className="w-full">
-                        {bookData.map(({ title, tags, coverImg }: Book, index) => (
+                        {bookData.map(({ title, tags, coverImage }: BookInfo, index) => (
                             <CarouselItem key={title} className="w-full lg:w-1/3 pl-4">
                                 <Card className="flex flex-row h-full w-full border border-gray-200 shadow-md rounded-lg overflow-hidden">
                                     <div className="w-1/3 flex justify-center items-center p-4 bg-gray-100">
                                         <img 
-                                            src={coverImg} 
+                                            src={coverImage} 
                                             alt={`${title}_img`} 
                                             width={100} 
                                             height={160} 

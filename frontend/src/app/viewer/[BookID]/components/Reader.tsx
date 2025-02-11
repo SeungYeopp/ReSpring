@@ -6,14 +6,20 @@ import { usePageContext } from "../context/PageContext";
 import { useViewerSettings } from "../context/ViewerSettingsContext";
 import { Chapter } from "@/lib/api";
 
+// interface ReaderProps {
+//   textData: string;
+//   bookChapters : Chapter[]
+//   plainBookContent : string;
+// }
+
 interface ReaderProps {
   textData: string;
-  bookChapters : Chapter[]
-  plainBookContent : string;
 }
 
-export function Reader({ textData, bookChapters, plainBookContent }: ReaderProps) {
-  const { pages } = useDynamicPages(bookChapters);
+//export function Reader({ textData, bookChapters, plainBookContent }: ReaderProps) {
+export function Reader({ textData }: ReaderProps) {
+  // const { pages } = useDynamicPages(bookChapters);
+  const pages : string[] = []
   const { currentPage, totalPages } = usePageContext();
   const { fontSize, lineHeight, letterSpacing, pageTransition } = useViewerSettings();
 

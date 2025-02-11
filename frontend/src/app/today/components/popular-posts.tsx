@@ -10,7 +10,7 @@ import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/com
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { SkeletonCarousel } from "@/components/custom/SkeletonCarousel";
+import { TodaySkeletonCarousel } from "./ui/TodaySkeletonCarousel";
 
 const getRandomImage = () => {
   const imageNumber = Math.floor(Math.random() * 9) + 1;
@@ -85,7 +85,7 @@ export default function PopularPosts() {
   }, [api]);
 
   if (loading) {
-    return <SkeletonCarousel />;
+    return <TodaySkeletonCarousel />;
   }
 
   return (

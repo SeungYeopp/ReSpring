@@ -1,9 +1,8 @@
-// components/custom/SkeletonCarousel.tsx
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export function SkeletonCarousel() {
+export function TodaySkeletonCarousel() {
   return (
     <div className="space-y-4">
       <Card className="shadow-none border-none">

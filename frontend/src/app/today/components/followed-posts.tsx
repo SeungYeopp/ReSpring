@@ -10,7 +10,7 @@ import { ko } from "date-fns/locale";
 import { getAllSubscribersActivities, Post } from "@/lib/api/subscribe";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
-import { SkeletonCarousel } from "@/components/custom/SkeletonCarousel";
+import { TodaySkeletonCarousel } from "./ui/TodaySkeletonCarousel";
 
 const getRandomImage = () => {
   const imageNumber = Math.floor(Math.random() * 9) + 1;
@@ -63,7 +63,7 @@ export default function FollowedPosts() {
   };
 
   if (loading) {
-    return <SkeletonCarousel />;
+    return <TodaySkeletonCarousel />;
   }
 
   if (posts.length === 0) {

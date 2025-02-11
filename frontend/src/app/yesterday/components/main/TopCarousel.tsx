@@ -10,7 +10,7 @@ import { BookOpen, Clock } from "lucide-react";
 import type {CarouselIndicatorProps } from "../../types/maintypes";
 import { weeklyBooks, latestBooks } from "@/app/yesterday/components/main/mocks/books";
 
-import {getTopThreeWeeklyBooks, getAllBooksByUserId, Book} from "@/lib/api"
+import {getTopThreeWeeklyBooks, getAllBooksByUserId, Book, BookInfo} from "@/lib/api"
 import {getAllSubscribers} from "@/lib/api/subscribe"
 import { useRouter } from "next/navigation";
 
@@ -18,8 +18,8 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function TopCarousel() {
   const [activeTab, setActiveTab] = useState("weekly");
-  const [weeklyBooks, setWeeklyBooks] = useState<Book[]>([]);
-  const [subscriberBooks, setSubscriberBooks] = useState<Book[]>([]);
+  const [weeklyBooks, setWeeklyBooks] = useState<BookInfo[]>([]);
+  const [subscriberBooks, setSubscriberBooks] = useState<BookInfo[]>([]);
 
   const {userId} = useAuth(true);
 
@@ -29,7 +29,7 @@ export default function TopCarousel() {
 
     const handleInitials = async () => {
       try{
-        const weeklyResult = await getTopThreeWeeklyBooks();
+        const weeklyResult = await getTopThreeWeeklyBooks(userId);
         setWeeklyBooks(weeklyResult);
 
         const subscribersResult = await getAllSubscribers(userId);
@@ -86,7 +86,7 @@ export default function TopCarousel() {
 }
 
 interface BookCarouselProps {
-  books: Book[];
+  books: BookInfo[];
 }
 
 // ✅ 랜덤 이미지 생성 함수
@@ -125,7 +125,7 @@ function BookCarousel({ books }: BookCarouselProps) {
     return () => clearInterval(timer);
   }, [scrollToNext]);
 
-  const handleOnClickBook = (bookId : string) => {
+  const handleOnClickBook = (bookId : number) => {
     router.push(`/yesterday/book/${bookId}`)
   }
 
