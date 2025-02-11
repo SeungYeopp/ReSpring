@@ -9,7 +9,7 @@ import { Reader } from "./components/Reader";
 import { useViewerSettings } from "./context/ViewerSettingsContext";
 import { usePageControls } from "./hooks/usePageControls"; // ✅ 페이지 이동 관련 훅
 import { useBookData } from "./hooks/useBookData"; // ✅ API 호출 훅 추가
-import { Chapter } from "@/lib/api";
+import { Content } from "@/lib/api";
 
 interface ViewerPageProps {
   params: {
@@ -24,12 +24,15 @@ export default function ViewerPage({ params }: ViewerPageProps) {
   //const { bookContent, isLoading, bookTitle, bookChapters, plainBookContent } = useBookData(BookID); // ✅ API에서 책 데이터 가져오기
   const { bookContent, isLoading, bookTitle } = useBookData(BookID); // ✅ API에서 책 데이터 가져오기
   //const totalPages = bookContent ? bookContent.split("\n").length : 1; // ✅ 페이지 수 계산 (단순 줄 개수 기준)
-  const totalPages = 1
+  const totalPages = 100
+
+  const defaultContent = {'임시 챕터 이름':'임시 챕터 내용'}
+  const defaultTitle = "임시 봄날의 서 제목"
 
   return (
     <PageProvider initialTotalPages={totalPages}>
       <ViewerSettingsProvider>
-        <MainLayout BookID={BookID} bookContent={""} isLoading={isLoading} BookTitle={bookTitle!}/>
+        <MainLayout BookID={BookID} bookContent={bookContent ?? defaultContent} isLoading={isLoading} BookTitle={bookTitle ?? defaultTitle}/>
         {/* <MainLayout BookID={BookID} bookContent={bookContent} isLoading={isLoading} BookTitle={bookTitle!} BookChapters={bookChapters!} plainBookContent={plainBookContent!}/> */}
       </ViewerSettingsProvider>
     </PageProvider>
@@ -38,7 +41,7 @@ export default function ViewerPage({ params }: ViewerPageProps) {
 
 /** ✅ 메인 레이아웃 */
 //function MainLayout({ BookID, bookContent, isLoading, BookTitle, BookChapters, plainBookContent }: { BookID: string; bookContent: string; isLoading: boolean, BookTitle : string, BookChapters : Chapter[], plainBookContent : string }) {
-function MainLayout({ BookID, bookContent, isLoading, BookTitle}: { BookID: string; bookContent: string; isLoading: boolean, BookTitle : string}) {
+function MainLayout({ BookID, bookContent, isLoading, BookTitle}: { BookID: string; bookContent: Content; isLoading: boolean, BookTitle : string}) {
   usePageControls();
   const { theme } = useViewerSettings();
 
