@@ -1,48 +1,43 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from "react"  // 여기서 'import type'을 'import'로 변경
-import { Bell, MessageSquare, ThumbsUp, UserPlus, Reply } from "lucide-react"
-
-interface Notification {
-  id: string | number
-  message: string
-  type: "COMMENT" | "LIKE" | "SUBSCRIBE" | "REPLY" | "DEFAULT"
-  createdAt: string | Date
-}
+import React, { useEffect, useState } from "react";
+import { Bell, MessageSquare, ThumbsUp, UserPlus, Reply } from "lucide-react";
+// 공통 타입 파일에서 Notification 타입을 import 합니다.
+import type { Notification } from "@/app/notifications/types/notifications";
 
 interface ToastNotificationProps {
-  notifications: Notification[]
+  notifications: Notification[];
 }
 
 const ToastNotification: React.FC<ToastNotificationProps> = ({ notifications }) => {
-  const [toasts, setToasts] = useState<Notification[]>([])
+  const [toasts, setToasts] = useState<Notification[]>([]);
 
   useEffect(() => {
     if (notifications.length > 0) {
-      setToasts((prev) => [...prev, notifications[notifications.length - 1]])
+      setToasts((prev) => [...prev, notifications[notifications.length - 1]]);
 
       const timer = setTimeout(() => {
-        setToasts((prev) => prev.slice(1))
-      }, 5000)
+        setToasts((prev) => prev.slice(1));
+      }, 5000);
 
-      return () => clearTimeout(timer)
+      return () => clearTimeout(timer);
     }
-  }, [notifications])
+  }, [notifications]);
 
   const getNotificationIcon = (type: Notification["type"]) => {
     switch (type) {
       case "COMMENT":
-        return <MessageSquare className="w-4 h-4 text-blue-500" />
+        return <MessageSquare className="w-4 h-4 text-blue-500" />;
       case "LIKE":
-        return <ThumbsUp className="w-4 h-4 text-red-500" />
+        return <ThumbsUp className="w-4 h-4 text-red-500" />;
       case "SUBSCRIBE":
-        return <UserPlus className="w-4 h-4 text-green-500" />
+        return <UserPlus className="w-4 h-4 text-green-500" />;
       case "REPLY":
-        return <Reply className="w-4 h-4 text-purple-500" />
+        return <Reply className="w-4 h-4 text-purple-500" />;
       default:
-        return <Bell className="w-4 h-4 text-gray-500" />
+        return <Bell className="w-4 h-4 text-gray-500" />;
     }
-  }
+  };
 
   return (
     <div className="fixed top-14 right-4 z-[9999] space-y-2 max-w-sm w-full">
@@ -67,7 +62,7 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({ notifications }) 
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
 
-export default ToastNotification
+export default ToastNotification;
