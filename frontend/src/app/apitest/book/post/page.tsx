@@ -1,206 +1,157 @@
 "use client";
 
-import React, { useState } from 'react';
-import { makeBook } from '@/lib/api'; // Adjust the import path as needed
+import { useState } from "react";
+import { CompiledBook, makeBook } from "@/lib/api"; // API 함수 가져오기
 
-export default function BookCreatePage() {
-  const [userId, setUserId] = useState<string>('');
-  const [title, setTitle] = useState<string>('');
-  const [content, setContent] = useState<{[key: string]: string}>({});
+interface Content {
+  [key: string]: string;
+}
+
+export default function MakeBookPage() {
+  const [userId, setUserId] = useState("");
+  const [title, setTitle] = useState("");
+  const [inputs, setInputs] = useState<{ key: string; value: string }[]>([{ key: "", value: "" }]);
   const [tags, setTags] = useState<string[]>([]);
   const [storyIds, setStoryIds] = useState<number[]>([]);
   const [coverImage, setCoverImage] = useState<File | null>(null);
-  const [creationStatus, setCreationStatus] = useState<{
-    success: boolean | null;
-    message: string;
-    bookId?: string;
-  }>({
-    success: null,
-    message: '',
-  });
+  const [bookId, setBookId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
 
+  // 입력 필드 추가
+  const addInputField = () => {
+    setInputs([...inputs, { key: "", value: "" }]);
+  };
+
+  // 입력 값 변경 핸들러
+  const handleChange = (index: number, field: "key" | "value", value: string) => {
+    const newInputs = [...inputs];
+    newInputs[index][field] = value;
+    setInputs(newInputs);
+  };
+
+  // 태그 입력 변경
+  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTags(e.target.value.split(",").map(tag => tag.trim()));
+  };
+
+  // storyIds 입력 변경
+  const handleStoryIdsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStoryIds(e.target.value.split(",").map(id => Number(id.trim())).filter(id => !isNaN(id)));
+  };
+
+  // 커버 이미지 선택
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    
-    // 파일 존재 여부 디버깅
-    console.log('Files:', files);
-    
-    if (files && files.length > 0) {
-      const file = files[0];
-      
-      // 추가 디버깅 정보
-      console.log('Selected file:', file);
-      console.log('File name:', file.name);
-      console.log('File size:', file.size);
-      console.log('File type:', file.type);
-      
-      // 파일 유효성 검사 추가
-      if (file.type.startsWith('image/')) {
-        setCoverImage(file);
-        console.log('Image set successfully');
-      } else {
-        // 이미지 파일이 아닌 경우 경고
-        setCreationStatus({
-          success: false,
-          message: '유효한 이미지 파일을 선택해주세요.'
-        });
-        e.target.value = ''; // 입력 초기화
-      }
-    } else {
-      console.log('No file selected');
-      setCoverImage(null);
+    if (e.target.files?.length) {
+      setCoverImage(e.target.files[0]);
     }
   };
 
-  const handleCreateBook = async () => {
-    // Reset previous status
-    setCreationStatus({ success: null, message: '' });
+  // API 호출
+  const handleMakeBook = async () => {
+    if (!userId || !title || !coverImage) {
+      alert("유저 ID, 제목, 커버 이미지를 입력해주세요!");
+      return;
+    }
+
+    const content: Content = inputs.reduce((acc, { key, value }) => {
+      if (key.trim()) acc[key] = value;
+      return acc;
+    }, {} as Content);
+
+    if (Object.keys(content).length === 0) {
+      alert("최소한 하나의 컨텐츠를 입력해야 합니다.");
+      return;
+    }
 
     try {
-      // Validation checks
-      if (!userId || !title || !coverImage) {
-        setCreationStatus({
-          success: false,
-          message: '필수 필드를 모두 입력해주세요 (사용자 ID, 제목, 커버 이미지)'
-        });
-        return;
-      }
-
-      // Attempt to create the book
-      const bookId = await makeBook(
-        userId, 
-        title, 
-        content, 
-        tags, 
-        storyIds, 
-        coverImage
-      );
-
-      // Success handling
-      setCreationStatus({
-        success: true,
-        message: '책이 성공적으로 생성되었습니다!',
-        bookId: bookId.toString()
-      });
-
-      // Optional: Reset form after successful creation
-      resetForm();
-
-    } catch (error: any) {
-      // Error handling
-      setCreationStatus({
-        success: false,
-        message: `책 생성 중 오류 발생: ${error.message}`
-      });
-      console.error(error);
+      setLoading(true);
+      // const newBookId = await makeBook(userId, title, content, tags, storyIds, coverImage);
+      //setBookId(newBookId);
+    } catch (error) {
+      console.error("책 생성 실패:", error);
+      alert("책 생성 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const resetForm = () => {
-    setTitle('');
-    setContent({});
-    setTags([]);
-    setStoryIds([]);
-    setCoverImage(null);
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-lg">
-      <h1 className="text-2xl font-bold mb-6">새로운 봄날의 서 만들기</h1>
-      
-      <div className="mb-4">
-        <label className="block mb-2">사용자 ID</label>
-        <input
-          type="text"
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-          className="w-full p-2 border rounded"
-          placeholder="사용자 ID를 입력하세요"
-        />
-      </div>
+    <div className="max-w-2xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">책 생성</h1>
 
-      <div className="mb-4">
-        <label className="block mb-2">제목</label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-2 border rounded"
-          placeholder="봄날의 서 제목을 입력하세요"
-        />
-      </div>
+      {/* 유저 ID 입력 */}
+      <input
+        type="text"
+        placeholder="유저 ID"
+        value={userId}
+        onChange={(e) => setUserId(e.target.value)}
+        className="border p-2 w-full mb-2"
+      />
 
-      <div className="mb-4">
-        <label className="block mb-2">내용 (JSON 형식)</label>
-        <textarea
-          value={JSON.stringify(content)}
-          onChange={(e) => {
-            try {
-              setContent(JSON.parse(e.target.value));
-            } catch (error) {
-              console.error('잘못된 JSON 형식입니다');
-            }
-          }}
-          className="w-full p-2 border rounded"
-          placeholder='내용을 JSON으로 입력하세요 (예: {"page1": "내용"})'
-          rows={3}
-        />
-      </div>
+      {/* 제목 입력 */}
+      <input
+        type="text"
+        placeholder="책 제목"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="border p-2 w-full mb-2"
+      />
 
-      <div className="mb-4">
-        <label className="block mb-2">태그 (쉼표로 구분)</label>
-        <input
-          type="text"
-          value={tags.join(', ')}
-          onChange={(e) => setTags(e.target.value.split(',').map(tag => tag.trim()))}
-          className="w-full p-2 border rounded"
-          placeholder="태그를 쉼표로 구분하여 입력하세요"
-        />
-      </div>
+      {/* Content 입력 필드 */}
+      <h2 className="text-lg font-semibold">내용 추가</h2>
+      {inputs.map((input, index) => (
+        <div key={index} className="flex gap-2 mb-2">
+          <input
+            type="text"
+            placeholder="키 (예: 1장. 생일)"
+            value={input.key}
+            onChange={(e) => handleChange(index, "key", e.target.value)}
+            className="border p-2 flex-1"
+          />
+          <input
+            type="text"
+            placeholder="값 (예: 생일은 즐겁다)"
+            value={input.value}
+            onChange={(e) => handleChange(index, "value", e.target.value)}
+            className="border p-2 flex-1"
+          />
+        </div>
+      ))}
 
-      <div className="mb-4">
-        <label className="block mb-2">스토리 ID (쉼표로 구분)</label>
-        <input
-          type="text"
-          value={storyIds.join(', ')}
-          onChange={(e) => setStoryIds(e.target.value.split(',').map(id => Number(id.trim())))}
-          className="w-full p-2 border rounded"
-          placeholder="스토리 ID를 쉼표로 구분하여 입력하세요"
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="block mb-2">커버 이미지</label>
-        <input
-          type="file"
-          onChange={handleFileChange}
-          className="w-full p-2 border rounded"
-          accept="image/*"
-        />
-        {coverImage && (
-          <p className="mt-2 text-sm text-gray-600">
-            선택된 파일: {coverImage.name}
-          </p>
-        )}
-      </div>
-
-      <button
-        onClick={handleCreateBook}
-        className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600"
-      >
-        봄날의 서 생성
+      {/* 입력 필드 추가 버튼 */}
+      <button onClick={addInputField} className="bg-gray-300 px-4 py-2 rounded mr-2">
+        + 내용 추가
       </button>
 
-      {creationStatus.success !== null && (
-        <div className={`mt-4 p-2 rounded ${
-          creationStatus.success 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-red-100 text-red-800'
-        }`}>
-          {creationStatus.message}
-          {creationStatus.bookId && (
-            <p className="mt-2 font-bold">생성된 책 ID: {creationStatus.bookId}</p>
-          )}
+      {/* 태그 입력 */}
+      <input
+        type="text"
+        placeholder="태그 (쉼표로 구분)"
+        onChange={handleTagsChange}
+        className="border p-2 w-full mt-2 mb-2"
+      />
+
+      {/* Story IDs 입력 */}
+      <input
+        type="text"
+        placeholder="스토리 ID (쉼표로 구분)"
+        onChange={handleStoryIdsChange}
+        className="border p-2 w-full mb-2"
+      />
+
+      {/* 커버 이미지 업로드 */}
+      <input type="file" accept="image/*" onChange={handleFileChange} className="mb-2" />
+
+      {/* API 호출 버튼 */}
+      <button onClick={handleMakeBook} className="bg-blue-500 text-white px-4 py-2 rounded" disabled={loading}>
+        {loading ? "생성 중..." : "책 생성"}
+      </button>
+
+      {/* 결과 출력 */}
+      {bookId !== null && (
+        <div className="mt-4 p-4 border rounded">
+          <h2 className="text-lg font-semibold">생성된 책 ID</h2>
+          <p>{bookId}</p>
         </div>
       )}
     </div>
