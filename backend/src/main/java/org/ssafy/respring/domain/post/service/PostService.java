@@ -35,10 +35,9 @@ public class PostService {
      * 📝 포스트 생성
      */
     @Transactional
-    public Long createPostWithImages(PostRequestDto requestDto, List<MultipartFile> imageFiles) {
+    public Long createPostWithImages(PostRequestDto requestDto, List<MultipartFile> imageFiles, UUID userId) {
         // ✅ 유저 조회
-        User user = userRepository.findById(requestDto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + requestDto.getUserId()));
+        User user = getUserById(userId);
 
         // ✅ 포스트 저장
         Post post = Post.builder()
@@ -63,13 +62,16 @@ public class PostService {
      * 📝 포스트 수정
      */
     @Transactional
-    public void updatePost(Long postId, PostUpdateRequestDto requestDto, List<MultipartFile> imageFiles) {
+    public void updatePost(Long postId, PostUpdateRequestDto requestDto, List<MultipartFile> imageFiles, UUID userId) {
         // ✅ 포스트 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
 
+
         // ✅ 작성자 검증
-        if (!post.getUser().getId().equals(requestDto.getUserId())) {
+        User user = getUserById(userId);
+
+        if (!post.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("You are not authorized to modify this post.");
         }
 
@@ -109,12 +111,13 @@ public class PostService {
      * 📝 포스트 삭제
      */
     @Transactional
-    public void deletePost(Long postId, UUID requestUserId) {
+    public void deletePost(Long postId, UUID userId) {
         // ✅ 포스트 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
 
         // ✅ 작성자 검증
+        UUID requestUserId = getUserById(userId).getId();
         if (!post.getUser().getId().equals(requestUserId)) {
             throw new IllegalArgumentException("You are not authorized to delete this post.");
         }
@@ -143,7 +146,7 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    public List<PostResponseDto> getMyPosts(UUID userId) {
+    public List<PostResponseDto> getMyPosts(String userName, UUID userId) {
         return postRepository.findByUser_Id(userId)
                 .stream()
                 .map(this::toResponseDto)
@@ -196,6 +199,11 @@ public class PostService {
 
     public boolean isPostLikedByUser(Long postId, UUID userId) {
         return postRepository.isPostLikedByUser(postId, userId);
+    }
+
+    private User getUserById(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("❌ 존재하지 않는 사용자입니다!"));
     }
 
     /**
