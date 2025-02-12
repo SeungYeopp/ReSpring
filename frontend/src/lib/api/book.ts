@@ -277,11 +277,10 @@ export const getAllBooksSorted = async (sortFields:string[], directions:string[]
 // 봄날의 서 AI 기능
 // 입력 : 글 조각 여러 개를 하나의 string으로 입력
 // 출력 : CompiledBook 형식으로 된 데이터.
-export const compileBookByAI = async (content : string) : Promise<CompiledBook> => {
+export const compileBookByAI = async (content : Content) : Promise<Content> => {
     try{
-        const formData = new FormData();
-        formData.append('message', `${content}`);
-        const response = await axiosAPI.post('/books/ai-compile', formData);
+        console.log(content)
+        const response = await axiosAPI.post('/books/ai-compile', content);
 
         const uncleaned = response.data.response;
 
@@ -289,7 +288,7 @@ export const compileBookByAI = async (content : string) : Promise<CompiledBook> 
 
         const jsoned = JSON.parse(cleaned); // JSON 으로 변환.
 
-        return jsoned as CompiledBook // CompiledBook 형식 명시.
+        return jsoned as Content // CompiledBook 형식 명시.
     }catch(error : any){
         throw new Error(error.response?.data?.message || 'compileBookByAI 함수 API 호출에서 오류가 발생했습니다.');
     }
