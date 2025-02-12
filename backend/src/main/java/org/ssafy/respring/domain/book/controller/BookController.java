@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +16,7 @@ import org.ssafy.respring.domain.book.service.BookService;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,10 +71,11 @@ public class BookController {
 			@RequestHeader("X-User-Id") UUID userId,
 			@RequestParam Long lastLikes,
 			@RequestParam Long lastViews,
-			@RequestParam LocalDateTime lastCreatedAt,
+			@RequestParam Long lastBookId,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastCreatedAt,
 			@RequestParam int size
 	) {
-		return ResponseEntity.ok(bookService.getAllBooksSortedByTrends(userId, lastLikes, lastViews, lastCreatedAt, size));
+		return ResponseEntity.ok(bookService.getAllBooksSortedByTrends(userId, lastLikes, lastViews, lastCreatedAt, lastBookId, size));
 	}
 
 	@GetMapping("/my")

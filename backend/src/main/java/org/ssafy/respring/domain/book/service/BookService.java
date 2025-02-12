@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +17,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -102,6 +104,9 @@ public class BookService {
 
         // ✅ Elasticsearch 색인 수행
         indexBookData(book, "book_title");
+
+		// ✅ 새 책이 추가되었으므로 캐시 삭제
+		clearTrendingBooksCache();
 
         return book.getId();
     }
@@ -197,6 +202,8 @@ public class BookService {
 		bookContentRepository.deleteByBookId(bookId);
 		// ✅ Elasticsearch 색인 삭제
 		deleteBookFromIndex(bookId, "book_title");
+		// ✅ 책이 삭제되었으므로 캐시 삭제
+		clearTrendingBooksCache();
 	}
 
 	@Transactional
@@ -258,16 +265,20 @@ public class BookService {
 		User user = getUserById(userId);
 
 		bookViewsRedisService.incrementViewCount(bookId);
-		if (!bookViewsRepository.existsByBookIdAndUserId(bookId, userId)) {
-			BookViews newView = BookViews.builder()
-					.book(book)
-					.user(user)
-					.updatedAt(LocalDateTime.now())
-					.build();
 
-			bookViewsRepository.save(newView);
+		if (!bookViewsRepository.existsByBookIdAndUserId(bookId, userId)) {
+			saveBookViewAsync(book, user);
 		}
-		saveRecentView(user.getId(), bookId);
+	}
+
+	@Async
+	@Transactional
+	public void saveBookViewAsync(Book book, User user) {
+		bookViewsRepository.save(BookViews.builder()
+				.book(book)
+				.user(user)
+				.updatedAt(LocalDateTime.now())
+				.build());
 	}
 
 	@Transactional(readOnly = true)
@@ -308,22 +319,50 @@ public class BookService {
 	}
 
 	// 무한스크롤 적용 x
-	@Transactional
+	@Transactional(readOnly = true)
 	public List<BookResponseDto> getAllBooksSortedByTrends(UUID userId) {
 		return bookRepository.getAllBooksSortedByTrends().stream()
 				.map(book -> mapToBookResponseDto(book, userId))
 				.collect(Collectors.toList());
 	}
 
+//	// 무한스크롤 적용
+//	@Transactional(readOnly = true)
+//	public List<BookResponseDto> getAllBooksSortedByTrends(UUID userId, Long lastLikes, Long lastViews, LocalDateTime lastCreatedAt, int size) {
+//		return bookRepository.getAllBooksSortedByTrends(lastLikes, lastViews, lastCreatedAt, size).stream()
+//		  .map(book -> mapToBookResponseDto(book, userId))
+//		  .collect(Collectors.toList());
+//	}
+
 	// 무한스크롤 적용
-	@Transactional
-	public List<BookResponseDto> getAllBooksSortedByTrends(UUID userId, Long lastLikes, Long lastViews, LocalDateTime lastCreatedAt, int size) {
-		return bookRepository.getAllBooksSortedByTrends(lastLikes, lastViews, lastCreatedAt, size).stream()
-		  .map(book -> mapToBookResponseDto(book, userId))
-		  .collect(Collectors.toList());
+	@Transactional(readOnly = true)
+	public List<BookResponseDto> getAllBooksSortedByTrends(UUID userId, Long lastLikes, Long lastViews, LocalDateTime lastCreatedAt, Long lastBookId, int size) {
+		// ✅ Redis 캐싱 키 생성 (페이지 단위 캐싱)
+		String cacheKey = String.format("trending_books:%d:%d:%s:%d", lastLikes, lastViews, lastCreatedAt, size);
+
+		// ✅ 캐시에서 조회
+		List<BookResponseDto> cachedResult = (List<BookResponseDto>) redisTemplate.opsForValue().get(cacheKey);
+		if (cachedResult != null) {
+			System.out.println("✅ 캐시에서 불러옴: " + cacheKey);
+			return cachedResult;
+		}
+
+		// ✅ 캐시에 없으면 DB 조회
+		List<BookResponseDto> result = bookRepository.getAllBooksSortedByTrends(lastLikes, lastViews, lastCreatedAt, lastBookId, size)
+				.stream()
+				.map(book -> mapToBookResponseDto(book, userId))
+				.collect(Collectors.toList());
+
+		// ✅ Redis에 저장 (TTL 5분 설정)
+		redisTemplate.opsForValue().set(cacheKey, result, 5, TimeUnit.MINUTES);
+
+		return result;
 	}
 
-	@Transactional
+
+
+
+	@Transactional(readOnly = true)
 	public List<BookResponseDto> getWeeklyTop3Books(UUID userId) {
 		return bookRepository.getWeeklyTop3Books().stream()
 		  .map(book -> mapToBookResponseDto(book, userId))
@@ -398,6 +437,16 @@ public class BookService {
 			throw new RuntimeException("Elasticsearch 색인 삭제 오류", e);
 		}
 	}
+
+	public void clearTrendingBooksCache() {
+		// ✅ "trending_books:"로 시작하는 모든 캐시 삭제
+		Set<String> keys = redisTemplate.keys("trending_books:*");
+		if (keys != null) {
+			redisTemplate.delete(keys);
+			System.out.println("✅ Redis 캐시 삭제 완료: " + keys.size() + "개 항목");
+		}
+	}
+
 
 	// ✅ 책 제목 검색 기능 (Elasticsearch)
 	@Transactional
@@ -520,6 +569,10 @@ public class BookService {
 						"📖 " + user.getUserNickname() + "님이 당신의 자서전을 좋아합니다!"
 				);
 			}
+
+			// ✅ 캐시 삭제 후 최신 데이터 반영
+			clearTrendingBooksCache();
+
 			return true; // 좋아요 추가됨
 		}
 	}
