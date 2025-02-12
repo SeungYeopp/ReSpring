@@ -1,7 +1,7 @@
 // 유저 관련 API를 호출하는 함수 모음
 import axiosAPI from "./axios";
 
-export interface UserInfo{
+export interface SessionInfo{
     nickname: string,
     userId: string
 }
@@ -64,11 +64,11 @@ export const login = async (email : string, password : string) : Promise<boolean
 // 이후 아래 함수를 사용해서 session 정보를 받을 수 있습니다.
 // 입력 : X
 // 출력 : SessionInfo 정보.
-export const getSessionInfo = async () : Promise<UserInfo> => {
+export const getSessionInfo = async () : Promise<SessionInfo> => {
     try{
         const response = await axiosAPI.get('/user/me');
 
-        return response.data as UserInfo;
+        return response.data as SessionInfo;
     }catch(error : any){
         throw new Error(error.response?.data?.message || "getSessionInfos() 함수 호출 에러 발생!");
     }
