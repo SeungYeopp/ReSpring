@@ -11,13 +11,10 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
-import org.ssafy.respring.auth.OAuth2LoginSuccessHandler;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -31,9 +28,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2LoginSuccessHandler) // 로그인 성공 후 핸들러 실행
-                )
+
 
                 .formLogin(form -> form.disable());
 
