@@ -5,5 +5,6 @@ public enum TargetType {
     BOOK,   // ✅ 자서전 (Biography)
     CHALLENGE,   // ✅ 챌린지 (Challenge)
     USER,         // ✅ 사용자 (User)
-    COMMENT
+    COMMENT,
+    CHAT
 }
