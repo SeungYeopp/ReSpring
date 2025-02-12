@@ -1,68 +1,68 @@
-"use client";
+"use client"
 
-import type React from "react";
-import { useEffect, useState, useCallback, useRef } from "react";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { SliderChallengeCard } from "./SliderChallengeCard";
-import type { SubscribedUserChallenge } from "@/app/tomorrow/types/challenge";
-import type { CarouselApi } from "@/components/ui/carousel";
+import type React from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
+import { SliderChallengeCard } from "./SliderChallengeCard"
+import type { SubscribedUserChallenge } from "@/app/tomorrow/types/challenge"
+import type { CarouselApi } from "@/components/ui/carousel"
 
 interface FollowedChallengesProps {
-  challenges: SubscribedUserChallenge[];
+  challenges: SubscribedUserChallenge[]
 }
 
 export default function FollowedChallenges({ challenges }: FollowedChallengesProps) {
-  const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
-  const carouselRef = useRef<HTMLDivElement>(null);
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
+  const carouselRef = useRef<HTMLDivElement>(null)
 
   const onSelect = useCallback(() => {
-    if (!api) return;
-    setCurrent(api.selectedScrollSnap());
-  }, [api]);
+    if (!api) return
+    setCurrent(api.selectedScrollSnap())
+  }, [api])
 
   useEffect(() => {
-    if (!api) return;
+    if (!api) return
 
-    api.on("select", onSelect);
+    api.on("select", onSelect)
 
     // 5초마다 다음 슬라이드로 이동 (자동 재생)
     const autoplayInterval = setInterval(() => {
-      api.scrollNext();
-    }, 5000);
+      api.scrollNext()
+    }, 5000)
 
     return () => {
-      api.off("select", onSelect);
-      clearInterval(autoplayInterval);
-    };
-  }, [api, onSelect]);
+      api.off("select", onSelect)
+      clearInterval(autoplayInterval)
+    }
+  }, [api, onSelect])
 
   // 키보드 이벤트 핸들러 추가
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
-      if (!api) return;
+      if (!api) return
 
       switch (event.key) {
         case "ArrowLeft":
-          api.scrollPrev();
-          break;
+          api.scrollPrev()
+          break
         case "ArrowRight":
-          api.scrollNext();
-          break;
+          api.scrollNext()
+          break
       }
     },
-    [api]
-  );
+    [api],
+  )
 
   useEffect(() => {
-    const element = carouselRef.current;
+    const element = carouselRef.current
     if (element) {
-      element.tabIndex = 0; // 키보드 포커스를 받을 수 있도록 설정
+      element.tabIndex = 0 // 키보드 포커스를 받을 수 있도록 설정
     }
-  }, []);
+  }, [])
 
   if (challenges.length === 0) {
-    return <div className="text-center text-gray-500">구독한 사람들이 도전을 진행하고 있지 않습니다....</div>;
+    return <div className="text-center text-gray-500">구독한 사람들이 도전을 진행하고 있지 않습니다....</div>
   }
 
   return (
@@ -81,21 +81,19 @@ export default function FollowedChallenges({ challenges }: FollowedChallengesPro
               <CarouselItem key={challenge.challengeId} className="md:basis-1/2 lg:basis-1/3">
                 <div className="p-1">
                   <SliderChallengeCard
-                    id={challenge.challengeId} // ✅ challengeId 유지
+                    id={challenge.challengeId}
                     image={challenge.image || "/placeholder.webp"}
                     title={challenge.title}
                     description={challenge.description}
-                    tags={[]} // ✅ SubscribedUserChallenge에 tags 없음 → 빈 배열 사용
+                    tags={[]}
                   />
                 </div>
               </CarouselItem>
             ))}
         </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
       </Carousel>
 
-      {/* ✅ 점 인디케이터 (최대 5개까지만 표시) */}
+      {/* 점 인디케이터 (최대 5개까지만 표시) */}
       <div className="flex justify-center mt-4">
         {challenges.slice(0, 5).map((_, index) => (
           <button
@@ -107,5 +105,6 @@ export default function FollowedChallenges({ challenges }: FollowedChallengesPro
         ))}
       </div>
     </div>
-  );
+  )
 }
+
