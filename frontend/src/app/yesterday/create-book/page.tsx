@@ -160,6 +160,15 @@ export default function CreateBook() {
     )
   }
 
+  const removeDotsFromTitles = (compiledBook: CompiledBook): CompiledBook => {
+    // 각 챕터의 제목에서 마침표를 제거한 새 제목을 할당
+    compiledBook.chapters.forEach(chapter => {
+        chapter.chapterTitle = chapter.chapterTitle.replace(/\./g, ""); // 제목에서 모든 마침표 제거
+    });
+
+    return compiledBook;
+};
+
   const handleSubmit = async () => {
     setIsFinalizingBook(true)
     try {
@@ -180,10 +189,12 @@ export default function CreateBook() {
         acc[chapter.chapterTitle] = chapter.content;
         return acc;
       }, {} as Content);
+
+      const removedDots = removeDotsFromTitles(compiledBook!)
     
       const result : number= await makeBook(
         userId,
-        compiledBook!,
+        removedDots!,
         bookTags,
         selectedStorieIds,
         bookCoverImg!,
