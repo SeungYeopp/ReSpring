@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ["example.com"], // ✅ 외부 이미지 도메인 허용
+    domains: ['respring-s3-bucket.s3.ap-northeast-2.amazonaws.com'],
   },
   async redirects() {
     return [

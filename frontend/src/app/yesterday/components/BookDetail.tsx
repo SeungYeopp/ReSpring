@@ -103,7 +103,11 @@ export default function BookDetail({ bookId }: BookDetailProps) {
         {/* Book Cover */}
         <div className="p-4">
           <div className="relative aspect-[3/4] max-w-[150px] mx-auto rounded-lg overflow-hidden shadow-lg">
-            <Image src={"/placeholder_bookcover.jpg"} alt="Book Cover" fill className="object-cover" />
+            {book && book.coverImage && <img
+              src={book.coverImage}
+              alt={book.coverImage}
+              className="w-full h-full object-cover"
+            />}
           </div>
         </div>
 

@@ -2,7 +2,7 @@
 export const carouselMessages = {
     tomorrow: [
       { line1: "🌱 다시, 봄 (Re:Spring)", line2: "오늘보다 더 나은 내일을 위해 도전하세요" },
-      { line1: "🌿 새로운 시작, 새로운 기회", line2: "당신의 도전을 응원합니다" },
+      { line1: "🌿 새로운 시작, 새로운 기회", line2: "인생을 바꾸는 일일 챌린지" },
       { line1: "🍃 변화는 작은 한 걸음부터", line2: "지금, 새로운 도전을 시작하세요" },
     ],
     today: [

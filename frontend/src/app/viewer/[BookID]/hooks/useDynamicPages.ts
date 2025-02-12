@@ -2,71 +2,79 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useViewerSettings } from "../context/ViewerSettingsContext";
-import { usePageContext } from "../context/PageContext"; // ✅ totalPages 업데이트 반영
+import { usePageContext } from "../context/PageContext";
 import { Content } from "@/lib/api";
-/**
- * ✅ 화면 크기와 폰트 설정을 고려하여 텍스트를 동적으로 페이지 단위로 분할
- * - 실제 컨테이너 높이와 폰트 크기 기반으로 한 페이지에 표시할 줄 수 계산
- * - 단어 단위로 끊어서 페이지를 나눔
- */
 
-export function useDynamicPages(bookContent: Content | undefined) {
+interface Chapter {
+  title: string;
+  page: number;
+}
+
+export function useDynamicPages(bookContent: Content) {
   const { fontSize, lineHeight, letterSpacing } = useViewerSettings();
-  const { setTotalPages } = usePageContext(); // ✅ totalPages 업데이트
+  const { setTotalPages } = usePageContext();
   const [pages, setPages] = useState<string[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  if(!bookContent) // bookContent 없을 경우.
-    return pages;
-  // useEffect(() => {
-  //   if (!bookChapters || bookChapters.length === 0) return;
+  useEffect(() => {
+    if (!bookContent || Object.keys(bookContent).length === 0) return;
 
-  //   // ✅ 실제 컨테이너 높이 가져오기 (뷰포트 높이 대신)
-    // const viewportHeight = containerRef.current?.clientHeight || window.innerHeight;
-    // const lineHeightPx = fontSize * lineHeight;
-    // const maxLinesPerPage = Math.floor(viewportHeight / lineHeightPx); // 한 페이지에 들어갈 최대 줄 수
+    
+    const viewportHeight = containerRef.current?.clientHeight || window.innerHeight;
+    const lineHeightPx = fontSize * lineHeight;
+    const maxLinesPerPage = Math.floor(viewportHeight / lineHeightPx);
+    console.log(`📌 한 페이지당 최대 줄 수: ${maxLinesPerPage}`);
 
-  //   console.log(`📌 한 페이지당 최대 줄 수: ${maxLinesPerPage}`);
+    const wordsPerLine = Math.floor(50 / (fontSize + letterSpacing));
+    const maxWordsPerPage = wordsPerLine * maxLinesPerPage;
+    console.log(`📌 한 페이지당 최대 단어 수: ${maxWordsPerPage}`);
 
-  //   // ✅ 문단을 단어 단위로 나누기
-  //   const wordsPerLine = Math.floor(50 / (fontSize + letterSpacing)); // 글자 수 반영한 1줄당 단어 수 계산
-  //   const maxWordsPerPage = wordsPerLine * maxLinesPerPage; // 한 페이지당 최대 단어 수
+    const finalPages: string[] = [];
+    const finalChapters: Chapter[] = [];
+    let currentPage = "";
+    let wordCount = 0;
+    let pageCount = 0;
 
-  //   const finalPages: string[] = [];
-  //   let currentPage = "";
-  //   let wordCount = 0;
+    Object.entries(bookContent).forEach(([chapterTitle, content]) => {
+      if (currentPage) {
+        finalPages.push(currentPage);
+        pageCount++;
+        currentPage = "";
+      }
 
-  //   bookChapters.forEach((chapter) => {
-  //     // 챕터 제목을 새로운 페이지에 시작하도록 추가
-  //     if (currentPage) {
-  //       finalPages.push(currentPage); // 이전 페이지 저장
-  //       currentPage = ""; // 새 페이지 준비
-  //     }
-      
-  //     // 챕터 제목 추가
-  //     currentPage += `📖 ${chapter.chapterTitle}`;
-  //     wordCount = currentPage.split(" ").length; // 제목이 추가되었으므로 단어 수 업데이트
+      finalChapters.push({ title: chapterTitle, page: pageCount });
 
-  //     // 챕터 본문 내용 처리
-  //     const words = chapter.content.split(" ");
-  //     words.forEach((word) => {
-  //       if (wordCount + 1 <= maxWordsPerPage) {
-  //         currentPage += " " + word;
-  //         wordCount += 1;
-  //       } else {
-  //         // 페이지가 꽉 차면 새로운 페이지로 넘어가게
-  //         finalPages.push(currentPage);
-  //         currentPage = word;
-  //         wordCount = 1;
-  //       }
-  //     });
-  //   });
+      // 챕터 제목 추가
+      currentPage += `📖 ${chapterTitle}`;
+      wordCount = currentPage.split(" ").length; // 단어 수 업데이트
 
-  //   if (currentPage) finalPages.push(currentPage); // 마지막 페이지 추가
+      // 챕터 본문 내용 처리
+      const words = content.split(" ");
+      words.forEach((word) => {
+        if (wordCount + 1 <= maxWordsPerPage) {
+          currentPage += " " + word;
+          wordCount += 1;
+        } else {
+          // 페이지가 꽉 차면 새로운 페이지로 넘어감
+          finalPages.push(currentPage);
+          currentPage = word;
+          wordCount = 1;
+          pageCount++;
+        }
+      });
+    });
 
-  //   setPages(finalPages);
-  //   setTotalPages(finalPages.length); // totalPages 업데이트
-  // }, [bookChapters, fontSize, lineHeight, letterSpacing, setTotalPages]); // bookChapters 변경 시마다 실행
+    if (currentPage) {
+      finalPages.push(currentPage);
+      pageCount++;
+    }
 
-  return { pages };
+    setPages(finalPages);
+    setChapters(finalChapters);
+    setTotalPages(pageCount);
+  }, [bookContent, fontSize, lineHeight, letterSpacing, setTotalPages]);
+
+  
+  return { pages, chapters, containerRef };
 }

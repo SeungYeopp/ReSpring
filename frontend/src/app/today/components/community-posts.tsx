@@ -7,18 +7,18 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Heart } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
+import { Heart } from 'lucide-react'
+import { formatDistanceToNowStrict } from "date-fns"
 import { ko } from "date-fns/locale"
 import { getAllPosts, Post } from "@/lib/api"
-
+import { TodayCommunitySkeleton } from "./ui/TodayCommunitySkeleton"
 type Category = "전체" | "고민/질문" | "정보 공유"
 
 export default function CommunityPosts() {
   const [allPosts, setAllPosts] = useState<Post[]>([])
   const [posts, setPosts] = useState<Post[]>([])
   const [selectedCategory, setSelectedCategory] = useState<Category>("전체")
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [ref, inView] = useInView()
 
@@ -76,24 +76,30 @@ export default function CommunityPosts() {
     } else {
       setPosts(allPosts.filter((post) => post.category === selectedCategory))
     }
-    window.scrollTo(0, 0)
+    // window.scrollTo(0, 0)
   }, [selectedCategory, allPosts])
+
+  if (isLoading) {
+    return <TodayCommunitySkeleton />
+  }
+
+  if (error) {
+    return <p className="text-center py-4 text-red-500">{error}</p>
+  }
 
   return (
     <div className="space-y-4">
       <Tabs defaultValue="전체" onValueChange={(value) => setSelectedCategory(value as Category)}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="전체">전체</TabsTrigger>
-          <TabsTrigger value="고민/질문">고민/질문</TabsTrigger>
-          <TabsTrigger value="정보 공유">정보공유</TabsTrigger>
+          <TabsTrigger value="전체" className="font-laundrygothicregular">전체</TabsTrigger>
+          <TabsTrigger value="고민/질문" className="font-laundrygothicregular">고민/질문</TabsTrigger>
+          <TabsTrigger value="정보 공유" className="font-laundrygothicregular">정보공유</TabsTrigger>
         </TabsList>
       </Tabs>
 
       <PostList posts={posts} getCategoryColor={getCategoryColor} getRandomImage={getRandomImage} />
 
-      {isLoading && <p className="text-center py-4">게시물을 불러오는 중...</p>}
-      {error && <p className="text-center py-4 text-red-500">{error}</p>}
-      {!isLoading && !error && posts.length === 0 && <p className="text-center py-4">게시물이 없습니다.</p>}
+      {posts.length === 0 && <p className="text-center py-4">게시물이 없습니다.</p>}
 
       <div ref={ref} className="h-10" />
     </div>
@@ -124,7 +130,7 @@ function PostList({
                   <div>
                     <p className="text-sm font-medium">{post.userName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
+                      {formatDistanceToNowStrict(new Date(post.createdAt), { addSuffix: true, locale: ko })}
                     </p>
                   </div>
                 </div>
@@ -134,7 +140,6 @@ function PostList({
               </div>
               <h3 className="font-bold text-sm mb-1">{post.title}</h3>
               <p className="text-xs text-muted-foreground line-clamp-2 mb-2 flex-grow">{post.content}</p>
-              {/* 이미지 목 데이터, 나중에 바꿔야함*/}
               {post.images.length > 0 && (
                 <img
                   src="/corgis/placeholder3.jpg"
@@ -154,4 +159,3 @@ function PostList({
     </div>
   )
 }
-

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useViewerSettings } from "../context/ViewerSettingsContext"
 import { usePageContext } from "../context/PageContext"
 import { useBookData } from "../hooks/useBookData"
@@ -26,24 +26,15 @@ export function TableOfContents({ bookId }: { bookId: string }) {
   const { theme } = useViewerSettings()
   const { currentPage, totalPages, setCurrentPage } = usePageContext()
   const { bookContent } = useBookData(bookId)
-  //const { pages } = useDynamicPages(bookContent) // 임시로 주석 쳐둠.
-  const pages : string[] = []
+  const { chapters, pages } = useDynamicPages(bookContent!)
   const [isOpen, setIsOpen] = useState(false)
   const [searchType, setSearchType] = useState("chapter")
   const [searchTerm, setSearchTerm] = useState("")
   const [currentListPage, setCurrentListPage] = useState(1)
 
-  const chapters: Chapter[] = [
-    { title: "서문", page: 0 },
-    { title: "1장 - 시작", page: 3 },
-    { title: "2장 - 성장", page: 5 },
-    { title: "3장 - 전환점", page: 7 },
-    { title: "4장 - 새로운 길", page: 9 },
-  ]
-
   const filteredChapters = useMemo(
     () => chapters.filter((chap) => chap.title.toLowerCase().includes(searchTerm.toLowerCase())),
-    [searchTerm],
+    [chapters, searchTerm],
   )
 
   const contentMatches = useMemo(

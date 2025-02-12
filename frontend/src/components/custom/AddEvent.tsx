@@ -43,13 +43,13 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
       setIsModalOpen(false);
       onEventAdded();
 
-      setSuccessMessage("✅ 이벤트가 성공적으로 추가되었습니다!");
+      setSuccessMessage("✅ 흔적을 성공적으로 남기셨습니다!");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
     } catch (error) {
       console.error(error);
-      setSuccessMessage("❌ 이벤트 추가에 실패했습니다.");
+      setSuccessMessage("❌ 흔적을 남기는데 실패했습니다.");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
@@ -68,7 +68,7 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
       {isModalOpen && (
         <div className="modal-overlay" onClick={handleOverlayClick}>
           <div className="modal-content">
-            <div className="modal-header font-bold">사건 추가</div>
+            <div className="modal-header font-bold">흔적 남기기</div>
             <div>
               <label className="font-bold">제목</label>
               <input
@@ -101,7 +101,7 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
 
                 <div className="button-container">
                   <Button onClick={() => setIsModalOpen(false)}>취소</Button>
-                  <Button onClick={handlePost}>추가</Button>
+                  <Button onClick={handlePost}>남기기</Button>
                 </div>
               </div>
             </div>
@@ -109,7 +109,7 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
         </div>
       )}
 
-      <Button onClick={() => setIsModalOpen(true)}>+ 새로운 사건 추가하기</Button>
+      <Button onClick={() => setIsModalOpen(true)}>+ 새로운 흔적 남기기</Button>
 
       {successMessage && (
         <div className="message-overlay">

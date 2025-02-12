@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -101,13 +101,13 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
       <div className={`flex gap-3 ${isReply ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4' : ""}`}>
         <Avatar className="h-7 w-7 flex-shrink-0">
           <AvatarImage src={getRandomImage()} alt={comment.username} />
-          <AvatarFallback>{comment.username[0]}</AvatarFallback>
+          <AvatarFallback>{comment.username}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
           <div className="flex items-baseline gap-1">
             <span className="text-sm font-semibold">{comment.username}</span>
             <time className="text-xs text-gray-500">
-              {formatDistanceToNow(new Date(comment.createdAt), {
+              {formatDistanceToNowStrict(new Date(comment.createdAt), {
                 locale: ko,
                 addSuffix: true,
               })}

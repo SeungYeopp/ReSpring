@@ -257,7 +257,7 @@ export function ChallengeForm({ onSubmit, onCancel, onChange }: ChallengeFormPro
                       setErrors({ ...errors, startDate: "", endDate: "" });
                     }
                   }}
-                  label="시작일 선택"
+                  label="YYYY - MM - DD"
                   error={errors.startDate}
                   disabledDays={(date) => date < new Date()}
                 />
@@ -278,7 +278,7 @@ export function ChallengeForm({ onSubmit, onCancel, onChange }: ChallengeFormPro
                       setErrors({ ...errors, endDate: "" });
                     }
                   }}
-                  label="종료일 선택"
+                  label="YYYY - MM - DD"
                   error={errors.endDate}
                   disabledDays={(date) => date <= startDate!}
                 />

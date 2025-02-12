@@ -48,7 +48,7 @@ export function ChallengeCalendar({ records, startDate, endDate }: ChallengeCale
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-lg border">
         <div className="flex items-center justify-between p-4">
           <button onClick={previousMonth} className="p-2 hover:bg-gray-100 rounded-full">
             <ChevronLeft className="w-5 h-5" />
