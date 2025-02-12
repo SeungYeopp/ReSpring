@@ -38,7 +38,7 @@ export default function StoryGetTestPage() {
                                 <div>
                                     <h4>이미지 목록</h4>
                                     {story.images.map((img) => (
-                                        <img key={img.imageId} src={img.imageUrl} alt="스토리 이미지" width="100" />
+                                        <img key={img} src={img} alt="스토리 이미지" width="100" />
                                     ))}
                                 </div>
                             )}
