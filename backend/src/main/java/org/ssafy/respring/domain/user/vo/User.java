@@ -37,7 +37,7 @@ public class User {
     private String email;
     private String password;
     private String profileImage;
-    private String socialId;
+    private String provider;
 
 
     @JsonIgnore
@@ -46,9 +46,6 @@ public class User {
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Book> myBooks;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SocialAccount> socialAccounts;
 
     public User(String userNickname, String email, String password) {
         super();
