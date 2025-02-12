@@ -8,6 +8,7 @@ import mockParticipatedChallenges from "@/app/tomorrow/mocks/ParticipatedChallen
 import mockSubscribedUserChallenges from "@/app/tomorrow/mocks/SubscribedUserChallengesMock";
 import mockSubscribedUsers from "@/app/tomorrow/mocks/SubscribedUsersMock";
 import type {SortOption } from "@/app/tomorrow/types/challenge";
+import axiosAPI from "./axios";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
@@ -173,17 +174,15 @@ export const createChallenge = async (challengeData: ChallengeCreateRequest): Pr
     if (challengeData.image) {
       formData.append("image", challengeData.image);
     }
+    const response = await axiosAPI.post(`${BASE_URL}/challenges`, formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
-    const response = await fetch(`${BASE_URL}/challenges`, {
-      method: "POST",
-      body: formData,
-    });
-    if (!response.ok) throw new Error("챌린지 생성 실패");
-    return await response.json();
-  } catch (error) {
-    console.error("챌린지 생성 실패:", error);
-    throw error;
-  }
+    console.log("🔍 서버 응답 상태 코드:", response.status);
+    return response.data;
+    
+    }catch(error){
+      console.error("❌ 챌린지 생성 실패");
+      throw new Error("챌린지 생성 실패");
+    }
 };
 
 /**
