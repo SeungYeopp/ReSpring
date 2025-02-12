@@ -10,7 +10,7 @@ interface Chapter {
   page: number;
 }
 
-export function useDynamicPages(bookContent: Content) {
+export function useDynamicPages(bookContent: Content, imageUrls: string[]) {
   const { fontSize, lineHeight, letterSpacing } = useViewerSettings();
   const { setTotalPages } = usePageContext();
   const [pages, setPages] = useState<string[]>([]);
@@ -35,6 +35,16 @@ export function useDynamicPages(bookContent: Content) {
     let currentPage = "";
     let wordCount = 0;
     let pageCount = 0;
+
+    
+    // if(imageUrls)
+    //   imageUrls!.forEach((url, idx) => {
+    //     console.log("idx", idx)
+    //     finalPages.push("");
+    //     pageCount++;
+    //   })
+
+    console.log(pageCount)
 
     Object.entries(bookContent).forEach(([chapterTitle, content]) => {
       if (currentPage) {
