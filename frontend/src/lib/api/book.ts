@@ -78,13 +78,13 @@ export const makeBook = async (
     coverImage : File
 ) : Promise<number> => {
     try{
-        const convertedContent = convertToContent(compiledBook)
+        const content = convertToContent(compiledBook)
         const title : string = compiledBook.title;
         const formData = new FormData();
         console.log("makeBook, title", title);
-        console.log("makeBook, convertedContent", convertedContent);
+        console.log("makeBook, convertedContent", content);
         formData.append('requestDto', new Blob([
-            JSON.stringify({userId, title, convertedContent, tags, storyIds})
+            JSON.stringify({userId, title, content, tags, storyIds})
         ], {type : 'application/json'}
         ));
         
@@ -299,6 +299,7 @@ export const compileBookByAI = async (content : Content) : Promise<Content> => {
 
         return jsoned as Content // CompiledBook 형식 명시.
     }catch(error : any){
+        console.error(error)
         throw new Error(error.response?.data?.message || 'compileBookByAI 함수 API 호출에서 오류가 발생했습니다.');
     }
 }
