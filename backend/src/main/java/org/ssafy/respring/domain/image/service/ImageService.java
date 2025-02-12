@@ -1,6 +1,7 @@
 package org.ssafy.respring.domain.image.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.ai.image.ImageResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -185,7 +186,14 @@ public class ImageService {
     public List<ImageResponseDto> getImagesByEntity(ImageType imageType, Long entityId) {
         List<Image> images = imageRepository.findByImageTypeAndEntityId(imageType, entityId);
         return images.stream()
-                .map(image -> new ImageResponseDto(image.getImageId(), generatePresignedUrl(image.getS3Key())))
+                .map(image -> new ImageResponseDto(image.getImageId(),generatePresignedUrl(image.getS3Key())))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getImageUrlsByEntity(ImageType imageType, Long entityId) {
+        List<Image> images = imageRepository.findByImageTypeAndEntityId(imageType, entityId);
+        return images.stream()
+                .map(image -> generatePresignedUrl(image.getS3Key()))
                 .collect(Collectors.toList());
     }
 
