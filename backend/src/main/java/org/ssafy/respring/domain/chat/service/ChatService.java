@@ -1,6 +1,7 @@
 package org.ssafy.respring.domain.chat.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +24,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +43,11 @@ public class ChatService {
     private final ChallengeRepository challengeRepository;
     private final ChatRoomUserRepository chatRoomUserRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
+
+    private final String LAST_SEEN_KEY = "last_seen:";
+    private final String LAST_SEEN_HUMAN_KEY = "last_seen_human:";
+
 
     private final Path fileStoragePath = Paths.get("uploads");
 
@@ -132,7 +141,7 @@ public class ChatService {
             System.out.println("✅ 1:1 채팅방 - 챌린지 조회 없이 메시지 저장");
         } else {
             // ✅ 오픈 채팅방일 경우에만 챌린지 조회
-            Challenge challenge = challengeRepository.findByChatRoomUUID(chatRoom.getName())
+            Challenge challenge = challengeRepository.findByChatRoomId(chatRoom.getId())
                     .orElseThrow(() -> new IllegalArgumentException("❌ 해당 챌린지와 연결된 채팅방을 찾을 수 없습니다."));
 
             // ✅ 챌린지가 종료되었는지 확인
@@ -422,5 +431,33 @@ public class ChatService {
     // ✅ 멘토링(발표자) 방 조회
     public List<ChatRoom> getMentoringRooms() {
         return chatRoomRepository.findByIsMentoring(true);
+    }
+
+    // ✅ 마지막 접속 시간 저장 (Timestamp + Human-readable format)
+    public void saveLastSeenTime(Long roomId, UUID userId) {
+        String key = LAST_SEEN_KEY + roomId + ":" + userId;
+        String humanKey = LAST_SEEN_HUMAN_KEY + roomId + ":" + userId;
+
+        long timestamp = System.currentTimeMillis();
+        String formattedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(timestamp));
+
+        redisTemplate.opsForValue().set(key, String.valueOf(timestamp), 24, TimeUnit.HOURS);
+        redisTemplate.opsForValue().set(humanKey, formattedDate, 24, TimeUnit.HOURS);
+
+        System.out.println("✅ Redis 저장됨: " + key + " → " + timestamp);
+        System.out.println("✅ Redis 저장됨: " + humanKey + " → " + formattedDate);
+    }
+
+    // ✅ 마지막 접속 시간 조회 (Timestamp)
+    public Long getLastSeenTime(Long roomId, UUID userId) {
+        String key = LAST_SEEN_KEY + roomId + ":" + userId;
+        String timestamp = redisTemplate.opsForValue().get(key);
+        return timestamp != null ? Long.parseLong(timestamp) : 0L;
+    }
+
+    // ✅ 마지막 접속 시간 조회 (Human-readable Format)
+    public String getLastSeenTimeHuman(Long roomId, UUID userId) {
+        String key = LAST_SEEN_HUMAN_KEY + roomId + ":" + userId;
+        return redisTemplate.opsForValue().get(key);
     }
 }

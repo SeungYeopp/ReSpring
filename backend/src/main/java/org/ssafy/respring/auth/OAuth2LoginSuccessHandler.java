@@ -24,15 +24,12 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
         String provider = determineProvider(authentication);
 
-        // ✅ OAuth 유저 정보 확인 후, 기존 유저 찾거나 신규 가입
         User user = authService.processOAuthLogin(provider, oauth2User);
 
-        // ✅ 로그인 성공 후 세션에 저장
         HttpSession session = request.getSession();
         session.setAttribute("userId", user.getId());
         session.setAttribute("nickname", user.getUserNickname());
 
-        // ✅ 로그인 성공 후 프론트엔드 페이지로 리디렉트
         response.sendRedirect("/login-success");
     }
 

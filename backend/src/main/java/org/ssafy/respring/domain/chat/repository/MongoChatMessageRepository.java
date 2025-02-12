@@ -10,4 +10,5 @@ import java.util.List;
 public interface MongoChatMessageRepository extends MongoRepository<ChatMessage, String> {
     List<ChatMessage> findByChatRoomId(Long roomId);
     List<ChatMessage> findByContentContainingAndChatRoomId(String keyword, Long roomId);
+    List<ChatMessage> findByChatRoomIdAndTimestampGreaterThan(Long chatRoomId, Long timestamp);
 }

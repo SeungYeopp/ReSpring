@@ -98,7 +98,7 @@ public class SubscribeService {
 
         return postRepository.findByUserIn(subscribedUsers).stream()
                 .map(post -> {
-                    List<ImageResponseDto> imageDtos = imageService.getImagesByEntity(ImageType.POST, post.getId());
+                    List<String> images = imageService.getImagesByEntity(ImageType.POST, post.getId());
 
                     return new SubscribedPostResponseDto(
                             post.getId(),
@@ -108,7 +108,7 @@ public class SubscribeService {
                             post.getCreatedAt(),
                             post.getUpdatedAt(),
                             post.getLikes(),
-                            imageDtos,
+                            images,
                             post.getComments().size(),
                             post.getComments().stream()
                                     .map(comment -> new CommentResponseDto(
@@ -138,13 +138,13 @@ public class SubscribeService {
 
         return challengeRepository.findByOwnerIn(subscribedUsers).stream()
                 .map(challenge -> {
-                    List<ImageResponseDto> imageDtos = imageService.getImagesByEntity(ImageType.CHALLENGE, challenge.getId());
+                    String image = imageService.getSingleImageByEntity(ImageType.CHALLENGE, challenge.getId());
 
                     return new SubscribedChallengeResponseDto(
                             challenge.getId(),
                             challenge.getTitle(),
                             challenge.getDescription(),
-                            imageDtos.isEmpty() ? null : imageDtos.get(0).getImageUrl(), // ✅ 첫 번째 이미지 URL 사용
+                            image,
                             challenge.getRegisterDate(),
                             challenge.getLikes(),
                             challenge.getViews(),

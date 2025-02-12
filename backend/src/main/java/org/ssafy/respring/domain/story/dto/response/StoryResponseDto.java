@@ -17,5 +17,5 @@ public class StoryResponseDto {
     private LocalDateTime updatedAt;
     private Long eventId;
     private LocalDateTime occurredAt;
-    private List<ImageResponseDto> images;
+    private List<String> images;
 }

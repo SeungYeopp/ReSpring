@@ -68,56 +68,57 @@ public class ChallengeService {
     public ChallengeResponseDto createChallenge(ChallengeRequestDto challengeDto, MultipartFile image) throws IOException {
         // ✅ 1️⃣ User 가져오기
         User owner = userRepository.findById(challengeDto.getOwnerId())
-          .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + challengeDto.getOwnerId()));
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + challengeDto.getOwnerId()));
 
+        // ✅ 2️⃣ 오픈채팅방 생성
+        ChatRoom chatRoom = chatService.createRoom(ChatRoomRequest.builder()
+                .name(challengeDto.getTitle())
+                .userIds(List.of(owner.getId().toString()))
+                .isOpenChat(true)
+                .build());
+        chatRoomRepository.save(chatRoom);
+
+        // ✅ 3️⃣ Challenge 생성 및 저장 (채팅방 ID 포함)
         Challenge challenge = Challenge.builder()
-                      .title(challengeDto.getTitle())
-                      .description(challengeDto.getDescription())
-                      .startDate(challengeDto.getStartDate())
-                      .endDate(challengeDto.getEndDate())
-                      .owner(owner)
-                      .registerDate(LocalDateTime.now())
-                      .likes(0L)
-                      .views(0L)
-                      .participantCount(1L)
-                      .chatRoomUUID(UUID.randomUUID().toString()) // ✅ 채팅방 UUID 생성
-                      .build();
+                .title(challengeDto.getTitle())
+                .description(challengeDto.getDescription())
+                .startDate(challengeDto.getStartDate())
+                .endDate(challengeDto.getEndDate())
+                .owner(owner)
+                .registerDate(LocalDateTime.now())
+                .likes(0L)
+                .views(0L)
+                .participantCount(1L)
+                .chatRoomId(chatRoom.getId()) // ✅ 채팅방 ID 설정
+                .build();
 
         Challenge savedChallenge = challengeRepository.save(challenge);
 
-        // ✅ Image 테이블에 이미지 저장 (단일 이미지)
+        // ✅ 4️⃣ Image 테이블에 이미지 저장 (단일 이미지)
         if (image != null) {
             imageService.saveImage(image, ImageType.CHALLENGE, challenge.getId());
         }
 
-        // ✅ 4️⃣ ChallengeTag 생성 및 저장
+        // ✅ 5️⃣ ChallengeTag 생성 및 저장
         Set<String> tagNames = challengeDto.getTags();
         List<ChallengeTag> challengeTags = new ArrayList<>();
 
         for (String tagName : tagNames) {
             Tag tag = tagRepository.findByName(tagName)
-              .orElseGet(() -> tagRepository.save(Tag.builder().name(tagName).build()));
+                    .orElseGet(() -> tagRepository.save(Tag.builder().name(tagName).build()));
 
             challengeTags.add(ChallengeTag.builder()
-              .challenge(savedChallenge)
-              .tag(tag)
-              .build());
+                    .challenge(savedChallenge)
+                    .tag(tag)
+                    .build());
         }
 
-        // ✅ ChallengeTag 저장
         challengeTagRepository.saveAll(challengeTags);
 
-        // ✅ 6️⃣ 오픈채팅방 생성
-        ChatRoom chatRoom = chatService.createRoom(ChatRoomRequest.builder()
-          .name(challengeDto.getTitle())
-          .userIds(List.of(owner.getId().toString()))
-          .isOpenChat(true)
-          .build());
-        chatRoomRepository.save(chatRoom);
-
-        // ✅ 7️⃣ DTO 변환
+        // ✅ 6️⃣ DTO 변환
         return mapToDto(savedChallenge, challengeTags);
     }
+
 
     // ✅ 챌린지 리스트 조회 (필터링 가능)
     public List<ChallengeListResponseDto> getAllChallenges(ChallengeSortType sortType) {
@@ -252,7 +253,7 @@ public class ChallengeService {
         challengeRepository.save(challenge);
 
         // ✅ UUID 기반 채팅방 참가 (기존 참가자일 경우 `isActive = true`로 변경)
-        Optional<ChatRoom> chatRoomOptional = chatService.findByName(challenge.getChatRoomUUID());
+        Optional<ChatRoom> chatRoomOptional = chatService.findById(challenge.getChatRoomId());
         chatRoomOptional.ifPresent(chatRoom -> {
             Optional<ChatRoomUser> existingChatRoomUser = chatRoomUserRepository.findByChatRoomAndUser(chatRoom, user);
 
@@ -275,7 +276,7 @@ public class ChallengeService {
         });
 
         // ✅ WebSocket 이벤트 전송 → 참가자 UI 즉시 갱신
-        messagingTemplate.convertAndSend("/topic/newOpenChatRoom/" + userId, challenge.getChatRoomUUID());
+        messagingTemplate.convertAndSend("/topic/newOpenChatRoom/" + userId, challenge.getChatRoomId());
     }
 
 
@@ -308,7 +309,7 @@ public class ChallengeService {
         challenge.setParticipantCount(challenge.getParticipantCount() - 1);
 
         // ✅ UUID 기반 채팅방에서 나가기
-        Optional<ChatRoom> chatRoomOptional = chatService.findByName(challenge.getChatRoomUUID());
+        Optional<ChatRoom> chatRoomOptional = chatService.findById(challenge.getChatRoomId());
         chatRoomOptional.ifPresent(chatRoom -> chatService.leaveRoom(chatRoom.getId(), userId));
 
         // ✅ WebSocket 이벤트 전송 → 챌린지 리스트 즉시 갱신
@@ -544,7 +545,7 @@ public class ChallengeService {
                             .likes(challenge.getLikes())
                             .views(challenge.getViews())
                             .participantCount(challenge.getParticipantCount())
-                            .chatRoomUUID(challenge.getChatRoomUUID()) // ✅ 오픈채팅방 UUID 추가
+                            .chatRoomId(challenge.getChatRoomId()) // ✅ 오픈채팅방 UUID 추가
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -582,7 +583,7 @@ public class ChallengeService {
           challenge.getViews(),
           challenge.getParticipantCount(),
           challenge.getOwner().getId(),
-          challenge.getChatRoomUUID()
+          challenge.getChatRoomId()
         );
     }
 }

@@ -154,7 +154,7 @@ public class StoryService {
      */
     private StoryResponseDto toResponseDto(Story story) {
         // ✅ Image 테이블에서 스토리에 해당하는 이미지 조회 후 변환
-        List<ImageResponseDto> imageDtos = imageService.getImagesByEntity(ImageType.STORY, story.getId());
+        List<String> images = imageService.getImagesByEntity(ImageType.STORY, story.getId());
 
         LocalDateTime occurredAt = story.getEvent().getOccurredAt();
 
@@ -166,7 +166,7 @@ public class StoryService {
                 story.getUpdatedAt(),
                 story.getEvent().getId(),
                 occurredAt,
-                imageDtos
+                images
         );
     }
 }

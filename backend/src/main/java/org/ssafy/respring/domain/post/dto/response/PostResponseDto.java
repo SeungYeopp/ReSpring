@@ -23,7 +23,7 @@ public class PostResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long likes;
-    private List<ImageResponseDto> images;
+    private List<String> images;
     private int commentCount;
     private List<CommentDto> comments;
 }
