@@ -21,7 +21,7 @@ export default function ChatLayout({ children, showChatList = true }: ChatLayout
 
   return (
     <ThemeProvider>
-      <div className="flex h-screen bg-background -mt-4 
+      <div className="flex h-screen bg-background  
       ">
         {isMobileView ? (
           // 모바일 레이아웃

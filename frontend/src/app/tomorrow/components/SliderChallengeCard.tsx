@@ -60,7 +60,7 @@ export function SliderChallengeCard({
             <div className="ml-auto">
               <Button
                 variant="default"
-                className="bg-[#9C9FA3] hover:bg-[#638d3e] text-[#D1D5D8] px-3 py-1 h-auto rounded-full text-xs font-medium shadow-sm flex-shrink-0 font-laundrygothicregular"
+                className="bg-[#F0F0F0] hover:bg-[#638d3e] text-[#666666] px-3 py-1 h-auto rounded-full text-xs font-medium shadow-sm flex-shrink-0 font-laundrygothicregular"
               >
                 자세히 보기
               </Button>
