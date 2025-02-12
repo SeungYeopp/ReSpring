@@ -43,7 +43,7 @@ export function Reader({ content, imageUrls }: ReaderProps) {
       setPrevPage(currentPage);
       setAnimationClass("translate-x-0 opacity-100");
     }, 150); // 애니메이션 지속 시간 (0.15s)
-  }, [currentPage, pageTransition]);
+  }, [currentPage, pageTransition, prevPage]);
 
   return (
     <div className="relative w-full max-w-5xl mx-auto h-full min-h-screen overflow-hidden flex flex-col items-start justify-start"> 
