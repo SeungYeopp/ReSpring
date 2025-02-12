@@ -23,7 +23,7 @@ public class ImageController {
     private final ImageService imageService;
     @GetMapping("/{imageType}/{entityId}")
     @Operation(summary = "이미지 조회", description = "타입과 ID를 받아 타입에 해당하는 이미지들을 조회합니다.")
-    public List<ImageResponseDto> getImagesByEntity(ImageType imageType, Long entityId) {
+    public List<String> getImagesByEntity(ImageType imageType, Long entityId) {
         return imageService.getImagesByEntity(imageType, entityId);
     }
 
