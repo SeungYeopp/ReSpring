@@ -279,7 +279,6 @@ export const getAllBooksSorted = async (sortFields:string[], directions:string[]
 // 출력 : CompiledBook 형식으로 된 데이터.
 export const compileBookByAI = async (content : Content) : Promise<Content> => {
     try{
-        console.log(content)
         const response = await axiosAPI.post('/books/ai-compile', content);
 
         const uncleaned = response.data.response;
