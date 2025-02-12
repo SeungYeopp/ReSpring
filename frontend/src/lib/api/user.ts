@@ -1,9 +1,15 @@
 // 유저 관련 API를 호출하는 함수 모음
 import axiosAPI from "./axios";
 
-export interface SessionInfo{
+export interface UserInfo{
     nickname: string,
     userId: string
+}
+
+export interface UserInfo{
+    userId: string,
+    userNickname: string,
+    profileImageUrl: string
 }
 
 // 사용자 회원가입 함수
@@ -58,13 +64,26 @@ export const login = async (email : string, password : string) : Promise<boolean
 // 이후 아래 함수를 사용해서 session 정보를 받을 수 있습니다.
 // 입력 : X
 // 출력 : SessionInfo 정보.
-export const getSessionInfo = async () : Promise<SessionInfo> => {
+export const getSessionInfo = async () : Promise<UserInfo> => {
     try{
         const response = await axiosAPI.get('/user/me');
 
-        return response.data as SessionInfo;
+        return response.data as UserInfo;
     }catch(error : any){
         throw new Error(error.response?.data?.message || "getSessionInfos() 함수 호출 에러 발생!");
+    }
+}
+
+// 사용자 닉네임으로 정보를 받아오는 함수.
+// 입력 : 유저 닉네임(string)
+// 출력 : UserInfo 정보.
+export const getUserInfoByNickname = async (nickname: string) : Promise<UserInfo> => {
+    try{
+        const response = await axiosAPI.get(`/user/user/profile/${encodeURIComponent(nickname)}`);
+
+        return response.data as UserInfo;
+    }catch(error : any){
+        throw new Error(error.response?.data?.message || "getUserInfoByNickname() 함수 호출 에러 발생!");
     }
 }
 
