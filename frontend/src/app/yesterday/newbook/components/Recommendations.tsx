@@ -1,78 +1,41 @@
 "use client"
 
-import Image from "next/image"
+import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
+import Image from "next/image"
+import Link from "next/link"
+import { getAllBooksByUserId, getLikedBooks, BookInfo } from "@/lib/api/book" // API 함수 가져오기
 
 export default function Recommendations({ bookId }: { bookId: string }) {
-  
-   /** ✅ 랜덤 프로필 이미지 생성 함수 */
- const getRandomImage = () => {
-  const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
-  return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
-};
-  
-  const authorBooks = [
-    {
-      id: 1,
-      title: "새로운 시작",
-      author: "저자 1",
-      coverImage:
-        getRandomImage(),
-    },
-    {
-      id: 2,
-      title: "꿈을 향한 여정",
-      author: "저자 1",
-      coverImage:
-      getRandomImage(),
-    },
-    {
-      id: 3,
-      title: "변화의 순간",
-      author: "저자 1",
-      coverImage:
-      getRandomImage(),
-    },
-    {
-      id: 4,
-      title: "내일을 위한 오늘",
-      author: "저자 1",
-      coverImage:
-      getRandomImage(),
-    },
-  ]
+  const [authorBooks, setAuthorBooks] = useState<BookInfo[]>([])
+  const [followedBooks, setFollowedBooks] = useState<BookInfo[]>([])
 
-  const followedBooks = [
-    {
-      id: 1,
-      title: "인생의 색채",
-      author: "작가 A",
-      coverImage:
-      getRandomImage(),
-    },
-    {
-      id: 2,
-      title: "시간의 흐름",
-      author: "작가 B",
-      coverImage:
-      getRandomImage(),
-    },
-    {
-      id: 3,
-      title: "마음의 소리",
-      author: "작가 C",
-      coverImage:
-      getRandomImage(),
-    },
-    {
-      id: 4,
-      title: "꿈의 기록",
-      author: "작가 D",
-      coverImage:
-      getRandomImage(),
-    },
-  ]
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      try {
+        const userId = localStorage.getItem("userId") || ""
+        const currentBook = await getAllBooksByUserId(userId)
+        const currentBookDetails = currentBook.find(book => book.id === Number(bookId))
+
+        if (currentBookDetails) {
+          const authorId = currentBookDetails.authorId
+
+          // 저자의 다른 자서전 가져오기
+          const authorBooksData = await getAllBooksByUserId(authorId)
+          setAuthorBooks(authorBooksData.filter(book => book.id !== Number(bookId)))
+
+          // 구독 중인 작가의 자서전 가져오기
+          const followedBooksData = await getLikedBooks(userId)
+          setFollowedBooks(followedBooksData)
+        }
+      } catch (error) {
+        console.error("추천 데이터를 불러오는 중 오류 발생:", error)
+      }
+    }
+
+    fetchRecommendations()
+  }, [bookId])
 
   return (
     <div className="space-y-8">
@@ -94,17 +57,17 @@ export default function Recommendations({ bookId }: { bookId: string }) {
               >
                 <CardContent className="p-0 space-y-2">
                   <AspectRatio ratio={156 / 234}>
-                    <Image
-                      src={book.coverImage || "/placeholder.svg"}
-                      alt={book.title}
-                      fill
-                      sizes="100vw"
-                      className="object-cover w-full h-full rounded-lg"
-                    />
+                    <Link href={`/books/${book.id}`}>
+                      <Image
+                        src={book.coverImage || "/placeholder.svg"}
+                        alt={book.title}
+                        fill
+                        className="object-cover w-full h-full rounded-lg"
+                      />
+                    </Link>
                   </AspectRatio>
                   <div className="space-y-1 px-1">
                     <h4 className="font-medium text-sm leading-tight line-clamp-2">{book.title}</h4>
-                    <p className="text-xs text-muted-foreground">{book.author}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -131,16 +94,18 @@ export default function Recommendations({ bookId }: { bookId: string }) {
               >
                 <CardContent className="p-0 space-y-2">
                   <AspectRatio ratio={156 / 234}>
-                    <Image
-                      src={book.coverImage || "/placeholder.svg"}
-                      alt={book.title}
-                      fill
-                      className="object-cover w-full h-full rounded-lg"
-                    />
+                    <Link href={`/books/${book.id}`}>
+                      <Image
+                        src={book.coverImage || "/placeholder.svg"}
+                        alt={book.title}
+                        fill
+                        className="object-cover w-full h-full rounded-lg"
+                      />
+                    </Link>
                   </AspectRatio>
                   <div className="space-y-1 px-1">
                     <h4 className="font-medium text-sm leading-tight line-clamp-2">{book.title}</h4>
-                    <p className="text-xs text-muted-foreground">{book.author}</p>
+                    <p className="text-xs text-muted-foreground">작성자 ID: {book.authorId}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -151,4 +116,3 @@ export default function Recommendations({ bookId }: { bookId: string }) {
     </div>
   )
 }
-

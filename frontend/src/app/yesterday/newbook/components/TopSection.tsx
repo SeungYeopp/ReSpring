@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { ChevronLeft, Home, Heart, MoreVertical, Pencil, Trash, User } from "lucide-react"
+import { ChevronLeft, Home, Heart, MoreVertical, Pencil, Trash, User, EyeIcon } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
@@ -9,33 +9,32 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { EyeIcon } from "lucide-react" // Added to avoid naming conflict
+import { getBookById, Book } from "@/lib/api/book" // API 호출 및 타입 import
 
 export default function TopSection({ bookId }: { bookId: string }) {
+  const [book, setBook] = useState<Book | null>(null) // API 데이터 저장
   const [isLiked, setIsLiked] = useState(false)
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
 
-   /** ✅ 랜덤 프로필 이미지 생성 함수 */
-   const getRandomImage = () => {
-    const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
-    return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
-  };
+  // 페이지에 하드코딩된 User ID
+  const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252"; // 박싸피의 테스트 ID
 
-  const book = {
-    title: "인생의 여정: 나의 이야기",
-    author: "홍길동",
-    authorId: "author123",
-    coverImage:
-    getRandomImage(),
-    views: "1.2k",
-    likes: "324",
-    tags: ["에세이", "성장", "자기계발"],
-  }
+  useEffect(() => {
+    const fetchBook = async () => {
+      try {
+        const bookData = await getBookById(Number(bookId), userId)  // 하드코딩된 userId 사용
+        setBook(bookData)
+        setIsLiked(bookData.liked) // 초기 좋아요 상태 설정
+      } catch (error) {
+        console.error("책 데이터를 불러오는 중 오류 발생:", error)
+      }
+    }
+    fetchBook()
+  }, [bookId, userId])  // userId가 의존성에 포함됨
 
   const handleImageClick = () => {
     setIsImageExpanded(true)
-    // 애니메이션 후 페이지 이동
     setTimeout(() => {
       window.location.href = `/viewer/${bookId}`
     }, 500)
@@ -51,7 +50,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
     }
   }, [isLiked])
 
-  const textShadowClass = "text-shadow-sm"
+  if (!book) return <div>로딩 중...</div> // 데이터 로딩 중 표시
 
   return (
     <section className="relative min-h-[80vh] text-white">
@@ -59,7 +58,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/70 to-black">
         <Image
           src={book.coverImage || "/placeholder.svg"}
-          alt=""
+          alt="cover image"
           layout="fill"
           objectFit="cover"
           className="opacity-30 blur-md"
@@ -124,7 +123,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
           </CardContent>
         </Card>
 
-        <h1 className={cn("text-2xl font-bold text-center mb-4 mt-6", textShadowClass)}>{book.title}</h1>
+        <h1 className="text-2xl font-bold text-center mb-4 mt-6">{book.title}</h1>
 
         <div className="flex flex-wrap justify-center gap-2 mb-4">
           {book.tags.map((tag) => (
@@ -137,11 +136,11 @@ export default function TopSection({ bookId }: { bookId: string }) {
         <div className="flex items-center gap-4">
           <Link href={`/profile/${book.authorId}`} className="flex items-center gap-1 text-white hover:underline">
             <User className="w-4 h-4" />
-            <span className={textShadowClass}>{book.author}</span>
+            <span>작성자 ID: {book.authorId}</span> {/* 나중에 닉네임으로 수정 가능 */}
           </Link>
           <div className="flex items-center gap-1">
             <EyeIcon className="w-5 h-5" />
-            <span>{book.views}</span>
+            <span>{book.viewCount}</span>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -152,11 +151,10 @@ export default function TopSection({ bookId }: { bookId: string }) {
             >
               <Heart className={cn("w-5 h-5", isLiked && "fill-red-500 text-red-500")} />
             </Button>
-            <span>{book.likes}</span>
+            <span>{book.likeCount}</span>
           </div>
         </div>
       </div>
     </section>
   )
 }
-
