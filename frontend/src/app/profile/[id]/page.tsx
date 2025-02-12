@@ -54,12 +54,12 @@ export default function ProfilePage() {
     <main className="relative -mt-4">
       <button
         onClick={handleBack}
-        className="absolute top-6 left-6 p-2 text-xl text-gray-600 hover:text-gray-800 z-50"
+        className="absolute top-6 left-6 p-2 text-xl text-gray-600 hover:text-gray-800 z-0"
       >
         <ArrowLeft />
       </button>
 
-      <div className="top-0 left-0 w-full h-[150px] md:h-[200px] z-0">
+      <div className="top-0 left-0 w-full h-[120px] md:h-[200px] z-0">
         <img
           src="/placeholder_profilebanner.jpg"
           alt="Top Banner"
@@ -69,12 +69,12 @@ export default function ProfilePage() {
 
       <div className="relative flex flex-col md:flex-row gap-4 pt-4 z-10">
         <div className="flex flex-col md:flex-[0.7] gap-4">
-          <div className="flex justify-center items-center h-auto -mt-24">
-            <div className="w-[160px] h-[160px] rounded-full bg-white flex justify-center items-center">
+          <div className="flex justify-center items-center h-auto -mt-20 md:-mt-24">
+            <div className="w-[125px] h-[125px] md:w-[160px] md:h-[160px] rounded-full bg-white flex justify-center items-center">
               <img 
                 src="/placeholder_profilepic.png" 
                 alt="User Profile" 
-                className="w-[150px] h-[150px] rounded-full object-cover drop-shadow-lg"
+                className="w-[120px] md:w-[150px] rounded-full object-cover drop-shadow-lg"
               />
             </div>
           </div>

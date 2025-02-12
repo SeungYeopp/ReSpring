@@ -8,6 +8,7 @@ import type { CreateChallenge, ChallengeCreateRequest } from "../types/challenge
 import { useMediaQuery } from "../hooks/use-media-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSessionInfo } from "@/lib/api/user"; // ✅ 세션 정보 가져오기
+import { createChallenge } from "@/lib/api/tomorrow"; // ✅ 새로운 API 호출
 
 export default function CreateChallengePage() {
   const [challengeData, setChallengeData] = useState<Partial<CreateChallenge>>({});
@@ -20,31 +21,21 @@ export default function CreateChallengePage() {
       const sessionInfo = await getSessionInfo();
       const ownerId = sessionInfo.userId;
 
-      const formData = new FormData();
       const requestData: ChallengeCreateRequest = {
         title: data.title,
         description: data.description,
         tags: data.tags,
         startDate: data.startDate.toISOString(),
         endDate: data.endDate.toISOString(),
-        // ownerId: ownerId, // ✅ 동적으로 ownerId 설정
-        ownerId: "dd5a7b3c-d887-11ef-b310-d4f32d147183", // 나중에 세션 정보로 대체 가능
+        ownerId: ownerId, // ✅ 세션 정보 사용
+        image: data.image ?? undefined, // 이미지가 있을 경우 포함
       };
 
-      formData.append("challengeDto", JSON.stringify(requestData));
-      if (data.image) formData.append("image", data.image);
-
-      const response = await fetch("/challenges", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("챌린지 생성 실패!");
-
-      const result = await response.json();
+      // ✅ 새로운 API 호출
+      const result = await createChallenge(requestData);
       console.log("챌린지 생성 성공:", result);
 
-      // ✅ 챌린지 생성 성공 후 상세 페이지로 이동
+      // ✅ 챌린지 상세 페이지로 이동
       router.push(`/tomorrow/${result.id}`);
     } catch (error) {
       console.error("API 호출 오류:", error);
