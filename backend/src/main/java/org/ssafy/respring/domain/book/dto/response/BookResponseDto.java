@@ -36,6 +36,8 @@ public class BookResponseDto {
 		return BookResponseDto.builder()
 				.id(book.getId())
 				.authorId(book.getAuthor().getId())
+				.createdAt(book.getCreatedAt())
+				.updatedAt(book.getUpdatedAt())
 				.title(book.getTitle())
 				.coverImage(coverImage)
 				.tags(book.getTags())
