@@ -47,6 +47,7 @@ public class ChatService {
 
     private final String LAST_SEEN_KEY = "last_seen:";
     private final String LAST_SEEN_HUMAN_KEY = "last_seen_human:";
+    private final String ROOM_USER_STATUS_KEY = "room_user_status:"; // 현재 입장 여부 키
 
 
     private final Path fileStoragePath = Paths.get("uploads");
@@ -460,4 +461,26 @@ public class ChatService {
         String key = LAST_SEEN_HUMAN_KEY + roomId + ":" + userId;
         return redisTemplate.opsForValue().get(key);
     }
+
+    // ✅ 사용자가 채팅방에 입장할 때 호출
+    public void markUserAsInRoom(Long roomId, UUID userId) {
+        String key = "room_user_status:" + roomId + ":" + userId;
+        redisTemplate.opsForValue().set(key, "true", 24, TimeUnit.HOURS);  // 24시간 유지
+        System.out.println("✅ Redis 저장됨: " + key);
+    }
+
+
+    // ✅ 사용자가 채팅방에서 나갈 때 호출
+    public void markUserAsLeftRoom(Long roomId, UUID userId) {
+        String key = ROOM_USER_STATUS_KEY + roomId + ":" + userId;
+        redisTemplate.delete(key);
+        System.out.println("🚪 사용자 방에서 나감: " + key);
+    }
+
+    // ✅ 사용자가 현재 방에 있는지 확인
+    public boolean isUserCurrentlyInRoom(Long roomId, UUID userId) {
+        String key = ROOM_USER_STATUS_KEY + roomId + ":" + userId;
+        return redisTemplate.hasKey(key);
+    }
+
 }

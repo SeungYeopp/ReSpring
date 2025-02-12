@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +15,8 @@ import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
 import org.ssafy.respring.domain.book.service.BookService;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,11 +56,25 @@ public class BookController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@GetMapping("/all")
+	@GetMapping("/all/once")
 	@Operation(summary = "모든 봄날의 서(자서전) 조회", description = "모든 봄날의 서를 조회합니다.")
 	public ResponseEntity<List<BookResponseDto>> getAllBooks(
-			@RequestHeader("X-User-Id") UUID userId) {
+			@RequestHeader("X-User-Id") UUID userId
+			) {
 		return ResponseEntity.ok(bookService.getAllBooksSortedByTrends(userId));
+	}
+
+	@GetMapping("/all")
+	@Operation(summary = "모든 봄날의 서(자서전) 조회 - 무한 스크롤", description = "모든 봄날의 서를 조회합니다.")
+	public ResponseEntity<List<BookResponseDto>> getAllBooksInfinite(
+			@RequestHeader("X-User-Id") UUID userId,
+			@RequestParam Long lastLikes,
+			@RequestParam Long lastViews,
+			@RequestParam Long lastBookId,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastCreatedAt,
+			@RequestParam int size
+	) {
+		return ResponseEntity.ok(bookService.getAllBooksSortedByTrends(userId, lastLikes, lastViews, lastCreatedAt, lastBookId, size));
 	}
 
 	@GetMapping("/my")
@@ -91,14 +108,14 @@ public class BookController {
 		return ResponseEntity.ok(isLiked ? "Liked" : "Unliked");
 	}
 
-	@GetMapping("/all/sorted")
-	@Operation(summary = "모든 봄날의 서 정렬", description = "모든 봄날의 서를 조회할 때 정렬 기준을 지정합니다.")
-	public ResponseEntity<List<BookResponseDto>> getBooksSorted(
-			@RequestParam List<String> sortFields,
-			@RequestParam(required = false, defaultValue = "desc") List<String> directions,
-			@RequestHeader("X-User-Id") UUID userId) {
-		return ResponseEntity.ok(bookService.getBooksSortedByTrends(userId));
-	}
+//	@GetMapping("/all/sorted")
+//	@Operation(summary = "모든 봄날의 서 정렬", description = "모든 봄날의 서를 조회할 때 정렬 기준을 지정합니다.")
+//	public ResponseEntity<List<BookResponseDto>> getBooksSorted(
+//			@RequestParam List<String> sortFields,
+//			@RequestParam(required = false, defaultValue = "desc") List<String> directions,
+//			@RequestHeader("X-User-Id") UUID userId) {
+//		return ResponseEntity.ok(bookService.getAllBooksSortedByTrends(userId));
+//	}
 
 	@GetMapping("/weeklyTop3")
 	@Operation(summary = "봄날의 서 주간 랭킹 Top3", description = "봄날의 서 주간 랭킹 Top3를 반환합니다.")

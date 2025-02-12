@@ -27,7 +27,7 @@ const useMockNotifications = () => {
         // 모든 목데이터를 추가한 경우 타이머를 정리합니다.
         clearInterval(interval);
       }
-    }, 10000); // 10초 간격으로 알림 전달
+    }, 120000); // 120초 간격으로 알림 전달
 
     return () => clearInterval(interval);
   }, []);

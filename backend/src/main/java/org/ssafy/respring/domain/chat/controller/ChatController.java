@@ -27,10 +27,16 @@ import org.ssafy.respring.domain.chat.repository.MongoChatMessageRepository;
 import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
+import org.ssafy.respring.domain.notification.dto.NotificationDto;
+import org.ssafy.respring.domain.notification.service.NotificationService;
+import org.ssafy.respring.domain.notification.vo.NotificationType;
+import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +53,7 @@ public class ChatController {
     private final UserRepository userRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final MongoChatMessageRepository chatMessageRepository;
+    private final NotificationService notificationService;
 
     private static final String LAST_SEEN_PREFIX = "last_seen:";
 
@@ -63,6 +70,30 @@ public class ChatController {
                 "/topic/messages/" + messageRequest.getRoomId(),
                 response
         );
+
+        // ✅ 사용자 목록 조회
+        List<User> roomUsers = chatService.getRoomById(messageRequest.getRoomId()).getUsers();
+        for (User user : roomUsers) {
+            if (!user.getId().equals(messageRequest.getUserId())) {  // ✅ 발신자는 제외
+                boolean isUserInRoom = chatService.isUserCurrentlyInRoom(messageRequest.getRoomId(), user.getId());
+
+                // ✅ 사용자가 현재 방에 없으면 알림 전송
+                if (!isUserInRoom) {
+                    System.out.println("🔔 새로운 메시지 알림 전송: " + user.getId());
+
+                    notificationService.sendNotification(
+                            user.getId(),                 // 알림을 받을 사용자 UUID
+                            messageRequest.getUserId(),   // 메시지를 보낸 사용자 UUID
+                            NotificationType.COMMENT,     // 알림 타입
+                            TargetType.CHAT,              // 대상 유형 (CHAT)
+                            messageRequest.getRoomId(),   // 채팅방 ID
+                            "새로운 채팅 메시지가 도착했습니다." // 알림 메시지
+                    );
+                } else {
+                    System.out.println("✅ 사용자가 현재 방에 있으므로 알림을 보내지 않음: " + user.getId());
+                }
+            }
+        }
 
     }
 
@@ -319,6 +350,27 @@ public class ChatController {
         Long lastSeenTime = chatService.getLastSeenTime(roomId, userId);
         List<ChatMessage> unreadMessages = chatMessageRepository.findByChatRoomIdAndTimestampGreaterThan(roomId, lastSeenTime);
         return ResponseEntity.ok(unreadMessages.size());
+    }
+
+    // ✅ 사용자가 채팅방에 입장할 때 Redis 상태 저장
+    @PostMapping("/chat/room/join")
+    public ResponseEntity<Void> joinRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
+        chatService.markUserAsInRoom(roomId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    // ✅ 사용자가 채팅방을 나갈 때 Redis 상태 제거
+    @PostMapping("/chat/room/leave")
+    public ResponseEntity<Void> leaveRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
+        chatService.markUserAsLeftRoom(roomId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    // ✅ 사용자가 현재 채팅방에 있는지 확인
+    @GetMapping("/chat/room/status")
+    public ResponseEntity<Boolean> checkUserInRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
+        boolean isInRoom = chatService.isUserCurrentlyInRoom(roomId, userId);
+        return ResponseEntity.ok(isInRoom);
     }
 }
 

@@ -140,6 +140,7 @@ services:
       - ELASTIC_PASSWORD=${ELASTICSEARCH_PASSWORD}
       - network.host=0.0.0.0
       - http.host=0.0.0.0
+      - ES_JAVA_OPTS=-Xms1g -Xmx2g  # 서버 메모리 관리를 위해 힙 메모리 제한
 
     ports:
       - "9200:9200"
