@@ -7,6 +7,12 @@ import { TopNav } from "@/components/layout/top-nav";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Sidebar } from "@/components/layout/sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import ToastNotification from "../components/custom/ToastNotification"; // 토스트 알림 컴포넌트
+// 기존
+// import useNotifications from "../hooks/useNotifications"; // SSE 알림 훅
+// 테스트용으로 교체:
+import useMockNotifications from "@/hooks/useMockNotifications"; //                                          민철씨 알림 여기에요
+
 
 const SPLASH_EXPIRE_HOURS = 24; // 스플래시 화면이 다시 표시되기까지의 유효 시간(24시간)
 
@@ -37,6 +43,14 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   const { isAuthenticated } = useAuth(false); 
   // 사용자 인증 상태 확인 (false는 인증 실패 시 자동 리다이렉트 방지)
+
+  // SSE를 통한 알림 데이터를 받아 토스트 알림 컴포넌트에 전달합니다.
+  // 나중에 실제 API 연결 후에는 useNotifications로 바꿔야 함.
+  // const { notifications } = useNotifications('/api/notifications/sse');                             민철씨 알림 여기에요
+  const { notifications } = useMockNotifications();
+
+
+
 
   useEffect(() => {
     if (isAuthenticated === null) {
@@ -91,6 +105,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   return (
     <>
+      {/* 토스트 알림 컴포넌트 */}
+      <ToastNotification notifications={notifications} />
+
       {/* TopNav를 /viewer, /chat, /test/onboarding 페이지에서 숨김 */}
       {isAuthenticated && !isViewerPage && !isChatPage && !isTestOnboardingPage && <TopNav />}
       
