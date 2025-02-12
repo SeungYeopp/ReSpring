@@ -45,5 +45,5 @@ public class Challenge {
     @OneToMany(mappedBy = "challenge", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChallenge> participants;
 
-    private String chatRoomUUID;
+    private Long chatRoomId;
 }
