@@ -96,8 +96,7 @@ export default function CreateBook() {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null)
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false)
 
-  const [generatedContent, setGeneratedContent] = useState<Content>();
-  const [title, setTitle] = useState<string>("")
+  const [title, setTitle] = useState<string>("제목을 직접 작성하세요!")
 
   const router = useRouter()
 
@@ -164,7 +163,7 @@ export default function CreateBook() {
   const handleSubmit = async () => {
     setIsFinalizingBook(true)
     try {
-      console.log(compiledBook?.chapters[0])
+      //console.log(compiledBook?.chapters[0])
       //const jsonifiedBookContent = JSON.stringify(compiledBook!.chapters)
 
       // Chapter를 Content로 변환..
@@ -184,8 +183,7 @@ export default function CreateBook() {
     
       const result : number= await makeBook(
         userId,
-        compiledBook!.title,
-        convertedContent!,
+        compiledBook!,
         bookTags,
         selectedStorieIds,
         bookCoverImg!,
@@ -204,17 +202,31 @@ export default function CreateBook() {
         acc[story.title] = story.content;
         return acc;
     }, {} as Content);
+  };
+
+  const convertToCompiledBook = (title: string, content: Content): CompiledBook => {
+    const chapters: Chapter[] = Object.entries(content["content"]).map(([chapterTitle, chapterContent]) => ({
+        chapterTitle,
+        content: chapterContent
+    }));
+
+    return { title, chapters };
 };
+
 
   const handleMakeAIContent = async () => {
     setIsLoading(true)
     try {
-      const convertedContent = convertStoriesToContent(stories)
-      const generatedContent: Content = await compileBookByAI(convertedContent)
-      console.log("생성된 AI 내용", generatedContent)
+      const selectedStories = stories.filter((story) => selectedStorieIds.includes(story.id))
 
-      setGeneratedContent(generatedContent)
-      //setCompiledBook(compiledBook)
+      const convertedContent = convertStoriesToContent(selectedStories)
+
+      // const compiledBook: CompiledBook = await compileBookByAI(generatedContent)
+      const generatedContent: Content = await compileBookByAI(convertedContent)
+
+      console.log("AI 생성 완료", generatedContent)
+      const compiledBook : CompiledBook = convertToCompiledBook(title, generatedContent)
+      setCompiledBook(compiledBook)
       setAiCompilationComplete(true)
       setTimeout(() => {
         setAiCompilationComplete(false)
@@ -356,9 +368,9 @@ export default function CreateBook() {
             </div>
           )}
 
-          {step === 2 && generatedContent && (
+          {step === 2 && compiledBook && (
             <div className="w-full max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold text-center mb-6">{title}</h2>
+              <h2 className="text-2xl font-bold text-center mb-6">{compiledBook.title}</h2>
               <Carousel className="w-full">
                 <CarouselContent>
                   {pages.map((page, index) => (

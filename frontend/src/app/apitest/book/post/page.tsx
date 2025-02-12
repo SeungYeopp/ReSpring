@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { makeBook } from "@/lib/api"; // API 함수 가져오기
+import { CompiledBook, makeBook } from "@/lib/api"; // API 함수 가져오기
 
 interface Content {
   [key: string]: string;
@@ -65,8 +65,8 @@ export default function MakeBookPage() {
 
     try {
       setLoading(true);
-      const newBookId = await makeBook(userId, title, content, tags, storyIds, coverImage);
-      setBookId(newBookId);
+      // const newBookId = await makeBook(userId, title, content, tags, storyIds, coverImage);
+      //setBookId(newBookId);
     } catch (error) {
       console.error("책 생성 실패:", error);
       alert("책 생성 중 오류가 발생했습니다.");

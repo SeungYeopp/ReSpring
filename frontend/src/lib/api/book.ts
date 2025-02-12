@@ -60,23 +60,31 @@ export interface Chapter{
     content : string
 }
 
-
+export const convertToContent = (compiledBook: CompiledBook): Content => {
+    return compiledBook.chapters.reduce((acc, chapter) => {
+        acc[chapter.chapterTitle] = chapter.content;
+        return acc;
+    }, {} as Content);
+};
 
 // 봄날의 서 생성 함수
 // 입력 : 유저 Id, 제목, 내용, 태그들, 커버 이미지
 // 출력 : 봄날의 서 ID
 export const makeBook = async (
     userId : string,
-    title : string,
-    content : Content,
+    compiledBook : CompiledBook,
     tags: string[],
     storyIds : number[],
     coverImage : File
 ) : Promise<number> => {
     try{
+        const convertedContent = convertToContent(compiledBook)
+        const title : string = compiledBook.title;
         const formData = new FormData();
+        console.log("makeBook, title", title);
+        console.log("makeBook, convertedContent", convertedContent);
         formData.append('requestDto', new Blob([
-            JSON.stringify({userId, title, content, tags, storyIds})
+            JSON.stringify({userId, title, convertedContent, tags, storyIds})
         ], {type : 'application/json'}
         ));
         
@@ -282,6 +290,8 @@ export const compileBookByAI = async (content : Content) : Promise<Content> => {
         const response = await axiosAPI.post('/books/ai-compile', content);
 
         const uncleaned = response.data.response;
+
+        console.log("AI 생성 RAW DATA", uncleaned)
 
         const cleaned = uncleaned.replaceAll("json","").replaceAll('```', "").replaceAll("\n","").replaceAll("  ", "") // 불필요한 단어 삭제.
 
