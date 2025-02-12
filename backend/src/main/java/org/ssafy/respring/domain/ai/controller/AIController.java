@@ -28,7 +28,7 @@ import static org.ssafy.respring.domain.ai.PromptType.*;
 public class AIController {
 	private final OpenAiChatModel chatModel;
 	private final PromptLoader promptLoader;
-	private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 변환용 ObjectMapper
+	private final ObjectMapper objectMapper; // JSON 변환용
 
 	@PostMapping
 	@Operation(summary = "AI 자동 엮기 기능", description = "선택된 글 조각 기반으로 자동으로 봄날의 서 하나를 반환합니다.")
