@@ -15,7 +15,7 @@ interface Story {
   createdAt: string | Date;
   content: string;
   eventId: number;
-  images: Image[];
+  images: string[];
 }
 
 interface Event {
