@@ -56,17 +56,16 @@ public class BookController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@GetMapping("/all")
+	@GetMapping("/all/once")
 	@Operation(summary = "모든 봄날의 서(자서전) 조회", description = "모든 봄날의 서를 조회합니다.")
 	public ResponseEntity<List<BookResponseDto>> getAllBooks(
 			@RequestHeader("X-User-Id") UUID userId
 			) {
 		return ResponseEntity.ok(bookService.getAllBooksSortedByTrends(userId));
-		// return ResponseEntity.ok(bookService.getAllBooksSortedByTrends(userId, lastLikes, lastViews, lastCreatedAt, size));
 	}
 
-	@GetMapping("/all/infinite")
-	@Operation(summary = "모든 봄날의 서(자서전) 조회 - 무한 스크롤 테스트 중", description = "모든 봄날의 서를 조회합니다.")
+	@GetMapping("/all")
+	@Operation(summary = "모든 봄날의 서(자서전) 조회 - 무한 스크롤", description = "모든 봄날의 서를 조회합니다.")
 	public ResponseEntity<List<BookResponseDto>> getAllBooksInfinite(
 			@RequestHeader("X-User-Id") UUID userId,
 			@RequestParam Long lastLikes,
