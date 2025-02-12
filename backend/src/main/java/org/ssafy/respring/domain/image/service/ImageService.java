@@ -182,10 +182,11 @@ public class ImageService {
     }
 
 
-    public List<ImageResponseDto> getImagesByEntity(ImageType imageType, Long entityId) {
+    public List<String> getImagesByEntity(ImageType imageType, Long entityId) {
         List<Image> images = imageRepository.findByImageTypeAndEntityId(imageType, entityId);
+
         return images.stream()
-                .map(image -> new ImageResponseDto(image.getImageId(), generatePresignedUrl(image.getS3Key())))
+                .map(image -> generatePresignedUrl(image.getS3Key()))
                 .collect(Collectors.toList());
     }
 

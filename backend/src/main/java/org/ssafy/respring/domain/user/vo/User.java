@@ -19,14 +19,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // 🔥 Hibernate Proxy 필드 직렬화 방지
-@JsonInclude(JsonInclude.Include.NON_NULL) // 🔥 NULL 필드 직렬화 방지 (Redis 캐싱 최적화)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Hibernate Proxy 필드 직렬화 방지
+@JsonInclude(JsonInclude.Include.NON_NULL) //  NULL 필드 직렬화 방지 (Redis 캐싱 최적화)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(columnDefinition = "BINARY(16)")
     @JsonProperty("userId") // Elasticsearch의 "userId"와 매핑
-    @JsonAlias("id")  // JSON에서 "id"로 들어와도 매핑 가능
+    @JsonAlias("id")
     private UUID id;
 
     private String userNickname;
@@ -40,21 +40,13 @@ public class User {
     private String socialId;
 
 
-    // 내가 만든 챌린지 (1:N)
     @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Challenge> createdChallenges;
 
-    // 내가 참가한 챌린지 (N:M)
-    @JsonIgnore
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserChallenge> joinedChallenges;
-
-    // 내가 작성한 봄날의 서 (1:N)
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Book> myBooks;
 
-    // ✅ 소셜 계정 정보 (1:N)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SocialAccount> socialAccounts;
 
