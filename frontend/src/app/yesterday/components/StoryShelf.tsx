@@ -3,20 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { getAllStories, deleteStory } from "@/lib/api/story";
 import { getAllEvents } from "@/lib/api/event";
-
-export interface Image {
-  imageId: number;
-  imageUrl: string;
-}
-
-interface Story {
-  id: number;
-  title: string;
-  createdAt: string | Date;
-  content: string;
-  eventId: number;
-  images: Image[];
-}
+import { Story } from "@/lib/api/story";
 
 interface Event {
   id: number;
@@ -54,10 +41,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userId }) => {
         ]);
 
         setStories(
-          fetchedStories.map((story) => ({
-            ...story,
-            createdAt: new Date(story.createdAt).toISOString(),
-          }))
+          fetchedStories
         );
 
         setEvents(fetchedEvents);
