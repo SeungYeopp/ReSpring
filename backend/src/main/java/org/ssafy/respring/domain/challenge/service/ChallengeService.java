@@ -94,6 +94,14 @@ public class ChallengeService {
 
         Challenge savedChallenge = challengeRepository.save(challenge);
 
+        // ✅ 챌린지-유저 매핑 추가 (챌린지 생성자는 자동 참가)
+        UserChallenge userChallenge = UserChallenge.builder()
+                .user(owner)
+                .challenge(savedChallenge)
+                .build();
+        userChallengeRepository.save(userChallenge);
+
+
         // ✅ 4️⃣ Image 테이블에 이미지 저장 (단일 이미지)
         if (image != null) {
             imageService.saveImage(image, ImageType.CHALLENGE, challenge.getId());
@@ -281,49 +289,56 @@ public class ChallengeService {
 
 
 
-    // ✅ 챌린지 나가기 기능
+    @Transactional
     public void leaveChallenge(UUID userId, Long challengeId) {
+        // ✅ 1️⃣ 챌린지 조회
         Challenge challenge = challengeRepository.findById(challengeId)
-                .orElseThrow(() -> new RuntimeException("Challenge not found"));
+                .orElseThrow(() -> new RuntimeException("챌린지를 찾을 수 없습니다."));
 
-        // ✅ 챌린지가 종료되었는지 확인
+        // ✅ 2️⃣ 챌린지가 이미 종료되었는지 확인
         if (challenge.getEndDate().isBefore(LocalDateTime.now())) {
             throw new IllegalStateException("챌린지가 종료되어 나갈 수 없습니다.");
         }
 
-        // 🔹 User 엔티티 조회
+        // ✅ 3️⃣ User 엔티티 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
-        // 🔥 Owner는 챌린지를 나갈 수 없음
-//        if (challenge.getOwner().getId().equals(userId)) {
-//            throw new IllegalStateException("챌린지 생성자는 챌린지를 나갈 수 없습니다. 삭제만 가능합니다.");
-//        }
-
-        // 참가 기록 찾기
+        // ✅ 4️⃣ 참가 기록 확인 (없으면 예외 발생)
         UserChallenge userChallenge = userChallengeRepository.findByUserAndChallenge(user, challenge)
-                .orElseThrow(() -> new RuntimeException("참가 기록을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalStateException("사용자가 해당 챌린지에 참가한 기록이 없습니다."));
 
-        // 참가 기록 삭제
+        // ✅ 5️⃣ 참가 기록 삭제
         userChallengeRepository.delete(userChallenge);
+
+        // ✅ 6️⃣ 참가자 수 감소 후 DB 반영
         challenge.setParticipantCount(challenge.getParticipantCount() - 1);
+        challengeRepository.save(challenge); // ✅ 변경된 값 저장
 
-        // ✅ UUID 기반 채팅방에서 나가기
+        // ✅ 7️⃣ 채팅방에서 유저 삭제 (참가 중인지 확인 후 삭제)
         Optional<ChatRoom> chatRoomOptional = chatService.findById(challenge.getChatRoomId());
-        chatRoomOptional.ifPresent(chatRoom -> chatService.leaveRoom(chatRoom.getId(), userId));
+        chatRoomOptional.ifPresent(chatRoom -> {
+            Optional<ChatRoomUser> chatRoomUser = chatRoomUserRepository.findByChatRoomAndUser(chatRoom, user);
+            chatRoomUser.ifPresent(chatRoomUserRepository::delete); // ✅ 존재하면 삭제
+        });
 
-        // ✅ WebSocket 이벤트 전송 → 챌린지 리스트 즉시 갱신
+        // ✅ 8️⃣ WebSocket 이벤트 전송 → 챌린지 UI 갱신
         messagingTemplate.convertAndSend("/topic/updateChallengeList/" + userId, challenge.getId());
 
-        // 🔥 참가자가 0명이면 챌린지 자동 삭제
+        // ✅ 9️⃣ 참가자가 0명이면 챌린지 & 채팅방 삭제
         if (challenge.getParticipantCount() == 0) {
+            // 🚨 🔥 **챌린지를 삭제하기 전에 `challenge_tag` 데이터 먼저 삭제!**
+            challengeTagRepository.deleteByChallengeId(challenge.getId());
+
+            // ✅ 챌린지 삭제
             challengeRepository.delete(challenge);
-            // 🔥 챌린지 삭제 시 오픈채팅방도 삭제
-            chatRoomOptional.ifPresent(chatRoom -> chatService.deleteRoom(chatRoom.getId()));
+
+            // ✅ 채팅방 삭제
+            chatRoomOptional.map(ChatRoom::getId).ifPresent(chatService::deleteRoom);
+
         }
-
-
     }
+
 
     // ✅ 좋아요(Toggle) 기능
     public void toggleLike(UUID userId, Long challengeId) {
