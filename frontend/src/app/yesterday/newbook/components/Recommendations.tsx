@@ -98,6 +98,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
                       src={book.coverImage || "/placeholder.svg"}
                       alt={book.title}
                       fill
+                      sizes="100vw"
                       className="object-cover w-full h-full rounded-lg"
                     />
                   </AspectRatio>

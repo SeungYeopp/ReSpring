@@ -7,6 +7,8 @@ import { TopNav } from "@/components/layout/top-nav";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Sidebar } from "@/components/layout/sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import LoadingScreen from "@/components/custom/LoadingScreen";
+
 import ToastNotification from "../components/custom/ToastNotification"; // 토스트 알림 컴포넌트
 // 기존
 // import useNotifications from "../hooks/useNotifications"; // SSE 알림 훅
@@ -94,8 +96,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   // useEffect 의존성 배열: 라우터, 현재 경로, 인증 상태가 변경될 때마다 실행
 
   if (isAuthenticated === null) {
-    return <p>로딩 중...</p>; 
-    // 인증 상태를 확인하는 동안 로딩 메시지 표시
+    // return <p>로딩 중...</p>;
+    return <LoadingScreen />
+    // 인증 상태를 확인하는 동안 로딩 메시지 표시 => 로딩 스크린 표시
   }
 
   if (showSplash) {
