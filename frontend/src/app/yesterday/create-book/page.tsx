@@ -189,12 +189,10 @@ export default function CreateBook() {
         acc[chapter.chapterTitle] = chapter.content;
         return acc;
       }, {} as Content);
-
-      const removedDots = removeDotsFromTitles(compiledBook!)
     
       const result : number= await makeBook(
         userId,
-        removedDots!,
+        compiledBook!,
         bookTags,
         selectedStorieIds,
         bookCoverImg!,
