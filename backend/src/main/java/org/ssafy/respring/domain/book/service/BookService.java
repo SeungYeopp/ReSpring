@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +17,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -35,6 +37,7 @@ import org.ssafy.respring.domain.book.vo.BookLikes;
 import org.ssafy.respring.domain.book.vo.BookViews;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.comment.service.CommentService;
+import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.image.vo.ImageType;
@@ -91,13 +94,19 @@ public class BookService {
         book.setCoverImage(coverImageUrl);
         bookRepository.save(book);
 
-        BookContent bookContent = new BookContent();
-        bookContent.setBookId(book.getId());
-        bookContent.setContent(new LinkedHashMap<>(requestDto.getContent()));
-        bookContentRepository.save(bookContent);
+		// ✅ MongoDB 키 변환 적용 ('.' → '_DOT_')
+		LinkedHashMap<String, String> sanitizedContent = escapeDots(requestDto.getContent());
+
+		BookContent bookContent = new BookContent();
+		bookContent.setBookId(book.getId());
+		bookContent.setContent(sanitizedContent); // ✅ 변환된 키 적용
+		bookContentRepository.save(bookContent);
 
         // ✅ Elasticsearch 색인 수행
         indexBookData(book, "book_title");
+
+		// ✅ 새 책이 추가되었으므로 캐시 삭제
+		clearTrendingBooksCache();
 
         return book.getId();
     }
@@ -165,7 +174,7 @@ public class BookService {
 
 	// JSON 변환을 위한 헬퍼 메서드
 	private BookContent parseJsonContent(String jsonContent, Long bookId) {
-		ObjectMapper objectMapper = new ObjectMapper();
+		// ObjectMapper objectMapper = new ObjectMapper();
 		try {
 
 			LinkedHashMap<String, String> contentMap = objectMapper.readValue(jsonContent, new TypeReference<LinkedHashMap<String, String>>() {});
@@ -193,6 +202,8 @@ public class BookService {
 		bookContentRepository.deleteByBookId(bookId);
 		// ✅ Elasticsearch 색인 삭제
 		deleteBookFromIndex(bookId, "book_title");
+		// ✅ 책이 삭제되었으므로 캐시 삭제
+		clearTrendingBooksCache();
 	}
 
 	@Transactional
@@ -206,7 +217,7 @@ public class BookService {
 		List<String> imageUrls = getImagesFromStories(book.getStoryIds());
 		Map<String, String> bookContent = getBookContent(bookId);
 		Set<UUID> likedUsers = bookLikesRedisService.getLikedUsers(book.getId());
-		String imageUrl = imageService.getSingleImageByEntity(ImageType.BOOK, bookId);
+		String coverImageUrl = imageService.getSingleImageByEntity(ImageType.BOOK, bookId);
 
 		// ✅ 댓글 조회
 		List<CommentResponseDto> comments = commentService.getCommentsByBookId(bookId).stream()
@@ -230,7 +241,7 @@ public class BookService {
 				viewCount,
 				imageUrls,
 				comments,
-				imageUrl
+				coverImageUrl
 		);
 	}
 
@@ -254,16 +265,20 @@ public class BookService {
 		User user = getUserById(userId);
 
 		bookViewsRedisService.incrementViewCount(bookId);
-		if (!bookViewsRepository.existsByBookIdAndUserId(bookId, userId)) {
-			BookViews newView = BookViews.builder()
-					.book(book)
-					.user(user)
-					.updatedAt(LocalDateTime.now())
-					.build();
 
-			bookViewsRepository.save(newView);
+		if (!bookViewsRepository.existsByBookIdAndUserId(bookId, userId)) {
+			saveBookViewAsync(book, user);
 		}
-		saveRecentView(user.getId(), bookId);
+	}
+
+	@Async
+	@Transactional
+	public void saveBookViewAsync(Book book, User user) {
+		bookViewsRepository.save(BookViews.builder()
+				.book(book)
+				.user(user)
+				.updatedAt(LocalDateTime.now())
+				.build());
 	}
 
 	@Transactional(readOnly = true)
@@ -296,8 +311,6 @@ public class BookService {
 
 
 
-
-
 	@Transactional
 	public List<BookResponseDto> getBooksByAuthorId(UUID authorId, UUID userId) {
 		return bookRepository.findByAuthorId(authorId).stream()
@@ -305,14 +318,48 @@ public class BookService {
 		  .collect(Collectors.toList());
 	}
 
-	@Transactional
+	// 무한스크롤 적용 x
+	@Transactional(readOnly = true)
 	public List<BookResponseDto> getAllBooksSortedByTrends(UUID userId) {
 		return bookRepository.getAllBooksSortedByTrends().stream()
-		  .map(book -> mapToBookResponseDto(book, userId))
-		  .collect(Collectors.toList());
+				.map(book -> mapToBookResponseDto(book, userId))
+				.collect(Collectors.toList());
 	}
 
-	@Transactional
+//	// 무한스크롤 적용
+//	@Transactional(readOnly = true)
+//	public List<BookResponseDto> getAllBooksSortedByTrends(UUID userId, Long lastLikes, Long lastViews, LocalDateTime lastCreatedAt, int size) {
+//		return bookRepository.getAllBooksSortedByTrends(lastLikes, lastViews, lastCreatedAt, size).stream()
+//		  .map(book -> mapToBookResponseDto(book, userId))
+//		  .collect(Collectors.toList());
+//	}
+
+	// 무한스크롤 적용
+	@Transactional(readOnly = true)
+	public List<BookResponseDto> getAllBooksSortedByTrends(UUID userId, Long lastLikes, Long lastViews, LocalDateTime lastCreatedAt, Long lastBookId, int size) {
+		// ✅ Redis 캐싱 키 생성 (페이지 단위 캐싱)
+		String cacheKey = String.format("trending_books:%d:%d:%s:%d", lastLikes, lastViews, lastCreatedAt, size);
+
+		// ✅ 캐시에서 조회
+		List<BookResponseDto> cachedResult = (List<BookResponseDto>) redisTemplate.opsForValue().get(cacheKey);
+		if (cachedResult != null) {
+			System.out.println("✅ 캐시에서 불러옴: " + cacheKey);
+			return cachedResult;
+		}
+
+		// ✅ 캐시에 없으면 DB 조회
+		List<BookResponseDto> result = bookRepository.getAllBooksSortedByTrends(lastLikes, lastViews, lastCreatedAt, lastBookId, size)
+				.stream()
+				.map(book -> mapToBookResponseDto(book, userId))
+				.collect(Collectors.toList());
+
+		// ✅ Redis에 저장 (TTL 5분 설정)
+		redisTemplate.opsForValue().set(cacheKey, result, 5, TimeUnit.MINUTES);
+
+		return result;
+	}
+
+	@Transactional(readOnly = true)
 	public List<BookResponseDto> getWeeklyTop3Books(UUID userId) {
 		return bookRepository.getWeeklyTop3Books().stream()
 		  .map(book -> mapToBookResponseDto(book, userId))
@@ -355,26 +402,6 @@ public class BookService {
 				.collect(Collectors.toList());
 	}
 
-	@Transactional
-	public List<BookResponseDto> getBooksSortedByTrends(UUID userId) {
-		// ✅ 트렌드 기반으로 책 목록 조회
-		List<Book> books = bookRepository.getAllBooksSortedByTrends();
-
-		return books.stream()
-				.map(book -> {
-					// ✅ Redis에서 좋아요 & 조회수 조회 (캐싱 활용)
-					Long likeCount = bookLikesRedisService.getLikeCount(book.getId());
-					Long viewCount = bookViewsRedisService.getViewCount(book.getId());
-					Set<UUID> likedUsers = bookLikesRedisService.getLikedUsers(book.getId());
-
-					// ✅ MongoDB에서 책 본문 조회
-					Map<String, String> bookContent = getBookContent(book.getId());
-
-					return mapToBookResponseDto(book, userId);
-				})
-				.collect(Collectors.toList());
-	}
-
 	public void indexBookData(Book book, String indexName) {
 		try {
 			Map<String, Object> bookData = new HashMap<>();
@@ -408,29 +435,68 @@ public class BookService {
 		}
 	}
 
+	public void clearTrendingBooksCache() {
+		// ✅ "trending_books:"로 시작하는 모든 캐시 삭제
+		Set<String> keys = redisTemplate.keys("trending_books:*");
+		if (keys != null) {
+			redisTemplate.delete(keys);
+			System.out.println("✅ Redis 캐시 삭제 완료: " + keys.size() + "개 항목");
+		}
+	}
+
+
 	// ✅ 책 제목 검색 기능 (Elasticsearch)
 	@Transactional
 	public List<BookResponseDto> searchByBookTitle(String keyword, UUID userId) throws IOException {
 		SearchRequest searchRequest = getSearchRequest("book_title", keyword);
-		SearchResponse<Map> searchResponse = esClient.search(searchRequest, Map.class); // ✅ Map.class로 받기
+		SearchResponse<Map> searchResponse = esClient.search(searchRequest, Map.class);
 
 		ObjectMapper objectMapper = new ObjectMapper();
 
 		List<BookResponseDto> books = searchResponse.hits().hits().stream()
-		  .map(hit -> {
-			  try {
-				  System.out.println("✅ 검색 결과: " + hit.source()); // ✅ 검색 결과 확인
-				  return objectMapper.convertValue(hit.source(), BookResponseDto.class);
-			  } catch (Exception e) {
-				  System.err.println("❌ 검색 변환 오류: " + e.getMessage());
-				  return null; // 변환 실패 시 null 반환
-			  }
-		  })
-		  .filter(Objects::nonNull)
-		  .map(book -> enrichBookResponse(book, userId))
-		  .collect(Collectors.toList());
+				.map(hit -> {
+					try {
+						System.out.println("✅ 검색 결과: " + hit.source());
+
+						// ✅ Elasticsearch에서 변환
+						BookResponseDto bookDto = objectMapper.convertValue(hit.source(), BookResponseDto.class);
+
+						// ✅ Elasticsearch 결과에 ID가 없을 경우 _id 필드에서 가져오기
+						if (bookDto.getId() == null) {
+							bookDto.setId(Long.parseLong(hit.id()));
+						}
+
+						// ✅ Elasticsearch에서 누락된 데이터 보완
+						return enrichBookResponseWithDB(bookDto, userId);
+					} catch (Exception e) {
+						System.err.println("❌ 검색 변환 오류: " + e.getMessage());
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
 
 		return books;
+	}
+
+	// ✅ Elasticsearch에서 가져온 데이터에 DB 데이터 추가
+	private BookResponseDto enrichBookResponseWithDB(BookResponseDto bookDto, UUID userId) {
+		// ✅ DB에서 책 정보 조회
+		Optional<Book> optionalBook = bookRepository.findById(bookDto.getId());
+
+		if (optionalBook.isPresent()) {
+			Book book = optionalBook.get();
+
+			// ✅ Elasticsearch에서 빠진 데이터 보완
+			bookDto.setCoverImage(book.getCoverImage());
+			bookDto.setCreatedAt(book.getCreatedAt());
+			bookDto.setUpdatedAt(book.getUpdatedAt());
+		} else {
+			System.err.println("❌ DB에서 책 ID " + bookDto.getId() + "를 찾을 수 없음.");
+		}
+
+		// ✅ Redis에서 좋아요 & 조회수 정보 보완
+		return enrichBookResponse(bookDto, userId);
 	}
 
 	private BookResponseDto enrichBookResponse(BookResponseDto book, UUID userId) {
@@ -442,6 +508,8 @@ public class BookService {
 		book.setViewCount(viewCount);
 		book.setLikedUsers(likedUsers);
 		book.setLiked(isBookLiked(book.getId(), userId)); // ✅ 사용자의 좋아요 여부 확인
+
+		System.out.println(book);
 
 		return book;
 	}
@@ -498,6 +566,10 @@ public class BookService {
 						"📖 " + user.getUserNickname() + "님이 당신의 자서전을 좋아합니다!"
 				);
 			}
+
+			// ✅ 캐시 삭제 후 최신 데이터 반영
+			clearTrendingBooksCache();
+
 			return true; // 좋아요 추가됨
 		}
 	}
@@ -521,7 +593,7 @@ public class BookService {
 				bookLikesRedisService.getLikeCount(book.getId()), // 좋아요 수
 				likedUserIds,
 				bookViewsRedisService.getViewCount(book.getId()),
-				imageService.getSingleImageByEntity(ImageType.BOOK, book.getId())
+				book.getCoverImage()
 		);
 	}
 
@@ -552,8 +624,9 @@ public class BookService {
 
 	private List<String> getImagesFromStories(List<Long> storyIds) {
 		return storyIds.stream()
-				.map(storyId -> imageService.getSingleImageByEntity(ImageType.STORY, storyId)) // ✅ ImageService에서 가져오기
-				.filter(imageUrl -> imageUrl != null) // ✅ Null 값 제거
+				.map(storyId -> imageService.getImageUrlsByEntity(ImageType.STORY, storyId)) // ✅ 각 storyId에 대한 이미지 리스트 반환
+				.filter(Objects::nonNull) // ✅ Null 값 제거
+				.flatMap(List::stream) // ✅ 중첩 리스트(List<List<String>>)를 단일 리스트(List<String>)로 변환
 				.collect(Collectors.toList());
 	}
 

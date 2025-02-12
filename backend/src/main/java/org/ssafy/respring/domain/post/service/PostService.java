@@ -203,7 +203,7 @@ public class PostService {
      */
     private PostResponseDto toResponseDto(Post post) {
         // ✅ Image 테이블에서 Post에 해당하는 이미지 조회
-        List<ImageResponseDto> imageDtos = imageService.getImagesByEntity(ImageType.POST, post.getId());
+        List<String> images = imageService.getImagesByEntity(ImageType.POST, post.getId());
 
         List<CommentDto> commentDtos = post.getComments().stream()
                 .map(comment -> new CommentDto(
@@ -227,7 +227,7 @@ public class PostService {
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getLikes(),
-                imageDtos,
+                images,
                 commentDtos.size(),
                 commentDtos
         );
