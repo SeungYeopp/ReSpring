@@ -12,11 +12,21 @@ import { getBookById, Book } from "@/lib/api/book"
 import { Comment } from "@/lib/api/today" // 실제 Comment 타입 import
 
 export default function Comments({ bookId }: { bookId: string }) {
-  const [comments, setComments] = useState<(Comment & { likes: number })[]>([]) // 임시로 likes 필드 추가
+  const [comments, setComments] = useState<(Comment & { likes: number })[]>([]) // 댓글 + 좋아요 필드
   const [sortBy, setSortBy] = useState<"likes" | "date">("likes")
   const [expandedComments, setExpandedComments] = useState<number[]>([])
+  /** ✅ 랜덤 프로필 이미지 생성 함수 */
+  const getRandomImage = () => {
+    const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
+    return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
+  };
+  // 목데이터 설정
+  const mockComments: (Comment & { likes: number })[] = [
+    { id: 1, content: "목데이터 댓글 1", username: "박싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: null, likes: 5 },
+    { id: 2, content: "목데이터 댓글 2", username: "김싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: null, likes: 3 },
+    { id: 3, content: "목데이터 대댓글 1", username: "이싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: 1, likes: 2 },
+  ]
 
-  // ✅ 댓글 데이터 가져오기 + 임시 좋아요 수 추가
   useEffect(() => {
     const fetchComments = async () => {
       try {
@@ -26,31 +36,29 @@ export default function Comments({ bookId }: { bookId: string }) {
         // 각 댓글에 랜덤 좋아요 수 추가 (0~20)
         const commentsWithLikes = book.comments.map(comment => ({
           ...comment,
-          likes: Math.floor(Math.random() * 20), // 임시 좋아요 수
+          likes: Math.floor(Math.random() * 20),
         }))
 
         setComments(commentsWithLikes)
       } catch (error) {
-        console.error("댓글 데이터를 불러오는 중 오류 발생:", error)
+        console.error("댓글 데이터를 불러오는 중 오류 발생, 목데이터로 대체:", error)
+        setComments(mockComments) // 요청 실패 시 목데이터로 대체
       }
     }
 
     fetchComments()
   }, [bookId])
 
-  // ✅ 좋아요 기능
   const handleLike = (commentId: number) => {
     setComments(comments.map((c) => (c.id === commentId ? { ...c, likes: c.likes + 1 } : c)))
   }
 
-  // ✅ 답글 펼치기/접기
   const toggleReplies = (commentId: number) => {
     setExpandedComments((prev) =>
       prev.includes(commentId) ? prev.filter((id) => id !== commentId) : [...prev, commentId],
     )
   }
 
-  // ✅ 댓글 정렬 (좋아요 순 or 최신 순)
   const sortedComments = useMemo(() => {
     return [...comments].sort((a, b) => {
       if (sortBy === "likes") {
@@ -61,12 +69,11 @@ export default function Comments({ bookId }: { bookId: string }) {
     })
   }, [comments, sortBy])
 
-  // ✅ 댓글 렌더링
   const renderComment = (comment: Comment & { likes: number }, isReply = false) => (
     <Card key={comment.id} className={`mb-4 ${isReply ? "ml-12" : ""} border border-border bg-background`}>
       <CardHeader className="flex flex-row items-start gap-4 p-4">
         <Avatar className="w-10 h-10">
-          <AvatarImage src={"/placeholder.svg"} />
+          <AvatarImage src={getRandomImage()} />
           <AvatarFallback>{comment.username[0]}</AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-1">
@@ -117,7 +124,6 @@ export default function Comments({ bookId }: { bookId: string }) {
     </Card>
   )
 
-  // ✅ 대댓글 구분 및 렌더링
   const rootComments = sortedComments.filter(comment => comment.parentId === null)
 
   return (

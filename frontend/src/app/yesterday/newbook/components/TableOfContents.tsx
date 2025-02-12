@@ -5,6 +5,13 @@ import { getBookById, Book } from "@/lib/api/book" // API 함수와 타입 가�
 export default function TableOfContents({ bookId }: { bookId: string }) {
   const [chapters, setChapters] = useState<{ title: string; id: number }[]>([])
 
+  // 목데이터 설정
+  const mockChapters = [
+    { id: 1, title: "1장: 목데이터로 보는 시작" },
+    { id: 2, title: "2장: 목데이터로 보는 성장" },
+    { id: 3, title: "3장: 목데이터로 완성된 여정" },
+  ]
+
   useEffect(() => {
     const fetchChapters = async () => {
       try {
@@ -19,7 +26,8 @@ export default function TableOfContents({ bookId }: { bookId: string }) {
 
         setChapters(contentChapters)
       } catch (error) {
-        console.error("목차 데이터를 불러오는 중 오류 발생:", error)
+        console.error("목차 데이터를 불러오는 중 오류 발생, 목데이터로 대체:", error)
+        setChapters(mockChapters) // 요청 실패 시 목데이터로 대체
       }
     }
 

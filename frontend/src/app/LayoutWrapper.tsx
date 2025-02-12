@@ -26,6 +26,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const isViewerPage = pathname.startsWith("/viewer"); 
   // "/viewer" 경로로 시작하는 페이지인지 여부 (뷰어 페이지에서는 네비게이션 숨김)
 
+  const isBookDetailPage = pathname.startsWith("/yesterday/newbook"); 
+  // "/viewer" 경로로 시작하는 페이지인지 여부 (뷰어 페이지에서는 네비게이션 숨김)
+
   // 정규표현식 설명:
   // ^         : 문자열의 시작을 의미 ("/"로 시작해야 함)
   // \/chat\/  : "/chat/" 문자열과 정확히 일치해야 함
@@ -112,7 +115,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       <ToastNotification notifications={notifications} />
 
       {/* TopNav를 /viewer, /chat, /test/onboarding 페이지에서 숨김 */}
-      {isAuthenticated && !isViewerPage && !isChatPage && !isTestOnboardingPage && <TopNav />}
+      {isAuthenticated && !isViewerPage && !isBookDetailPage && !isChatPage && !isTestOnboardingPage && <TopNav />}
       
       {/* Sidebar를 /test/onboarding 페이지에서 숨김 */}
       {isAuthenticated && !isTestOnboardingPage && <Sidebar />}
@@ -133,7 +136,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       </main>
 
       {/* BottomNav를 /viewer, /chat, /test/onboarding 페이지에서 숨김 */}
-      {isAuthenticated && !isViewerPage && !isChatPage && !isTestOnboardingPage && <BottomNav />}
+      {isAuthenticated && !isViewerPage && !isBookDetailPage && !isChatPage && !isTestOnboardingPage && <BottomNav />}
     </>
   );
 }

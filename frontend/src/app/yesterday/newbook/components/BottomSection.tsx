@@ -1,10 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import TableOfContents from "./TableOfContents"
 import Recommendations from "./Recommendations"
 import Comments from "./Comments"
+import { TableOfContentsSkeleton } from "./Skeletons/TableOfContentsSkeleton"
+import { RecommendationsSkeleton } from "./Skeletons/RecommendationsSkeleton"
+import { CommentsSkeleton } from "./Skeletons/CommentsSkeleton"
 
 export default function BottomSection({ bookId }: { bookId: string }) {
   const [activeTab, setActiveTab] = useState("toc")
@@ -32,17 +35,28 @@ export default function BottomSection({ bookId }: { bookId: string }) {
             댓글
           </TabsTrigger>
         </TabsList>
+
+        {/* 목차 탭 */}
         <TabsContent value="toc" className="p-4">
-          <TableOfContents bookId={bookId} />
+          <Suspense fallback={<TableOfContentsSkeleton />}>
+            <TableOfContents bookId={bookId} />
+          </Suspense>
         </TabsContent>
+
+        {/* 추천 탭 */}
         <TabsContent value="recommendations" className="p-4">
-          <Recommendations bookId={bookId} />
+          <Suspense fallback={<RecommendationsSkeleton />}>
+            <Recommendations bookId={bookId} />
+          </Suspense>
         </TabsContent>
+
+        {/* 댓글 탭 */}
         <TabsContent value="comments" className="p-4">
-          <Comments bookId={bookId} />
+          <Suspense fallback={<CommentsSkeleton />}>
+            <Comments bookId={bookId} />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </section>
   )
 }
-

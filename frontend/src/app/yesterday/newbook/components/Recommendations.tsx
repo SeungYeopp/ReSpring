@@ -11,6 +11,123 @@ export default function Recommendations({ bookId }: { bookId: string }) {
   const [authorBooks, setAuthorBooks] = useState<BookInfo[]>([])
   const [followedBooks, setFollowedBooks] = useState<BookInfo[]>([])
 
+  /** ✅ 랜덤 프로필 이미지 생성 함수 */
+  const getRandomImage = () => {
+    const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
+    return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
+  };
+
+  // 목데이터 설정
+  const mockAuthorBooks: BookInfo[] = [
+    {
+      id: 1,
+      authorId: "beb9ebc2-9d32-4039-8679-5d44393b7252",
+      title: "목데이터 자서전 1",
+      coverImage: getRandomImage(),
+      tags: ["목데이터"],
+      likeCount: 10,
+      viewCount: 50,
+      likedUsers: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      liked: false,
+    },
+    {
+      id: 2,
+      authorId: "beb9ebc2-9d32-4039-8679-5d44393b7252",
+      title: "목데이터 자서전 2",
+      coverImage: getRandomImage(),
+      tags: ["목데이터"],
+      likeCount: 15,
+      viewCount: 30,
+      likedUsers: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      liked: false,
+    },
+    {
+      id: 3,
+      authorId: "beb9ebc2-9d32-4039-8679-5d44393b7232",
+      title: "목데이터 자서전 3",
+      coverImage: getRandomImage(),
+      tags: ["목데이터"],
+      likeCount: 15,
+      viewCount: 30,
+      likedUsers: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      liked: false,
+    },
+    {
+      id: 4,
+      authorId: "beb9ebc2-9d32-1039-8679-5d44393b7232",
+      title: "목데이터 자서전 4",
+      coverImage: getRandomImage(),
+      tags: ["목데이터"],
+      likeCount: 15,
+      viewCount: 30,
+      likedUsers: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      liked: false,
+    },
+  ]
+
+  const mockFollowedBooks: BookInfo[] = [
+    {
+      id: 5,
+      authorId: "another-author-id",
+      title: "구독 작가 자서전 1",
+      coverImage: getRandomImage(),
+      tags: ["테스트"],
+      likeCount: 20,
+      viewCount: 70,
+      likedUsers: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      liked: true,
+    },
+    {
+      id: 6,
+      authorId: "another-author-id",
+      title: "구독 작가 자서전 2",
+      coverImage: getRandomImage(),
+      tags: ["테스트"],
+      likeCount: 5,
+      viewCount: 25,
+      likedUsers: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      liked: true,
+    },
+    {
+      id: 7,
+      authorId: "another-author-id",
+      title: "구독 작가 자서전 3",
+      coverImage: getRandomImage(),
+      tags: ["테스트"],
+      likeCount: 5,
+      viewCount: 25,
+      likedUsers: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      liked: true,
+    },
+    {
+      id: 8,
+      authorId: "another-author-id",
+      title: "구독 작가 자서전 4",
+      coverImage: getRandomImage(),
+      tags: ["테스트"],
+      likeCount: 5,
+      viewCount: 25,
+      likedUsers: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      liked: true,
+    },
+  ]
+
   useEffect(() => {
     const fetchRecommendations = async () => {
       try {
@@ -30,7 +147,9 @@ export default function Recommendations({ bookId }: { bookId: string }) {
           setFollowedBooks(followedBooksData)
         }
       } catch (error) {
-        console.error("추천 데이터를 불러오는 중 오류 발생:", error)
+        console.error("추천 데이터를 불러오는 중 오류 발생, 목데이터로 대체:", error)
+        setAuthorBooks(mockAuthorBooks) // 저자 자서전 목데이터로 대체
+        setFollowedBooks(mockFollowedBooks) // 구독 작가 자서전 목데이터로 대체
       }
     }
 
@@ -47,7 +166,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
             {authorBooks.map((book) => (
               <Card
                 key={book.id}
-                className="border-0 bg-transparent flex-shrink-0"
+                className="border-0 bg-transparent flex-shrink-0 shadow-none"
                 style={{
                   width: "calc((100vw - 32px) / 3)",
                   maxWidth: "200px",
@@ -59,7 +178,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
                   <AspectRatio ratio={156 / 234}>
                     <Link href={`/books/${book.id}`}>
                       <Image
-                        src={book.coverImage || "/placeholder.svg"}
+                        src={book.coverImage || getRandomImage()}
                         alt={book.title}
                         fill
                         className="object-cover w-full h-full rounded-lg"
@@ -84,7 +203,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
             {followedBooks.map((book) => (
               <Card
                 key={book.id}
-                className="border-0 bg-transparent flex-shrink-0"
+                className="border-0 bg-transparent flex-shrink-0 shadow-none"
                 style={{
                   width: "calc((100vw - 32px) / 3)",
                   maxWidth: "200px",
@@ -96,7 +215,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
                   <AspectRatio ratio={156 / 234}>
                     <Link href={`/books/${book.id}`}>
                       <Image
-                        src={book.coverImage || "/placeholder.svg"}
+                        src={book.coverImage || getRandomImage()}
                         alt={book.title}
                         fill
                         className="object-cover w-full h-full rounded-lg"

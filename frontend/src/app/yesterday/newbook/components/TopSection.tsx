@@ -10,6 +10,31 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { getBookById, Book } from "@/lib/api/book" // API 호출 및 타입 import
+import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
+
+  /** ✅ 랜덤 프로필 이미지 생성 함수 */
+  const getRandomImage = () => {
+    const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
+    return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
+  };
+
+// 목데이터 설정
+const mockBookData: Book = {
+  id: 0,
+  authorId: "저자ID",
+  title: "목데이터 자서전 제목",
+  content: { "1장": "이것은 목데이터 자서전 내용입니다." },
+  coverImage: getRandomImage(),
+  tags: ["목데이터", "테스트"],
+  likeCount: 0,
+  viewCount: 0,
+  likedUsers: [],
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  imageUrls: [getRandomImage(),],
+  comments: [],
+  liked: false,
+}
 
 export default function TopSection({ bookId }: { bookId: string }) {
   const [book, setBook] = useState<Book | null>(null) // API 데이터 저장
@@ -17,21 +42,21 @@ export default function TopSection({ bookId }: { bookId: string }) {
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
 
-  // 페이지에 하드코딩된 User ID
   const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252"; // 박싸피의 테스트 ID
 
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const bookData = await getBookById(Number(bookId), userId)  // 하드코딩된 userId 사용
+        const bookData = await getBookById(Number(bookId), userId) // API 호출
         setBook(bookData)
         setIsLiked(bookData.liked) // 초기 좋아요 상태 설정
       } catch (error) {
-        console.error("책 데이터를 불러오는 중 오류 발생:", error)
+        console.error("책 데이터를 불러오는 중 오류 발생, 목데이터로 대체:", error)
+        setBook(mockBookData) // 요청 실패 시 목데이터 설정
       }
     }
     fetchBook()
-  }, [bookId, userId])  // userId가 의존성에 포함됨
+  }, [bookId, userId])
 
   const handleImageClick = () => {
     setIsImageExpanded(true)
@@ -50,14 +75,14 @@ export default function TopSection({ bookId }: { bookId: string }) {
     }
   }, [isLiked])
 
-  if (!book) return <div>로딩 중...</div> // 데이터 로딩 중 표시
+  if (!book) return <TopSectionSkeleton /> // 데이터 로딩 중 스켈레톤 표시
 
   return (
     <section className="relative min-h-[80vh] text-white">
       {/* 배경 이미지 */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/70 to-black">
         <Image
-          src={book.coverImage || "/placeholder.svg"}
+          src={book.coverImage || getRandomImage()}
           alt="cover image"
           layout="fill"
           objectFit="cover"
@@ -99,8 +124,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
       </div>
 
       {/* 컨텐츠 */}
-      <div className="relative z-10 flex flex-col items-center px-4 pt-20">
-        {/* 표지 이미지 */}
+      <div className="relative z-10 flex flex-col items-center px-4 pt-10">
         <Card
           onClick={handleImageClick}
           className={cn(
@@ -111,7 +135,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
           <CardContent className="p-0">
             <AspectRatio ratio={156 / 234}>
               <Image
-                src={book.coverImage || "/placeholder.svg"}
+                src={book.coverImage || getRandomImage()}
                 alt={book.title}
                 fill
                 className={cn(
