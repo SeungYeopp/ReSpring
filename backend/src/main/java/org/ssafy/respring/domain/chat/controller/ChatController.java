@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -22,6 +23,7 @@ import org.ssafy.respring.domain.chat.dto.request.ChatRoomRequest;
 import org.ssafy.respring.domain.chat.dto.response.ChatMessageResponse;
 import org.ssafy.respring.domain.chat.dto.response.ChatRoomMentoringResponseDto;
 import org.ssafy.respring.domain.chat.dto.response.ChatRoomResponse;
+import org.ssafy.respring.domain.chat.repository.MongoChatMessageRepository;
 import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
@@ -29,8 +31,11 @@ import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Controller
@@ -40,6 +45,10 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
     private final UserRepository userRepository;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final MongoChatMessageRepository chatMessageRepository;
+
+    private static final String LAST_SEEN_PREFIX = "last_seen:";
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(ChatMessageRequest messageRequest) {
@@ -261,6 +270,55 @@ public class ChatController {
                 .mentorId(chatRoom.getMentorId() != null ? chatRoom.getMentorId() : null) // UUID를 String으로 변환
                 .userCount(chatRoom.getUsers().size())
                 .build();
+    }
+
+    // ✅ 채팅방 접속 시 마지막 접속 시간 업데이트 (프론트에서 호출)
+    @PostMapping("/chat/last-seen")
+    public ResponseEntity<Void> updateLastSeen(@RequestParam Long roomId, @RequestParam UUID userId) {
+        chatService.saveLastSeenTime(roomId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    // ✅ 특정 채팅방의 마지막 접속 시간 조회 (Timestamp + Human-readable)
+    @GetMapping("/chat/last-seen")
+    public ResponseEntity<Map<String, Object>> getLastSeenTime(@RequestParam Long roomId, @RequestParam UUID userId) {
+        Long lastSeenTime = chatService.getLastSeenTime(roomId, userId);
+        String lastSeenHuman = chatService.getLastSeenTimeHuman(roomId, userId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", lastSeenTime);
+        response.put("formattedTime", lastSeenHuman);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // ✅ 사용자의 모든 채팅방 마지막 접속 시간 조회
+    @GetMapping("/chat/last-seen/all")
+    public ResponseEntity<Map<Long, Map<String, Object>>> getAllLastSeenTimes(@RequestParam UUID userId) {
+        Map<Long, Map<String, Object>> lastSeenMap = new HashMap<>();
+
+        List<ChatRoom> userRooms = chatService.getUserRooms(userId);
+        for (ChatRoom room : userRooms) {
+            Long lastSeenTimestamp = chatService.getLastSeenTime(room.getId(), userId);
+            String lastSeenFormatted = chatService.getLastSeenTimeHuman(room.getId(), userId);
+
+            Map<String, Object> lastSeenData = new HashMap<>();
+            lastSeenData.put("timestamp", lastSeenTimestamp);
+            lastSeenData.put("formattedTime", lastSeenFormatted);
+
+            lastSeenMap.put(room.getId(), lastSeenData);
+        }
+
+        return ResponseEntity.ok(lastSeenMap);
+    }
+
+
+    // ✅ 특정 채팅방의 안 읽은 메시지 개수 조회
+    @GetMapping("/chat/unread-messages")
+    public ResponseEntity<Integer> getUnreadMessageCount(@RequestParam Long roomId, @RequestParam UUID userId) {
+        Long lastSeenTime = chatService.getLastSeenTime(roomId, userId);
+        List<ChatMessage> unreadMessages = chatMessageRepository.findByChatRoomIdAndTimestampGreaterThan(roomId, lastSeenTime);
+        return ResponseEntity.ok(unreadMessages.size());
     }
 }
 
