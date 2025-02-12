@@ -96,6 +96,9 @@ export default function CreateBook() {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null)
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false)
 
+  const [generatedContent, setGeneratedContent] = useState<Content>();
+  const [title, setTitle] = useState<string>("")
+
   const router = useRouter()
 
   const coverImages : string[]= []
@@ -196,13 +199,22 @@ export default function CreateBook() {
     }
   }
 
+  const convertStoriesToContent = (stories: Story[]): Content => {
+    return stories.reduce((acc, story) => {
+        acc[story.title] = story.content;
+        return acc;
+    }, {} as Content);
+};
+
   const handleMakeAIContent = async () => {
     setIsLoading(true)
     try {
-      const selectedStories = stories.filter((story) => selectedStorieIds.includes(story.id))
-      const joinStories = selectedStories.map((story) => story.content).join("")
-      const compiledBook: CompiledBook = await compileBookByAI(joinStories)
-      setCompiledBook(compiledBook)
+      const convertedContent = convertStoriesToContent(stories)
+      const generatedContent: Content = await compileBookByAI(convertedContent)
+      console.log("생성된 AI 내용", generatedContent)
+
+      setGeneratedContent(generatedContent)
+      //setCompiledBook(compiledBook)
       setAiCompilationComplete(true)
       setTimeout(() => {
         setAiCompilationComplete(false)
@@ -344,9 +356,9 @@ export default function CreateBook() {
             </div>
           )}
 
-          {step === 2 && compiledBook && (
+          {step === 2 && generatedContent && (
             <div className="w-full max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold text-center mb-6">{compiledBook.title}</h2>
+              <h2 className="text-2xl font-bold text-center mb-6">{title}</h2>
               <Carousel className="w-full">
                 <CarouselContent>
                   {pages.map((page, index) => (
