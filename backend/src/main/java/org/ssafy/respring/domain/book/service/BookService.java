@@ -359,9 +359,6 @@ public class BookService {
 		return result;
 	}
 
-
-
-
 	@Transactional(readOnly = true)
 	public List<BookResponseDto> getWeeklyTop3Books(UUID userId) {
 		return bookRepository.getWeeklyTop3Books().stream()
