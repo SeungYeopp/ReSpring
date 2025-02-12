@@ -534,7 +534,6 @@ public class BookService {
 		Optional<BookLikes> existingLike = book.getBookLikes().stream()
 		  .filter(like -> like.getUser().getId().equals(userId))
 		  .findFirst();
-
 		if (existingLike.isPresent()) {
 			// 이미 좋아요를 눌렀으면 제거
 			book.getBookLikes().remove(existingLike.get());
@@ -624,9 +623,8 @@ public class BookService {
 
 	private List<String> getImagesFromStories(List<Long> storyIds) {
 		return storyIds.stream()
-				.map(storyId -> imageService.getImageUrlsByEntity(ImageType.STORY, storyId)) // ✅ 각 storyId에 대한 이미지 리스트 반환
+				.map(storyId -> imageService.getSingleImageByEntity(ImageType.STORY, storyId)) // ✅ 각 storyId에 대한 이미지 리스트 반환
 				.filter(Objects::nonNull) // ✅ Null 값 제거
-				.flatMap(List::stream) // ✅ 중첩 리스트(List<List<String>>)를 단일 리스트(List<String>)로 변환
 				.collect(Collectors.toList());
 	}
 
