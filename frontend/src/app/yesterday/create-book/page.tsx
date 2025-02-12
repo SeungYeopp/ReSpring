@@ -96,6 +96,8 @@ export default function CreateBook() {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null)
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false)
 
+  const [title, setTitle] = useState<string>("제목을 직접 작성하세요!")
+
   const router = useRouter()
 
   const coverImages : string[]= []
@@ -158,10 +160,19 @@ export default function CreateBook() {
     )
   }
 
+  const removeDotsFromTitles = (compiledBook: CompiledBook): CompiledBook => {
+    // 각 챕터의 제목에서 마침표를 제거한 새 제목을 할당
+    compiledBook.chapters.forEach(chapter => {
+        chapter.chapterTitle = chapter.chapterTitle.replace(/\./g, ""); // 제목에서 모든 마침표 제거
+    });
+
+    return compiledBook;
+};
+
   const handleSubmit = async () => {
     setIsFinalizingBook(true)
     try {
-      console.log(compiledBook?.chapters[0])
+      //console.log(compiledBook?.chapters[0])
       //const jsonifiedBookContent = JSON.stringify(compiledBook!.chapters)
 
       // Chapter를 Content로 변환..
@@ -178,11 +189,12 @@ export default function CreateBook() {
         acc[chapter.chapterTitle] = chapter.content;
         return acc;
       }, {} as Content);
+
+      const removedDots = removeDotsFromTitles(compiledBook!)
     
       const result : number= await makeBook(
         userId,
-        compiledBook!.title,
-        convertedContent!,
+        removedDots!,
         bookTags,
         selectedStorieIds,
         bookCoverImg!,
@@ -196,12 +208,35 @@ export default function CreateBook() {
     }
   }
 
+  const convertStoriesToContent = (stories: Story[]): Content => {
+    return stories.reduce((acc, story) => {
+        acc[story.title] = story.content;
+        return acc;
+    }, {} as Content);
+  };
+
+  const convertToCompiledBook = (title: string, content: Content): CompiledBook => {
+    const chapters: Chapter[] = Object.entries(content["content"]).map(([chapterTitle, chapterContent]) => ({
+        chapterTitle,
+        content: chapterContent
+    }));
+
+    return { title, chapters };
+};
+
+
   const handleMakeAIContent = async () => {
     setIsLoading(true)
     try {
       const selectedStories = stories.filter((story) => selectedStorieIds.includes(story.id))
-      const joinStories = selectedStories.map((story) => story.content).join("")
-      const compiledBook: CompiledBook = await compileBookByAI(joinStories)
+
+      const convertedContent = convertStoriesToContent(selectedStories)
+
+      // const compiledBook: CompiledBook = await compileBookByAI(generatedContent)
+      const generatedContent: Content = await compileBookByAI(convertedContent)
+
+      console.log("AI 생성 완료", generatedContent)
+      const compiledBook : CompiledBook = convertToCompiledBook(title, generatedContent)
       setCompiledBook(compiledBook)
       setAiCompilationComplete(true)
       setTimeout(() => {

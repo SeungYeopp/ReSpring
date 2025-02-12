@@ -60,21 +60,29 @@ export interface Chapter{
     content : string
 }
 
-
+export const convertToContent = (compiledBook: CompiledBook): Content => {
+    return compiledBook.chapters.reduce((acc, chapter) => {
+        acc[chapter.chapterTitle] = chapter.content;
+        return acc;
+    }, {} as Content);
+};
 
 // 봄날의 서 생성 함수
 // 입력 : 유저 Id, 제목, 내용, 태그들, 커버 이미지
 // 출력 : 봄날의 서 ID
 export const makeBook = async (
     userId : string,
-    title : string,
-    content : Content,
+    compiledBook : CompiledBook,
     tags: string[],
     storyIds : number[],
     coverImage : File
 ) : Promise<number> => {
     try{
+        const content = convertToContent(compiledBook)
+        const title : string = compiledBook.title;
         const formData = new FormData();
+        console.log("makeBook, title", title);
+        console.log("makeBook, convertedContent", content);
         formData.append('requestDto', new Blob([
             JSON.stringify({userId, title, content, tags, storyIds})
         ], {type : 'application/json'}
@@ -277,20 +285,21 @@ export const getAllBooksSorted = async (sortFields:string[], directions:string[]
 // 봄날의 서 AI 기능
 // 입력 : 글 조각 여러 개를 하나의 string으로 입력
 // 출력 : CompiledBook 형식으로 된 데이터.
-export const compileBookByAI = async (content : string) : Promise<CompiledBook> => {
+export const compileBookByAI = async (content : Content) : Promise<Content> => {
     try{
-        const formData = new FormData();
-        formData.append('message', `${content}`);
-        const response = await axiosAPI.post('/books/ai-compile', formData);
+        const response = await axiosAPI.post('/books/ai-compile', content);
 
         const uncleaned = response.data.response;
 
-        const cleaned = uncleaned.replaceAll("json","").replaceAll('```', "").replaceAll("\n","").replaceAll("  ", "") // 불필요한 단어 삭제.
+        console.log("AI 생성 RAW DATA", uncleaned)
 
+        //const cleaned = uncleaned.replaceAll("json","").replaceAll('```', "").replaceAll("\n","").replaceAll("  ", "") // 불필요한 단어 삭제.
+        const cleaned = uncleaned.replaceAll("json","").replaceAll('`', "")
         const jsoned = JSON.parse(cleaned); // JSON 으로 변환.
 
-        return jsoned as CompiledBook // CompiledBook 형식 명시.
+        return jsoned as Content // CompiledBook 형식 명시.
     }catch(error : any){
+        console.error(error)
         throw new Error(error.response?.data?.message || 'compileBookByAI 함수 API 호출에서 오류가 발생했습니다.');
     }
 }
