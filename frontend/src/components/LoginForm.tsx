@@ -27,6 +27,22 @@ export function LoginForm() {
     }
   };
 
+  const handleTempLogin = async() => {
+
+    try {
+      const result = await login("parkssafy@gmail.com", "password");
+
+      if (!result){
+        alert('로그인 실패');
+      }
+    } catch (error) {
+      alert('로그인 실패');
+      console.error(error);
+    } finally{
+      window.location.reload();
+    }
+  }
+
   return (
     <Card className="w-full mx-auto">
       <CardHeader>
@@ -60,6 +76,9 @@ export function LoginForm() {
           </div>
           <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
             로그인
+          </Button>
+          <Button type="button" onClick={handleTempLogin} className="w-full bg-brand hover:bg-brand-dark text-white">
+            임시 로그인(개발용, 박싸피)
           </Button>
         </form>
       </CardContent>
