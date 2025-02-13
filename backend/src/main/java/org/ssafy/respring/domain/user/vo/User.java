@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.challenge.vo.Challenge;
 import org.ssafy.respring.domain.challenge.vo.UserChallenge;
@@ -37,8 +38,7 @@ public class User {
     private String email;
     private String password;
     private String profileImage;
-    private String socialId;
-
+    private String provider;
 
     @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -47,16 +47,14 @@ public class User {
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Book> myBooks;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SocialAccount> socialAccounts;
-
-    public User(String userNickname, String email, String password) {
-        super();
+    public User(String userNickname, String email, String password, String profileImage, String provider) {
         this.userNickname = userNickname;
-        this.createdAt = LocalDateTime.now();
         this.email = email;
         this.password = password;
+        this.profileImage = profileImage;
+        this.provider = provider;
     }
+
 
 
     public void changePassword(String encryptedPassword) {

@@ -9,9 +9,10 @@ import { Chapter } from "@/lib/api";
 
 interface BottomToolbarProps {
   bookId: string; // ✅ bookId를 props로 받음
+  imageUrls : string[]
 }
 
-export function BottomToolbar({ bookId }: BottomToolbarProps) { // ✅ bookId를 props로 받음
+export function BottomToolbar({ bookId, imageUrls }: BottomToolbarProps) { // ✅ bookId를 props로 받음
   const { currentPage, totalPages } = usePageContext();
   const { theme } = useViewerSettings();
 
@@ -44,7 +45,7 @@ export function BottomToolbar({ bookId }: BottomToolbarProps) { // ✅ bookId를
         {/* ✅ 댓글 & 목차 버튼 (오른쪽) */}
         <div className="flex-1 flex justify-end gap-2">
           <CommentsPanel />
-          <TableOfContents bookId={bookId} /> {/* ✅ bookId 전달 추가 */}
+          <TableOfContents bookId={bookId} imageUrls={imageUrls}/> {/* ✅ bookId 전달 추가 */}
           </div>
       </div>
     </>

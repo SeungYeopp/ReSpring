@@ -35,7 +35,9 @@ import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.book.vo.BookContent;
 import org.ssafy.respring.domain.book.vo.BookLikes;
 import org.ssafy.respring.domain.book.vo.BookViews;
+import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
+import org.ssafy.respring.domain.comment.repository.CommentLikesRepository;
 import org.ssafy.respring.domain.comment.service.CommentService;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
@@ -60,6 +62,7 @@ public class BookService {
 	private final BookViewsRepository bookViewsRepository;
 	private final UserRepository userRepository;
 	private final StoryRepository storyRepository;
+	private final CommentLikesRepository commentLikesRepository;
 	@Lazy
 	private final MongoBookContentRepository bookContentRepository;
 	private final ObjectMapper objectMapper;
@@ -75,8 +78,9 @@ public class BookService {
 	private static final String RECENT_VIEW_KEY = "user:recent:books:";
 
 	@Transactional
-    public Long createBook(BookRequestDto requestDto, MultipartFile coverImage) {
-        User user = getUserById(requestDto.getUserId());
+    public Long createBook(BookRequestDto requestDto, MultipartFile coverImage, UUID userId) {
+        User user = getUserById(userId);
+		validateUserStories(requestDto.getStoryIds(), userId);
 
         Book book = Book.builder()
                 .author(user)
@@ -112,11 +116,15 @@ public class BookService {
     }
 
 	@Transactional
-	public void updateBook(BookUpdateRequestDto requestDto, MultipartFile coverImage) {
+	public void updateBook(BookUpdateRequestDto requestDto, MultipartFile coverImage, UUID userId) {
 		boolean isUpdated = false; // 변경 여부 추적
 
 		// 1️⃣ 기존 책 조회 및 권한 검증
-		Book book = getBookById(requestDto.getBookId(), requestDto.getUserId());
+		Book book = getBookById(requestDto.getBookId(), userId);
+
+		// 요청된 Story, user 유효성 검증 단계 추가
+		validateUserStories(requestDto.getStoryIds(), userId);
+		validateOwner(getBookById(requestDto.getBookId()).getAuthor().getId(), userId);
 
 		// 2️⃣ 커버 이미지 처리
 		String coverImageUrl = coverImage != null ? imageService.saveImage(coverImage,ImageType.BOOK,book.getId()) : book.getCoverImage();
@@ -197,11 +205,16 @@ public class BookService {
 
 
 	@Transactional
-	public void deleteBook(Long bookId) {
+	public void deleteBook(Long bookId, UUID userId) {
+
+		validateOwner(getBookById(bookId).getAuthor().getId(), userId);
+
 		bookRepository.deleteById(bookId);
 		bookContentRepository.deleteByBookId(bookId);
+
 		// ✅ Elasticsearch 색인 삭제
 		deleteBookFromIndex(bookId, "book_title");
+
 		// ✅ 책이 삭제되었으므로 캐시 삭제
 		clearTrendingBooksCache();
 	}
@@ -216,21 +229,11 @@ public class BookService {
 		Long viewCount = bookViewsRedisService.getViewCount(bookId);
 		List<String> imageUrls = getImagesFromStories(book.getStoryIds());
 		Map<String, String> bookContent = getBookContent(bookId);
-		Set<UUID> likedUsers = bookLikesRedisService.getLikedUsers(book.getId());
+		Set<String> likedUsers = bookLikesRedisService.getLikedUsers(book.getId());
 		String coverImageUrl = imageService.getSingleImageByEntity(ImageType.BOOK, bookId);
 
 		// ✅ 댓글 조회
-		List<CommentResponseDto> comments = commentService.getCommentsByBookId(bookId).stream()
-		  .map(comment -> new CommentResponseDto(
-			comment.getId(),
-			comment.getContent(),
-			comment.getUserNickname(),
-			comment.getCreatedAt(),
-			comment.getUpdatedAt(),
-			comment.getParentId()
-		  ))
-		  .collect(Collectors.toList());
-
+		List<CommentDto> comments = commentService.getCommentsByBookId(bookId);
 
 		return BookDetailResponseDto.toResponseDto(
 				book,
@@ -309,8 +312,6 @@ public class BookService {
 		return restoredContent;
 	}
 
-
-
 	@Transactional
 	public List<BookResponseDto> getBooksByAuthorId(UUID authorId, UUID userId) {
 		return bookRepository.findByAuthorId(authorId).stream()
@@ -325,14 +326,6 @@ public class BookService {
 				.map(book -> mapToBookResponseDto(book, userId))
 				.collect(Collectors.toList());
 	}
-
-//	// 무한스크롤 적용
-//	@Transactional(readOnly = true)
-//	public List<BookResponseDto> getAllBooksSortedByTrends(UUID userId, Long lastLikes, Long lastViews, LocalDateTime lastCreatedAt, int size) {
-//		return bookRepository.getAllBooksSortedByTrends(lastLikes, lastViews, lastCreatedAt, size).stream()
-//		  .map(book -> mapToBookResponseDto(book, userId))
-//		  .collect(Collectors.toList());
-//	}
 
 	// 무한스크롤 적용
 	@Transactional(readOnly = true)
@@ -367,7 +360,7 @@ public class BookService {
 	}
 
 	public boolean isBookLiked(Long bookId, UUID userId) {
-		return bookLikesRedisService.isLiked(bookId, userId);
+		return userId==null? false : bookLikesRedisService.isLiked(bookId, userId);
 	}
 
 	private void saveRecentView(UUID userId, Long bookId) {
@@ -502,7 +495,7 @@ public class BookService {
 	private BookResponseDto enrichBookResponse(BookResponseDto book, UUID userId) {
 		Long likeCount = bookLikesRedisService.getLikeCount(book.getId());
 		Long viewCount = bookViewsRedisService.getViewCount(book.getId());
-		Set<UUID> likedUsers = bookLikesRedisService.getLikedUsers(book.getId());
+		Set<String> likedUsers = bookLikesRedisService.getLikedUsers(book.getId());
 
 		book.setLikeCount(likeCount);
 		book.setViewCount(viewCount);
@@ -580,17 +573,17 @@ public class BookService {
 		// MongoDB에서 책 본문 조회
 		Map<String, String> bookContent = getBookContent(book.getId());
 
-		Set<UUID> likedUserIds = book.getBookLikes()
+		Set<String> likedUserNames = book.getBookLikes()
 		  .stream()
 		  .map(BookLikes::getUser)
-		  .map(User::getId)
+		  .map(User::getUserNickname)
 		  .collect(Collectors.toSet());
 
 		return BookResponseDto.toResponseDto(
 				book,
 				isBookLiked(book.getId(), userId),
 				bookLikesRedisService.getLikeCount(book.getId()), // 좋아요 수
-				likedUserIds,
+				likedUserNames,
 				bookViewsRedisService.getViewCount(book.getId()),
 				book.getCoverImage()
 		);
@@ -628,7 +621,6 @@ public class BookService {
 				.collect(Collectors.toList());
 	}
 
-
 	private void validateOwner(UUID correctId, UUID userId) {
 		if (!correctId.equals(userId)) {
 			throw new IllegalArgumentException("❌ 접근 권한이 없습니다!");
@@ -636,7 +628,7 @@ public class BookService {
 	}
 
 	// 자신의 story인지 확인하는 과정 (프론트에서 잘못된 값이 들어올 경우)
-	private void validateUserStories(Set<Long> storyIds, UUID userId) {
+	private void validateUserStories(List<Long> storyIds, UUID userId) {
 		List<Long> invalidStories = storyRepository.findAllById(storyIds).stream()
 				.filter(story -> !story.getUser().getId().equals(userId))
 				.map(story -> story.getId())

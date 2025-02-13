@@ -142,7 +142,7 @@ function PostList({
               <p className="text-xs text-muted-foreground line-clamp-2 mb-2 flex-grow">{post.content}</p>
               {post.images.length > 0 && (
                 <img
-                  src="/corgis/placeholder3.jpg"
+                  src={post.images[0]}
                   alt="게시물 이미지"
                   className="w-full h-32 object-cover rounded-lg mb-2"
                 />

@@ -68,25 +68,31 @@ public class NotificationService {
         notificationRepository.save(notification);
 
         // ✅ `initiatorId` 포함하여 DTO 변환 후 SSE 전송
-        sseService.sendNotification(receiverId, NotificationSubscriptionDto.from(notification, initiator.getId()));
+        sseService.sendNotification(receiverId, NotificationSubscriptionDto.from(notification, initiator.getUserNickname()));
     }
 
 
-    public List<NotificationDto> getUnreadNotifications(UUID userId) {
+    public List<NotificationDto> getNotifications(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
 
-        List<Notification> notifications = notificationRepository.findByReceiverAndIsReadFalse(user);
+        // 모든 알림 가져오기 (읽음 여부 상관 없음)
+        List<Notification> notifications = notificationRepository.findByReceiver(user);
 
         return notifications.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
+
     // ✅ 개별 알림 읽음 처리
-    public void markAsRead(Long notificationId) {
+    public void markAsRead(Long notificationId, UUID userId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 알림을 찾을 수 없습니다. ID: " + notificationId));
+
+        if (!notification.getReceiver().getId().equals(userId)) {
+            throw new IllegalArgumentException("❌ 잘못된 접근입니다!");
+        }
 
         if (!notification.isRead()) {
             notification.setRead(true);

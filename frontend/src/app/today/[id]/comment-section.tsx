@@ -5,11 +5,10 @@ import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { todayAPI, type Comment } from "@/app/today/api/todayDetail";
 import { useAuth } from "@/lib/hooks/tempUseAuth";
 import { Loader2 } from "lucide-react";
 
-import { getCommentsByPostId, getChildrenComments, createNewCommunityComment } from "@/lib/api";
+import { Comment, getCommentsByPostId, getChildrenComments, createNewCommunityComment } from "@/lib/api";
 
 interface CommentSectionProps {
   postId: number;
@@ -100,12 +99,12 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
     return (
       <div className={`flex gap-3 ${isReply ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4' : ""}`}>
         <Avatar className="h-7 w-7 flex-shrink-0">
-          <AvatarImage src={getRandomImage()} alt={comment.username} />
-          <AvatarFallback>{comment.username}</AvatarFallback>
+          <AvatarImage src={getRandomImage()} alt={comment.userNickname} />
+          <AvatarFallback>{comment.userNickname}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
           <div className="flex items-baseline gap-1">
-            <span className="text-sm font-semibold">{comment.username}</span>
+            <span className="text-sm font-semibold">{comment.userNickname}</span>
             <time className="text-xs text-gray-500">
               {formatDistanceToNowStrict(new Date(comment.createdAt), {
                 locale: ko,
@@ -118,8 +117,8 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
             {!isReply && (
               <button
                 onClick={() => {
-                  setReplyTo({ id: comment.id, username: comment.username });
-                  setNewComment(`@${comment.username} `);
+                  setReplyTo({ id: comment.id, username: comment.userNickname });
+                  setNewComment(`@${comment.userNickname} `);
                 }}
                 className="hover:text-gray-700"
               >

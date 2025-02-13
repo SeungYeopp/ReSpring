@@ -64,11 +64,11 @@ export const login = async (email : string, password : string) : Promise<boolean
 // 이후 아래 함수를 사용해서 session 정보를 받을 수 있습니다.
 // 입력 : X
 // 출력 : SessionInfo 정보.
-export const getSessionInfo = async () : Promise<SessionInfo> => {
+export const getSessionInfo = async () : Promise<UserInfo> => {
     try{
         const response = await axiosAPI.get('/user/me');
 
-        return response.data as SessionInfo;
+        return response.data as UserInfo;
     }catch(error : any){
         throw new Error(error.response?.data?.message || "getSessionInfos() 함수 호출 에러 발생!");
     }

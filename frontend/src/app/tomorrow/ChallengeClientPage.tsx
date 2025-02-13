@@ -55,7 +55,7 @@ export default function ChallengeClientPage({ serverChallenges }: ChallengeClien
   }, [])
 
   return (
-    <div className="h-full flex flex-col flex-grow overflow-y-auto bg-white bg-opacity-50 bg-[url('/subtle-prism.svg')]  md:-my-4">
+    <div className="h-full flex flex-col flex-grow overflow-y-auto bg-white bg-opacity-50 bg-[url('/subtle-prism.svg')]  md:-my-4 sm:my-0">
       
       {/* 캐러셀 헤더 추가 */}
       <div className="">

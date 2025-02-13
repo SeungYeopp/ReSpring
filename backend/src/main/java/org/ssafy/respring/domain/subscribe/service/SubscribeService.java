@@ -179,8 +179,8 @@ public class SubscribeService {
             .likedUsers(bookLikesRedisService.getLikedUsers(book.getId())) // ✅ 좋아요 누른 사용자 목록
             .createdAt(book.getCreatedAt())
             .updatedAt(book.getUpdatedAt())
-            .authorId(book.getAuthor().getId()) // ✅ 작성자 ID
             .authorName(book.getAuthor().getUserNickname()) // ✅ 작성자 이름
+            .authorProfileImage(book.getAuthor().getProfileImage())
             .build())
           .collect(Collectors.toList());
     }

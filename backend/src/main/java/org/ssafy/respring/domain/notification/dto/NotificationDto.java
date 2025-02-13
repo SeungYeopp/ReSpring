@@ -14,19 +14,10 @@ import java.util.UUID;
 @Builder
 public class NotificationDto {
     private Long id;
-
     private NotificationType type;
-
     private TargetType targetType;  // ✅ 추가
-
     private Long targetId; // ✅ 숫자 ID로 변경
-
     private String message;
-
     private boolean isRead;
-
     private LocalDateTime createdAt;
-
-
-
 }

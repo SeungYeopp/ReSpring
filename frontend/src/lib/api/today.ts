@@ -1,5 +1,5 @@
 import axiosAPI from "@/lib/api/axios";
-import { posts, popularPosts, followedPosts } from "@/app/today/mocks/posts";
+//import { posts, popularPosts, followedPosts } from "@/app/today/mocks/posts";
 import { Image } from "./story";
 import axios from "axios";
 
@@ -8,10 +8,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8
 export interface Comment {
   id: number;
   content: string;
-  username: string;
+  userId : string;
+  userNickname: string;
   createdAt: string;
   updatedAt: string;
   parentId: number | null;
+  postId?: number;
+  bookId?: number;
 };
 
 export interface Post {
@@ -24,7 +27,9 @@ export interface Post {
   createdAt: string; // 생성 날짜 및 시간
   updatedAt: string; // 수정 날짜 및 시간
   likes: number; // 좋아요 수
-  images: Image[]; // 게시물에 첨부된 이미지 URL 배열
+  images: string[]; // 게시물에 첨부된 이미지 URL 배열
+  commentCount : number,
+  comments : string[]
 }
 
 /**
@@ -39,7 +44,8 @@ export async function getPopularPosts(): Promise<Post[]> {
   } catch (error) {
     console.error("Error fetching popular posts:", error);
     // 서버가 꺼져 있거나 오류 발생 시, 목데이터에서 일부 게시물(예: 첫 3개) 반환
-    return popularPosts?.slice(0, 3) ?? [];
+    // return popularPosts?.slice(0, 3) ?? [];
+    return [];
   }
 }
 
@@ -125,14 +131,14 @@ export async function createPost(postData: CreatePostDto, images?: File[]): Prom
  * @param limit - 한 번에 가져올 게시물 수 (기본값: 10)
  * @returns Post[] - 구독한 사람들의 게시물 배열
  */
-export async function getFollowedPosts(lastId?: number | null | undefined, limit = 10): Promise<Post[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const filteredPosts = lastId ? followedPosts.filter((post) => post.id < lastId).slice(0, limit) : followedPosts.slice(0, limit);
-      resolve(filteredPosts);
-    }, 500); // ✅ 0.5초 지연 후 데이터 반환 (실제 API 응답처럼 보이도록)
-  });
-}
+// export async function getFollowedPosts(lastId?: number | null | undefined, limit = 10): Promise<Post[]> {
+//   return new Promise((resolve) => {
+//     setTimeout(() => {
+//       const filteredPosts = lastId ? followedPosts.filter((post) => post.id < lastId).slice(0, limit) : followedPosts.slice(0, limit);
+//       resolve(filteredPosts);
+//     }, 500); // ✅ 0.5초 지연 후 데이터 반환 (실제 API 응답처럼 보이도록)
+//   });
+// }
 
 export async function createNewCommunityComment(postId: number, content: string, userId: string, bookId: string, parentId: number | null): Promise<Comment> {
   try{

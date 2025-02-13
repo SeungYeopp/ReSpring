@@ -14,6 +14,7 @@ import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.user.dto.request.LoginRequestDto;
 import org.ssafy.respring.domain.user.dto.request.SignUpRequestDto;
 import org.ssafy.respring.domain.user.dto.response.LoginResponseDto;
+import org.ssafy.respring.domain.user.service.AuthService;
 import org.ssafy.respring.domain.user.service.UserService;
 import org.ssafy.respring.domain.user.vo.User;
 
@@ -26,6 +27,7 @@ import java.util.*;
 public class UserController {
     private final UserService userService;
     private final ImageService imageService;
+    private final AuthService authService;
 
     @Operation(summary = "유저 회원가입 기능", description = "유저 회원가입 기능입니다.")
     @PostMapping("/signup")
@@ -34,15 +36,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @Operation(summary = "유저 로그인 기능", description = "일반 로그인 기능입니다.")
-    @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody LoginRequestDto loginRequestDto, HttpSession session)
-            throws AuthenticationFailedException {
-        LoginResponseDto loginResponseDto = userService.loginUser(loginRequestDto);
-        session.setAttribute("userId", loginResponseDto.getUserId());
-        session.setAttribute("userNickname", loginResponseDto.getUserNickname());
-        return ResponseEntity.status(HttpStatus.OK).build();
-    }
 
     @Operation(summary = "회원정보 조회 기능", description = "세션을 활용하여 회원 정보를 조회합니다.")
     @GetMapping("/me")
@@ -54,32 +47,20 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String presignedUrl = (String) session.getAttribute("profileImageUrl");
-        Long presignedUrlTimestamp = (Long) session.getAttribute("profileImageUrlTimestamp");
-
-        if (presignedUrl == null || imageService.isPresignedUrlExpired(presignedUrlTimestamp)) {
-            presignedUrl = userService.getUserProfileImageUrl(userId);
-            session.setAttribute("profileImageUrl", presignedUrl);
-            session.setAttribute("profileImageUrlTimestamp", System.currentTimeMillis());
-        }
-
+        String imageUrl = (String) session.getAttribute("userProfileImage");
+        String presignedUrl = imageService.generatePresignedUrl(imageUrl);
         LoginResponseDto responseDto = new LoginResponseDto(userId, userNickname, presignedUrl);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    @Operation(summary = "유저 로그아웃 기능", description = "세션을 만료시키는 기능입니다.")
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpSession session) {
-        session.invalidate();
-        return ResponseEntity.status(HttpStatus.OK).build();
-    }
+
 
     @Operation(summary = "특정 유저 조회 기능", description = "유저 닉네임으로 해당 유저의 정보를 조회합니다.")
     @GetMapping("/user/profile/{nickname}")
     public ResponseEntity<LoginResponseDto> getUserProfile(@PathVariable String nickname) {
         User user = userService.findByNickname(nickname);
 
-        LoginResponseDto responseDto = userService.createResponseDto(user);
+        LoginResponseDto responseDto = authService.createResponseDto(user);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 }
