@@ -14,20 +14,20 @@ spring:
       on-profile: default
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:mysql://i12a307.p.ssafy.io:3306/respring
+    username: ssafy
+    password: ssafy
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   data:
     mongodb:
-      database: ${MONGODB_DATABASE}
-      uri: ${MONGODB_URI}
+      database: respring
+      uri: mongodb://ssafy:ssafy@i12a307.p.ssafy.io:27017/respring?authSource=admin
 
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD}
+      host: i12a307.p.ssafy.io
+      port: 6379
+      password: ssafy
 
 
   ai:
@@ -46,9 +46,9 @@ spring:
       hibernate.dialect: org.hibernate.dialect.MySQLDialect
 
   elasticsearch:
-    uris: ${ELASTICSEARCH_URI}
-    username: ${ELASTICSEARCH_USERNAME}
-    password: ${ELASTICSEARCH_PASSWORD}
+    uris: http://i12a307.p.ssafy.io:9200
+    username: elastic
+    password: changeme
 
   security:
     oauth2:
@@ -109,13 +109,13 @@ management:
 cloud:
   aws:
     s3:
-      bucket: ${S3_BUCKET}
+      bucket: respring-s3-bucket
     stack.auto: false
     region:
-      static: ${S3_REGION}
+      static: ap-northeast-2
     credentials:
-      access-key: ${S3_ACCESSKEY}
-      secret-key: ${S3_SECRETKEY}
+      access-key: AKIA4HWJUICFT7DL6HLO
+      secret-key: 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
 
 ---
 # 🔹 로컬 환경에서 `.env` 파일을 읽도록 설정 (필요한 경우만)

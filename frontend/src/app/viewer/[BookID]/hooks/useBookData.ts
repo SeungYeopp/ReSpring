@@ -580,6 +580,7 @@ const fallbackBookData = `
       const [bookContent, setBookContent] = useState<Content>();
       const [bookTitle, setBookTitle] = useState<string>();
       const [isLoading, setIsLoading] = useState<boolean>(true);
+      const [imageUrls, setImageUrls] = useState<string[]>([]);
       const {userId} = useAuth(true)
     
       useEffect(() => {
@@ -601,6 +602,7 @@ const fallbackBookData = `
 
             setBookTitle(book.title);
             setBookContent(book.content);
+            setImageUrls(book.imageUrls);
 
             // const chapters = JSON.parse(book.content) as Chapter[];
             // setBookChapters(chapters);
@@ -626,5 +628,5 @@ const fallbackBookData = `
         console.log("📖 현재 bookContent 상태:", bookContent);
       }, [bookContent]);
     
-      return { bookContent, isLoading, bookTitle };
+      return { bookContent, isLoading, bookTitle, imageUrls };
     }

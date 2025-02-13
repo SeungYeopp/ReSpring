@@ -8,7 +8,6 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 public class ParticipantInfoDto {
-    private UUID userId;
-    private String nickname;
+    private String userName;
     private String profileImage;
 }

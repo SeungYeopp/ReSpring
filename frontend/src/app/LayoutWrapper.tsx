@@ -7,12 +7,13 @@ import { TopNav } from "@/components/layout/top-nav";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Sidebar } from "@/components/layout/sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import LoadingScreen from "@/components/custom/LoadingScreen";
+
 import ToastNotification from "../components/custom/ToastNotification"; // 토스트 알림 컴포넌트
 // 기존
-// import useNotifications from "../hooks/useNotifications"; // SSE 알림 훅
+import useNotifications from "../hooks/useNotifications"; // SSE 알림 훅
 // 테스트용으로 교체:
-import useMockNotifications from "@/hooks/useMockNotifications"; //                                          민철씨 알림 여기에요
-
+// import useMockNotifications from "@/hooks/useMockNotifications"; //                                          민철씨 알림 여기에요
 
 const SPLASH_EXPIRE_HOURS = 24; // 스플래시 화면이 다시 표시되기까지의 유효 시간(24시간)
 
@@ -21,7 +22,10 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const router = useRouter(); // Next.js 라우터 훅, 클라이언트 사이드 네비게이션 제어
   const pathname = usePathname(); // 현재 URL 경로를 가져오기 위한 훅
 
-  const isViewerPage = pathname.startsWith("/viewer"); 
+  const isViewerPage = pathname.startsWith("/viewer");
+  // "/viewer" 경로로 시작하는 페이지인지 여부 (뷰어 페이지에서는 네비게이션 숨김)
+
+  const isBookDetailPage = pathname.startsWith("/yesterday/newbook"); 
   // "/viewer" 경로로 시작하는 페이지인지 여부 (뷰어 페이지에서는 네비게이션 숨김)
 
   // 정규표현식 설명:
@@ -41,16 +45,14 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const isTestOnboardingPage = pathname.startsWith("/test/onboarding");
   // 온보딩 테스트 페이지인지 확인하여 네비게이션 숨김 처리
 
-  const { isAuthenticated } = useAuth(false); 
+  const { isAuthenticated } = useAuth(false);
   // 사용자 인증 상태 확인 (false는 인증 실패 시 자동 리다이렉트 방지)
 
   // SSE를 통한 알림 데이터를 받아 토스트 알림 컴포넌트에 전달합니다.
   // 나중에 실제 API 연결 후에는 useNotifications로 바꿔야 함.
-  // const { notifications } = useNotifications('/api/notifications/sse');                             민철씨 알림 여기에요
-  const { notifications } = useMockNotifications();
-
-
-
+  const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
+  const { notifications } = useNotifications(`http://localhost:8080/notifications/subscribe/${userId}`);
+  // const { notifications } = useMockNotifications();
 
   useEffect(() => {
     if (isAuthenticated === null) {
@@ -63,12 +65,12 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     }
 
     // 스플래시 화면 표시 여부 결정 로직
-    const lastSeenTimestamp = localStorage.getItem("splashTimestamp"); 
+    const lastSeenTimestamp = localStorage.getItem("splashTimestamp");
     // 마지막으로 스플래시를 본 시간을 로컬 스토리지에서 가져옴
     const now = Date.now(); // 현재 시간 (밀리초 단위)
 
     if (lastSeenTimestamp) {
-      const elapsedHours = (now - Number(lastSeenTimestamp)) / (1000 * 60 * 60); 
+      const elapsedHours = (now - Number(lastSeenTimestamp)) / (1000 * 60 * 60);
       // 마지막 본 시간과 현재 시간의 차이를 시간 단위로 계산
       if (elapsedHours < SPLASH_EXPIRE_HOURS) {
         // 마지막 스플래시 이후 24시간이 지나지 않았다면 다시 표시하지 않음
@@ -81,25 +83,26 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     }
 
     // 스플래시 화면 표시 (4초 동안)
-    setShowSplash(true); 
+    setShowSplash(true);
     const timer = setTimeout(() => {
       setShowSplash(false); // 4초 후 스플래시 종료
-      localStorage.setItem("splashTimestamp", String(now)); 
+      localStorage.setItem("splashTimestamp", String(now));
       // 현재 시간을 로컬 스토리지에 저장하여 스플래시 재표시 방지
       router.replace("/today"); // 스플래시 종료 후 "/today"로 리다이렉트
     }, 4000);
 
     return () => clearTimeout(timer); // 컴포넌트 언마운트 시 타이머 정리
-  }, [router, pathname, isAuthenticated]); 
+  }, [router, pathname, isAuthenticated]);
   // useEffect 의존성 배열: 라우터, 현재 경로, 인증 상태가 변경될 때마다 실행
 
   if (isAuthenticated === null) {
-    return <p>로딩 중...</p>; 
-    // 인증 상태를 확인하는 동안 로딩 메시지 표시
+    // return <p>로딩 중...</p>;
+    return <LoadingScreen />
+    // 인증 상태를 확인하는 동안 로딩 메시지 표시 => 로딩 스크린 표시
   }
 
   if (showSplash) {
-    return <SplashScreen />; 
+    return <SplashScreen />;
     // 스플래시 화면 표시 상태일 때 SplashScreen 컴포넌트 렌더링
   }
 
@@ -109,19 +112,19 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       <ToastNotification notifications={notifications} />
 
       {/* TopNav를 /viewer, /chat, /test/onboarding 페이지에서 숨김 */}
-      {isAuthenticated && !isViewerPage && !isChatPage && !isTestOnboardingPage && <TopNav />}
+      {isAuthenticated && !isViewerPage && !isBookDetailPage && !isChatPage && !isTestOnboardingPage && <TopNav />}
       
       {/* Sidebar를 /test/onboarding 페이지에서 숨김 */}
       {isAuthenticated && !isTestOnboardingPage && <Sidebar />}
 
       {/* 메인 콘텐츠 영역 렌더링 */}
-      <main 
+      <main
         className={`${
-          isViewerPage || isChatPage || isTestOnboardingPage 
+          isViewerPage || isChatPage || isTestOnboardingPage
             ? "pt-0 pb-0 md:py-0" // 특정 페이지에서는 패딩 제거하여 전체 화면 사용
             : "pt-14 pb-16 md:py-4" // 기본 페이지에서는 상하 패딩 적용
         } ${
-          isTestOnboardingPage 
+          isTestOnboardingPage
             ? "" // 온보딩 테스트 페이지에서는 좌측 마진 제거 (사이드바 숨김)
             : "md:ml-64" // md 이상 화면에서는 사이드바 공간만큼 좌측 마진 적용
         }`}
@@ -130,7 +133,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       </main>
 
       {/* BottomNav를 /viewer, /chat, /test/onboarding 페이지에서 숨김 */}
-      {isAuthenticated && !isViewerPage && !isChatPage && !isTestOnboardingPage && <BottomNav />}
+      {isAuthenticated && !isViewerPage && !isBookDetailPage && !isChatPage && !isTestOnboardingPage && <BottomNav />}
     </>
   );
 }

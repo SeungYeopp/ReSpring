@@ -27,7 +27,7 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
   }, [params.id])
 
   if (!challenge) {
-    return <div>Loading...</div>
+    return <div>Loading...</div> // Todo:로딩스크린으로 바꾸자
   }
 
   return (
@@ -104,8 +104,8 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
               </div>
               <CardContent className="p-0 overflow-visible">
                 <div className="lg:hidden">
-                  <Tabs defaultValue="detail" className="w-full">
-                    <TabsList className="w-full rounded-none h-12 border-b">
+                  <Tabs defaultValue="detail" className="w-full p-0">
+                    <TabsList className="w-full rounded-none h-12 border-b p-0 m-0 shadow-none">
                       <TabsTrigger value="detail" className="flex-1 data-[state=active]:border-b-2">
                         도전 상세
                       </TabsTrigger>

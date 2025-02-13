@@ -10,7 +10,7 @@ interface Chapter {
   page: number;
 }
 
-export function useDynamicPages(bookContent: Content) {
+export function useDynamicPages(bookContent: Content, imageUrls: string[]) {
   const { fontSize, lineHeight, letterSpacing } = useViewerSettings();
   const { setTotalPages } = usePageContext();
   const [pages, setPages] = useState<string[]>([]);
@@ -24,17 +24,30 @@ export function useDynamicPages(bookContent: Content) {
     const viewportHeight = containerRef.current?.clientHeight || window.innerHeight;
     const lineHeightPx = fontSize * lineHeight;
     const maxLinesPerPage = Math.floor(viewportHeight / lineHeightPx);
-    console.log(`📌 한 페이지당 최대 줄 수: ${maxLinesPerPage}`);
+    //console.log(`📌 한 페이지당 최대 줄 수: ${maxLinesPerPage}`);
 
     const wordsPerLine = Math.floor(50 / (fontSize + letterSpacing));
     const maxWordsPerPage = wordsPerLine * maxLinesPerPage;
-    console.log(`📌 한 페이지당 최대 단어 수: ${maxWordsPerPage}`);
+    //console.log(`📌 한 페이지당 최대 단어 수: ${maxWordsPerPage}`);
 
     const finalPages: string[] = [];
     const finalChapters: Chapter[] = [];
     let currentPage = "";
     let wordCount = 0;
-    let pageCount = 0;
+    let pageCount = 1;
+
+    if(imageUrls)
+      imageUrls.forEach((url) => {
+        finalPages.push(`<img src="${url}" alt="봄날의 서 이미지" style="max-width: 100%; max-height: 100%; object-fit: contain;">`)
+        pageCount++;
+      })
+    
+    // if(imageUrls)
+    //   imageUrls!.forEach((url, idx) => {
+    //     console.log("idx", idx)
+    //     finalPages.push("");
+    //     pageCount++;
+    //   })
 
     Object.entries(bookContent).forEach(([chapterTitle, content]) => {
       if (currentPage) {
@@ -72,7 +85,7 @@ export function useDynamicPages(bookContent: Content) {
 
     setPages(finalPages);
     setChapters(finalChapters);
-    setTotalPages(pageCount);
+    setTotalPages(pageCount-1);
   }, [bookContent, fontSize, lineHeight, letterSpacing, setTotalPages]);
 
   

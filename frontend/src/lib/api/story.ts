@@ -1,9 +1,6 @@
 // 글조각 관련 API를 호출하는 함수 모음
 import axiosAPI from "./axios";
 
-/**
- * 이미지 정보 인터페이스
- */
 export interface Image {
     imageId: number;
     imageUrl: string;
@@ -19,7 +16,8 @@ export interface Story {
     createdAt: Date;
     updatedAt: Date;
     eventId: number;
-    images: Image[];
+    occurredAt : Date;
+    images: string[];
 }
 
 /**
@@ -45,7 +43,8 @@ export const getAllStories = async (userId: string): Promise<Story[]> => {
         const stories: Story[] = response.data.map((story: Story) => ({
             ...story,
             createdAt: new Date(story.createdAt),
-            updatedAt: new Date(story.updatedAt)
+            updatedAt: new Date(story.updatedAt),
+            occurredAt: new Date(story.occurredAt)
         }));
 
         return stories;
@@ -111,7 +110,8 @@ export const getStoryById = async (storyId: number, userId: string): Promise<Sto
         return {
             ...response.data,
             createdAt: new Date(response.data.createdAt),
-            updatedAt: new Date(response.data.updatedAt)
+            updatedAt: new Date(response.data.updatedAt),
+            occurredAt : new Date(response.data.occurredAt)
         };
     } catch (error) {
         console.error('getStoryByStoryId 에러 발생!', error);

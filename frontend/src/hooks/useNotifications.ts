@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-
-export interface Notification {
-  message: string;
-  // 필요한 경우 id, timestamp 등 추가 필드를 정의할 수 있습니다.
-}
+import { useState, useEffect } from "react";
+import type { Notification } from "@/app/notifications/types/notifications";
+// export interface Notification {
+//   message: string;
+//   // 필요한 경우 id, timestamp 등 추가 필드를 정의할 수 있습니다.
+// }
 
 /**
  * useNotifications 커스텀 훅
@@ -41,7 +41,7 @@ const useNotifications = (sseUrl: string) => {
         setNotifications((prevNotifications) => [...prevNotifications, parsedData]);
       } catch (error) {
         // 파싱에 실패하면 콘솔에 에러를 출력합니다.
-        console.error('SSE 데이터 파싱 실패:', error);
+        console.error("SSE 데이터 파싱 실패:", error);
       }
     };
 
@@ -53,18 +53,18 @@ const useNotifications = (sseUrl: string) => {
      * 추가적인 에러 처리(예: 재연결 로직)를 구현할 수 있습니다.
      */
     const handleError = (error: any) => {
-      console.error('SSE 연결 에러:', error);
+      console.error("SSE 연결 에러:", error);
       // 필요에 따라 재연결 로직 등을 추가할 수 있습니다.
     };
 
     // 'message'와 'error' 이벤트 리스너를 등록합니다.
-    eventSource.addEventListener('message', handleMessage);
-    eventSource.addEventListener('error', handleError);
+    eventSource.addEventListener("message", handleMessage);
+    eventSource.addEventListener("error", handleError);
 
     // 컴포넌트가 언마운트되거나 sseUrl이 변경되면 SSE 연결을 종료하여 메모리 누수를 방지합니다.
     return () => {
-      eventSource.removeEventListener('message', handleMessage);
-      eventSource.removeEventListener('error', handleError);
+      eventSource.removeEventListener("message", handleMessage);
+      eventSource.removeEventListener("error", handleError);
       eventSource.close();
     };
   }, [sseUrl]); // sseUrl이 변경되면 새로운 연결을 생성합니다.
