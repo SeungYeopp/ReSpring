@@ -15,14 +15,14 @@ import Image from "next/image";
 
 interface ReaderProps {
   content: Content;
-  imageUrls : string[]
+  imageUrls: string[];
 }
 
 //export function Reader({ textData, bookChapters, plainBookContent }: ReaderProps) {
 export function Reader({ content, imageUrls }: ReaderProps) {
   const { pages } = useDynamicPages(content, imageUrls);
   const { currentPage, totalPages } = usePageContext();
-  const { fontSize, lineHeight, letterSpacing, pageTransition } = useViewerSettings();
+  const { fontFamily, fontSize, lineHeight, letterSpacing, pageTransition } = useViewerSettings();
 
   const [prevPage, setPrevPage] = useState(currentPage);
   const [animationClass, setAnimationClass] = useState("");
@@ -46,17 +46,16 @@ export function Reader({ content, imageUrls }: ReaderProps) {
   }, [currentPage, pageTransition, prevPage]);
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto h-full min-h-screen overflow-hidden flex flex-col items-start justify-start"> 
+    <div className="relative w-full max-w-5xl mx-auto h-full min-h-screen overflow-hidden flex flex-col items-start justify-start">
       {/* ✅ 높이 보장 및 위쪽 정렬 */}
 
-      <div className="text-right text-sm text-gray-500 mb-2">
-        {/* 페이지 {currentPage + 1} / {totalPages} ✅ 현재 페이지 / 전체 페이지 표시 */}
-      </div>
+      <div className="text-right text-sm text-gray-500 mb-2">{/* 페이지 {currentPage + 1} / {totalPages} ✅ 현재 페이지 / 전체 페이지 표시 */}</div>
 
       {/* 📌 실제 페이지 뷰 */}
+      {/* 📌 폰트 상태 적용 */}
       <div
-        key={currentPage} // ✅ `key` 변경하여 React가 새롭게 렌더링하도록 함
-        className={`relative w-full transition-all duration-300 ease-in-out ${animationClass}`} // ✅ absolute → relative 변경
+        key={currentPage}
+        className={`relative w-full transition-all duration-300 ease-in-out ${animationClass} ${fontFamily}`}
         style={{ fontSize: `${fontSize}px`, lineHeight, letterSpacing: `${letterSpacing}px` }}
       >
         {/* <Image
@@ -68,11 +67,11 @@ export function Reader({ content, imageUrls }: ReaderProps) {
         /> */}
         {/* <div>{imageUrls[0]}</div> */}
         {pages[currentPage] ? (
-          <div 
-            dangerouslySetInnerHTML={{ __html: pages[currentPage] }} 
-            className="h-full flex flex-col items-start justify-start px-4" 
+          <div
+            dangerouslySetInnerHTML={{ __html: pages[currentPage] }}
+            className="h-full flex flex-col items-start justify-start px-4"
             // ✅ 높이를 보장하고, 텍스트를 상단에서 시작하도록 `flex-col items-start` 적용
-          /> 
+          />
         ) : (
           <div className="h-full flex items-center justify-center">해당 페이지가 없습니다.</div>
         )}

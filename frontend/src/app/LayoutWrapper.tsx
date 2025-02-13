@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import ToastNotification from "../components/custom/ToastNotification";
 
 // 전역 알림 Context를 불러옵니다.
-import { NotificationsProvider, useNotificationsContext } from "../app/notifications/context/NotificationsContext"
+import { NotificationsProvider, useNotificationsContext } from "../app/notifications/context/NotificationsContext";
 
 const SPLASH_EXPIRE_HOURS = 24; // 스플래시 화면이 다시 표시되기까지의 유효 시간(24시간)
 
@@ -42,7 +42,7 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
   const isMainPage = pathname.startsWith("/main");
   // 메인인 페이지인지 확인하여 네비게이션 숨김 처리
 
-  const { isAuthenticated } = useAuth(true);
+  const { isAuthenticated } = useAuth(false);
   // 사용자 인증 상태 확인 (false는 인증 실패 시 자동 리다이렉트 방지)
 
   // 전역 알림 Context에서 알림 데이터를 구독합니다.
@@ -106,9 +106,9 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
 
       {/* TopNav를 /viewer, /chat, /test/onboarding /main 페이지에서 숨김 */}
       {isAuthenticated && !isViewerPage && !isBookDetailPage && !isChatPage && !isTestOnboardingPage && !isMainPage && <TopNav />}
-      
+
       {/* Sidebar를 /test/onboarding 페이지에서 숨김 */}
-      {isAuthenticated && !isTestOnboardingPage && <Sidebar />}
+      {isAuthenticated && !isViewerPage && !isTestOnboardingPage && <Sidebar />}
 
       {/* 메인 콘텐츠 영역 렌더링 */}
       <main
