@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { getAllSubscribers, isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
-import { Subscriber } from "@/lib/api/subscribe"; // Import the Subscriber interface
+import { Subscriber } from "@/lib/api/subscribe";
+import Link from "next/link";
 
 interface SubscribersModalProps {
   userId: string;
@@ -56,14 +57,14 @@ export default function SubscribersModal({ userId, onClose, }: SubscribersModalP
         <div className="mt-4 space-y-4">
           {subscribers.map((subscriber) => (
             <div key={subscriber.id} className="flex justify-between items-center p-4 border-b border-gray-200">
-              <div className="flex items-center space-x-4">
+              <Link href={`/profile/${subscriber.id}`} className="flex items-center space-x-4 hover:bg-gray-100 p-2 rounded-md transition">
                 <img
                   src={subscriber.profileImage || "/placeholder_profilepic.png"}
                   alt={subscriber.nickname}
                   className="w-[40px] h-[40px] rounded-full object-cover"
                 />
                 <span className="text-lg font-semibold">{subscriber.nickname}</span>
-              </div>
+              </Link>
               <button
                 className={`text-sm px-4 py-2 rounded-md ${subscriptions[subscriber.id] ? "bg-red-500 text-white" : "bg-green-500 text-white"}`}
                 onClick={() => handleSubscribeToggle(subscriber.id)}
