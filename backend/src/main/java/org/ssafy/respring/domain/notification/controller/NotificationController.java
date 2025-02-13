@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,33 +30,38 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final ConcurrentHashMap<UUID, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-    @GetMapping("/{userId}")
-    @Operation(summary = "전체 알림 조회", description = "사용자가 받은 알림을 조회합니다.")
-    public ResponseEntity<List<NotificationDto>> getNotifications(@PathVariable UUID userId) {
-        return ResponseEntity.ok(notificationService.getNotifications(userId));
+    private UUID requireLogin(HttpSession session) {
+        UUID userId = (UUID) session.getAttribute("userId");
+        if (userId == null) {
+            throw new IllegalArgumentException("❌ 로그인이 필요합니다.");
+        }
+        return userId;
     }
 
-    public void sendNotification(Long userId, NotificationDto notificationDto) {
-        SseEmitter emitter = emitters.get(userId);
-        if (emitter != null) {
-            try {
-                emitter.send(SseEmitter.event().name("notification").data(notificationDto));
-            } catch (IOException e) {
-                emitters.remove(userId);
-            }
-        }
+    @GetMapping
+    @Operation(summary = "전체 알림 조회", description = "사용자가 받은 알림을 조회합니다.")
+    public ResponseEntity<List<NotificationDto>> getNotifications(HttpSession session) {
+        UUID userId = requireLogin(session);
+        return ResponseEntity.ok(notificationService.getNotifications(userId));
     }
 
     // ✅ 특정 알림 읽음 처리
     @PatchMapping("/{notificationId}/read")
-    public ResponseEntity<Void> markNotificationAsRead(@PathVariable Long notificationId) {
-        notificationService.markAsRead(notificationId);
+    @Operation(summary = "특정 알림 읽음 처리", description = "특정 알림을 읽음 처리합니다.")
+    public ResponseEntity<Void> markNotificationAsRead(
+            @PathVariable Long notificationId,
+            HttpSession session
+    ) {
+        UUID userId = requireLogin(session);
+        notificationService.markAsRead(notificationId, userId);
         return ResponseEntity.ok().build();
     }
 
     // ✅ 모든 알림 읽음 처리
-    @PatchMapping("/read-all/{userId}")
-    public ResponseEntity<Void> markAllNotificationsAsRead(@PathVariable UUID userId) {
+    @PatchMapping("/read-all")
+    @Operation(summary = "모든 알림 읽음 처리", description = "모든 알림을 동시에 읽음 처리합니다.")
+    public ResponseEntity<Void> markAllNotificationsAsRead(HttpSession session) {
+        UUID userId = requireLogin(session);
         notificationService.markAllAsRead(userId);
         return ResponseEntity.ok().build();
     }
