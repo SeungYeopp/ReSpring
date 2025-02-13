@@ -18,7 +18,6 @@ public class PostResponseDto {
     private String title;
     private String content;
     private Category category;
-    private UUID userId; // User의 UUID
     private String ownerName;
     private String ownerProfileImage;
     private LocalDateTime createdAt;

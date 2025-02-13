@@ -22,9 +22,9 @@ export default function Comments({ bookId }: { bookId: string }) {
   };
   // 목데이터 설정
   const mockComments: (Comment & { likes: number })[] = [
-    { id: 1, content: "목데이터 댓글 1", username: "박싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: null, likes: 5 },
-    { id: 2, content: "목데이터 댓글 2", username: "김싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: null, likes: 3 },
-    { id: 3, content: "목데이터 대댓글 1", username: "이싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: 1, likes: 2 },
+    { id: 1, content: "목데이터 댓글 1", userId : "userId", userNickname: "박싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: null, likes: 5 },
+    { id: 2, content: "목데이터 댓글 2", userId : "userId", userNickname: "김싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: null, likes: 3 },
+    { id: 3, content: "목데이터 대댓글 1", userId : "userId", userNickname: "이싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: 1, likes: 2 },
   ]
 
   useEffect(() => {
@@ -74,12 +74,12 @@ export default function Comments({ bookId }: { bookId: string }) {
       <CardHeader className="flex flex-row items-start gap-4 p-4">
         <Avatar className="w-10 h-10">
           <AvatarImage src={getRandomImage()} />
-          <AvatarFallback>{comment.username[0]}</AvatarFallback>
+          <AvatarFallback>{comment.userNickname}</AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-semibold">{comment.username}</span>
+              <span className="font-semibold">{comment.userNickname}</span>
               {!isReply && sortBy === "likes" && <Badge variant="secondary">BEST</Badge>}
             </div>
             <span className="text-xs text-muted-foreground">
