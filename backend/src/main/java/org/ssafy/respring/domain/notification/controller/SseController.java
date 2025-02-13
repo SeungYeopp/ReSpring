@@ -14,7 +14,7 @@ import java.util.UUID;
 public class SseController {
     private final SseService sseService;
 
-    @GetMapping("/subscribe/{userId}")
+    @GetMapping(value = "/subscribe/{userId}", produces = "text/event-stream")
     @Operation(summary = "SSE 구독", description = "사용자가 실시간 알림을 구독합니다.")
     public SseEmitter subscribe(@PathVariable UUID userId) {
         return sseService.subscribe(userId);

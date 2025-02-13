@@ -39,7 +39,8 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
   const isChatPage = /^\/chat\/\w+$/.test(pathname);
   const isTestOnboardingPage = pathname.startsWith("/test/onboarding"); // 온보딩 테스트 페이지 여부 (네비게이션 숨김)
 
-  const { isAuthenticated } = useAuth(false); // 사용자 인증 상태 확인 (false: 인증 실패 시 자동 리다이렉트 방지)
+  const { isAuthenticated } = useAuth(true);
+  // 사용자 인증 상태 확인 (false는 인증 실패 시 자동 리다이렉트 방지)
 
   // 전역 알림 Context에서 알림 데이터를 구독합니다.
   const { notifications } = useNotificationsContext();

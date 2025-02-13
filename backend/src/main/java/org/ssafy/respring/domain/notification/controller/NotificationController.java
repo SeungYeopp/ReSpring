@@ -29,31 +29,6 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final ConcurrentHashMap<UUID, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-
-
-    @GetMapping(value = "/subscribe/{userId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @Operation(summary = "알림 구독 (SSE)", description = "SSE를 이용해 실시간으로 알림을 받습니다. 클라이언트는 이 엔드포인트에 지속적으로 연결해야 합니다.")
-    public SseEmitter subscribe(
-            @PathVariable
-            @Parameter(description = "사용자 UUID", example = "dd5a7b3c-d887-11ef-b310-d4f32d147183", schema = @Schema(type = "string", format = "uuid"))
-            UUID userId) {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-        emitters.put(userId, emitter);
-
-        emitter.onCompletion(() -> emitters.remove(userId));
-        emitter.onTimeout(() -> emitters.remove(userId));
-
-        try {
-            emitter.send(SseEmitter.event().name("connect").data("SSE 연결됨"));
-        } catch (IOException e) {
-            emitters.remove(userId);
-        }
-
-        return emitter;
-    }
-
-
-
     @GetMapping("/{userId}")
     @Operation(summary = "전체 알림 조회", description = "사용자가 받은 알림을 조회합니다.")
     public ResponseEntity<List<NotificationDto>> getNotifications(@PathVariable UUID userId) {
