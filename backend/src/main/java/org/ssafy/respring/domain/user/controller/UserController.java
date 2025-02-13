@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.user.dto.request.LoginRequestDto;
 import org.ssafy.respring.domain.user.dto.request.SignUpRequestDto;
@@ -30,9 +31,11 @@ public class UserController {
     private final AuthService authService;
 
     @Operation(summary = "유저 회원가입 기능", description = "유저 회원가입 기능입니다.")
-    @PostMapping("/signup")
-    public ResponseEntity<Void> signupUser(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
-        userService.addUser(signUpRequestDto);
+    @PostMapping(value = "/signup", consumes = {"multipart/form-data"})
+    public ResponseEntity<Void> signupUser(
+            @Valid @RequestPart("signUpRequestDto") SignUpRequestDto signUpRequestDto,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        userService.addUser(signUpRequestDto,image);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
