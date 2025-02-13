@@ -37,9 +37,14 @@ export interface ParticipatedChallenge {
   title: string;
   image: string;
   registerDate: string;
-  tags: string[];
+  tags: Tag[];
   tagCount: number;
   currentStreak: number;
+}
+
+export interface Tag {
+  id: number;
+  name: string;
 }
 
 // 📌 4. 챌린지 생성 요청 DTO

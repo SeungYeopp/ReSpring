@@ -73,7 +73,7 @@ export default function MyChallenges({ userId, challenges }: MyChallengesProps) 
                       </div>
                     </div>
                   }
-                  tags={challenge.tags}
+                  tags={challenge.tags.map(tag => tag.name)}
                 />
               </div>
             </CarouselItem>
