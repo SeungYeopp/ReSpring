@@ -12,8 +12,10 @@ public class CommentDto {
     private String content;
     private UUID userId;          // ✅ userId 추가
     private String userNickname;
+    private String profileImg;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long parentId;
+    private int likeCount;  // ✅ 좋아요 개수 필드 추가
 }
 

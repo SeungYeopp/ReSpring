@@ -10,8 +10,10 @@ import org.ssafy.respring.domain.comment.dto.request.CommentRequestDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentDetailResponseDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
+import org.ssafy.respring.domain.comment.repository.CommentLikesRepository;
 import org.ssafy.respring.domain.comment.repository.CommentRepository;
 import org.ssafy.respring.domain.comment.vo.Comment;
+import org.ssafy.respring.domain.comment.vo.CommentLikes;
 import org.ssafy.respring.domain.notification.service.NotificationService;
 import org.ssafy.respring.domain.notification.vo.NotificationType;
 import org.ssafy.respring.domain.notification.vo.TargetType;
@@ -21,8 +23,10 @@ import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,7 @@ import java.util.stream.Collectors;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final CommentLikesRepository commentLikesRepository;
 
     @Lazy
     private final NotificationService notificationService;
@@ -175,6 +180,7 @@ public class CommentService {
         return commentRepository.findByPostIdWithFetchJoin(postId)
                 .stream()
                 .map(this::mapToDto)
+                .sorted((c1, c2) -> Integer.compare(c2.getLikeCount(), c1.getLikeCount()))
                 .collect(Collectors.toList());
     }
 
@@ -182,6 +188,7 @@ public class CommentService {
         return commentRepository.findByBookIdWithFetchJoin(bookId)
                 .stream()
                 .map(this::mapToDto)
+                .sorted((c1, c2) -> Integer.compare(c2.getLikeCount(), c1.getLikeCount()))
                 .collect(Collectors.toList());
     }
 
@@ -214,6 +221,7 @@ public class CommentService {
 
     private CommentDetailResponseDto mapToDetailResponseDto(Comment comment) {
         String content = comment.isDeleted() ? "삭제된 댓글입니다." : comment.getContent();
+        int likeCount = commentLikesRepository.countByComment(comment);
         return new CommentDetailResponseDto(
                 comment.getId(),
                 content,
@@ -222,20 +230,26 @@ public class CommentService {
                 comment.getUpdatedAt(),
                 comment.getParent() != null ? comment.getParent().getId() : null,
                 comment.getPost() != null ? comment.getPost().getId() : null,   // ✅ 게시글 ID 추가
-                comment.getBook() != null ? comment.getBook().getId() : null
+                comment.getBook() != null ? comment.getBook().getId() : null,
+                comment.getPost() != null ? comment.getPost().getTitle(): null,
+                comment.getBook() != null ? comment.getBook().getTitle() : null,
+                likeCount
         );
     }
 
     private CommentDto mapToDto(Comment comment) {
         String content = comment.isDeleted() ? "삭제된 댓글입니다." : comment.getContent();
+        int likeCount = commentLikesRepository.countByComment(comment);
         return new CommentDto(
                 comment.getId(),
                 content,
                 comment.getUser().getId(),
                 comment.getUser().getUserNickname(),
+                comment.getUser().getProfileImage(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
-                comment.getParent() != null ? comment.getParent().getId() : null
+                comment.getParent() != null ? comment.getParent().getId() : null,
+                likeCount
         );
     }
 
@@ -255,5 +269,79 @@ public class CommentService {
         if (parent.getBook() != null && dto.getBookId() != null && !parent.getBook().getId().equals(dto.getBookId())) {
             throw new IllegalStateException("다른 책의 댓글에는 대댓글을 추가할 수 없습니다.");
         }
+    }
+
+    /** 📌 댓글 좋아요 토글 */
+    @Transactional
+    public boolean toggleCommentLike(Long commentId, UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 댓글을 찾을 수 없습니다."));
+
+        Optional<CommentLikes> existingLike = commentLikesRepository.findByUserAndComment(user, comment);
+
+        if (existingLike.isPresent()) {
+            // 좋아요가 이미 있으면 삭제 (좋아요 취소)
+            commentLikesRepository.delete(existingLike.get());
+            return false; // 좋아요 해제
+        } else {
+            // 좋아요 추가
+            CommentLikes newLike = CommentLikes.builder()
+                    .user(user)
+                    .comment(comment)
+                    .build();
+            commentLikesRepository.save(newLike);
+            return true; // 좋아요 등록
+        }
+    }
+
+    /** 📌 댓글 좋아요 수 조회 */
+    public int getCommentLikesCount(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 댓글을 찾을 수 없습니다."));
+        return commentLikesRepository.countByComment(comment);
+    }
+
+    /** 📌 사용자가 특정 댓글에 좋아요를 눌렀는지 확인 */
+    public boolean isCommentLikedByUser(Long commentId, UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 댓글을 찾을 수 없습니다."));
+
+        return commentLikesRepository.findByUserAndComment(user, comment).isPresent();
+    }
+
+    /** 📌 좋아요 많은 순 정렬 */
+    public List<Comment> getCommentsSortedByLikes(Long postId) {
+        return commentRepository.findByPostIdWithFetchJoin(postId)
+                .stream()
+                .sorted((c1, c2) -> Integer.compare(
+                        getCommentLikesCount(c2.getId()), // 내림차순 정렬
+                        getCommentLikesCount(c1.getId())
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<CommentDetailResponseDto> getMyAllComments(UUID userId) {
+        // 1️⃣ 게시글 댓글 조회
+        List<CommentDetailResponseDto> postComments = commentRepository.findByUserIdAndPostNotNull(userId)
+                .stream()
+                .map(this::mapToDetailResponseDto)
+                .collect(Collectors.toList());
+
+        // 2️⃣ 책 댓글 조회
+        List<CommentDetailResponseDto> bookComments = commentRepository.findByUserIdAndBookIdNotNull(userId)
+                .stream()
+                .map(this::mapToDetailResponseDto)
+                .collect(Collectors.toList());
+
+        // 3️⃣ 댓글 목록 합치기 & 좋아요 개수 순으로 정렬
+        return Stream.concat(postComments.stream(), bookComments.stream())
+                .sorted((c1, c2) -> Integer.compare(c2.getLikeCount(), c1.getLikeCount())) // ✅ 좋아요 개수 내림차순 정렬
+                .collect(Collectors.toList());
     }
 }
