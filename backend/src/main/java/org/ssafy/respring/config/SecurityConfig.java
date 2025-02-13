@@ -11,13 +11,12 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
-import org.ssafy.respring.auth.OAuth2LoginSuccessHandler;
+import org.ssafy.respring.domain.user.service.CustomOAuth2UserService;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,18 +31,16 @@ public class SecurityConfig {
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2LoginSuccessHandler) // 로그인 성공 후 핸들러 실행
+                        .defaultSuccessUrl("/", true)
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
                 )
-
                 .formLogin(form -> form.disable());
 
         return http.build();
     }
 
-    @Bean
-    public OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService() {
-        return new DefaultOAuth2UserService(); // 기본 OAuth2 유저 서비스 사용
-    }
 
 }
 

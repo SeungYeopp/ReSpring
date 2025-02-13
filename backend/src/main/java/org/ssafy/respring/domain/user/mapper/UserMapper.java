@@ -12,7 +12,9 @@ public class UserMapper {
         return new User(
                 request.getUserNickname(),
                 request.getEmail(),
-                request.getPassword()
+                request.getPassword(),
+                null, // 유저프로필은 adduser에서 형변환 이후 삽입
+                request.getProvider()
         );
     }
 
