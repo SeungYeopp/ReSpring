@@ -29,32 +29,6 @@ public class AuthService {
     private final ImageService imageService;
     private final UserMapper userMapper;
 
-    public LoginResponseDto processOAuthLogin(String provider, OAuth2User oauth2User) {
-        String email = oauth2User.getAttribute("email");
-        String nickname = oauth2User.getAttribute("name");
-        String profileImage = oauth2User.getAttribute("picture");
-
-        if (email == null) {
-            throw new IllegalArgumentException("OAuth provider did not return an email.");
-        }
-
-        User user = userRepository.findByEmail(email).orElseGet(() -> {
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setUserNickname(nickname);
-            newUser.setProfileImage(profileImage);
-            newUser.setProvider(provider.toUpperCase()); // 일반 / KAKAO / GOOGLE 구분
-            return userRepository.save(newUser);
-        });
-
-        // 기존 사용자의 프로필 이미지 업데이트 (새로운 정보가 있을 경우)
-//        if (oauth2User.getAttribute("picture") != null && !oauth2User.getAttribute("picture").equals(user.getProfileImage())) {
-//            user.setProfileImage(oauth2User.getAttribute("picture"));
-//            userRepository.save(user);
-//        }
-
-        return createResponseDto(user);
-    }
 
     public LoginResponseDto loginUser(LoginRequestDto loginRequestDto) throws AuthenticationFailedException {
         User loginUser = userRepository.findByEmail(loginRequestDto.getEmail())
