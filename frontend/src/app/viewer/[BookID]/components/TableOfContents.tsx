@@ -38,12 +38,16 @@ export function TableOfContents({ bookId, imageUrls }: { bookId: string; imageUr
   const filteredChapters = useMemo(() => chapters.filter((chap) => chap.title.toLowerCase().includes(searchTerm.toLowerCase())), [chapters, searchTerm]);
 
   const contentMatches = useMemo(() => pages.map((pageText, idx) => ({ text: pageText, page: idx })).filter(({ text }) => text.toLowerCase().includes(searchTerm.toLowerCase())), [pages, searchTerm]);
+  const { setHighlightKeyword } = usePageContext(); // 검색어 상태도 같이 설정
 
   const togglePanel = () => {
-    setIsOpen((prev) => !prev);
+    setIsOpen((prev) => {
+      if (prev) {
+        setHighlightKeyword(null); // ✅ 패널 닫힐 때 강조 해제!
+      }
+      return !prev;
+    });
   };
-
-  const { setHighlightKeyword } = usePageContext(); // 검색어 상태도 같이 설정
 
   // 수정된 goToPage 함수 - 현재 페이지와의 차이를 계산하여 setCurrentPage에 전달
   const goToPage = (targetPage: number, keyword?: string) => {
