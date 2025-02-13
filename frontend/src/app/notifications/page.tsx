@@ -32,44 +32,9 @@ const ITEMS_PER_PAGE = 10;
 type ReadStatus = "ALL" | "READ" | "UNREAD";
 
 // ------------------------------------------------------------------
-// SSE를 이용해 실시간 알림을 수신하는 useNotifications 훅 (내부에 구현)
-// ------------------------------------------------------------------
-const useNotifications = (sseUrl: string) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  useEffect(() => {
-    const eventSource = new EventSource(sseUrl);
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        const data: Notification = JSON.parse(event.data);
-        setNotifications((prev) => [...prev, data]);
-      } catch (error) {
-        console.error("SSE 데이터 파싱 실패:", error);
-      }
-    };
-    const handleError = (error: any) => {
-      console.error("SSE 연결 에러:", error);
-      // 필요시 재연결 로직을 추가할 수 있습니다.
-    };
-
-    eventSource.addEventListener("message", handleMessage);
-    eventSource.addEventListener("error", handleError);
-
-    return () => {
-      eventSource.removeEventListener("message", handleMessage);
-      eventSource.removeEventListener("error", handleError);
-      eventSource.close();
-    };
-  }, [sseUrl]);
-
-  return { notifications };
-};
-
-// ------------------------------------------------------------------
 // NotificationPage 컴포넌트
 // ------------------------------------------------------------------
 const NotificationPage = () => {
-  // Todo
   // 사용자 UUID (하드코딩; 실제로는 인증정보 등에서 가져와야 함)
   const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
 
@@ -99,11 +64,9 @@ const NotificationPage = () => {
       throw new Error("알림 읽음 처리에 실패했습니다.");
     }
     try {
-      // 응답 본문이 있을 경우 JSON으로 파싱
       const data = await response.json();
       return data;
     } catch (error) {
-      // 응답 본문이 비어 있을 경우 처리
       console.warn("알림 읽음 처리 응답 본문이 비어 있습니다:", error);
       return null;
     }
@@ -170,13 +133,17 @@ const NotificationPage = () => {
   );
 
   // ----------------------------------------------------------------
-  // 초기 GET 요청으로 기존 알림 데이터 불러오기
+  // 초기 GET 요청으로 기존 알림 데이터 불러오기 (최신순 정렬)
   // ----------------------------------------------------------------
   useEffect(() => {
     const initFetch = async () => {
       const initialData = await fetchInitialNotifications();
       if (initialData.length > 0) {
-        setNotifications(initialData);
+        // 최신순(내림차순) 정렬
+        const sortedData = initialData.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setNotifications(sortedData);
         setIsInitialLoad(false);
       }
     };
@@ -184,22 +151,11 @@ const NotificationPage = () => {
   }, [fetchInitialNotifications]);
 
   // ----------------------------------------------------------------
-  // SSE를 통해 실시간 알림 수신 및 병합
+  // 불필요한 SSE 구독 제거
   // ----------------------------------------------------------------
-  const { notifications: sseNotifications } = useNotifications(`http://localhost:8080/notifications/subscribe/${userId}`);
-
-  useEffect(() => {
-    setNotifications((prev) => {
-      const existingIds = new Set(prev.map((notif) => notif.id));
-      const newNotifs = sseNotifications.filter((notif) => !existingIds.has(notif.id));
-      const merged = [...prev, ...newNotifs];
-      merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      if (merged.length > 0 && isInitialLoad) {
-        setIsInitialLoad(false);
-      }
-      return merged;
-    });
-  }, [sseNotifications, isInitialLoad]);
+  // NotificationPage에서는 별도의 SSE 구독을 하지 않고,
+  // 전역 상태나 Context를 통해 알림 데이터를 받아서 사용하도록 합니다.
+  // (만약 전역 구독이 없다면 이 부분은 수정 후 사용하시길 바랍니다.)
 
   // ----------------------------------------------------------------
   // 필터링, 검색 및 페이지네이션
@@ -227,16 +183,18 @@ const NotificationPage = () => {
   // ----------------------------------------------------------------
   // 알림 읽음 처리 (PATCH API 호출)
   // ----------------------------------------------------------------
-  const toggleReadStatus = async (id: number) => {
+  const markAsRead = async (id: number) => {
     try {
       await markNotificationRead(id);
-      setNotifications((prev) => prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif)));
+      setNotifications((prev) =>
+        prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
+      );
     } catch (error) {
       console.error("알림 읽음 처리 에러:", error);
     }
   };
 
-  const toggleAllReadStatus = async () => {
+  const markAllAsRead = async () => {
     try {
       await markAllNotificationsRead(userId);
       setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
@@ -335,7 +293,10 @@ const NotificationPage = () => {
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0 mt-1">{getNotificationIcon(notif.type)}</div>
               <div className="flex-grow min-w-0">
-                <Link href={getNotificationLink(notif.targetType, notif.targetId)} className={`block text-sm ${notif.read ? "text-gray-600" : "text-gray-800 font-medium"}`}>
+                <Link
+                  href={getNotificationLink(notif.targetType, notif.targetId)}
+                  className={`block text-sm ${notif.read ? "text-gray-600" : "text-gray-800 font-medium"}`}
+                >
                   {highlightText(notif.message, searchTerm)}
                 </Link>
                 <div className="flex justify-between items-center mt-2">
@@ -348,10 +309,11 @@ const NotificationPage = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => toggleReadStatus(notif.id)}
+                    onClick={() => !notif.read && markAsRead(notif.id)}
+                    disabled={notif.read}
                     className="text-xs h-7 px-3 border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
                   >
-                    {notif.read ? "안읽기" : "읽기"}
+                    {notif.read ? "읽은 알림" : "읽기"}
                   </Button>
                 </div>
               </div>
@@ -390,14 +352,20 @@ const NotificationPage = () => {
               <SelectItem value="REPLY">답글</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={toggleAllReadStatus} variant="outline" className="text-xs h-8 flex-grow sm:flex-grow-0">
-            {notifications.every((notif) => notif.read) ? "모두 안읽기" : "모두 읽기"}
+          <Button onClick={markAllAsRead} variant="outline" className="text-xs h-8 flex-grow sm:flex-grow-0">
+            모두 읽기
           </Button>
         </div>
       </div>
 
       <div className="relative">
-        <Input type="text" placeholder="알림 내용 검색..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
+        <Input
+          type="text"
+          placeholder="알림 내용 검색..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
         <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
       </div>
 
