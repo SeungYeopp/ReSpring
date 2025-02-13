@@ -29,5 +29,6 @@ public class ChallengeDetailResponseDto {
     private int currentStreak;
     private double successRate;
     private String ownerName;
+    private String ownerProfileImage;
     private Object records;
 }

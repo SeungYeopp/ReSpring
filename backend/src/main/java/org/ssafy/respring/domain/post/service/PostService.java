@@ -234,6 +234,7 @@ public class PostService {
                 post.getCategory(),
                 post.getUser().getId(),
                 post.getUser().getUserNickname(),
+                post.getUser().getProfileImage(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getLikes(),

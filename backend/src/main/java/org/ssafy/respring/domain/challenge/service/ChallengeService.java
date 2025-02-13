@@ -167,7 +167,7 @@ public class ChallengeService {
         LocalDate endDate = challenge.getEndDate().toLocalDate();
 
         // 🔹 챌린지 소유자 정보 가져오기
-        String ownerName = challenge.getOwner().getUserNickname();
+        User owner = challenge.getOwner();
 
         int successCount =0;
         int totalDays = (int) (endDate.toEpochDay() - startDate.toEpochDay() + 1);
@@ -215,7 +215,8 @@ public class ChallengeService {
           .longestStreak(longestStreak) // ✅ 연속 성공 기록
           .currentStreak(currentStreak) // ✅ 현재 연속 성공 기록
           .successRate(successRate) // ✅ 성공률
-          .ownerName(ownerName) // ✅ 챌린지 OwnerId 추가
+          .ownerName(owner.getUserNickname()) // ✅ 챌린지 OwnerId 추가
+          .ownerProfileImage(owner.getProfileImage())
           .records(records.orElse(null))
           .build();
     }
