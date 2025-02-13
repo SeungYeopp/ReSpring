@@ -2,7 +2,7 @@
 
 /** 뷰어 설정을 전역으로 관리하는 Context */
 
-import { createContext, useContext, useState, type ReactNode, type Dispatch, type SetStateAction } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode, type Dispatch, type SetStateAction } from "react";
 
 /** 3가지 테마 타입 */
 export type ThemeType = "basic" | "gray" | "dark";
@@ -37,14 +37,45 @@ const ViewerSettingsContext = createContext<ViewerSettingsContextProps | null>(n
 
 /** Provider: 자식 컴포넌트들이 theme, fontSize 등을 전역으로 사용 가능하게 함 */
 export function ViewerSettingsProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<ThemeType>("basic");
-  const [fontSize, setFontSize] = useState<number>(16);
-  const [lineHeight, setLineHeight] = useState<number>(1.6);
-  const [letterSpacing, setLetterSpacing] = useState<number>(0);
-  const [pageTransition, setPageTransition] = useState<PageTransitionType>("none");
+  // 로컬스토리지 초기값 가져오기
+  const getStorageValue = <T,>(key: string, defaultValue: T): T => {
+    if (typeof window === "undefined") return defaultValue;
+    const saved = localStorage.getItem(key);
+    return saved !== null ? (JSON.parse(saved) as T) : defaultValue;
+  };
 
-  // ✅ 글꼴 상태 추가(기본 글꼴 설정)
-  const [fontFamily, setFontFamily] = useState<string>("font-laundrygothicregular");
+  // 상태들 설정 + localStorage 연동
+  const [theme, setTheme] = useState<ThemeType>(getStorageValue("viewerTheme", "basic"));
+  const [fontSize, setFontSize] = useState<number>(getStorageValue("viewerFontSize", 16));
+  const [lineHeight, setLineHeight] = useState<number>(getStorageValue("viewerLineHeight", 1.6));
+  const [letterSpacing, setLetterSpacing] = useState<number>(getStorageValue("viewerLetterSpacing", 0));
+  const [pageTransition, setPageTransition] = useState<PageTransitionType>(getStorageValue("viewerPageTransition", "none"));
+  const [fontFamily, setFontFamily] = useState<string>(getStorageValue("viewerFontFamily", "font-laundrygothicregular"));
+
+  // 상태 바뀔 때마다 localStorage에 저장
+  useEffect(() => {
+    localStorage.setItem("viewerTheme", JSON.stringify(theme));
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("viewerFontSize", JSON.stringify(fontSize));
+  }, [fontSize]);
+
+  useEffect(() => {
+    localStorage.setItem("viewerLineHeight", JSON.stringify(lineHeight));
+  }, [lineHeight]);
+
+  useEffect(() => {
+    localStorage.setItem("viewerLetterSpacing", JSON.stringify(letterSpacing));
+  }, [letterSpacing]);
+
+  useEffect(() => {
+    localStorage.setItem("viewerPageTransition", JSON.stringify(pageTransition));
+  }, [pageTransition]);
+
+  useEffect(() => {
+    localStorage.setItem("viewerFontFamily", JSON.stringify(fontFamily));
+  }, [fontFamily]);
 
   const value: ViewerSettingsContextProps = {
     theme,
