@@ -28,6 +28,6 @@ public class ChallengeDetailResponseDto {
     private int longestStreak;
     private int currentStreak;
     private double successRate;
-    private UUID ownerId;
+    private String ownerName;
     private Object records;
 }
