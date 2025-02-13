@@ -294,7 +294,7 @@ export const compileBookByAI = async (content : Content) : Promise<Content> => {
         console.log("AI 생성 RAW DATA", uncleaned)
 
         //const cleaned = uncleaned.replaceAll("json","").replaceAll('```', "").replaceAll("\n","").replaceAll("  ", "") // 불필요한 단어 삭제.
-        const cleaned = uncleaned.replaceAll("json","").replaceAll('`', "")
+        const cleaned = uncleaned.replaceAll("```json","").replaceAll("```","").replaceAll("json","").replaceAll('`', "")
         const jsoned = JSON.parse(cleaned); // JSON 으로 변환.
 
         return jsoned as Content // CompiledBook 형식 명시.
