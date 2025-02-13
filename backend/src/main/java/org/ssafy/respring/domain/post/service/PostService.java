@@ -132,49 +132,49 @@ public class PostService {
     /**
      * 📝 포스트 상세 조회
      */
-    public PostResponseDto getPost(Long id) {
+    public PostResponseDto getPost(Long id, UUID userId) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + id));
-
-        return toResponseDto(post);
+        return toResponseDto(post, userId);
     }
 
-    public List<PostResponseDto> getAllPosts() {
+    public List<PostResponseDto> getAllPosts(UUID userId) {
         return postRepository.findAll()
                 .stream()
-                .map(this::toResponseDto)
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
                 .collect(Collectors.toList());
     }
 
-    public List<PostResponseDto> getMyPosts(String userName, UUID userId) {
+    public List<PostResponseDto> getMyPosts(UUID userId) {
         return postRepository.findByUser_Id(userId)
                 .stream()
-                .map(this::toResponseDto)
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
                 .collect(Collectors.toList());
     }
 
-    public List<PostResponseDto> getPostsByCursor(Long lastId, int limit) {
+    public List<PostResponseDto> getPostsByCursor(Long lastId, int limit, UUID userId) {
         return postRepository.findByCursor(lastId, limit)
                 .stream()
-                .map(this::toResponseDto)
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
                 .collect(Collectors.toList());
     }
 
-    public List<PostResponseDto> searchPostsByTitle(String title) {
+    public List<PostResponseDto> searchPostsByTitle(String title, UUID userId) {
         return postRepository.searchByTitle(title)
                 .stream()
-                .map(this::toResponseDto)
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
                 .collect(Collectors.toList());
     }
 
-    public List<PostResponseDto> filterPostsByCategory(String category) {
+    public List<PostResponseDto> filterPostsByCategory(String category, UUID userId) {
         return postRepository.filterByCategory(category)
                 .stream()
-                .map(this::toResponseDto)
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
                 .collect(Collectors.toList());
     }
 
-    public List<PostResponseDto> getPopularPosts() {
+
+    public List<PostResponseDto> getPopularPosts(UUID userId) {
         LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
         List<Tuple> results = postRepository.findTop3ByLikesInPastWeekWithComments(oneWeekAgo);
 
@@ -182,7 +182,7 @@ public class PostService {
                 .map(tuple -> {
                     Post post = tuple.get(0, Post.class);
                     Long commentCount = tuple.get(1, Long.class);
-                    return toResponseDto(post);
+                    return toResponseDto(post, userId);
                 })
                 .collect(Collectors.toList());
     }
@@ -209,9 +209,11 @@ public class PostService {
     /**
      * 📝 Post → PostResponseDto 변환
      */
-    private PostResponseDto toResponseDto(Post post) {
+    private PostResponseDto toResponseDto(Post post, UUID userId) {
         // ✅ Image 테이블에서 Post에 해당하는 이미지 조회
         List<String> images = imageService.getImagesByEntity(ImageType.POST, post.getId());
+
+        boolean isLiked = isPostLikedByUser(post.getId(), userId);
 
         List<CommentDto> commentDtos = post.getComments().stream()
                 .map(comment -> new CommentDto(
@@ -235,6 +237,7 @@ public class PostService {
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getLikes(),
+                isLiked,
                 images,
                 commentDtos.size(),
                 commentDtos
