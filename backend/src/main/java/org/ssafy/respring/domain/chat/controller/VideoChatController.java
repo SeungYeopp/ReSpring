@@ -1,5 +1,6 @@
 package org.ssafy.respring.domain.chat.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 @RequiredArgsConstructor
+@Tag(name = "Video API", description = "화상채팅 관련 API")
 public class VideoChatController {
     private final SimpMessagingTemplate messagingTemplate;
 

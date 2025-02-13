@@ -1,6 +1,7 @@
 package org.ssafy.respring.domain.notification.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
+@Tag(name = "SSE API")
 public class SseController {
     private final SseService sseService;
 
