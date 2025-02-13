@@ -18,11 +18,12 @@ public class PostResponseDto {
     private String title;
     private String content;
     private Category category;
-    private UUID userId; // User의 UUID
-    private String userName;
+    private String ownerName;
+    private String ownerProfileImage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long likes;
+    private boolean isLiked;
     private List<String> images;
     private int commentCount;
     private List<CommentDto> comments;

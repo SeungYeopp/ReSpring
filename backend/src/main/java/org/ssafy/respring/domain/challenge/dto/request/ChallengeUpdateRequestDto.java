@@ -11,6 +11,5 @@ import java.util.UUID;
 public class ChallengeUpdateRequestDto {
     private String description;
     private LocalDate endDate;
-    private UUID ownerId; // ✅ Owner 검증용
     private Set<String> tags;
 }

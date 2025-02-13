@@ -21,6 +21,7 @@ public class ChallengeListResponseDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime registerDate;
     private Set<Tag> tags;
+    private boolean isLiked;
     private Long likes;
     private Long views;
     private Long participantCount;

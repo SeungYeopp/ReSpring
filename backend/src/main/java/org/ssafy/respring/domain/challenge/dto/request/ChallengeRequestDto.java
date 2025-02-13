@@ -18,5 +18,4 @@ public class ChallengeRequestDto {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Set<String> tags;
-    private UUID ownerId;
 }

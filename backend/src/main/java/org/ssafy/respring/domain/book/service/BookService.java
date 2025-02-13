@@ -35,7 +35,9 @@ import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.book.vo.BookContent;
 import org.ssafy.respring.domain.book.vo.BookLikes;
 import org.ssafy.respring.domain.book.vo.BookViews;
+import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
+import org.ssafy.respring.domain.comment.repository.CommentLikesRepository;
 import org.ssafy.respring.domain.comment.service.CommentService;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
@@ -60,6 +62,7 @@ public class BookService {
 	private final BookViewsRepository bookViewsRepository;
 	private final UserRepository userRepository;
 	private final StoryRepository storyRepository;
+	private final CommentLikesRepository commentLikesRepository;
 	@Lazy
 	private final MongoBookContentRepository bookContentRepository;
 	private final ObjectMapper objectMapper;
@@ -220,17 +223,7 @@ public class BookService {
 		String coverImageUrl = imageService.getSingleImageByEntity(ImageType.BOOK, bookId);
 
 		// ✅ 댓글 조회
-		List<CommentResponseDto> comments = commentService.getCommentsByBookId(bookId).stream()
-		  .map(comment -> new CommentResponseDto(
-			comment.getId(),
-			comment.getContent(),
-			comment.getUserNickname(),
-			comment.getCreatedAt(),
-			comment.getUpdatedAt(),
-			comment.getParentId()
-		  ))
-		  .collect(Collectors.toList());
-
+		List<CommentDto> comments = commentService.getCommentsByBookId(bookId);
 
 		return BookDetailResponseDto.toResponseDto(
 				book,

@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.ssafy.respring.domain.book.vo.Book;
+import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 
 import java.time.LocalDateTime;
@@ -29,7 +30,7 @@ public class BookDetailResponseDto {
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private List<String> imageUrls; // ✅ 포함된 이미지 URL 리스트 추가
-	private List<CommentResponseDto> comments; // ✅ 댓글 리스트 포함
+	private List<CommentDto> comments; // ✅ 댓글 리스트 포함
 
 	public static BookDetailResponseDto toResponseDto(
 	  Book book,
@@ -39,7 +40,7 @@ public class BookDetailResponseDto {
 	  Set<UUID> likedUsers,
 	  Long viewCount,
 	  List<String> imageUrls,
-	  List<CommentResponseDto> comments,
+	  List<CommentDto> comments,
 	  String coverImage
 	) {
 		return BookDetailResponseDto.builder()

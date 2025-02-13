@@ -79,6 +79,9 @@ export function SignUpForm() {
           <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
             가입하기
           </Button>
+          <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
+            소셜 회원가입
+          </Button>
         </form>
       </CardContent>
     </Card>
