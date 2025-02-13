@@ -5,6 +5,7 @@ import { useDynamicPages } from "../hooks/useDynamicPages";
 import { usePageContext } from "../context/PageContext";
 import { useViewerSettings } from "../context/ViewerSettingsContext";
 import { Content } from "@/lib/api";
+import Image from "next/image";
 
 // interface ReaderProps {
 //   textData: string;
@@ -14,11 +15,12 @@ import { Content } from "@/lib/api";
 
 interface ReaderProps {
   content: Content;
+  imageUrls : string[]
 }
 
 //export function Reader({ textData, bookChapters, plainBookContent }: ReaderProps) {
-export function Reader({ content }: ReaderProps) {
-  const { pages } = useDynamicPages(content);
+export function Reader({ content, imageUrls }: ReaderProps) {
+  const { pages } = useDynamicPages(content, imageUrls);
   const { currentPage, totalPages } = usePageContext();
   const { fontSize, lineHeight, letterSpacing, pageTransition } = useViewerSettings();
 
@@ -41,7 +43,7 @@ export function Reader({ content }: ReaderProps) {
       setPrevPage(currentPage);
       setAnimationClass("translate-x-0 opacity-100");
     }, 150); // 애니메이션 지속 시간 (0.15s)
-  }, [currentPage, pageTransition]);
+  }, [currentPage, pageTransition, prevPage]);
 
   return (
     <div className="relative w-full max-w-5xl mx-auto h-full min-h-screen overflow-hidden flex flex-col items-start justify-start"> 
@@ -57,6 +59,14 @@ export function Reader({ content }: ReaderProps) {
         className={`relative w-full transition-all duration-300 ease-in-out ${animationClass}`} // ✅ absolute → relative 변경
         style={{ fontSize: `${fontSize}px`, lineHeight, letterSpacing: `${letterSpacing}px` }}
       >
+        {/* <Image
+          src={imageUrls[currentPage -1]}
+          alt={imageUrls[0]}
+          width={300}
+          height={300}
+          className="rounded-md"
+        /> */}
+        {/* <div>{imageUrls[0]}</div> */}
         {pages[currentPage] ? (
           <div 
             dangerouslySetInnerHTML={{ __html: pages[currentPage] }} 
