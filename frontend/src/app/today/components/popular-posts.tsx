@@ -99,7 +99,7 @@ export default function PopularPosts() {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
                       <Avatar>
-                        <AvatarFallback>{post.userName[0]}</AvatarFallback>
+                        <AvatarFallback>{post.userName}</AvatarFallback>
                         <AvatarImage src={getRandomImage()} alt={post.userName} />
                       </Avatar>
                       <div>
