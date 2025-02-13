@@ -12,9 +12,9 @@ public class ChatRoomMentoringResponseDto {
     private Long roomId;
     private String name;
     private boolean isMentoring;
-    private UUID mentorId;
+    private String mentorName;
     private int userCount;
-    private List<UUID> participants; // ✅ 참가자 목록 추가
+    private List<String> participants; // ✅ 참가자 목록 추가
 }
 
 

@@ -11,7 +11,6 @@ import java.util.UUID;
 @Builder
 public class ChatMessageRequest {
     private Long roomId;
-    private UUID userId;
     private String receiver;
     private String content;
 }

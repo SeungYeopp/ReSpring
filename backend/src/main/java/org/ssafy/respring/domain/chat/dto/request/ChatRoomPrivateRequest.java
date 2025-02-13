@@ -14,9 +14,9 @@ public class ChatRoomPrivateRequest {
     private List<String> userIds;
     private boolean isOpenChat;
     private boolean isMentoring;
-    private UUID mentorId;
+    private String mentorName;
 
     // ✅ 1:1 채팅용 필드 추가
-    private UUID user1;
-    private UUID user2;
+    private String user1Name;
+    private String user2Name;
 }
