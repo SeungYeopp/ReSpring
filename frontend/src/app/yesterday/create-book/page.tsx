@@ -50,12 +50,12 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
             <Carousel className="w-full max-w-xs mx-auto">
               <CarouselContent>
                 {story.images.map((image) => (
-                  <CarouselItem key={image.imageId}>
+                  <CarouselItem key={image}>
                     <div className="p-1">
                       <div className="flex aspect-square items-center justify-center p-6">
                         <NextImage
-                          src={image.imageUrl}
-                          alt={image.imageUrl}
+                          src={image}
+                          alt={image}
                           width={200}
                           height={200}
                           objectFit="cover"
@@ -189,12 +189,10 @@ export default function CreateBook() {
         acc[chapter.chapterTitle] = chapter.content;
         return acc;
       }, {} as Content);
-
-      const removedDots = removeDotsFromTitles(compiledBook!)
     
       const result : number= await makeBook(
         userId,
-        removedDots!,
+        compiledBook!,
         bookTags,
         selectedStorieIds,
         bookCoverImg!,
@@ -354,8 +352,8 @@ export default function CreateBook() {
                   <div className="flex flex-col items-center">
                     <div className="w-32 h-32 relative mb-4">
                       <NextImage
-                        src={story.images[0]?.imageUrl}
-                        alt={story.images[0]?.imageUrl}
+                        src={story.images[0]}
+                        alt={story.images[0]}
                         layout="fill"
                         objectFit="cover"
                         className="rounded-lg"

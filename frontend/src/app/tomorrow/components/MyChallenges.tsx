@@ -1,65 +1,44 @@
-"use client";
+"use client"
 
-import { useEffect, useState, useCallback } from "react";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { SliderChallengeCard } from "./SliderChallengeCard";
-import { Calendar, Flame } from "lucide-react"; // ✅ 연속 도전 아이콘 추가
-import { fetchParticipatedChallenges } from "@/lib/api/tomorrow"; // ✅ API 호출 추가
-import type { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
-import type { CarouselApi } from "@/components/ui/carousel";
+import { useEffect, useState, useCallback } from "react"
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
+import { SliderChallengeCard } from "./SliderChallengeCard"
+import { Calendar, Flame } from "lucide-react"
+import type { ParticipatedChallenge } from "@/app/tomorrow/types/challenge"
+import type { CarouselApi } from "@/components/ui/carousel"
 
 interface MyChallengesProps {
-  userId: string | null;
-  challenges: ParticipatedChallenge[]; // ✅ 추가됨
+  userId: string | null
+  challenges: ParticipatedChallenge[] // 원래 타입을 유지합니다
 }
 
-export default function MyChallenges({ userId }: MyChallengesProps) {
-  const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
-  const [challenges, setChallenges] = useState<ParticipatedChallenge[]>([]); // ✅ 챌린지 상태 추가
+export default function MyChallenges({ userId, challenges }: MyChallengesProps) {
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
 
   const onSelect = useCallback(() => {
-    if (!api) return;
-    setCurrent(api.selectedScrollSnap());
-  }, [api]);
+    if (!api) return
+    setCurrent(api.selectedScrollSnap())
+  }, [api])
 
   useEffect(() => {
-    if (!api) return;
+    if (!api) return
 
-    api.on("select", onSelect);
+    api.on("select", onSelect)
 
     // 50초마다 다음 슬라이드로 이동
     const autoplayInterval = setInterval(() => {
-      api.scrollNext();
-    }, 50000);
+      api.scrollNext()
+    }, 50000)
 
     return () => {
-      api.off("select", onSelect);
-      clearInterval(autoplayInterval);
-    };
-  }, [api, onSelect]);
-
-  // ✅ API 호출 추가 (userId가 있을 경우에만)
-  useEffect(() => {
-    console.log("✅ useEffect 실행됨, userId:", userId); // userId 값 확인
-    if (!userId) return;
-
-    const loadChallenges = async () => {
-      console.log("✅ API 요청 시작:", userId);
-      try {
-        const response = await fetchParticipatedChallenges(userId);
-        console.log("✅ API 응답:", response);
-        setChallenges(response);
-      } catch (error) {
-        console.error("🚨 챌린지 불러오기 실패:", error);
-      }
-    };
-
-    loadChallenges();
-  }, [userId]);
+      api.off("select", onSelect)
+      clearInterval(autoplayInterval)
+    }
+  }, [api, onSelect])
 
   if (challenges.length === 0) {
-    return <div className="text-center text-gray-500">참여 중인 도전이 없습니다.</div>;
+    return <div className="text-center text-gray-500">참여 중인 도전이 없습니다.</div>
   }
 
   return (
@@ -74,34 +53,38 @@ export default function MyChallenges({ userId }: MyChallengesProps) {
       >
         <CarouselContent>
           {challenges.map((challenge) => (
-            <CarouselItem key={challenge.id} className="md:basis-1/2 lg:basis-1/3 pl-4">
-              <SliderChallengeCard
-                id={challenge.id}
-                image={challenge.image || "/placeholder.webp"}
-                title={challenge.title}
-                description={
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                    <div className="flex items-center gap-1">
-                      <Calendar size={14} className="text-gray-400" />
-                      <span>{new Date(challenge.registerDate).toLocaleDateString()}</span>
+            <CarouselItem key={challenge.id} className="md:basis-1/2 lg:basis-1/3">
+              <div className="p-1">
+                {" "}
+                {/* 패딩을 추가하여 카드 사이에 간격을 줍니다 */}
+                <SliderChallengeCard
+                  id={challenge.id}
+                  image={challenge.image || "/placeholder.webp"}
+                  title={challenge.title}
+                  description={
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                      <div className="flex items-center gap-1">
+                        <Calendar size={14} className="text-gray-400" />
+                        <span>{new Date(challenge.registerDate).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Flame size={14} className="text-red-500" />
+                        <span>{challenge.currentStreak}일 연속</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Flame size={14} className="text-red-500" />
-                      <span>{challenge.currentStreak}일 연속</span>
-                    </div>
-                  </div>
-                }
-                tags={challenge.tags}
-              />
+                  }
+                  tags={challenge.tags}
+                />
+              </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
       </Carousel>
 
-      {/* ✅ 점 인디케이터 (최대 5개까지만 표시) */}
+      {/* 점 인디케이터 (최대 5개까지만 표시) */}
       <div className="flex justify-center mt-4">
+        {" "}
+        {/* mt-6에서 mt-4로 변경 */}
         {challenges.slice(0, 5).map((_, index) => (
           <button
             key={index}
@@ -112,5 +95,6 @@ export default function MyChallenges({ userId }: MyChallengesProps) {
         ))}
       </div>
     </div>
-  );
+  )
 }
+

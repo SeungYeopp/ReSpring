@@ -13,9 +13,9 @@ export default async function TodayPage() {
   const popularPosts = await getPopularPosts()
 
   return (
-    <div className="-mt-4 h-full flex flex-col space-y-4 overflow-y-auto relative bg-background">
+    <div className=" -mb-16 md:-my-4 h-full flex flex-col space-y-4 overflow-y-auto relative bg-background">
       {/* 캐러셀 헤더 */}
-      <div className="w-full">
+      <div className="w-full ">
         <CarouselHeader messages={carouselMessages.today} />
       </div>
 
