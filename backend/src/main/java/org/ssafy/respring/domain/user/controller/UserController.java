@@ -47,15 +47,8 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String presignedUrl = (String) session.getAttribute("profileImageUrl");
-        Long presignedUrlTimestamp = (Long) session.getAttribute("profileImageUrlTimestamp");
-
-        if (presignedUrl == null || imageService.isPresignedUrlExpired(presignedUrlTimestamp)) {
-            presignedUrl = authService.getUserProfileImageUrl(userId);
-            session.setAttribute("profileImageUrl", presignedUrl);
-            session.setAttribute("profileImageUrlTimestamp", System.currentTimeMillis());
-        }
-
+        String imageUrl = (String) session.getAttribute("userProfileImage");
+        String presignedUrl = imageService.generatePresignedUrl(imageUrl);
         LoginResponseDto responseDto = new LoginResponseDto(userId, userNickname, presignedUrl);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }

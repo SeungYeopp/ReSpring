@@ -43,6 +43,10 @@ public class UserService {
         PasswordEncryptionResultDto encryptionResult = OpenCrypt.encryptPw(signUpRequestDto.getPassword());
         user.changePassword(encryptionResult.getHashedPassword());
 
+        if(user.getProvider() == null) {
+            user.setProvider("LOCAL");
+        }
+
         userRepository.save(user);
         saltRepository.save(new Salt(user.getId(), encryptionResult.getSalt()));
     }
