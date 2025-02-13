@@ -5,31 +5,50 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { signup, login } from "@/lib/api"
-import { useRouter } from "next/navigation"
+import { signup } from "@/lib/api"
 
 export function SignUpForm() {
-  // 상태 관리를 위한 useState 훅 사용
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [image, setImage] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const router = useRouter();
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
 
-  // 폼 제출 핸들러
+    const file = files[0]
+    setImage(file)
+
+    // 이미지 미리보기 생성
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setPreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    try{
-      const signUpResult = await signup(username, email, password);
+    setError(null)
 
-      if(!signUpResult){
-        alert('회원가입 실패')
+    if (!username || !email || !password || !image) {
+      setError("모든 항목을 입력해주세요.")
+      return
+    }
+
+    try {
+      const signUpResult = await signup(username, email, password, "", image)
+      if (!signUpResult) {
+        alert("회원가입 실패")
       }
-    }catch(error){
-      alert("회원가입 실패");
-      console.error(error);
-    }finally{
-      window.location.reload();
+    } catch (error) {
+      alert("회원가입 실패")
+      console.error(error)
+    } finally {
+      window.location.reload()
     }
   }
 
@@ -41,6 +60,7 @@ export function SignUpForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <p className="text-red-500 text-sm">{error}</p>}
           <div className="space-y-2">
             <Label htmlFor="username" className="text-black">사용자 이름</Label>
             <Input
@@ -76,11 +96,20 @@ export function SignUpForm() {
               className="border-brand-light focus:ring-brand-dark"
             />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="image" className="text-black">프로필 이미지</Label>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              required
+              className="border-brand-light focus:ring-brand-dark"
+            />
+            {preview && <img src={preview} alt="미리보기" className="w-24 h-24 object-cover rounded-full mx-auto mt-2" />}
+          </div>
           <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
             가입하기
-          </Button>
-          <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
-            소셜 회원가입
           </Button>
         </form>
       </CardContent>
