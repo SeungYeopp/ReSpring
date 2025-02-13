@@ -69,13 +69,25 @@ public class PostController {
     }
 
 
-    @GetMapping("/users/{userId}")
-    @Operation(summary = "내 포스트 조회", description = "특정 사용자의 포스트를 조회합니다.")
+    @GetMapping("/users/{userName}")
+    @Operation(summary = "사용자별 포스트 조회", description = "특정 사용자의 포스트를 조회합니다.")
+    public ResponseEntity<List<PostResponseDto>> getPostsByUser(
+            @Parameter(description = "조회할 사용자 닉네임", example = "김은퇴") @PathVariable String userName,
+            HttpSession session
+    ) {
+        UUID userId = getUserIdFromSession(session);
+        return ResponseEntity.ok(postService.getPostsByUser(userName, userId));
+    }
+
+    @GetMapping("/my")
+    @Operation(summary = "나의 포스트 조회", description = "나의 포스트를 조회합니다.")
     public ResponseEntity<List<PostResponseDto>> getMyPosts(
-            HttpSession session) {
+            HttpSession session
+    ) {
         UUID userId = requireLogin(session);
         return ResponseEntity.ok(postService.getMyPosts(userId));
     }
+
 
     @PatchMapping(value = "/{post_id}", consumes = {"multipart/form-data"})
     @Operation(summary = "포스트 수정", description = "특정 포스트를 수정하고 이미지를 저장/삭제합니다.")

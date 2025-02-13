@@ -61,6 +61,16 @@ public class PostRepositoryImpl implements PostRepositoryQuerydsl {
                 .fetch();
     }
 
+    @Override
+    public List<Post> findByUserName(String userName) {
+        return queryFactory
+                .selectFrom(post)
+                .where(post.user.userNickname.eq(userName)) // ✅ userName으로 검색
+                .orderBy(post.createdAt.desc()) // ✅ 최신 순 정렬
+                .fetch();
+    }
+
+
 //    @Override
 //    public List<Post> findTop3ByLikesInPastWeek(LocalDateTime oneWeekAgo) {
 //        return queryFactory.selectFrom(post)
