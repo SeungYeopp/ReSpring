@@ -152,6 +152,13 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    public List<PostResponseDto> getPostsByUser(String userName, UUID userId) {
+        return postRepository.findByUserName(userName)
+                .stream()
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
+                .collect(Collectors.toList());
+    }
+
     public List<PostResponseDto> getPostsByCursor(Long lastId, int limit, UUID userId) {
         return postRepository.findByCursor(lastId, limit)
                 .stream()
