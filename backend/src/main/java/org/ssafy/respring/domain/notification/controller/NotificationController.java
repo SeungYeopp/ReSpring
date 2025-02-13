@@ -55,9 +55,9 @@ public class NotificationController {
 
 
     @GetMapping("/{userId}")
-    @Operation(summary = "읽지 않은 알림 조회", description = "사용자가 아직 읽지 않은 알림을 조회합니다.")
-    public ResponseEntity<List<NotificationDto>> getUnreadNotifications(@PathVariable UUID userId) {
-        return ResponseEntity.ok(notificationService.getUnreadNotifications(userId));
+    @Operation(summary = "전체 알림 조회", description = "사용자가 받은 알림을 조회합니다.")
+    public ResponseEntity<List<NotificationDto>> getNotifications(@PathVariable UUID userId) {
+        return ResponseEntity.ok(notificationService.getNotifications(userId));
     }
 
     public void sendNotification(Long userId, NotificationDto notificationDto) {

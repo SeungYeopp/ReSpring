@@ -72,16 +72,18 @@ public class NotificationService {
     }
 
 
-    public List<NotificationDto> getUnreadNotifications(UUID userId) {
+    public List<NotificationDto> getNotifications(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
 
-        List<Notification> notifications = notificationRepository.findByReceiverAndIsReadFalse(user);
+        // 모든 알림 가져오기 (읽음 여부 상관 없음)
+        List<Notification> notifications = notificationRepository.findByReceiver(user);
 
         return notifications.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
+
 
     // ✅ 개별 알림 읽음 처리
     public void markAsRead(Long notificationId) {
