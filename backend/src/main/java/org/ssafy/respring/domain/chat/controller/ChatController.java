@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,8 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
+@Tag(name = "Chat API", description = "채팅 관련 API")
+
 public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
