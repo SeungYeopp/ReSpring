@@ -77,6 +77,9 @@ export function LoginForm() {
           <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
             로그인
           </Button>
+          <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
+            소셜 로그인
+          </Button>
           <Button type="button" onClick={handleTempLogin} className="w-full bg-brand hover:bg-brand-dark text-white">
             임시 로그인(개발용, 박싸피)
           </Button>
