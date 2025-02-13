@@ -213,7 +213,7 @@ public class PostService {
         // ✅ Image 테이블에서 Post에 해당하는 이미지 조회
         List<String> images = imageService.getImagesByEntity(ImageType.POST, post.getId());
 
-        boolean isLiked = isPostLikedByUser(post.getId(), userId);
+        boolean isLiked = (userId != null)? isPostLikedByUser(post.getId(), userId) : false;
 
         List<CommentDto> commentDtos = post.getComments().stream()
                 .map(comment -> new CommentDto(
