@@ -8,7 +8,6 @@ import java.util.UUID;
 
 @Data
 public class PostUpdateRequestDto {
-    private UUID userId;
     private String title;
     private String content;
     private Category category;
