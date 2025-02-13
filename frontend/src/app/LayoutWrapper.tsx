@@ -7,6 +7,8 @@ import { TopNav } from "@/components/layout/top-nav";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Sidebar } from "@/components/layout/sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import LoadingScreen from "@/components/custom/LoadingScreen";
+
 import ToastNotification from "../components/custom/ToastNotification"; // 토스트 알림 컴포넌트
 // 기존
 // import useNotifications from "../hooks/useNotifications"; // SSE 알림 훅
@@ -22,6 +24,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname(); // 현재 URL 경로를 가져오기 위한 훅
 
   const isViewerPage = pathname.startsWith("/viewer"); 
+  // "/viewer" 경로로 시작하는 페이지인지 여부 (뷰어 페이지에서는 네비게이션 숨김)
+
+  const isBookDetailPage = pathname.startsWith("/yesterday/newbook"); 
   // "/viewer" 경로로 시작하는 페이지인지 여부 (뷰어 페이지에서는 네비게이션 숨김)
 
   // 정규표현식 설명:
@@ -94,8 +99,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   // useEffect 의존성 배열: 라우터, 현재 경로, 인증 상태가 변경될 때마다 실행
 
   if (isAuthenticated === null) {
-    return <p>로딩 중...</p>; 
-    // 인증 상태를 확인하는 동안 로딩 메시지 표시
+    // return <p>로딩 중...</p>;
+    return <LoadingScreen />
+    // 인증 상태를 확인하는 동안 로딩 메시지 표시 => 로딩 스크린 표시
   }
 
   if (showSplash) {
@@ -109,7 +115,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       <ToastNotification notifications={notifications} />
 
       {/* TopNav를 /viewer, /chat, /test/onboarding 페이지에서 숨김 */}
-      {isAuthenticated && !isViewerPage && !isChatPage && !isTestOnboardingPage && <TopNav />}
+      {isAuthenticated && !isViewerPage && !isBookDetailPage && !isChatPage && !isTestOnboardingPage && <TopNav />}
       
       {/* Sidebar를 /test/onboarding 페이지에서 숨김 */}
       {isAuthenticated && !isTestOnboardingPage && <Sidebar />}
@@ -130,7 +136,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       </main>
 
       {/* BottomNav를 /viewer, /chat, /test/onboarding 페이지에서 숨김 */}
-      {isAuthenticated && !isViewerPage && !isChatPage && !isTestOnboardingPage && <BottomNav />}
+      {isAuthenticated && !isViewerPage && !isBookDetailPage && !isChatPage && !isTestOnboardingPage && <BottomNav />}
     </>
   );
 }
