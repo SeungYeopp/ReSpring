@@ -11,7 +11,7 @@ import { ko } from "date-fns/locale";
 import NotificationSkeleton from "./components/NotificationSkeleton";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-
+import { useNotificationsContext } from "./context/NotificationsContext";
 // ------------------------------------------------------------------
 // 타입 선언
 // ------------------------------------------------------------------
@@ -102,6 +102,8 @@ const NotificationPage = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
+  
+  const { notifications: sseNotifications } = useNotificationsContext();
 
   const loadMore = useCallback(() => {
     if (isLoadingMore) return;
@@ -156,7 +158,24 @@ const NotificationPage = () => {
   // NotificationPage에서는 별도의 SSE 구독을 하지 않고,
   // 전역 상태나 Context를 통해 알림 데이터를 받아서 사용하도록 합니다.
   // (만약 전역 구독이 없다면 이 부분은 수정 후 사용하시길 바랍니다.)
-
+  useEffect(() => {
+    if (sseNotifications.length === 0) return;
+  
+    setNotifications((prevNotifications) => {
+      const newNotifications = sseNotifications.filter(
+        (sseNotif) => !prevNotifications.some((notif) => notif.id === sseNotif.id)
+      );
+  
+      if (newNotifications.length === 0) return prevNotifications;
+  
+      const updatedNotifications = [...newNotifications, ...prevNotifications].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+  
+      return updatedNotifications;
+    });
+  }, [sseNotifications]);
+  
   // ----------------------------------------------------------------
   // 필터링, 검색 및 페이지네이션
   // ----------------------------------------------------------------
