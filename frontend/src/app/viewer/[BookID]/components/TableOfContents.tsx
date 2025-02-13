@@ -22,16 +22,21 @@ interface ContentMatch {
 
 const ITEMS_PER_PAGE = 10
 
-export function TableOfContents({ bookId }: { bookId: string }) {
+export function TableOfContents({ bookId, imageUrls }: { bookId: string, imageUrls : string[] }) {
   const { theme } = useViewerSettings()
   const { currentPage, totalPages, setCurrentPage } = usePageContext()
   const { bookContent } = useBookData(bookId)
-  const { chapters, pages } = useDynamicPages(bookContent!, [])
+  const { chapters, pages } = useDynamicPages(bookContent!, imageUrls)
   const [isOpen, setIsOpen] = useState(false)
   const [searchType, setSearchType] = useState("chapter")
   const [searchTerm, setSearchTerm] = useState("")
   const [currentListPage, setCurrentListPage] = useState(1)
 
+  useEffect(() => {
+
+    console.log(chapters);
+  }, [imageUrls])
+  console.log(imageUrls)
   const filteredChapters = useMemo(
     () => chapters.filter((chap) => chap.title.toLowerCase().includes(searchTerm.toLowerCase())),
     [chapters, searchTerm],
