@@ -30,7 +30,9 @@ public class AuthService {
     private final UserMapper userMapper;
 
     public LoginResponseDto processOAuthLogin(String provider, OAuth2User oauth2User) {
-        String email = extractEmail(provider, oauth2User.getAttributes());
+        String email = oauth2User.getAttribute("email");
+        String nickname = oauth2User.getAttribute("name");
+        String profileImage = oauth2User.getAttribute("picture");
 
         if (email == null) {
             throw new IllegalArgumentException("OAuth provider did not return an email.");
@@ -39,17 +41,17 @@ public class AuthService {
         User user = userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = new User();
             newUser.setEmail(email);
-            newUser.setUserNickname(oauth2User.getAttribute("name"));
-            newUser.setProfileImage(oauth2User.getAttribute("picture"));
+            newUser.setUserNickname(nickname);
+            newUser.setProfileImage(profileImage);
             newUser.setProvider(provider.toUpperCase()); // 일반 / KAKAO / GOOGLE 구분
             return userRepository.save(newUser);
         });
 
         // 기존 사용자의 프로필 이미지 업데이트 (새로운 정보가 있을 경우)
-        if (oauth2User.getAttribute("picture") != null && !oauth2User.getAttribute("picture").equals(user.getProfileImage())) {
-            user.setProfileImage(oauth2User.getAttribute("picture"));
-            userRepository.save(user);
-        }
+//        if (oauth2User.getAttribute("picture") != null && !oauth2User.getAttribute("picture").equals(user.getProfileImage())) {
+//            user.setProfileImage(oauth2User.getAttribute("picture"));
+//            userRepository.save(user);
+//        }
 
         return createResponseDto(user);
     }
@@ -73,17 +75,6 @@ public class AuthService {
                 : "https://i.imgur.com/QbLhsD7.png";
 
         return userMapper.entityToDto(loginUser,profileImageUrl);
-    }
-
-
-    private String extractEmail(String provider, Map<String, Object> attributes) {
-        if ("KAKAO".equalsIgnoreCase(provider)) {
-            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-            return (kakaoAccount != null) ? (String) kakaoAccount.get("email") : null;
-        } else if ("GOOGLE".equalsIgnoreCase(provider)) {
-            return (String) attributes.get("email");
-        }
-        return null;
     }
 
 

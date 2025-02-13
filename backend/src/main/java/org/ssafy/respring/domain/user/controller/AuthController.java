@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.ssafy.respring.domain.image.service.ImageService;
@@ -38,15 +39,21 @@ public class AuthController {
     }
 
     @Operation(summary = "소셜 로그인", description = "OAuth2를 활용한 소셜 로그인 기능 (Kakao, Google 등)")
-    @PostMapping("/oauth/{provider}")
-    public ResponseEntity<Void> socialLogin(@PathVariable String provider, @RequestBody Map<String, Object> oauthData, HttpSession session) {
-        User user = authService.processOAuthLogin(provider, oauthData);
+    @GetMapping("/oauth/login")
+    public ResponseEntity<Void> socialLogin(@AuthenticationPrincipal OAuth2User oauth2User, HttpSession session) {
+        if (oauth2User == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
-        session.setAttribute("userId", user.getId());
-        session.setAttribute("userNickname", user.getUserNickname());
+        String provider = "GOOGLE"; // Kakao라면 "KAKAO"로 변경
+        LoginResponseDto responseDto = authService.processOAuthLogin(oauth2User, provider);
+
+        session.setAttribute("userId", responseDto.getUserId());
+        session.setAttribute("userNickname", responseDto.getUserNickname());
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
+
 
 
     @Operation(summary = "로그아웃", description = "세션을 만료시키는 로그아웃 기능")
