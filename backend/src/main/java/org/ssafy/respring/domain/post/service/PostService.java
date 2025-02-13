@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.ssafy.respring.domain.comment.repository.CommentLikesRepository;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.image.service.ImageService;
@@ -30,6 +31,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final ImageService imageService;
     private final UserRepository userRepository;
+    private final CommentLikesRepository commentLikesRepository;
 
     /**
      * 📝 포스트 생성
@@ -152,6 +154,13 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    public List<PostResponseDto> getPostsByUser(String userName, UUID userId) {
+        return postRepository.findByUserName(userName)
+                .stream()
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
+                .collect(Collectors.toList());
+    }
+
     public List<PostResponseDto> getPostsByCursor(Long lastId, int limit, UUID userId) {
         return postRepository.findByCursor(lastId, limit)
                 .stream()
@@ -221,9 +230,12 @@ public class PostService {
                         comment.getContent(),
                         comment.getUser().getId(),
                         comment.getUser().getUserNickname(),
+                        comment.getUser().getProfileImage(),
                         comment.getCreatedAt(),
                         comment.getUpdatedAt(),
-                        comment.getParent() != null ? comment.getParent().getId() : null
+                        comment.getParent() != null ? comment.getParent().getId() : null,
+                        commentLikesRepository.countByComment(comment)
+
                 ))
                 .collect(Collectors.toList());
 

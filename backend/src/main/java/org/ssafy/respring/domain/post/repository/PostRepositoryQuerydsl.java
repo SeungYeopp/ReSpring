@@ -14,5 +14,6 @@ public interface PostRepositoryQuerydsl {
     List<Post> findByCursor(Long lastId, int limit);
     List<Tuple> findTop3ByLikesInPastWeekWithComments(LocalDateTime oneWeekAgo);
     boolean isPostLikedByUser(Long postId, UUID userId);
+    List<Post> findByUserName(String userName);
     Post findPostWithComments(Long postId);
 }
