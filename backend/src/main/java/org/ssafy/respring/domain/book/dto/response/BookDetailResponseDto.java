@@ -18,7 +18,8 @@ import java.util.*;
 @AllArgsConstructor
 public class BookDetailResponseDto {
 	private Long id;
-	private UUID authorId;
+	private String authorName;
+	private String authorProfileImage;
 	private String title;
 	private Map<String, String> content;  // ✅ 책 전체 내용 포함
 	private String coverImage;
@@ -26,7 +27,7 @@ public class BookDetailResponseDto {
 	private boolean isLiked;
 	private Long likeCount;
 	private Long viewCount;
-	private Set<UUID> likedUsers;
+	private Set<String> likedUsers;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private List<String> imageUrls; // ✅ 포함된 이미지 URL 리스트 추가
@@ -37,28 +38,29 @@ public class BookDetailResponseDto {
 	  Map<String, String> contentJson,
 	  boolean isLiked,
 	  Long likeCount,
-	  Set<UUID> likedUsers,
+	  Set<String> likedUsers,
 	  Long viewCount,
 	  List<String> imageUrls,
 	  List<CommentDto> comments,
 	  String coverImage
 	) {
 		return BookDetailResponseDto.builder()
-		  .id(book.getId())
-		  .authorId(book.getAuthor().getId()) // 유저 닉네임 반환
-		  .title(book.getTitle())
-		  .content(contentJson) // ✅ 책 내용 포함
-		  .coverImage(coverImage)
-		  .tags(book.getTags())
-		  .isLiked(isLiked)
-		  .likedUsers(likedUsers)
-		  .likeCount(likeCount)
-		  .viewCount(viewCount)
-		  .createdAt(book.getCreatedAt())
-		  .updatedAt(book.getUpdatedAt())
-		  .imageUrls(imageUrls) // ✅ 이미지 포함
-		  .comments(comments) // ✅ 댓글 포함
-		  .build();
+			.id(book.getId())
+			.authorName(book.getAuthor().getUserNickname()) // 유저 닉네임 반환
+			.authorProfileImage(book.getAuthor().getProfileImage())
+			.title(book.getTitle())
+			.content(contentJson) // ✅ 책 내용 포함
+			.coverImage(coverImage)
+			.tags(book.getTags())
+			.isLiked(isLiked)
+			.likedUsers(likedUsers)
+			.likeCount(likeCount)
+			.viewCount(viewCount)
+			.createdAt(book.getCreatedAt())
+			.updatedAt(book.getUpdatedAt())
+			.imageUrls(imageUrls) // ✅ 이미지 포함
+			.comments(comments) // ✅ 댓글 포함
+			.build();
 	}
 }
 
