@@ -42,7 +42,7 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
   const isMainPage = pathname.startsWith("/main");
   // 메인인 페이지인지 확인하여 네비게이션 숨김 처리
 
-  const { isAuthenticated } = useAuth(false);
+  const { isAuthenticated } = useAuth(true);
   // 사용자 인증 상태 확인 (false는 인증 실패 시 자동 리다이렉트 방지)
 
   // 전역 알림 Context에서 알림 데이터를 구독합니다.
