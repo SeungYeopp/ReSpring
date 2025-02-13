@@ -70,7 +70,7 @@ function MainLayout({ BookID, bookContent, isLoading, BookTitle, imageUrls}: { B
       </div>
 
       {/* ✅ BottomToolbar 자체적으로 상태 관리 */}
-      <BottomToolbar bookId={BookID} />
+      <BottomToolbar bookId={BookID} imageUrls={imageUrls}/>
     </main>
   );
 }

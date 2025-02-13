@@ -34,7 +34,7 @@ export function useDynamicPages(bookContent: Content, imageUrls: string[]) {
     const finalChapters: Chapter[] = [];
     let currentPage = "";
     let wordCount = 0;
-    let pageCount = 1;
+    let pageCount = 0;
 
     if(imageUrls)
       imageUrls.forEach((url) => {
@@ -85,8 +85,9 @@ export function useDynamicPages(bookContent: Content, imageUrls: string[]) {
 
     setPages(finalPages);
     setChapters(finalChapters);
-    setTotalPages(pageCount-1);
-  }, [bookContent, fontSize, lineHeight, letterSpacing, setTotalPages]);
+    setTotalPages(pageCount);
+    console.log("finalChapters", finalChapters)
+  }, [bookContent, imageUrls, fontSize, lineHeight, letterSpacing, setTotalPages]);
 
   
   return { pages, chapters, containerRef };
