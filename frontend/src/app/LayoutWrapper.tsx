@@ -45,6 +45,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const isTestOnboardingPage = pathname.startsWith("/test/onboarding");
   // 온보딩 테스트 페이지인지 확인하여 네비게이션 숨김 처리
 
+  const isMainPage = pathname.startsWith("/main");
+  // 메인인 페이지인지 확인하여 네비게이션 숨김 처리
+
   const { isAuthenticated } = useAuth(false);
   // 사용자 인증 상태 확인 (false는 인증 실패 시 자동 리다이렉트 방지)
 
@@ -76,7 +79,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
         // 마지막 스플래시 이후 24시간이 지나지 않았다면 다시 표시하지 않음
         if (pathname === "/") {
           // 루트 경로("/")로 접근 시 자동으로 "/today"로 리다이렉트
-          router.replace("/today");
+          router.replace("/main");
         }
         return;
       }
@@ -112,7 +115,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       <ToastNotification notifications={notifications} />
 
       {/* TopNav를 /viewer, /chat, /test/onboarding 페이지에서 숨김 */}
-      {isAuthenticated && !isViewerPage && !isBookDetailPage && !isChatPage && !isTestOnboardingPage && <TopNav />}
+      {isAuthenticated && !isViewerPage && !isBookDetailPage && !isChatPage && !isTestOnboardingPage && !isMainPage && <TopNav />}
       
       {/* Sidebar를 /test/onboarding 페이지에서 숨김 */}
       {isAuthenticated && !isTestOnboardingPage && <Sidebar />}
@@ -120,7 +123,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       {/* 메인 콘텐츠 영역 렌더링 */}
       <main
         className={`${
-          isViewerPage || isChatPage || isTestOnboardingPage
+          isViewerPage || isChatPage || isTestOnboardingPage || isMainPage
             ? "pt-0 pb-0 md:py-0" // 특정 페이지에서는 패딩 제거하여 전체 화면 사용
             : "pt-14 pb-16 md:py-4" // 기본 페이지에서는 상하 패딩 적용
         } ${
@@ -133,7 +136,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       </main>
 
       {/* BottomNav를 /viewer, /chat, /test/onboarding 페이지에서 숨김 */}
-      {isAuthenticated && !isViewerPage && !isBookDetailPage && !isChatPage && !isTestOnboardingPage && <BottomNav />}
+      {isAuthenticated && !isViewerPage && !isBookDetailPage && !isChatPage && !isTestOnboardingPage && !isMainPage && <BottomNav />}
     </>
   );
 }

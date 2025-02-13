@@ -12,6 +12,8 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
   parentId: number | null;
+  postId?: number;
+  bookId?: number;
 };
 
 export interface Post {
