@@ -9,7 +9,6 @@ import java.util.UUID;
 
 @Data
 public class BookUpdateRequestDto {
-	private UUID userId;
 	private Long bookId;
 	private String title;
 	private Map<String, String> content;

@@ -21,21 +21,23 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BookResponseDto {
 	private Long id;
-	private UUID authorId;
+	private String authorName;
+	private String authorProfileImage;
 	private String title;
 	private String coverImage;
 	private Set<String> tags;
 	private boolean isLiked;
 	private Long likeCount;
 	private Long viewCount;
-	private Set<UUID> likedUsers;
+	private Set<String> likedUsers;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 
-	public static BookResponseDto toResponseDto(Book book, boolean isLiked, Long likeCount, Set<UUID> likedUsers, Long viewCount, String coverImage) {
+	public static BookResponseDto toResponseDto(Book book, boolean isLiked, Long likeCount, Set<String> likedUsers, Long viewCount, String coverImage) {
 		return BookResponseDto.builder()
 				.id(book.getId())
-				.authorId(book.getAuthor().getId())
+				.authorName(book.getAuthor().getUserNickname())
+				.authorProfileImage(book.getAuthor().getProfileImage())
 				.createdAt(book.getCreatedAt())
 				.updatedAt(book.getUpdatedAt())
 				.title(book.getTitle())
