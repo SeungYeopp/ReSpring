@@ -222,23 +222,23 @@ const NotificationPage = () => {
     }
   };
 
-  // ----------------------------------------------------------------
-  // 기타 유틸리티 함수들
-  // ----------------------------------------------------------------
-  const getNotificationLink = (targetType: string, targetId: number) => {
-    switch (targetType) {
-      case "POST":
-        return `/post/${targetId}`;
-      case "BOOK":
-        return `/book/${targetId}`;
-      case "USER":
-        return `/profile/${targetId}`;
-      case "COMMENT":
-        return `/comment/${targetId}`;
-      default:
-        return "/";
-    }
-  };
+// ----------------------------------------------------------------
+// 기타 유틸리티 함수들
+// ----------------------------------------------------------------
+const getNotificationLink = (targetType: string, targetId: number) => {
+  switch (targetType) {
+    case "POST":
+    case "COMMENT": // COMMENT도 POST와 동일하게 처리
+      return `/today/${targetId}`;
+    case "BOOK":
+      return `/yesterday/book/${targetId}`;
+    case "USER":
+      return `/profile/${targetId}`;
+    default:
+      return "/";
+  }
+};
+
 
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
