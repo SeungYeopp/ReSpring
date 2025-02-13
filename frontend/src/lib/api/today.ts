@@ -8,7 +8,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8
 export interface Comment {
   id: number;
   content: string;
-  username: string;
+  userId : string;
+  userNickname: string;
   createdAt: string;
   updatedAt: string;
   parentId: number | null;
@@ -24,7 +25,9 @@ export interface Post {
   createdAt: string; // 생성 날짜 및 시간
   updatedAt: string; // 수정 날짜 및 시간
   likes: number; // 좋아요 수
-  images: Image[]; // 게시물에 첨부된 이미지 URL 배열
+  images: string[]; // 게시물에 첨부된 이미지 URL 배열
+  commentCount : number,
+  comments : string[]
 }
 
 /**
