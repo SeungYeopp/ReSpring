@@ -84,7 +84,7 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
       </div>
 
       <ExpandableDescription description={localChallenge.description}/>
-      <Separator/>
+      <Separator className="m-0 p-0"/>
       {/* 프로그레스와 참여 현황을 같은 줄에 배치 */}
       {/* 삭제할 부분 */}
       {/* <div className="flex justify-between items-center">
@@ -114,7 +114,7 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
       </div> */}
 
       <div>
-        <div className="flex justify-between items-center ">
+        <div className="flex justify-between items-center mb-3">
           <h4 className="text-base lg:text-lg font-semibold flex items-center">
             <CalendarIcon className="w-4 h-4 lg:w-5 lg:h-5 mr-2 text-[#8BC34A]" />
             달성 기록
