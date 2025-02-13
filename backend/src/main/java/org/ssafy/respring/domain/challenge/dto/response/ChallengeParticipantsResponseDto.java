@@ -11,5 +11,5 @@ import java.util.UUID;
 public class ChallengeParticipantsResponseDto {
     private Long challengeId;
     private int participantCount; // ✅ 총 참여자 수
-    private List<ParticipantInfoDto> participantIds; // ✅ 참여자 ID 목록
+    private List<ParticipantInfoDto> participantInfos; // ✅ 참여자 ID 목록
 }

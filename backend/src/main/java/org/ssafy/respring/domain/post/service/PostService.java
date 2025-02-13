@@ -35,10 +35,9 @@ public class PostService {
      * 📝 포스트 생성
      */
     @Transactional
-    public Long createPostWithImages(PostRequestDto requestDto, List<MultipartFile> imageFiles) {
+    public Long createPostWithImages(PostRequestDto requestDto, List<MultipartFile> imageFiles, UUID userId) {
         // ✅ 유저 조회
-        User user = userRepository.findById(requestDto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + requestDto.getUserId()));
+        User user = getUserById(userId);
 
         // ✅ 포스트 저장
         Post post = Post.builder()
@@ -63,13 +62,16 @@ public class PostService {
      * 📝 포스트 수정
      */
     @Transactional
-    public void updatePost(Long postId, PostUpdateRequestDto requestDto, List<MultipartFile> imageFiles) {
+    public void updatePost(Long postId, PostUpdateRequestDto requestDto, List<MultipartFile> imageFiles, UUID userId) {
         // ✅ 포스트 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
 
+
         // ✅ 작성자 검증
-        if (!post.getUser().getId().equals(requestDto.getUserId())) {
+        User user = getUserById(userId);
+
+        if (!post.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("You are not authorized to modify this post.");
         }
 
@@ -109,12 +111,13 @@ public class PostService {
      * 📝 포스트 삭제
      */
     @Transactional
-    public void deletePost(Long postId, UUID requestUserId) {
+    public void deletePost(Long postId, UUID userId) {
         // ✅ 포스트 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
 
         // ✅ 작성자 검증
+        UUID requestUserId = getUserById(userId).getId();
         if (!post.getUser().getId().equals(requestUserId)) {
             throw new IllegalArgumentException("You are not authorized to delete this post.");
         }
@@ -129,49 +132,49 @@ public class PostService {
     /**
      * 📝 포스트 상세 조회
      */
-    public PostResponseDto getPost(Long id) {
+    public PostResponseDto getPost(Long id, UUID userId) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + id));
-
-        return toResponseDto(post);
+        return toResponseDto(post, userId);
     }
 
-    public List<PostResponseDto> getAllPosts() {
+    public List<PostResponseDto> getAllPosts(UUID userId) {
         return postRepository.findAll()
                 .stream()
-                .map(this::toResponseDto)
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
                 .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> getMyPosts(UUID userId) {
         return postRepository.findByUser_Id(userId)
                 .stream()
-                .map(this::toResponseDto)
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
                 .collect(Collectors.toList());
     }
 
-    public List<PostResponseDto> getPostsByCursor(Long lastId, int limit) {
+    public List<PostResponseDto> getPostsByCursor(Long lastId, int limit, UUID userId) {
         return postRepository.findByCursor(lastId, limit)
                 .stream()
-                .map(this::toResponseDto)
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
                 .collect(Collectors.toList());
     }
 
-    public List<PostResponseDto> searchPostsByTitle(String title) {
+    public List<PostResponseDto> searchPostsByTitle(String title, UUID userId) {
         return postRepository.searchByTitle(title)
                 .stream()
-                .map(this::toResponseDto)
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
                 .collect(Collectors.toList());
     }
 
-    public List<PostResponseDto> filterPostsByCategory(String category) {
+    public List<PostResponseDto> filterPostsByCategory(String category, UUID userId) {
         return postRepository.filterByCategory(category)
                 .stream()
-                .map(this::toResponseDto)
+                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
                 .collect(Collectors.toList());
     }
 
-    public List<PostResponseDto> getPopularPosts() {
+
+    public List<PostResponseDto> getPopularPosts(UUID userId) {
         LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
         List<Tuple> results = postRepository.findTop3ByLikesInPastWeekWithComments(oneWeekAgo);
 
@@ -179,7 +182,7 @@ public class PostService {
                 .map(tuple -> {
                     Post post = tuple.get(0, Post.class);
                     Long commentCount = tuple.get(1, Long.class);
-                    return toResponseDto(post);
+                    return toResponseDto(post, userId);
                 })
                 .collect(Collectors.toList());
     }
@@ -198,12 +201,19 @@ public class PostService {
         return postRepository.isPostLikedByUser(postId, userId);
     }
 
+    private User getUserById(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("❌ 존재하지 않는 사용자입니다!"));
+    }
+
     /**
      * 📝 Post → PostResponseDto 변환
      */
-    private PostResponseDto toResponseDto(Post post) {
+    private PostResponseDto toResponseDto(Post post, UUID userId) {
         // ✅ Image 테이블에서 Post에 해당하는 이미지 조회
         List<String> images = imageService.getImagesByEntity(ImageType.POST, post.getId());
+
+        boolean isLiked = (userId != null)? isPostLikedByUser(post.getId(), userId) : false;
 
         List<CommentDto> commentDtos = post.getComments().stream()
                 .map(comment -> new CommentDto(
@@ -224,9 +234,11 @@ public class PostService {
                 post.getCategory(),
                 post.getUser().getId(),
                 post.getUser().getUserNickname(),
+                post.getUser().getProfileImage(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getLikes(),
+                isLiked,
                 images,
                 commentDtos.size(),
                 commentDtos
