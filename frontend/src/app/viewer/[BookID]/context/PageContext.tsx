@@ -7,6 +7,8 @@ interface PageContextProps {
   totalPages: number;
   setCurrentPage: (change: number) => void;
   setTotalPages: (newTotal: number) => void; // ✅ totalPages 업데이트 함수 추가
+  highlightKeyword: string | null; // 강조할 키워드 상태를 추가
+  setHighlightKeyword: (keyword: string | null) => void; // 강조할 키워드 상태를 추가
 }
 
 const PageContext = createContext<PageContextProps | undefined>(undefined);
@@ -19,11 +21,9 @@ export function PageProvider({ children, initialTotalPages }: { children: ReactN
     setCurrentPage((prev) => Math.min(Math.max(prev + change, 0), totalPages - 1));
   };
 
-  return (
-    <PageContext.Provider value={{ currentPage, totalPages, setCurrentPage: updatePage, setTotalPages }}>
-      {children}
-    </PageContext.Provider>
-  );
+  const [highlightKeyword, setHighlightKeyword] = useState<string | null>(null);
+
+  return <PageContext.Provider value={{ highlightKeyword, setHighlightKeyword, currentPage, totalPages, setCurrentPage: updatePage, setTotalPages }}>{children}</PageContext.Provider>;
 }
 
 export function usePageContext() {
