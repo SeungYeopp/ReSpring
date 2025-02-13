@@ -34,9 +34,8 @@ export function TableOfContents({ bookId, imageUrls }: { bookId: string, imageUr
 
   useEffect(() => {
 
-    console.log(chapters);
+    console.log(imageUrls);
   }, [imageUrls])
-  console.log(imageUrls)
   const filteredChapters = useMemo(
     () => chapters.filter((chap) => chap.title.toLowerCase().includes(searchTerm.toLowerCase())),
     [chapters, searchTerm],
