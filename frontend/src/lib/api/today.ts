@@ -17,7 +17,7 @@ export interface Comment {
   bookId?: number;
   postTitle? : string;
   bookTitle? : string;
-  likeCount : number;
+  likeCount? : number;
 };
 
 export interface Post {
@@ -301,6 +301,16 @@ export async function deleteComment(commentId : number) : Promise<boolean>{
       return true;
     else
       return false;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+export async function updateComment(commentId : number, content : string) : Promise<Comment>{
+  try{
+    const response = await axiosAPI.patch(`/comments/posts/${commentId}`, {content})
+    
+    return response.data;
   }catch(error : any){
     throw new Error(error);
   }
