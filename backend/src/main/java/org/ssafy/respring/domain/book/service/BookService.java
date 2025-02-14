@@ -48,6 +48,7 @@ import org.ssafy.respring.domain.notification.vo.NotificationType;
 import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.story.repository.StoryRepository;
 import org.ssafy.respring.domain.user.repository.UserRepository;
+import org.ssafy.respring.domain.user.service.UserService;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
@@ -71,9 +72,12 @@ public class BookService {
 	private final ImageService imageService;
 	private final BookViewsRedisService bookViewsRedisService;
 	private final BookLikesRedisService bookLikesRedisService;
+	private final NotificationService notificationService;
+	private final UserService userService;
+
 	private final RedisTemplate<String, Object> redisTemplate;
 	private final ElasticsearchClient esClient;
-	private final NotificationService notificationService;
+
 
 	private static final String RECENT_VIEW_KEY = "user:recent:books:";
 
@@ -232,11 +236,17 @@ public class BookService {
 		Set<String> likedUsers = bookLikesRedisService.getLikedUsers(book.getId());
 		String coverImageUrl = imageService.getSingleImageByEntity(ImageType.BOOK, bookId);
 
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다!"));
+
+		String authorProfileImage = imageService.generatePresignedUrl(user.getProfileImage());
+
 		// ✅ 댓글 조회
 		List<CommentDto> comments = commentService.getCommentsByBookId(bookId);
 
 		return BookDetailResponseDto.toResponseDto(
 				book,
+				authorProfileImage,
 				bookContent,  // ✅ 순서 수정: contentJson
 				isLiked,
 				likeCount,
@@ -400,7 +410,7 @@ public class BookService {
 			Map<String, Object> bookData = new HashMap<>();
 			bookData.put("id", book.getId());
 			bookData.put("title", book.getTitle());
-			bookData.put("authorId", book.getAuthor().getId());
+			bookData.put("author", book.getAuthor().getUserNickname());
 			bookData.put("tags", book.getTags());
 
 			IndexRequest<Map<String, Object>> request = IndexRequest.of(i -> i
@@ -471,6 +481,40 @@ public class BookService {
 
 		return books;
 	}
+
+	@Transactional
+	public List<BookResponseDto> autocompleteBookTitle(String prefix, UUID userId) throws IOException {
+		SearchRequest searchRequest = SearchRequest.of(s -> s
+				.index("book_title")
+				.query(q -> q
+						.matchPhrasePrefix(mpp -> mpp
+								.field("title.autocomplete")  // ✅ 자동완성 전용 필드에서 검색
+								.query(prefix)
+						)
+				)
+		);
+
+		SearchResponse<Map> searchResponse = esClient.search(searchRequest, Map.class);
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		return searchResponse.hits().hits().stream()
+				.map(hit -> {
+					try {
+						BookResponseDto bookDto = objectMapper.convertValue(hit.source(), BookResponseDto.class);
+						if (bookDto.getId() == null) {
+							bookDto.setId(Long.parseLong(hit.id()));
+						}
+						return enrichBookResponseWithDB(bookDto, userId);
+					} catch (Exception e) {
+						System.err.println("❌ 자동완성 검색 변환 오류: " + e.getMessage());
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
+
+
 
 	// ✅ Elasticsearch에서 가져온 데이터에 DB 데이터 추가
 	private BookResponseDto enrichBookResponseWithDB(BookResponseDto bookDto, UUID userId) {
@@ -585,7 +629,7 @@ public class BookService {
 				bookLikesRedisService.getLikeCount(book.getId()), // 좋아요 수
 				likedUserNames,
 				bookViewsRedisService.getViewCount(book.getId()),
-				book.getCoverImage()
+				imageService.getSingleImageByEntity(ImageType.BOOK,book.getId())
 		);
 	}
 

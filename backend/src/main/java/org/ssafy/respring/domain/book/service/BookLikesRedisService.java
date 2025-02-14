@@ -12,6 +12,7 @@ import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -58,7 +59,7 @@ public class BookLikesRedisService {
         redisTemplate.delete(redisKey);
     }
 
-    @Scheduled(fixedRate = 3600000) // 1시간마다 실행
+    @Scheduled(fixedRate = 600000) // 10분마다 실행
     public void syncLikesWithMySQL() {
         Set<String> keys = redisTemplate.keys(LIKE_KEY_PREFIX + "*");
         if (keys == null) return;
@@ -89,10 +90,19 @@ public class BookLikesRedisService {
 
     public Set<String> getLikedUsers(Long bookId) {
         String redisKey = LIKE_KEY_PREFIX + bookId;
-        return Optional.ofNullable(redisTemplate.opsForSet().members(redisKey))
-          .orElse(Set.of())
-          .stream()
-          .map(Object::toString)
-          .collect(Collectors.toSet());
+
+        Set<String> userIds = Optional.ofNullable(redisTemplate.opsForSet().members(redisKey))
+                .orElse(Set.of())
+                .stream()
+                .map(Object::toString)
+                .collect(Collectors.toSet());
+
+        // UUID를 이용해 DB에서 userNickname 조회
+        return userIds.stream()
+                .map(userId -> userRepository.findById(UUID.fromString(userId))
+                        .map(User::getUserNickname)
+                        .orElse(null)) // 유저가 존재하지 않으면 null 반환
+                .filter(Objects::nonNull) // null 값 제외
+                .collect(Collectors.toSet());
     }
 }

@@ -53,17 +53,42 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
                 .from(book)
                 .leftJoin(bookLikes).on(bookLikes.book.id.eq(book.id))
                 .leftJoin(bookViews).on(bookViews.book.id.eq(book.id))
-                .where(bookLikes.likedAt.after(oneWeekAgo)
-                        .or(bookViews.updatedAt.after(oneWeekAgo)))
+                .where(bookLikes.likedAt.isNull().or(bookLikes.likedAt.after(oneWeekAgo))
+                        .or(bookViews.updatedAt.isNull().or(bookViews.updatedAt.after(oneWeekAgo))))
                 .groupBy(book.id)
                 .orderBy(
-                        bookLikes.count().desc(),  // 1순위: 좋아요 수 내림차순
-                        bookViews.count().desc(),  // 2순위: 조회수 내림차순
-                        book.createdAt.desc()      // 3순위: 최신순 정렬W
+                        bookLikes.count().coalesce(0L).desc(),  // 좋아요가 없으면 0으로 처리
+                        bookViews.count().coalesce(0L).desc(),  // 조회수가 없으면 0으로 처리
+                        book.createdAt.desc()  // 최신순 정렬
                 )
                 .limit(3)
                 .fetch();
     }
+
+
+//    @Override
+//    public List<Book> getWeeklyTop3Books() {
+//        QBook book = QBook.book;
+//        QBookLikes bookLikes = QBookLikes.bookLikes;
+//        QBookViews bookViews = QBookViews.bookViews;
+//
+//        LocalDateTime oneWeekAgo = LocalDateTime.now().minusDays(7);
+//
+//        return queryFactory.select(book)
+//                .from(book)
+//                .leftJoin(bookLikes).on(bookLikes.book.id.eq(book.id))
+//                .leftJoin(bookViews).on(bookViews.book.id.eq(book.id))
+//                .where(bookLikes.likedAt.after(oneWeekAgo)
+//                        .or(bookViews.updatedAt.after(oneWeekAgo)))
+//                .groupBy(book.id)
+//                .orderBy(
+//                        bookLikes.count().desc(),  // 1순위: 좋아요 수 내림차순
+//                        bookViews.count().desc(),  // 2순위: 조회수 내림차순
+//                        book.createdAt.desc()      // 3순위: 최신순 정렬W
+//                )
+//                .limit(3)
+//                .fetch();
+//    }
 
     // 무한 스크롤 적용 x
     @Override

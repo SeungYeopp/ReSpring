@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.comment.dto.response.CommentDto;
+import org.ssafy.respring.domain.image.vo.ImageType;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -31,6 +32,7 @@ public class BookDetailResponseDto {
 
 	public static BookDetailResponseDto toResponseDto(
 	  Book book,
+	  String authorProfileImage,
 	  Map<String, String> contentJson,
 	  boolean isLiked,
 	  Long likeCount,
@@ -43,7 +45,7 @@ public class BookDetailResponseDto {
 		return BookDetailResponseDto.builder()
 			.id(book.getId())
 			.authorNickname(book.getAuthor().getUserNickname()) // 유저 닉네임 반환
-			.authorProfileImage(book.getAuthor().getProfileImage())
+			.authorProfileImage(authorProfileImage)
 			.title(book.getTitle())
 			.content(contentJson) // ✅ 책 내용 포함
 			.coverImage(coverImage)
