@@ -315,3 +315,13 @@ export async function updateComment(commentId : number, content : string) : Prom
     throw new Error(error);
   }
 }
+
+export async function getCommentLikes(commentId : number) : Promise<number>{
+  try{
+    const response = await axiosAPI.get(`comments/${commentId}/likes/count`);
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
