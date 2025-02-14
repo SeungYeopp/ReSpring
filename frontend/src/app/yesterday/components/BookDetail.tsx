@@ -19,12 +19,11 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   const [likeCount, setLikeCount] = useState<number>(240)
   const [book, setBook] = useState<BookFull>()
 
-  const {userId, userNickname} = useAuth(true);
-  const router = useRouter();
+  const { userId, userNickname } = useAuth(true)
+  const router = useRouter()
 
   useEffect(() => {
-    if(!userId)
-        return;
+    if (!userId) return
 
     const getBook = async () => {
       try {
@@ -32,16 +31,15 @@ export default function BookDetail({ bookId }: BookDetailProps) {
         setBook(result)
         setLikeCount(result.likeCount)
 
-        const resultLiked = await likeOrUnlikeBook(parseInt(bookId, 10));
+        const resultLiked = await likeOrUnlikeBook(parseInt(bookId, 10))
 
-        if(resultLiked === 'Liked'){ // 좋아요를 안 누른 경우 확인.
-            setIsLiked(false)
-            await likeOrUnlikeBook(parseInt(bookId, 10)); // 좋아요를 누른 경우 확인.
-        }else if(resultLiked === 'Unliked'){
-            setIsLiked(true)
-            await likeOrUnlikeBook(parseInt(bookId, 10));
+        if (resultLiked === "Liked") { // 좋아요를 안 누른 경우 확인.
+          setIsLiked(false)
+          await likeOrUnlikeBook(parseInt(bookId, 10)) // 좋아요를 누른 경우 확인.
+        } else if (resultLiked === "Unliked") {
+          setIsLiked(true)
+          await likeOrUnlikeBook(parseInt(bookId, 10))
         }
-        
       } catch (error) {
         console.error(error)
       }
@@ -50,17 +48,17 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   }, [userId])
 
   const handleLike = async () => {
-    try{
-        const result = await likeOrUnlikeBook(book!.id);
+    try {
+      const result = await likeOrUnlikeBook(book!.id)
 
-        if(result === 'Liked'){
-            setIsLiked(true)
-        }else if(result === 'Unliked'){
-            setIsLiked(false)
-        }
-        setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1))
-    }catch(error){
-        console.error(error);
+      if (result === "Liked") {
+        setIsLiked(true)
+      } else if (result === "Unliked") {
+        setIsLiked(false)
+      }
+      setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1))
+    } catch (error) {
+      console.error(error)
     }
   }
 
@@ -69,19 +67,19 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   }
 
   const handleChatButtonClick = () => {
-    router.push('/chat');
+    router.push("/chat")
   }
 
   const handleViewerClick = () => {
-    router.push(`/viewer/${bookId}`);
+    router.push(`/viewer/${bookId}`)
   }
 
   const handleBeforeClick = () => {
-    router.back();
+    router.back()
   }
 
   const handleProfileClick = () => {
-    router.push(`/profile/${book?.authorName}`);
+    router.push(`/profile/${book?.authorNickname}`)
   }
 
   return (
@@ -103,11 +101,13 @@ export default function BookDetail({ bookId }: BookDetailProps) {
         {/* Book Cover */}
         <div className="p-4">
           <div className="relative aspect-[3/4] max-w-[150px] mx-auto rounded-lg overflow-hidden shadow-lg">
-            {book && book.coverImage && <img
-              src={book.coverImage}
-              alt={book.coverImage}
-              className="w-full h-full object-cover"
-            />}
+            {book && book.coverImage && (
+              <img
+                src={book.coverImage}
+                alt={book.coverImage}
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
         </div>
 
@@ -126,53 +126,53 @@ export default function BookDetail({ bookId }: BookDetailProps) {
             <Eye className="w-5 h-5" />
             <span>{book?.viewCount}</span>
           </div>
-        <div className="flex items-center gap-1">
-        <Heart className={`w-5 h-5 ${isLiked ? "text-red-500 fill-red-500" : ""}`} />
-        <span>{likeCount}</span>
-        </div>
+          <div className="flex items-center gap-1">
+            <Heart className={`w-5 h-5 ${isLiked ? "text-red-500 fill-red-500" : ""}`} />
+            <span>{likeCount}</span>
+          </div>
         </div>
 
         {/* Author Section */}
         <div className="p-4 mt-2">
-        <div className="rounded-xl border border-brand/20 p-4 bg-white">
+          <div className="rounded-xl border border-brand/20 p-4 bg-white">
             <div className="flex items-center justify-between">
-            {/* 프로필 사진과 이름을 하나의 버튼으로 묶기 */}
-            <button
+              {/* 프로필 사진과 이름을 하나의 버튼으로 묶기 */}
+              <button
                 className="flex items-center gap-3 focus:outline-none hover:bg-brand/10 hover:shadow-lg transition-all py-2 px-4 rounded-lg text-brand-dark font-medium"
                 onClick={handleProfileClick} // 클릭 시 동작할 함수
-            >
+              >
                 {/* 프로필 사진 */}
                 <div className="w-12 h-12 rounded-full overflow-hidden relative">
-                <Image src="/placeholder_profilepic.png" alt="Author" fill className="object-cover" />
+                  <Image src="/placeholder_profilepic.png" alt="Author" fill className="object-cover" />
                 </div>
-                
+
                 {/* 사람 이름 */}
                 <span>김싸피</span>
-            </button>
+              </button>
 
-            {userNickname !== book?.authorName && 
-              <div className="flex gap-2">
-                <Button
-                variant="outline"
-                className={`transition-all ${isSubscribed ? "bg-brand/10 text-brand border-brand" : "bg-brand text-white hover:bg-brand-dark"}`}
-                onClick={handleSubscribe}
-                >
-                {isSubscribed ? (
-                    <>
-                    <Check className="w-4 h-4 mr-1" />
-                    구독중
-                    </>
-                ) : (
-                    "구독"
-                )}
-                </Button>
-                <Button variant="outline" className="border-brand text-brand hover:bg-brand/10 transition-all" onClick={handleChatButtonClick}>
-                <MessageSquare className="w-4 h-4" />
-                </Button>
-              </div>
-            }
+              {userNickname !== book?.authorNickname && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className={`transition-all ${isSubscribed ? "bg-brand/10 text-brand border-brand" : "bg-brand text-white hover:bg-brand-dark"}`}
+                    onClick={handleSubscribe}
+                  >
+                    {isSubscribed ? (
+                      <>
+                        <Check className="w-4 h-4 mr-1" />
+                        구독중
+                      </>
+                    ) : (
+                      "구독"
+                    )}
+                  </Button>
+                  <Button variant="outline" className="border-brand text-brand hover:bg-brand/10 transition-all" onClick={handleChatButtonClick}>
+                    <MessageSquare className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
         </div>
 
         {/* Action Buttons */}
@@ -181,19 +181,18 @@ export default function BookDetail({ bookId }: BookDetailProps) {
             <BookIcon className="w-5 h-5 mr-2" />
             읽기
           </Button>
-            <Button
+          <Button
             variant="outline"
             className={`w-full py-6 text-lg ${
-                isLiked ? "bg-brand text-white hover:bg-brand-dark" : "border-brand text-brand hover:bg-brand/10"
+              isLiked ? "bg-brand text-white hover:bg-brand-dark" : "border-brand text-brand hover:bg-brand/10"
             } transition-all`}
             onClick={handleLike}
-            >
+          >
             <Heart className={`w-5 h-5 mr-2`} />
             {isLiked ? "좋아요 취소" : "좋아요"}
-            </Button>
+          </Button>
         </div>
       </div>
     </div>
   )
 }
-
