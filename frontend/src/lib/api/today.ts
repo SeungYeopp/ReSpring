@@ -292,3 +292,16 @@ export async function getMyPostComments() : Promise<Comment[]> {
     throw new Error(error)
   }
 }
+
+export async function deleteComment(commentId : number) : Promise<boolean>{
+  try{
+    const response = await axiosAPI.delete(`/comments/posts/${commentId}`);
+
+    if(response.status === 200 || response.status === 201 || response.status === 204)
+      return true;
+    else
+      return false;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
