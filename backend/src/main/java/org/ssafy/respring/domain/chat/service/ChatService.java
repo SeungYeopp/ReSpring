@@ -67,8 +67,10 @@ public class ChatService {
                 .isOpenChat(request.isOpenChat())
                 .isMentoring(request.isMentoring());
 
-        if (request.isMentoring() && request.getMentorId() != null) {
-            chatRoomBuilder.mentorId(request.getMentorId());
+        if (request.isMentoring() && request.getMentorName() != null) {
+            User mentor = userRepository.findByUserNickname(request.getMentorName())
+                    .orElseThrow(() -> new IllegalArgumentException("❌ 멘토(강연자)를 찾을 수 없음"));
+            chatRoomBuilder.mentor(mentor);
         }
 
         ChatRoom chatRoom = chatRoomBuilder.build();
@@ -131,8 +133,6 @@ public class ChatService {
         chatRoomRepository.save(chatRoom);
     }
 
-
-
     public ChatMessageResponse saveMessage(Long roomId, UUID userId, String receiver, String content) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 채팅방을 찾을 수 없습니다."));
@@ -169,8 +169,6 @@ public class ChatService {
                 .timestamp(message.getTimestamp())
                 .build();
     }
-
-
 
     public ChatMessage saveFileMessage(Long roomId, UUID userId, MultipartFile file) throws IOException {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
@@ -231,7 +229,7 @@ public class ChatService {
     public List<ChatRoom> getUserRooms(UUID userId) {
         return chatRoomRepository.findRoomsByUserId(userId);
     }
-//
+
 //    public void removeUserFromRoom(ChatRoom chatRoom, UUID userId) {
 //        List<User> updatedUsers = chatRoom.getUsers().stream()
 //                .filter(user -> !user.getId().equals(userId)) // 유저 제외
@@ -280,7 +278,7 @@ public class ChatService {
                 .orElseThrow(() -> new IllegalArgumentException("❌ 채팅방이 존재하지 않습니다."));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. "));
 
         Optional<ChatRoomUser> chatRoomUserOpt = chatRoomUserRepository.findByChatRoomAndUser(chatRoom, user);
 
@@ -292,13 +290,13 @@ public class ChatService {
 
 
         if (chatRoom.isMentoring()) {
-            if(chatRoom.getMentorId().equals(userId)){
+            if(chatRoom.getMentor().getId().equals(user.getId())){
                 chatRoomRepository.delete(chatRoom);
                 System.out.println("🗑️ 멘토링 방 삭제됨: " + roomId);
             } else{
                 // ✅ 멘토링 방이면 유저 삭제
-                chatRoomUserRepository.deleteByRoomIdAndUserId(roomId, userId);
-                System.out.println("🗑️ 멘토링 방 - 사용자 삭제됨: " + userId);
+                chatRoomUserRepository.deleteByRoomIdAndUserId(roomId, user.getId());
+                System.out.println("🗑️ 멘토링 방 - 사용자 삭제됨: " + user.getUserNickname());
             }
 
             // ✅ 방에 남은 유저가 없으면 삭제
@@ -310,13 +308,13 @@ public class ChatService {
             // ✅ 일반 채팅방이면 `isActive`를 false로 변경
             chatRoomUser.setActive(false);
             chatRoomUserRepository.save(chatRoomUser);
-            System.out.println("🚪 일반 채팅방 - isActive = false 설정됨: " + userId);
+            System.out.println("🚪 일반 채팅방 - isActive = false 설정됨: " + user.getUserNickname());
         }
 
         // ✅ WebSocket을 통해 나간 사실을 알림
         messagingTemplate.convertAndSend(
                 "/topic/roomUpdates/" + roomId,
-                "User " + userId + " has left the room."
+                "User " + user.getUserNickname() + " has left the room."
         );
 
         // ✅ 1:1 채팅방에서 모든 유저가 나가면 방 삭제
@@ -348,11 +346,11 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatRoom getOrJoinPrivateRoom(UUID user1Id, UUID user2Id) {
-        User user1 = userRepository.findById(user1Id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + user1Id));
-        User user2 = userRepository.findById(user2Id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + user2Id));
+    public ChatRoom getOrJoinPrivateRoom(String user1Name, String user2Name) {
+        User user1 = userRepository.findByUserNickname(user1Name)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + user1Name));
+        User user2 = userRepository.findByUserNickname(user2Name)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + user2Name));
 
         // ✅ 기존 1:1 채팅방 조회
         Optional<ChatRoom> existingRoomOpt = chatRoomRepository.findExactPrivateRoom(user1, user2);
@@ -395,9 +393,6 @@ public class ChatService {
         return chatRoom;
     }
 
-
-
-
     // ✅ 멘토링(강연자) 방 생성
     public ChatRoom createMentoringRoom(String name, UUID mentorId) {
         User mentor = userRepository.findById(mentorId)
@@ -406,7 +401,7 @@ public class ChatService {
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(name)
                 .isMentoring(true)
-                .mentorId(mentorId)
+                .mentor(mentor)
                 .build();
 
         chatRoomRepository.save(chatRoom);

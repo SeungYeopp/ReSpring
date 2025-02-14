@@ -13,5 +13,5 @@ public class ChatRoomRequest {
     private List<String> userIds;
     private boolean isOpenChat;
     private boolean isMentoring;
-    private UUID mentorId;
+    private String mentorName;
 }
