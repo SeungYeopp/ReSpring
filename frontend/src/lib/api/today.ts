@@ -10,6 +10,7 @@ export interface Comment {
   content: string;
   userId? : string;
   userNickname: string;
+  profileImg? : string;
   createdAt: string;
   updatedAt: string;
   parentId: number | null;
