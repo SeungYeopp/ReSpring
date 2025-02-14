@@ -93,7 +93,7 @@ export default function ProfilePage() {
               <img src="/placeholder_badge.svg" alt="Badge" className="w-[48px]" />
             </div>
           </div>
-
+{/* 
           {myId === targetId ? (
             <button
               className="bg-blue-500 text-white text-xl px-4 py-2 w-[50%] rounded-md mt-4 mx-auto block"
@@ -110,7 +110,7 @@ export default function ProfilePage() {
             >
               {isSubscribedState ? "구독 취소하기" : "구독하기"}
             </button>
-          )}
+          )} */}
         </div>
 
         <div className="flex flex-col md:flex-[1.3] justify-start items-center">

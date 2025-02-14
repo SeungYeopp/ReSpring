@@ -124,7 +124,7 @@ function PostList({
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
                   <Avatar className="w-8 h-8">
-                    <AvatarFallback>{post.userName[0]}</AvatarFallback>
+                    <AvatarFallback>{post.userName}</AvatarFallback>
                     <AvatarImage src={getRandomImage()} alt={post.userName} />
                   </Avatar>
                   <div>

@@ -7,7 +7,6 @@ import java.util.UUID;
 
 @Data
 public class EventRequestDto {
-	private UUID userId;
 	private String eventName;
 	private LocalDateTime occurredAt;
 	private boolean isDisplay;

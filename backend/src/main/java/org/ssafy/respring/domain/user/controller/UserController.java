@@ -51,6 +51,9 @@ public class UserController {
         }
 
         String imageUrl = (String) session.getAttribute("userProfileImage");
+        if (imageUrl == null) {
+            imageUrl = "public/placeholder_profilepic.png";
+        }
         String presignedUrl = imageService.generatePresignedUrl(imageUrl);
         LoginResponseDto responseDto = new LoginResponseDto(userId, userNickname, presignedUrl);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);

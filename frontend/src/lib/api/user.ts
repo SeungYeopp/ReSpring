@@ -12,18 +12,16 @@ export interface UserInfo{
     profileImageUrl: string
 }
 
-// 사용자 회원가입 함수
-// 입력 : 유저 닉네임(string), 이메일(string), 비밀번호(string)
-// 출력 : 회원가입 성공 여부 (true/false)
-export const signup = async (userNickname : string, email : string, password : string) : Promise<boolean>=> {
+export const signup = async (userNickname : string, email : string, password : string, provider : string, image : File) : Promise<boolean>=> {
     try{
         const formData = new FormData;
 
-        formData.append('userNickname', `${userNickname}`);
-        formData.append('email', `${email}`)
-        formData.append('password', `${password}`)
-
-        const response = await axiosAPI.post('/user/signup', formData);
+        formData.append('signUpRequestDto', new Blob([
+            JSON.stringify({userNickname, email, password, provider})
+        ], {type : 'application/json'}
+        ));
+        formData.append('image', image);
+        const response = await axiosAPI.post('/user/signup', formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
         if(response.status === 200 || response.status === 201 || response.status === 204)
             return true;
@@ -47,7 +45,7 @@ export const login = async (email : string, password : string) : Promise<boolean
         formData.append('email', email);
         formData.append('password', password);
 
-        const response = await axiosAPI.post('/user/login', formData);
+        const response = await axiosAPI.post('/auth/login', formData);
 
         if(response.status === 200 || response.status === 201 || response.status === 204)
             return true;
@@ -64,11 +62,11 @@ export const login = async (email : string, password : string) : Promise<boolean
 // 이후 아래 함수를 사용해서 session 정보를 받을 수 있습니다.
 // 입력 : X
 // 출력 : SessionInfo 정보.
-export const getSessionInfo = async () : Promise<SessionInfo> => {
+export const getSessionInfo = async () : Promise<UserInfo> => {
     try{
         const response = await axiosAPI.get('/user/me');
 
-        return response.data as SessionInfo;
+        return response.data as UserInfo;
     }catch(error : any){
         throw new Error(error.response?.data?.message || "getSessionInfos() 함수 호출 에러 발생!");
     }
@@ -92,7 +90,7 @@ export const getUserInfoByNickname = async (nickname: string) : Promise<UserInfo
 // 출력 : 로그아웃 성공 시 true, 그 외 false.
 export const logout = async() : Promise<boolean> => {
     try{
-        const response = await axiosAPI.post('/user/logout');
+        const response = await axiosAPI.post('/auth/logout');
 
         if(response.status === 200 || response.status === 204)
             return true;

@@ -65,11 +65,11 @@ public class BookLikesRedisService {
 
         for (String key : keys) {
             Long bookId = Long.parseLong(key.replace(LIKE_KEY_PREFIX, ""));
-            Set<UUID> likedUsers = getLikedUsers(bookId);
+            Set<String> likedUsers = getLikedUsers(bookId);
 
-            likedUsers.forEach(userId -> {
+            likedUsers.forEach(userName -> {
                 Book book = bookRepository.findById(bookId).orElse(null);
-                User user = userRepository.findById(userId).orElse(null);
+                User user = userRepository.findByUserNickname(userName).orElse(null);
 
                 if (book != null && user != null) {
                     if (!bookLikesRepository.existsByBookAndUser(book, user)) { // 중복 방지
@@ -87,13 +87,12 @@ public class BookLikesRedisService {
         }
     }
 
-    public Set<UUID> getLikedUsers(Long bookId) {
+    public Set<String> getLikedUsers(Long bookId) {
         String redisKey = LIKE_KEY_PREFIX + bookId;
         return Optional.ofNullable(redisTemplate.opsForSet().members(redisKey))
           .orElse(Set.of())
           .stream()
           .map(Object::toString)
-          .map(UUID::fromString)
           .collect(Collectors.toSet());
     }
 }

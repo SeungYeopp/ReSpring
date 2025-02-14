@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { login } from "@/lib/api";
+import {GoogleLoginButton} from "@/components/google-login-button"
+import {KakaoLoginButton} from "@/components/kakao-login-button"
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -77,9 +79,8 @@ export function LoginForm() {
           <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
             로그인
           </Button>
-          <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
-            소셜 로그인
-          </Button>
+          <KakaoLoginButton/>
+          <GoogleLoginButton/>
           <Button type="button" onClick={handleTempLogin} className="w-full bg-brand hover:bg-brand-dark text-white">
             임시 로그인(개발용, 박싸피)
           </Button>

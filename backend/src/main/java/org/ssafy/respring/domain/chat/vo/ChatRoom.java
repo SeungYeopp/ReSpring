@@ -27,7 +27,9 @@ public class ChatRoom {
     private boolean isOpenChat = false;
     private boolean isMentoring = false;
 
-    private UUID mentorId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User mentor;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ChatRoomUser> chatRoomUsers = new ArrayList<>(); // ✅ 초기화 추가

@@ -22,5 +22,5 @@ public class SubscribedChallengeResponseDto {
 
     // ✅ 추가: 챌린지 생성자 정보 (구독한 사람이 만든 챌린지인지 확인)
     private UUID ownerId;
-    private String ownerName;
+    private String ownerNickname;
 }
