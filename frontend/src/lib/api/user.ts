@@ -15,11 +15,13 @@ export interface UserInfo{
 export const signup = async (userNickname : string, email : string, password : string, provider : string, image : File) : Promise<boolean>=> {
     try{
         const formData = new FormData;
-
-        formData.append('signUpRequestDto', new Blob([
-            JSON.stringify({userNickname, email, password, provider})
-        ], {type : 'application/json'}
-        ));
+        
+        formData.append('signUpRequestDto', JSON.stringify({
+            userNickname,
+            email,
+            password,
+            provider
+          }));
         formData.append('image', image);
         const response = await axiosAPI.post('/user/signup', formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
