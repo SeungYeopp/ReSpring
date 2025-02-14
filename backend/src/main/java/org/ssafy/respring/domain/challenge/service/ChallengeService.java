@@ -32,11 +32,8 @@ import org.ssafy.respring.domain.notification.vo.NotificationType;
 import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
-import org.ssafy.respring.domain.challenge.repository.RecordsRepository;
-import org.ssafy.respring.domain.chat.repository.ChatRoomRepository;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -215,7 +212,7 @@ public class ChallengeService {
           .longestStreak(longestStreak) // ✅ 연속 성공 기록
           .currentStreak(currentStreak) // ✅ 현재 연속 성공 기록
           .successRate(successRate) // ✅ 성공률
-          .ownerName(owner.getUserNickname()) // ✅ 챌린지 OwnerId 추가
+          .ownerNickname(owner.getUserNickname()) // ✅ 챌린지 OwnerId 추가
           .ownerProfileImage(owner.getProfileImage())
           .records(records.orElse(null))
           .build();

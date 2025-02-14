@@ -1,9 +1,5 @@
 package org.ssafy.respring.domain.book.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,9 +7,7 @@ import lombok.NoArgsConstructor;
 import org.ssafy.respring.domain.book.vo.Book;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -21,7 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BookResponseDto {
 	private Long id;
-	private String authorName;
+	private String authorNickname;
 	private String authorProfileImage;
 	private String title;
 	private String coverImage;
@@ -36,7 +30,7 @@ public class BookResponseDto {
 	public static BookResponseDto toResponseDto(Book book, boolean isLiked, Long likeCount, Set<String> likedUsers, Long viewCount, String coverImage) {
 		return BookResponseDto.builder()
 				.id(book.getId())
-				.authorName(book.getAuthor().getUserNickname())
+				.authorNickname(book.getAuthor().getUserNickname())
 				.authorProfileImage(book.getAuthor().getProfileImage())
 				.createdAt(book.getCreatedAt())
 				.updatedAt(book.getUpdatedAt())

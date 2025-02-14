@@ -1,12 +1,10 @@
 package org.ssafy.respring.domain.challenge.dto.response;
 
 import lombok.*;
-import org.ssafy.respring.domain.tag.vo.ChallengeTag;
 import org.ssafy.respring.domain.tag.vo.Tag;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -28,7 +26,7 @@ public class ChallengeDetailResponseDto {
     private int longestStreak;
     private int currentStreak;
     private double successRate;
-    private String ownerName;
+    private String ownerNickname;
     private String ownerProfileImage;
     private Object records;
 }

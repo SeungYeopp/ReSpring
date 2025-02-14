@@ -158,7 +158,7 @@ public class ChatController {
                         .roomId(room.getId())
                         .name(room.getName())
                         .isMentoring(true)
-                        .mentorName(room.getMentor().getUserNickname())
+                        .mentorNickname(room.getMentor().getUserNickname())
                         .userCount(room.getUsers().size())
                         .participants(room.getUsers().stream().map(User::getUserNickname).collect(Collectors.toList()))
                         .build())
@@ -299,7 +299,7 @@ public class ChatController {
                 .roomId(chatRoom.getId())
                 .name(chatRoom.getName())
                 .isMentoring(true)
-                .mentorName(chatRoom.getMentor().getUserNickname())
+                .mentorNickname(chatRoom.getMentor().getUserNickname())
                 .userCount(chatRoom.getUsers().size())
                 .build();
     }
@@ -312,7 +312,7 @@ public class ChatController {
                 .roomId(chatRoom.getId())
                 .name(chatRoom.getName())
                 .isMentoring(chatRoom.isMentoring())
-                .mentorName(chatRoom.getMentor().getUserNickname())
+                .mentorNickname(chatRoom.getMentor().getUserNickname())
                 .userCount(chatRoom.getUsers().size())
                 .build();
     }

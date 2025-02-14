@@ -1,14 +1,10 @@
 package org.ssafy.respring.domain.book.dto.response;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.comment.dto.response.CommentDto;
-import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -18,7 +14,7 @@ import java.util.*;
 @AllArgsConstructor
 public class BookDetailResponseDto {
 	private Long id;
-	private String authorName;
+	private String authorNickname;
 	private String authorProfileImage;
 	private String title;
 	private Map<String, String> content;  // ✅ 책 전체 내용 포함
@@ -46,7 +42,7 @@ public class BookDetailResponseDto {
 	) {
 		return BookDetailResponseDto.builder()
 			.id(book.getId())
-			.authorName(book.getAuthor().getUserNickname()) // 유저 닉네임 반환
+			.authorNickname(book.getAuthor().getUserNickname()) // 유저 닉네임 반환
 			.authorProfileImage(book.getAuthor().getProfileImage())
 			.title(book.getTitle())
 			.content(contentJson) // ✅ 책 내용 포함

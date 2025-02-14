@@ -8,7 +8,6 @@ import java.util.UUID;
 
 @Data
 public class StoryUpdateRequestDto {
-    private UUID userId;
     private String title;
     private String content;
     private Long eventId;
