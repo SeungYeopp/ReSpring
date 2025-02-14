@@ -7,8 +7,15 @@ import StatSummary from "../components/stat-summary";
 import TabBar from "../components/tabbar";
 import { isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
 import SubscribersModal from "../components/subscribers";
+import Link from "next/link";
+import { logout } from "@/lib/api";
 
 export default function ProfilePage() {
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = "/main";
+  };
+
   const router = useRouter();
   const myId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
   const { id } = useParams();
@@ -93,7 +100,14 @@ export default function ProfilePage() {
               <img src="/placeholder_badge.svg" alt="Badge" className="w-[48px]" />
             </div>
           </div>
-{/* 
+          <button
+            className="bg-blue-500 text-white text-xl px-4 py-2 w-[50%] rounded-md mt-4 mx-auto block"
+            onClick={handleLogout}
+          >
+            로그아웃
+          </button>
+
+          {/* 
           {myId === targetId ? (
             <button
               className="bg-blue-500 text-white text-xl px-4 py-2 w-[50%] rounded-md mt-4 mx-auto block"
