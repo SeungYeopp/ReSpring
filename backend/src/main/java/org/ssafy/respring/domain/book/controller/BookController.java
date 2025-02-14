@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
+import org.ssafy.respring.domain.book.dto.request.BookSortRequestDto;
 import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
 import org.ssafy.respring.domain.book.dto.response.BookAutocompleteResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookDetailResponseDto;
@@ -137,7 +138,7 @@ public class BookController {
 		return ResponseEntity.ok(isLiked ? "Liked" : "Unliked");
 	}
 
-	@GetMapping("/all/sorted")
+	@GetMapping("/all/sorted/once")
 	@Operation(summary = "모든 봄날의 서 정렬", description = "모든 봄날의 서를 조회할 때 정렬 기준을 지정합니다.")
 	public ResponseEntity<List<BookResponseDto>> getBooksSorted(
 			@RequestParam String sortBy,
@@ -146,6 +147,24 @@ public class BookController {
 		UUID userId = getUserIdFromSession(session);
 		return ResponseEntity.ok(bookService.getAllBooksSortedBy(sortBy, ascending, userId));
 	}
+
+	@PostMapping("/all/sorted")
+	@Operation(summary = "모든 봄날의 서 정렬 - 무한 스크롤 적용", description = "모든 봄날의 서를 조회할 때 정렬 기준을 지정합니다.")
+	public ResponseEntity<List<BookResponseDto>> getBooksSorted(
+			@RequestBody BookSortRequestDto requestDto,
+			HttpSession session) {
+		UUID userId = getUserIdFromSession(session);
+		return ResponseEntity.ok(bookService.getAllBooksSortedBy(
+				requestDto.getSortBy(),
+				requestDto.isAscending(),
+				requestDto.getLastValue(),
+				requestDto.getLastCreatedAt(),
+				requestDto.getLastId(),
+				requestDto.getSize(),
+				userId
+		));
+	}
+
 
 	@GetMapping("/weeklyTop3")
 	@Operation(summary = "봄날의 서 주간 랭킹 Top3", description = "봄날의 서 주간 랭킹 Top3를 반환합니다.")

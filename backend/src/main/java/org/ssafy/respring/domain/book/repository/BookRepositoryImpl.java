@@ -1,6 +1,7 @@
 package org.ssafy.respring.domain.book.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +67,60 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
                 .fetch();
     }
 
+    @Override
+    public List<Book> getAllBooksSortedBy(String sortBy, boolean ascending, Long lastValue, LocalDateTime lastCreatedAt, Long lastId, int size) {
+        QBook book = QBook.book;
+        QBookLikes bookLikes = QBookLikes.bookLikes;
+        QBookViews bookViews = QBookViews.bookViews;
+
+        // 좋아요 및 조회수 집계
+        NumberExpression<Long> likeCount = bookLikes.id.count().coalesce(0L);
+        NumberExpression<Long> viewCount = bookViews.id.count().coalesce(0L);
+
+        // ✅ 정렬 기준을 맞춰줌
+        OrderSpecifier<?> primaryOrder;
+        OrderSpecifier<?> secondaryOrder = ascending ? book.id.asc() : book.id.desc();
+
+        switch (sortBy) {
+            case "likes":
+                primaryOrder = ascending ? likeCount.asc() : likeCount.desc();
+                break;
+            case "views":
+                primaryOrder = ascending ? viewCount.asc() : viewCount.desc();
+                break;
+            default:
+                primaryOrder = ascending ? book.createdAt.asc() : book.createdAt.desc();
+                break;
+        }
+
+        // ✅ 커서 기반 페이징을 위한 조건 설정
+        BooleanExpression cursorCondition = null;
+        if (lastValue != null && lastId != null) {
+            if (sortBy.equals("createdAt") && lastCreatedAt != null) {
+                // ✅ createdAt 기준으로 정렬할 경우 LocalDateTime 비교
+                cursorCondition = ascending
+                        ? book.createdAt.gt(lastCreatedAt).or(book.createdAt.eq(lastCreatedAt).and(book.id.gt(lastId)))
+                        : book.createdAt.lt(lastCreatedAt).or(book.createdAt.eq(lastCreatedAt).and(book.id.lt(lastId)));
+            } else {
+                // ✅ 좋아요 또는 조회수 기준으로 정렬할 경우
+                NumberExpression<Long> sortExpression = sortBy.equals("likes") ? likeCount : viewCount;
+                cursorCondition = ascending
+                        ? sortExpression.gt(lastValue).or(sortExpression.eq(lastValue).and(book.id.gt(lastId)))
+                        : sortExpression.lt(lastValue).or(sortExpression.eq(lastValue).and(book.id.lt(lastId)));
+            }
+        }
+
+        return queryFactory
+                .select(book)
+                .from(book)
+                .leftJoin(bookLikes).on(bookLikes.book.id.eq(book.id))
+                .leftJoin(bookViews).on(bookViews.book.id.eq(book.id))
+                .groupBy(book.id)
+                .having(cursorCondition)  // ✅ `HAVING` 절로 변경
+                .orderBy(primaryOrder, secondaryOrder)  // ✅ 정렬 기준 적용
+                .limit(size)
+                .fetch();
+    }
 
     @Override
     public List<Book> getAllBooksSortedBy(String sortBy, boolean ascending) {

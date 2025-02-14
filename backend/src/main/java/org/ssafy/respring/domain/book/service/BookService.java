@@ -307,6 +307,7 @@ public class BookService {
 		  .collect(Collectors.toList());
 	}
 
+	// 무한스크롤 x
 	@Transactional(readOnly = true)
 	public List<BookResponseDto> getAllBooksSortedBy(String sortBy, boolean ascending, UUID userId) {
 		return bookRepository.getAllBooksSortedBy(sortBy, ascending)
@@ -315,6 +316,16 @@ public class BookService {
 				.collect(Collectors.toList());
 	}
 
+	// 무한스크롤 버전
+	@Transactional(readOnly = true)
+	public List<BookResponseDto> getAllBooksSortedBy(
+			String sortBy, boolean ascending, Long lastValue, LocalDateTime lastCreatedAt, Long lastId, int size, UUID userId) {
+
+		return bookRepository.getAllBooksSortedBy(sortBy, ascending, lastValue, lastCreatedAt, lastId, size)
+				.stream()
+				.map(book -> mapToBookResponseDto(book, userId))
+				.collect(Collectors.toList());
+	}
 
 	// 무한스크롤 적용 x
 	@Transactional(readOnly = true)
