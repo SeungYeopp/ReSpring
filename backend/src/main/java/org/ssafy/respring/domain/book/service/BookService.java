@@ -186,31 +186,6 @@ public class BookService {
 		}
 	}
 
-
-	// JSON 변환을 위한 헬퍼 메서드
-	private BookContent parseJsonContent(String jsonContent, Long bookId) {
-		// ObjectMapper objectMapper = new ObjectMapper();
-		try {
-
-			LinkedHashMap<String, String> contentMap = objectMapper.readValue(jsonContent, new TypeReference<LinkedHashMap<String, String>>() {});
-
-			// ✅ 키 값에서 '.'을 '_DOT_'로 변환
-			Map<String, String> sanitizedContent = new HashMap<>();
-			for (Map.Entry<String, String> entry : contentMap.entrySet()) {
-				String sanitizedKey = entry.getKey().replace(".", "_DOT_");
-				sanitizedContent.put(sanitizedKey, entry.getValue());
-			}
-
-			BookContent bookContent = bookContentRepository.findByBookId(bookId);
-			bookContent.setBookId(bookId);
-			bookContent.setContent(contentMap);
-			return bookContent;
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException("JSON 변환 오류: " + e.getMessage(), e);
-		}
-	}
-
-
 	@Transactional
 	public void deleteBook(Long bookId, UUID userId) {
 
@@ -452,36 +427,6 @@ public class BookService {
 		return mapToBookAutocompleteResponseDtoList(searchResponse);
 	}
 
-
-//	@Transactional
-//	public List<BookAutocompleteResponseDto> autocompleteBookTitle(String prefix) throws IOException {
-//		SearchRequest searchRequest = SearchRequest.of(s -> s
-//				.index(BOOK_INDEX)
-//				.query(q -> q.matchPhrasePrefix(m -> m.field("title.autocomplete").query(prefix)))); // ✅ 필드 수정
-//
-//		SearchResponse<Map> searchResponse = esClient.search(searchRequest, Map.class);
-//		return mapToBookAutocompleteResponseDtoList(searchResponse);
-//	}
-
-
-
-	private List<BookResponseDto> mapToBookResponseDtoList(SearchResponse<Map> searchResponse, UUID userId) {
-		return searchResponse.hits().hits().stream()
-				.map(hit -> {
-					try {
-						BookResponseDto bookDto = objectMapper.convertValue(hit.source(), BookResponseDto.class);
-						if (bookDto.getId() == null) {
-							bookDto.setId(Long.parseLong(hit.id()));
-						}
-						return enrichBookResponse(bookDto, userId);
-					} catch (Exception e) {
-						return null;
-					}
-				})
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
-	}
-
 	public void deleteBookFromIndex(Long bookId, String indexName) {
 		try {
 			esClient.delete(d -> d
@@ -669,16 +614,6 @@ public class BookService {
 				})
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
-	}
-
-
-	private static String convertContentToJson(LinkedHashMap<String, String> content) {
-		ObjectMapper objectMapper = new ObjectMapper();
-		try {
-			return objectMapper.writeValueAsString(content);
-		} catch (JsonProcessingException e) {
-			return "{}"; // JSON 변환 실패 시 빈 객체 반환
-		}
 	}
 
 	private Book getBookById(Long bookId) {
