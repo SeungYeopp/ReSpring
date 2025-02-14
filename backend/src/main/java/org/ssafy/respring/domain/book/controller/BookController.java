@@ -164,6 +164,16 @@ public class BookController {
 		return ResponseEntity.ok(bookService.searchByBookTitle(keyword, userId));
 	}
 
+	@GetMapping("/autocomplete/book-title")
+	@Operation(summary = "봄날의 서 제목 자동완성 (Elasticsearch, 자동완성)", description = "Elasticsearch에서 책 제목을 검색할 때 자동완성을 지원합니다.")
+	public ResponseEntity<List<BookResponseDto>> autocompleteBookTitle(
+			@RequestParam String query,
+			HttpSession session
+	) throws IOException {
+		UUID userId = getUserIdFromSession(session);
+		return ResponseEntity.ok(bookService.autocompleteBookTitle(query, userId));
+	}
+
 	@GetMapping("/liked")
 	@Operation(summary = "좋아요한 봄날의 서 목록 조회", description = "사용자가 좋아요한 책 목록을 조회합니다.")
 	public ResponseEntity<List<BookResponseDto>> getLikedBooks(
