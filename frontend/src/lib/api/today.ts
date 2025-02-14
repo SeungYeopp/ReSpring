@@ -336,3 +336,12 @@ export async function checkIfUserLikedComment(commentId : number) : Promise<bool
     throw new Error(error);
   }
 }
+
+// 댓글 좋아요 순 정렬 미구현.
+// export async function getPostCommentsSortByLikes(postId : number) : Promise<Comment[]>{
+//   try{
+//     return []
+//   }catch(error : any){
+//     throw new Error(error)
+//   }
+// }
