@@ -14,6 +14,7 @@ import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
 import org.ssafy.respring.domain.book.dto.response.BookDetailResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
 import org.ssafy.respring.domain.book.service.BookService;
+import org.ssafy.respring.domain.user.service.UserService;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ import java.util.UUID;
 public class BookController {
 
 	private final BookService bookService;
+	private final UserService userService;
 
 	private UUID getUserIdFromSession(HttpSession session) {
 		return (UUID) session.getAttribute("userId"); // 로그인 안 했으면 null 반환
@@ -104,13 +106,14 @@ public class BookController {
 		return ResponseEntity.ok(bookService.getMyBooks(userId));
 	}
 
-	@GetMapping("/user/{userId}")
+	@GetMapping("/user/{nickname}")
 	@Operation(summary = "특정 유저가 작성한 모든 봄날의 서(자서전) 조회", description = "특정 유저가 작성한 모든 봄날의 서를 조회합니다.")
 	public ResponseEntity<List<BookResponseDto>> getBooksByUser(
-			HttpSession session
+			@PathVariable String nickname, HttpSession session
 	) {
+		UUID authorId = userService.findByNickname(nickname).getId();
 		UUID userId = getUserIdFromSession(session);
-		return ResponseEntity.ok(bookService.getBooksByAuthorId(userId, userId));
+		return ResponseEntity.ok(bookService.getBooksByAuthorId(authorId, userId));
 	}
 
 	@GetMapping("/{bookId}")
