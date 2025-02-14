@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { makeEvent } from "@/lib/api/index";
 import { Button } from "../ui/button";
+import { EventCategories } from "./EventCategories";
 
 export interface Event {
   userId: string;
@@ -83,10 +84,11 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
                 <option value="" disabled>
                   카테고리 선택
                 </option>
-                <option value="work">Work</option>
-                <option value="personal">Personal</option>
-                <option value="important">Important</option>
-                <option value="vacation">Vacation</option>
+                {EventCategories.map(({ eventName }) => (
+                  <option key={eventName} value={eventName}>
+                    {eventName}
+                  </option>
+                ))}
               </select>
 
               <div className="modal-footer">
