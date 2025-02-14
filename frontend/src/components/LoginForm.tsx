@@ -18,32 +18,31 @@ export function LoginForm() {
     try {
       const result = await login(email, password);
 
-      if (!result){
-        alert('로그인 실패');
+      if (!result) {
+        alert("로그인 실패");
       }
     } catch (error) {
-      alert('로그인 실패');
+      alert("로그인 실패");
       console.error(error);
-    } finally{
+    } finally {
       window.location.reload();
     }
   };
 
-  const handleTempLogin = async() => {
-
+  const handleTempLogin = async () => {
     try {
       const result = await login("parkssafy@gmail.com", "password");
 
-      if (!result){
-        alert('로그인 실패');
+      if (!result) {
+        alert("로그인 실패");
       }
     } catch (error) {
-      alert('로그인 실패');
+      alert("로그인 실패");
       console.error(error);
-    } finally{
+    } finally {
       window.location.reload();
     }
-  }
+  };
 
   return (
     <Card className="w-full mx-auto">
@@ -61,7 +60,6 @@ export function LoginForm() {
               placeholder="example@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
               className="border-brand-light focus:ring-brand-dark"
             />
           </div>
@@ -72,19 +70,20 @@ export function LoginForm() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
               className="border-brand-light focus:ring-brand-dark"
             />
           </div>
           <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
             로그인
           </Button>
-          <KakaoLoginButton/>
-          <GoogleLoginButton/>
-          <Button type="button" onClick={handleTempLogin} className="w-full bg-brand hover:bg-brand-dark text-white">
-            임시 로그인(개발용, 박싸피)
-          </Button>
         </form>
+
+        {/* ✅ form 바깥에서 렌더링 ✅ */}
+        <KakaoLoginButton redirectUrl="https://i12a307.p.ssafy.io:8080/oauth2/authorization/kakao" />
+        <GoogleLoginButton />
+        <Button type="button" onClick={handleTempLogin} className="w-full bg-brand hover:bg-brand-dark text-white">
+          임시 로그인(개발용, 박싸피)
+        </Button>
       </CardContent>
     </Card>
   );
