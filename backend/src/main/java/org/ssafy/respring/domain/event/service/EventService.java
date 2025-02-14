@@ -21,7 +21,7 @@ public class EventService {
 	private final EventRepository eventRepository;
 	private final UserRepository userRepository;
 
-	public Long createEvent(EventRequestDto requestDto) {
+	public Long createEvent(EventRequestDto requestDto,UUID userId) {
 
 		Event event = new Event();
 		event.setEventName(requestDto.getEventName());
@@ -29,19 +29,19 @@ public class EventService {
 		event.setDisplay(requestDto.isDisplay());
 		event.setOccurredAt(requestDto.getOccurredAt());
 
-		User user = userRepository.findById(requestDto.getUserId())
-				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + requestDto.getUserId()));
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 		event.setUser(user);
 
 		eventRepository.save(event);
 		return event.getId();
 	}
 
-	public void updateEvent(Long id, EventRequestDto requestDto) {
+	public void updateEvent(Long id, EventRequestDto requestDto,UUID userId) {
 		Event event = eventRepository.findById(id)
 		  				.orElseThrow(() -> new IllegalArgumentException("Event not found"));
 		// 예외 처리)
-		if (!event.getUser().getId().equals(requestDto.getUserId())) {
+		if (!event.getUser().getId().equals(userId)) {
 			throw new IllegalArgumentException("You are not allowed to update this event");
 		}
 		event.setEventName(requestDto.getEventName());

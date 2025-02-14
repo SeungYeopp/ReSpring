@@ -32,17 +32,17 @@ public class StoryService {
     /**
      * 스토리 생성
      */
-    public Long createStory(StoryRequestDto requestDto, List<MultipartFile> imageFiles) {
+    public Long createStory(StoryRequestDto requestDto, List<MultipartFile> imageFiles,UUID userId) {
         // 사용자 정보 설정
         User user = new User();
-        user.setId(requestDto.getUserId());
+        user.setId(userId);
 
         // 이벤트 조회
         Event event = eventRepository.findById(requestDto.getEventId())
                 .orElseThrow(() -> new IllegalArgumentException("Event not found with id: " + requestDto.getEventId()));
 
         // 이벤트 소유자인지 검증
-        if (!event.getUser().getId().equals(requestDto.getUserId())) {
+        if (!event.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("You are not allowed to access this event.");
         }
 
@@ -68,13 +68,13 @@ public class StoryService {
     /**
      * 스토리 수정
      */
-    public void updateStory(Long storyId, StoryUpdateRequestDto requestDto, List<MultipartFile> imageFiles) {
+    public void updateStory(Long storyId, StoryUpdateRequestDto requestDto, List<MultipartFile> imageFiles,UUID userId) {
         // 스토리 조회
         Story story = storyRepository.findById(storyId)
                 .orElseThrow(() -> new IllegalArgumentException("Story not found - id: " + storyId));
 
         // 작성자인지 검증
-        if (!story.getUser().getId().equals(requestDto.getUserId())) {
+        if (!story.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("You are not allowed to update this story.");
         }
 
@@ -83,7 +83,7 @@ public class StoryService {
                 .orElseThrow(() -> new IllegalArgumentException("Event not found with id: " + requestDto.getEventId()));
 
         // 유저가 다른 유저의 이벤트를 선택했는지 검증
-        if (!event.getUser().getId().equals(requestDto.getUserId())) {
+        if (!event.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("You are not allowed to select this event.");
         }
 
