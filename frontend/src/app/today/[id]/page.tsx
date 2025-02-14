@@ -141,7 +141,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
             <div className="flex gap-2 flex-1">
               <Avatar className="h-10 w-10">
                 <AvatarImage src="/corgis/placeholder1.jpg" />
-                <AvatarFallback>{post.userName[0]}</AvatarFallback>
+                <AvatarFallback>{post.userName}</AvatarFallback>
               </Avatar>
               <div>
                 <h2 className="text-base font-semibold">{post.userName}</h2>
