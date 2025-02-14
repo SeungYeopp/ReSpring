@@ -325,3 +325,13 @@ export async function getCommentLikes(commentId : number) : Promise<number>{
     throw new Error(error);
   }
 }
+
+export async function checkIfUserLikedComment(commentId : number) : Promise<boolean>{
+  try{
+    const response = await axiosAPI.get(`/comments/${commentId}/likes/check`);
+
+    return response.data; // true면 좋아요 누름, false면 안 누름.
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
