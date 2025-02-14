@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.user.dto.request.LoginRequestDto;
@@ -30,12 +31,12 @@ public class UserService {
     private final UserMapper userMapper;
 
 
-    public void addUser(SignUpRequestDto signUpRequestDto) {
+    public void addUser(SignUpRequestDto signUpRequestDto, MultipartFile image) {
 
         User user = userMapper.dtoToEntity(signUpRequestDto);
 
-        String profileImageUrl = (signUpRequestDto.getImage() != null && !signUpRequestDto.getImage().isEmpty())
-                ? imageService.uploadImageToS3(signUpRequestDto.getImage(), "profile")
+        String profileImageUrl = (image != null && !image.isEmpty())
+                ? imageService.uploadImageToS3(image, "profile")
                 : "public/placeholder_profilepic.png"; // 기본 프로필 이미지
 
         user.setProfileImage(profileImageUrl);

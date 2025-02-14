@@ -4,12 +4,16 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useViewerSettings } from "../../context/ViewerSettingsContext";
 import { SettingsPanel } from "../SettingsPannel";
+import { usePageControls } from "../../hooks/usePageControls";
 
 interface ReaderProps {
   title: string;
 }
 
 export function TopToolbar({ title }: ReaderProps) {
+  const { isToolbarVisible } = usePageControls();
+  if (!isToolbarVisible) return null; // ❗️툴바 숨김 상태면 안보이게!
+
   const router = useRouter();
   const { theme } = useViewerSettings();
 

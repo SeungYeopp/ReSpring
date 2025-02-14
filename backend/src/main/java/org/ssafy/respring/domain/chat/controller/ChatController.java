@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpSession;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +48,8 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
+@Tag(name = "Chat API", description = "채팅 관련 API")
+
 public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -199,7 +202,7 @@ public class ChatController {
 //    @ResponseBody
 //    public ChatMessage uploadFile(
 //            @RequestParam Long roomId,
-//            HttpSession session,
+//            @RequestParam UUID userId,
 //            @RequestParam MultipartFile file) throws IOException {
 //        return chatService.saveFileMessage(roomId, userId, file);
 //    }
@@ -207,7 +210,7 @@ public class ChatController {
 //    @Operation(summary = "메시지 삭제", description = "특정 메시지를 삭제합니다.")
 //    @DeleteMapping("/chat/message/{messageId}")
 //    @ResponseBody
-//    public void deleteMessage(@PathVariable String messageId, HttpSession session) {
+//    public void deleteMessage(@PathVariable String messageId, @RequestParam UUID userId) {
 //        chatService.deleteMessage(messageId, userId);
 //    }
 //
@@ -271,9 +274,14 @@ public class ChatController {
 
         ChatRoomResponse response = ChatRoomResponse.from(chatRoom);
 
+        User user1 = userRepository.findByUserNickname(request.getUser1Name())
+                .orElseThrow(() -> new IllegalArgumentException("❌ 잘못된 유저 닉네임입니다!"));
+        User user2 = userRepository.findByUserNickname(request.getUser2Name())
+                .orElseThrow(() -> new IllegalArgumentException("❌ 잘못된 유저 닉네임입니다!"));
+
         // ✅ WebSocket을 통해 두 사용자에게 새로운 1:1 채팅방 정보 전송
-        messagingTemplate.convertAndSend("/topic/newRoom/" + request.getUser1Name(), response);
-        messagingTemplate.convertAndSend("/topic/newRoom/" + request.getUser2Name(), response);
+        messagingTemplate.convertAndSend("/topic/newRoom/" + user1.getId(), response);
+        messagingTemplate.convertAndSend("/topic/newRoom/" + user2.getId(), response);
     }
 
     // ✅ 멘토링(강연자) 방 생성

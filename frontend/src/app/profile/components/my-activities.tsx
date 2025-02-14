@@ -1,61 +1,156 @@
 "use client";
 
-import type { Post } from "@/lib/api";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useEffect, useState } from "react";
 import { formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
-import { getPostsByUserId } from "@/lib/api";
-import { useInView } from "react-intersection-observer";
+import type { Comment, Post } from "@/lib/api";
+import { getPostsByUserId, getCommentsByUserId } from "@/lib/api/";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/custom/TabGreen";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function CommunityPosts({ userId }: { userId: string }) {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [ref, inView] = useInView();
+  const [comments, setComments] = useState<Comment[]>([]); // State for comments
+  const [postsToShow, setPostsToShow] = useState(5);
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
 
   const fetchPosts = async () => {
-    try {
-      const userPosts = await getPostsByUserId(userId);
-      setPosts(userPosts);
-    } catch (error) {
-      console.error("Failed to fetch user posts:", error);
-    }
+    setIsLoading(true);
+    const allPosts = await getPostsByUserId(userId);
+    setPosts(allPosts);
+    setIsLoading(false);
+  };
+
+  const fetchComments = async () => {
+    setIsLoading(true);
+    const allComments = await getCommentsByUserId(userId);
+    setComments(allComments);
+    setIsLoading(false);
   };
 
   useEffect(() => {
     fetchPosts();
-  }, [userId]);
+    fetchComments(); // Fetch comments when the component loads
+  }, []);
+
+  const loadMorePosts = () => {
+    setPostsToShow((prev) => prev + 5);
+  };
 
   return (
-    <div className="space-y-4 w-full">
-      <PostList posts={posts.slice(0, 5)} />
-      <div className="flex justify-center mt-4">
-        <Link href={`/profile/${userId}/activities`}>
-          <Button variant="default">더 보기</Button>
-        </Link>
-      </div>
-      <div ref={ref} className="h-10" />
+    <div className="relative">
+      <Tabs 
+        defaultValue="posts" 
+        onValueChange={(value) => setActiveTab(value as "posts" | "comments")}
+      >
+        <TabsList className="flex justify-center md:justify-start -mt-4 space-x-4">
+          <div className="flex flex-col items-center">
+            <TabsTrigger value="posts" className="flex flex-col items-center">
+              <div>작성한 글</div>
+              {/* <div>{posts.length}</div> */}
+            </TabsTrigger>
+          </div>
+          <div className="flex flex-col items-center">
+            <TabsTrigger value="comments" className="flex flex-col items-center">
+              <div>작성한 댓글</div>
+              {/* <div>{comments.length}</div> */}
+            </TabsTrigger>
+          </div>
+        </TabsList>
+        <TabsContent value="posts">
+          {activeTab === "posts" && (
+            <div className="space-y-4 w-full mt-4">
+              <PostList posts={posts.slice(0, postsToShow)} />
+              {postsToShow < posts.length && (
+                <div className="flex justify-center mt-4">
+                  <Button 
+                    variant="default" 
+                    onClick={loadMorePosts} 
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "로딩 중..." : "더 보기"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="comments">
+          {activeTab === "comments" && (
+            <div className="space-y-4 w-full mt-4">
+              <CommentList comments={comments} />
+              {comments.length === 0 && (
+                <p className="text-center text-gray-500">작성한 댓글이 없습니다.</p>
+              )}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
 
 function PostList({ posts }: { posts: Post[] }) {
+  if (posts.length === 0) {
+    return <p className="text-center text-gray-500 mt-4">작성한 글이 없습니다.</p>;
+  }
+
   return (
     <div className="space-y-3">
       {posts.map((post) => (
-        <Link key={post.id} href={`/today/${post.id}`} className="block">
-          <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200">
+        <Link key={post.id} href={`/today/${post.id}`} passHref>
+          <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <Badge variant="outline" className="text-xs px-2 py-1">{post.category}</Badge>
-                <h3 className="text-sm font-semibold flex-1 text-center truncate">{post.title}</h3>
-                <p className="text-xs text-muted-foreground">
-                  {formatDistanceToNowStrict(new Date(post.createdAt), { addSuffix: true, locale: ko })}
-                </p>
+              <div className="flex justify-between items-center my-2">
+                <div className="flex-1 text-left">
+                  <h3 className="text-sm font-semibold truncate">{post.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                    {post.content}
+                  </p>
+                </div>
+                <div className="flex flex-col ml-4 items-end text-right">
+                  <Badge variant="outline" className="text-xs px-2 py-1 mb-4">{post.category}</Badge>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatDistanceToNowStrict(new Date(post.updatedAt), { addSuffix: true, locale: ko })}
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">{post.content}</p>
+            </CardContent>
+          </Card>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+// New Component for Comments
+function CommentList({ comments }: { comments: Comment[] }) {
+  if (comments.length === 0) {
+    return <p className="text-center text-gray-500 mt-4">작성한 댓글이 없습니다.</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {comments.map((comment) => (
+        <Link key={comment.id} href={`/today/${comment.postId}`} passHref>
+          <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-center my-2">
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-semibold truncate">
+                    {comment.content}
+                  </p>
+                </div>
+                <div className="flex flex-col ml-4 items-end text-right">
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatDistanceToNowStrict(new Date(comment.updatedAt), { addSuffix: true, locale: ko })}
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </Link>

@@ -29,12 +29,12 @@ public class User {
     @JsonProperty("userId") // Elasticsearch의 "userId"와 매핑
     @JsonAlias("id")
     private UUID id;
-
+    @Column(unique = true)
     private String userNickname;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
+    @Column(unique = true)
     private String email;
     private String password;
     private String profileImage;
