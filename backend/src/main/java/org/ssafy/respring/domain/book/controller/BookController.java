@@ -137,14 +137,15 @@ public class BookController {
 		return ResponseEntity.ok(isLiked ? "Liked" : "Unliked");
 	}
 
-//	@GetMapping("/all/sorted")
-//	@Operation(summary = "모든 봄날의 서 정렬", description = "모든 봄날의 서를 조회할 때 정렬 기준을 지정합니다.")
-//	public ResponseEntity<List<BookResponseDto>> getBooksSorted(
-//			@RequestParam List<String> sortFields,
-//			@RequestParam(required = false, defaultValue = "desc") List<String> directions,
-//			HttpSession session) {
-//		return ResponseEntity.ok(bookService.getAllBooksSortedByTrends(userId));
-//	}
+	@GetMapping("/all/sorted")
+	@Operation(summary = "모든 봄날의 서 정렬", description = "모든 봄날의 서를 조회할 때 정렬 기준을 지정합니다.")
+	public ResponseEntity<List<BookResponseDto>> getBooksSorted(
+			@RequestParam String sortBy,
+			@RequestParam(required = false, defaultValue = "desc") boolean ascending,
+			HttpSession session) {
+		UUID userId = getUserIdFromSession(session);
+		return ResponseEntity.ok(bookService.getAllBooksSortedBy(sortBy, ascending, userId));
+	}
 
 	@GetMapping("/weeklyTop3")
 	@Operation(summary = "봄날의 서 주간 랭킹 Top3", description = "봄날의 서 주간 랭킹 Top3를 반환합니다.")
@@ -165,13 +166,11 @@ public class BookController {
 		return ResponseEntity.ok(bookService.searchByBookTitle(keyword, userId));
 	}
 
-	@GetMapping("/autocomplete/book-title")
+	@GetMapping("/autocomplete/title")
 	@Operation(summary = "봄날의 서 제목 자동완성 (Elasticsearch, 자동완성)", description = "Elasticsearch에서 책 제목을 검색할 때 자동완성을 지원합니다.")
 	public ResponseEntity<List<BookAutocompleteResponseDto>> autocompleteBookTitle(
-			@RequestParam String query,
-			HttpSession session
+			@RequestParam String query
 	) throws IOException {
-		UUID userId = getUserIdFromSession(session);
 		return ResponseEntity.ok(bookService.autocompleteBookTitle(query));
 	}
 

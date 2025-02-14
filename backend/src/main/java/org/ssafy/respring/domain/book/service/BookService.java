@@ -307,6 +307,15 @@ public class BookService {
 		  .collect(Collectors.toList());
 	}
 
+	@Transactional(readOnly = true)
+	public List<BookResponseDto> getAllBooksSortedBy(String sortBy, boolean ascending, UUID userId) {
+		return bookRepository.getAllBooksSortedBy(sortBy, ascending)
+				.stream()
+				.map(book -> mapToBookResponseDto(book, userId))
+				.collect(Collectors.toList());
+	}
+
+
 	// 무한스크롤 적용 x
 	@Transactional(readOnly = true)
 	public List<BookResponseDto> getAllBooksSortedByTrends(UUID userId) {

@@ -1,5 +1,6 @@
 package org.ssafy.respring.domain.book.repository;
 
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -66,29 +67,40 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
     }
 
 
-//    @Override
-//    public List<Book> getWeeklyTop3Books() {
-//        QBook book = QBook.book;
-//        QBookLikes bookLikes = QBookLikes.bookLikes;
-//        QBookViews bookViews = QBookViews.bookViews;
-//
-//        LocalDateTime oneWeekAgo = LocalDateTime.now().minusDays(7);
-//
-//        return queryFactory.select(book)
-//                .from(book)
-//                .leftJoin(bookLikes).on(bookLikes.book.id.eq(book.id))
-//                .leftJoin(bookViews).on(bookViews.book.id.eq(book.id))
-//                .where(bookLikes.likedAt.after(oneWeekAgo)
-//                        .or(bookViews.updatedAt.after(oneWeekAgo)))
-//                .groupBy(book.id)
-//                .orderBy(
-//                        bookLikes.count().desc(),  // 1순위: 좋아요 수 내림차순
-//                        bookViews.count().desc(),  // 2순위: 조회수 내림차순
-//                        book.createdAt.desc()      // 3순위: 최신순 정렬W
-//                )
-//                .limit(3)
-//                .fetch();
-//    }
+    @Override
+    public List<Book> getAllBooksSortedBy(String sortBy, boolean ascending) {
+        QBook book = QBook.book;
+        QBookLikes bookLikes = QBookLikes.bookLikes;
+        QBookViews bookViews = QBookViews.bookViews;
+
+        // 좋아요 및 조회수 집계
+        NumberExpression<Long> likeCount = bookLikes.id.count().coalesce(0L);
+        NumberExpression<Long> viewCount = bookViews.id.count().coalesce(0L);
+
+        // 정렬 기준 설정
+        OrderSpecifier<?> orderSpecifier;
+        switch (sortBy) {
+            case "likes":
+                orderSpecifier = ascending ? likeCount.asc() : likeCount.desc();
+                break;
+            case "views":
+                orderSpecifier = ascending ? viewCount.asc() : viewCount.desc();
+                break;
+            case "createdAt":
+            default:
+                orderSpecifier = ascending ? book.createdAt.asc() : book.createdAt.desc();
+                break;
+        }
+
+        return queryFactory
+                .select(book)
+                .from(book)
+                .leftJoin(bookLikes).on(bookLikes.book.id.eq(book.id))
+                .leftJoin(bookViews).on(bookViews.book.id.eq(book.id))
+                .groupBy(book.id)
+                .orderBy(orderSpecifier, book.id.desc()) // ✅ ID 내림차순 추가 (중복 방지)
+                .fetch();
+    }
 
     // 무한 스크롤 적용 x
     @Override

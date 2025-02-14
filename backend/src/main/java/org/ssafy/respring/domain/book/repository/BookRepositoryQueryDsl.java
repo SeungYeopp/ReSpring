@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface BookRepositoryQueryDsl {
+    List<Book> getAllBooksSortedBy(String sortBy, boolean ascending);
     List<Book> getAllBooksSortedByTrends();
     List<Book> getAllBooksSortedByTrends(Long lastLikes, Long lastViews, LocalDateTime lastCreatedAt, Long lastBookId, int size);
     List<Book> findLikedBooksByUserId(UUID userId);
