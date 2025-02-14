@@ -5,11 +5,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import Image from "next/image"
 import Link from "next/link"
-import { getAllBooksByUserId, getLikedBooks, BookInfo } from "@/lib/api/book" // API 함수 가져오기
+import { getAllBooksByUserId, getLikedBooks, Book } from "@/lib/api/book" // API 함수 가져오기
 
 export default function Recommendations({ bookId }: { bookId: string }) {
-  const [authorBooks, setAuthorBooks] = useState<BookInfo[]>([])
-  const [followedBooks, setFollowedBooks] = useState<BookInfo[]>([])
+  const [authorBooks, setAuthorBooks] = useState<Book[]>([])
+  const [followedBooks, setFollowedBooks] = useState<Book[]>([])
 
   /** ✅ 랜덤 프로필 이미지 생성 함수 */
   const getRandomImage = () => {
@@ -18,7 +18,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
   };
 
   // 목데이터 설정
-  const mockAuthorBooks: BookInfo[] = [
+  const mockAuthorBooks: Book[] = [
     {
       id: 1,
       authorId: "beb9ebc2-9d32-4039-8679-5d44393b7252",
@@ -73,7 +73,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
     },
   ]
 
-  const mockFollowedBooks: BookInfo[] = [
+  const mockFollowedBooks: Book[] = [
     {
       id: 5,
       authorId: "another-author-id",

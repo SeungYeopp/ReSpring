@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { getAllBooks, BookInfo } from '@/lib/api';
+import { getAllBooks, Book } from '@/lib/api';
 
 export default function Page() {
     const [userId, setUserId] = useState('');
-    const [books, setBooks] = useState<BookInfo[] | null>(null);
+    const [books, setBooks] = useState<Book[] | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { getBookById, Book } from "@/lib/api/book" // API 호출 및 타입 import
+import { getBookById, BookFull } from "@/lib/api/book" // API 호출 및 타입 import
 import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
 
   /** ✅ 랜덤 프로필 이미지 생성 함수 */
@@ -19,7 +19,7 @@ import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
   };
 
 // 목데이터 설정
-const mockBookData: Book = {
+const mockBookData: BookFull = {
   id: 0,
   authorId: "저자ID",
   title: "목데이터 자서전 제목",
@@ -37,7 +37,7 @@ const mockBookData: Book = {
 }
 
 export default function TopSection({ bookId }: { bookId: string }) {
-  const [book, setBook] = useState<Book | null>(null) // API 데이터 저장
+  const [book, setBook] = useState<BookFull | null>(null) // API 데이터 저장
   const [isLiked, setIsLiked] = useState(false)
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)

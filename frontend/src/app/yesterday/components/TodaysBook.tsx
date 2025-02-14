@@ -14,12 +14,12 @@ import {
     CarouselApi
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
-import { getTopThreeWeeklyBooks, Book, BookInfo, CompiledBook, Chapter} from "@/lib/api";
+import { getTopThreeWeeklyBooks, BookFull, Book, CompiledBook, Chapter} from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth"
 
 export const TodaysBook = () => {
     const [api, setApi] = useState<CarouselApi | null>(null);
-    const [bookData, setBookData] = useState<BookInfo[]>([]);
+    const [bookData, setBookData] = useState<Book[]>([]);
     const [current, setCurrent] = useState(0);
 
     const {userId} = useAuth(true);
@@ -34,7 +34,7 @@ export const TodaysBook = () => {
             return
         const setInitials = async () => {
             try {
-                const result: BookInfo[] = await getTopThreeWeeklyBooks(userId);
+                const result: Book[] = await getTopThreeWeeklyBooks(userId);
     
                 console.log(result);
                 setBookData(result);
@@ -76,7 +76,7 @@ export const TodaysBook = () => {
                     setApi={setApi}
                 >
                     <CarouselContent className="w-full">
-                        {bookData.map(({ title, tags, coverImage }: BookInfo, index) => (
+                        {bookData.map(({ title, tags, coverImage }: Book, index) => (
                             <CarouselItem key={title} className="w-full lg:w-1/3 pl-4">
                                 <Card className="flex flex-row h-full w-full border border-gray-200 shadow-md rounded-lg overflow-hidden">
                                     <div className="w-1/3 flex justify-center items-center p-4 bg-gray-100">

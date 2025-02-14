@@ -4,7 +4,7 @@ import Image from "next/image"
 import { ArrowLeft, MessageSquare, Heart, BookIcon, Eye, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
-import type { Book } from "@/lib/api"
+import type { BookFull } from "@/lib/api"
 import { getBookById, likeOrUnlikeBook } from "@/lib/api"
 import { useAuth } from "@/hooks/useAuth"
 import { useRouter } from "next/navigation"
@@ -17,7 +17,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   const [isLiked, setIsLiked] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [likeCount, setLikeCount] = useState<number>(240)
-  const [book, setBook] = useState<Book>()
+  const [book, setBook] = useState<BookFull>()
 
   const {userId} = useAuth(true);
   const router = useRouter();

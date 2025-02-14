@@ -1,11 +1,10 @@
 // 이벤트 관련 API를 호출하는 함수의 모음.
-import { StringToBoolean } from "class-variance-authority/types";
 import axiosAPI from "./axios";
 import { Comment } from "./today";
 
 // 봄날의 서 생성, 수정과 관련된 인터페이스.
 export interface BookPostDto{
-    userId : string,
+    userName : string,
     title : string,
     content : string,
     tags : string[],
@@ -19,9 +18,8 @@ export interface Content {
 // 봄날의 서에 관한 인터페이스.
 export interface Book{
     id : number,
-    authorId : string,
+    authorName : string,
     title : string,
-    content : Content,
     coverImage : string,
     tags : string[],
     likeCount : number,
@@ -29,23 +27,13 @@ export interface Book{
     likedUsers : string[],
     createdAt : Date,
     updatedAt : Date,
-    imageUrls : string[],
-    comments : Comment[],
     liked : boolean,
 }
 
-export interface BookInfo{
-    id : number,
-    authorId : string,
-    title : string,
-    coverImage : string,
-    tags : string[],
-    likeCount : number,
-    viewCount : number,
-    likedUsers : string[],
-    createdAt : Date,
-    updatedAt : Date,
-    liked : boolean,
+export interface BookFull extends Book{
+    content : Content,
+    imageUrls : string[],
+    comments : Comment[],
 }
 
 // AI로 생성된 봄날의 서에 대한 인터페이스.
@@ -67,47 +55,15 @@ export const convertToContent = (compiledBook: CompiledBook): Content => {
     }, {} as Content);
 };
 
-// 봄날의 서 생성 함수
-// 입력 : 유저 Id, 제목, 내용, 태그들, 커버 이미지
-// 출력 : 봄날의 서 ID
-export const makeBook = async (
-    userId : string,
-    compiledBook : CompiledBook,
-    tags: string[],
-    storyIds : number[],
-    coverImage : File
-) : Promise<number> => {
-    try{
-        const content = convertToContent(compiledBook)
-        const title : string = compiledBook.title;
-        const formData = new FormData();
-        console.log("makeBook, title", title);
-        console.log("makeBook, convertedContent", content);
-        formData.append('requestDto', new Blob([
-            JSON.stringify({userId, title, content, tags, storyIds})
-        ], {type : 'application/json'}
-        ));
-        
-        formData.append('coverImg', coverImage);
-        const response = await axiosAPI.post('/books', formData, {headers : {'Content-Type': 'multipart/form-data'}});
-
-        console.log(response.data)
-        return response.data;
-    }catch(error : any){
-        console.error('makeBook 에러 발생!', error);
-        throw new Error(error.response?.data?.message ||'makeBook 에러 발생!');
-    }
-}
-
 // 봄날의 서를 봄날의 서 ID로 검색
 // 입력 : 봄날의 서 ID
 // 출력 : 봄날의 서
-export const getBookById = async (bookId : number, userId : string) : Promise<Book>=> {
+export const getBookById = async (bookId : number) : Promise<BookFull>=> {
     try{
-        const response = await axiosAPI.get(`/books/${bookId}`, {headers : {'X-User-Id' : `${userId}`}});
+        const response = await axiosAPI.get(`/books/${bookId}`);
 
         // Date 형 변환.
-        const bookdata : Book= {
+        const bookdata : BookFull= {
             ...response.data,
             createdAt : new Date(response.data.createdAt),
             updatedAt : new Date(response.data.updatedAt),
@@ -122,10 +78,9 @@ export const getBookById = async (bookId : number, userId : string) : Promise<Bo
 }
 
 // 봄날의 서 내용 업데이트
-// 입력 : 봄날의 서 ID, 유저 Id, 제목, 내용, 태그들, 봄날의 서 내 스토리 Id들, 봄날의 서 커버 이미지
+// 입력 : 봄날의 서 ID, 제목, 내용, 태그들, 봄날의 서 내 스토리 Id들, 봄날의 서 커버 이미지
 // 출력 : 봄날의 서가 성공적으로 업데이트 되었을 시 true, 그외 false
 export const updateBook = async (
-    userId : string, 
     bookId : number, 
     title : string, 
     content : Content, 
@@ -135,31 +90,31 @@ export const updateBook = async (
         try{
             const formData = new FormData();
             formData.append('requestDto', new Blob([
-                JSON.stringify({userId, bookId, title, content, tags, storyIds})
+                JSON.stringify({bookId, title, content, tags, storyIds})
             ], {type : 'application/json'}
             ));
 
             formData.append('표지 이미지', image);
 
-            const response = await axiosAPI.put(`/books/${bookId}`, formData, {headers : {'Content-Type': 'multipart/form-data', 'X-User-Id': `${userId}`}});
+            const response = await axiosAPI.put(`/books/${bookId}`, formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
             if(response.status === 200 || response.status === 204){
                 return true;
             }else{
-                console.error(`updateBook 에러 발생 봄날의 서 Id : ${bookId}, 유저 Id : ${userId}`);
+                console.error(`updateBook 에러 발생 봄날의 서 Id : ${bookId}`);
                 return false;
             }
         }catch(error : any){
-            throw new Error(error.response?.data?.message ||`updateBook 에러 발생 봄날의 서 Id : ${bookId}, 유저 Id : ${userId}`);
+            throw new Error(error.response?.data?.message ||`updateBook 에러 발생 봄날의 서 Id : ${bookId}`);
         }
 }
 
 // 봄날의 서 삭제
-// 입력 : 봄날의 서 ID, 유저 ID
+// 입력 : 봄날의 서 ID
 // 출력 : 삭제 성공 시 true, 그외 false
-export const deleteBook = async (bookId : number, userId : string) : Promise<boolean>=> {
+export const deleteBook = async (bookId : number) : Promise<boolean>=> {
     try{
-        const response = await axiosAPI.delete(`/books/${bookId}`, {headers : {'X-User-Id' : `${userId}`}})
+        const response = await axiosAPI.delete(`/books/${bookId}`)
 
         if(response.status === 200 || response.status === 204){
             return true;
@@ -172,12 +127,43 @@ export const deleteBook = async (bookId : number, userId : string) : Promise<boo
     }
 }
 
-// 봄날의 서 좋아요 또는 좋아요 해제
-// 입력 : 봄날의 서 ID, 유저 ID
-// 출력 : 좋아요는 Liked, 좋아요 해제는 Unliked 반환.
-export const likeOrUnlikeBook = async(bookId : number, userId : string) : Promise<string> => {
+// 봄날의 서 생성 함수
+// 입력 : 제목, 내용, 태그들, 커버 이미지
+// 출력 : 봄날의 서 ID
+export const makeBook = async (
+    compiledBook : CompiledBook,
+    tags: string[],
+    storyIds : number[],
+    coverImage : File
+) : Promise<number> => {
     try{
-        const response = await axiosAPI.patch(`/books/likes/${bookId}`, null, {headers : {'X-User-Id' : `${userId}`}})
+        const content = convertToContent(compiledBook)
+        const title : string = compiledBook.title;
+        const formData = new FormData();
+        console.log("makeBook, title", title);
+        console.log("makeBook, convertedContent", content);
+        formData.append('requestDto', new Blob([
+            JSON.stringify({title, content, tags, storyIds})
+        ], {type : 'application/json'}
+        ));
+        
+        formData.append('coverImg', coverImage);
+        const response = await axiosAPI.post('/books', formData, {headers : {'Content-Type': 'multipart/form-data'}});
+
+        console.log(response.data)
+        return response.data;
+    }catch(error : any){
+        console.error('makeBook 에러 발생!', error);
+        throw new Error(error.response?.data?.message ||'makeBook 에러 발생!');
+    }
+}
+
+// 봄날의 서 좋아요 또는 좋아요 해제
+// 입력 : 봄날의 서 ID
+// 출력 : 좋아요는 Liked, 좋아요 해제는 Unliked 반환.
+export const likeOrUnlikeBook = async(bookId : number) : Promise<string> => {
+    try{
+        const response = await axiosAPI.patch(`/books/likes/${bookId}`, null)
 
         return response.data; // Liked 또는 Unliked가 string 형식으로 반환됨.
     }catch(error : any){
@@ -188,9 +174,9 @@ export const likeOrUnlikeBook = async(bookId : number, userId : string) : Promis
 // 봄날의 서 최근 일주일 간 top 3 반환.
 // 입력 : X
 // 출력 : 봄날의 서 배열
-export const getTopThreeWeeklyBooks = async(userId : string) : Promise<BookInfo[]> => {
+export const getTopThreeWeeklyBooks = async() : Promise<Book[]> => {
     try{
-        const response = await axiosAPI.get('/books/weeklyTop3', {headers : {'X-User-Id' : `${userId}`}});
+        const response = await axiosAPI.get('/books/weeklyTop3');
         return response.data;
     }catch(error: any){
         throw new Error(error.response?.data?.message || 'getTopThreeWeeklyBooks 함수 API 호출에서 오류가 발생했습니다.');
@@ -198,46 +184,92 @@ export const getTopThreeWeeklyBooks = async(userId : string) : Promise<BookInfo[
 }
 
 // 특정 유저에 대한 봄날의 서 전체
-// 입력 : 유저 ID
+// 입력 : 유저 닉네임
 // 출력 : 봄날의 서 배열
-export const getAllBooksByUserId = async(userId : string) : Promise<BookInfo[]> => {
+export const getAllBooksByUserId = async(userName : string) : Promise<Book[]> => {
     try{
-        const response = await axiosAPI.get(`/books/user/${userId}`);
-
+        const response = await axiosAPI.get(`/books/user/${userName}`);
+        
         return response.data;
     }catch(error : any){
         throw new Error(error.response?.data?.message || 'getAllBooksByUserId 함수 API 호출에서 오류가 발생했습니다.');
     }
 }
 
-// 내 봄날의 서 전체
-// 입력 : 유저 Id(본인 ID)
-// 출력 : 봄날의 서 배열열
-export const getMyBooks = async(userId : string) : Promise<BookInfo[]> => {
+// 제목으로 봄날의 서 검색
+// 입력 : 제목
+// 출력 : 봄날의 서 배열
+export const searchBook = async (keyword : string) : Promise<Book[]> => {
     try{
-        const response = await axiosAPI.get('/books/my', {headers : {'X-User-Id': `${userId}`}});
+        const response = await axiosAPI.get(`/books/search?keyword=${keyword}`)
 
+        const responseBooks : Book[] = response.data as Book[];
+
+        return responseBooks;
+    }catch(error : any){
+        throw new Error(error.response?.data?.message || 'searchBook 함수 API 호출에서 오류가 발생했습니다.')
+    }
+}
+
+// 내 봄날의 서 전체
+// 입력 : X
+// 출력 : 봄날의 서 배열
+export const getMyBooks = async() : Promise<Book[]> => {
+    try{
+        const response = await axiosAPI.get('/books/my');
+        
         return response.data;
     }catch(error : any){
         throw new Error(error.response?.data?.message || 'getMyBooks 함수 API 호출에서 오류가 발생했습니다.');
     }
 }
 
+// 사용자가 좋아요한 책 목록
+// 입력 : X
+// 출력 : 봄날의 서 배열
+export const getLikedBooks = async () : Promise<Book[]> => {
+    try{
+        const response = await axiosAPI.get('/books/liked')
+        
+        const responseBooks : Book[] = response.data as Book[];
+    
+        return responseBooks;
+}catch(error : any){
+    throw new Error(error.response?.data?.message || 'getLikedBooks 함수 API 호출에서 오류가 발생했습니다.')
+}
+}
+
+// 봄날의 서 전체 조회 - 무한 스크롤
+// 입력 : 마지막 좋아요수, 마지막 조회수, 마지막 서 ID, 마지막 생성일, 조회 크기
+// 출력 : 봄날의 서 배열
+export const getAllBooksScrolled = async (lastLikes : number, lastViews : number, lastBookId : number, lastCreatedAt : Date | null, size : number) : Promise<Book[]> => {
+    try{
+        const params: Record<string, any> = {
+            lastLikes, lastViews, lastBookId, size
+        }
+        
+        if (lastCreatedAt) {
+            params.lastCreatedAt = lastCreatedAt.toISOString();
+        }
+        
+        const response = await axiosAPI.get(`/books/all`, { params });
+        
+        const responseBooks : Book[] = response.data as Book[];
+    
+        return responseBooks;
+}catch(error : any){
+    throw new Error(error.response?.data?.message || 'getAllBooksScrolled 함수 API 호출에서 오류가 발생했습니다.')
+}
+}
+
 // 데이터베이스 상 모든 봄날의 서
 // 입력 : X
 // 출력 : 봄날의 서 배열
-export const getAllBooks = async (userId : string) : Promise<BookInfo[]> => {
+export const getAllBooks = async () : Promise<Book[]> => {
     try{
-        const response = await axiosAPI.get('/books/all', {headers : {'X-User-Id': `${userId}`}});
+        const response = await axiosAPI.get('/books/all/once');
 
-        const responseBooks : BookInfo[] = response.data as BookInfo[];
-
-        responseBooks.map((book : BookInfo) => ({
-                ...book,
-                createdAt : new Date(book.createdAt),
-                updatedAt : new Date(book.updatedAt)
-            }
-        ));
+        const responseBooks : Book[] = response.data as Book[];
 
         return responseBooks;
     }catch(error : any){
@@ -249,38 +281,38 @@ export const getAllBooks = async (userId : string) : Promise<BookInfo[]> => {
 // 입력 : sortFields -> 봄날의 서 내 필드 종류(ex. title, likes, view) string 배열, directions -> 오름차순('asc') 또는 내림차순('desc') string 배열
 // 추가 설명 ) sortFields를 각각 ['title', 'likes']로 하고 directions를 ['desc', 'asc']로 한다면 제목으로 먼저 내림차순, 그다음 좋아요 수로 오름차순하는 것.
 // 출력 : 봄날의 서 배열
-export const getAllBooksSorted = async (sortFields:string[], directions:string[], userId : string) : Promise<BookInfo[]> => {
-    try{
-        let url = '/books/all/sorted?';
+// export const getAllBooksSorted = async (sortFields:string[], directions:string[], userId : string) : Promise<Book[]> => {
+//     try{
+//         let url = '/books/all/sorted?';
         
-        for(let i = 0;i<sortFields.length;i++){
-            url += `sortFields=${sortFields[i]}&`
-        }
+//         for(let i = 0;i<sortFields.length;i++){
+//             url += `sortFields=${sortFields[i]}&`
+//         }
 
-        for(let i = 0;i<directions.length;i++){
-            url += `directions=${directions[i]}`
+//         for(let i = 0;i<directions.length;i++){
+//             url += `directions=${directions[i]}`
 
-            if(i !== directions.length-1)
-                url += '&';
-        }
+//             if(i !== directions.length-1)
+//                 url += '&';
+//         }
 
-        const response = await axiosAPI.get(url, {headers : {'X-User-Id': `${userId}`}});
+//         const response = await axiosAPI.get(url, {headers : {'X-User-Id': `${userId}`}});
 
-        const responseBooks : BookInfo[] = response.data as BookInfo[];
+//         const responseBooks : Book[] = response.data as Book[];
 
-        responseBooks.map((book : BookInfo) => ({
-                ...book,
-                createdAt : new Date(book.createdAt),
-                updatedAt : new Date(book.updatedAt)
-            }
-        ));
+//         responseBooks.map((book : Book) => ({
+//                 ...book,
+//                 createdAt : new Date(book.createdAt),
+//                 updatedAt : new Date(book.updatedAt)
+//             }
+//         ));
 
-        console.log(responseBooks)
-        return responseBooks;
-    }catch(error : any){
-        throw new Error(error.response?.data?.message || 'getAllBooksSorted 함수 API 호출에서 오류가 발생했습니다.');
-    }
-}
+//         console.log(responseBooks)
+//         return responseBooks;
+//     }catch(error : any){
+//         throw new Error(error.response?.data?.message || 'getAllBooksSorted 함수 API 호출에서 오류가 발생했습니다.');
+//     }
+// }
 
 // 봄날의 서 AI 기능
 // 입력 : 글 조각 여러 개를 하나의 string으로 입력
@@ -319,40 +351,3 @@ export const compileBookByAIMock = (content : string) : CompiledBook => {
     return jsonedData as CompiledBook; // JSON에서 CompiledBook 형으로 변환.
 }
 
-export const searchBook = async (keyword : string, userId : string) : Promise<BookInfo[]> => {
-    try{
-        const response = await axiosAPI.get(`/books/search?keyword=${keyword}`, {headers : {'X-User-Id': `${userId}`}})
-
-        const responseBooks : BookInfo[] = response.data as BookInfo[];
-
-        responseBooks.map((book : BookInfo) => ({
-                ...book,
-                createdAt : new Date(book.createdAt),
-                updatedAt : new Date(book.updatedAt)
-            }
-        ));
-
-        return responseBooks;
-    }catch(error : any){
-        throw new Error(error.response?.data?.message || 'searchBook 함수 API 호출에서 오류가 발생했습니다.')
-    }
-}
-
-export const getLikedBooks = async (userId : string) : Promise<BookInfo[]> => {
-    try{
-        const response = await axiosAPI.get('/books/liked', {headers : {'X-User-Id': `${userId}`}})
-    
-        const responseBooks : BookInfo[] = response.data as BookInfo[];
-
-        responseBooks.map((book : BookInfo) => ({
-                ...book,
-                createdAt : new Date(book.createdAt),
-                updatedAt : new Date(book.updatedAt)
-            }
-        ));
-
-        return responseBooks;
-    }catch(error : any){
-        throw new Error(error.response?.data?.message || 'getLikedBooks 함수 API 호출에서 오류가 발생했습니다.')
-    }
-}

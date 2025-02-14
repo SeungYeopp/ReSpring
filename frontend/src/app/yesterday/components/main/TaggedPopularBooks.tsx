@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { MainBookCarousel } from "./MainBookCarousel";
 import { likedBooks } from "./mocks/books";
 import { Tag } from "lucide-react";
-import { getAllBooks, BookInfo } from "@/lib/api/book";
+import { getAllBooks, Book } from "@/lib/api/book";
 import type { Book as BookType } from "../../types/maintypes";
 import { useAuth } from "@/hooks/useAuth"
 
@@ -18,12 +18,12 @@ const getUniqueRandomTags = (tags: string[], n: number): string[] => {
 };
 
 // 태그별로 책을 필터링하고 상위 10개만 반환하는 함수
-const filterBooksByTag = (books: BookInfo[], tag: string): BookInfo[] => {
+const filterBooksByTag = (books: Book[], tag: string): Book[] => {
   return books.filter((book) => book.tags.includes(tag)).slice(0, 10);
 };
 
 export default function TaggedPopularBooks() {
-  const [taggedBooks, setTaggedBooks] = useState<{ [key: string]: BookInfo[] }>({});
+  const [taggedBooks, setTaggedBooks] = useState<{ [key: string]: Book[] }>({});
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -43,7 +43,7 @@ export default function TaggedPopularBooks() {
         setSelectedTags(randomTags);
 
         // 태그별로 책 필터링
-        const booksByTag: { [key: string]: BookInfo[] } = {};
+        const booksByTag: { [key: string]: Book[] } = {};
         randomTags.forEach((tag) => {
           booksByTag[tag] = filterBooksByTag(allBooks, tag);
         });

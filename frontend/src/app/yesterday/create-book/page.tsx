@@ -9,7 +9,7 @@ import {
   type CompiledBook,
   type Chapter,
   type Image,
-  Book,
+  BookFull,
 } from "@/lib/api"
 import { getSessionInfo, Content } from "@/lib/api"
 import { useRouter } from "next/navigation"
