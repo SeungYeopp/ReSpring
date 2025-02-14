@@ -8,7 +8,7 @@ import { Heart, MessageCircle, MoreHorizontal, ChevronDown, ChevronUp } from "lu
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { getBookById, Book } from "@/lib/api/book"
+import { getBookById, BookFull } from "@/lib/api/book"
 import { Comment } from "@/lib/api/today" // 실제 Comment 타입 import
 
 export default function Comments({ bookId }: { bookId: string }) {
@@ -31,7 +31,7 @@ export default function Comments({ bookId }: { bookId: string }) {
     const fetchComments = async () => {
       try {
         const userId = localStorage.getItem("userId") || ""
-        const book: Book = await getBookById(Number(bookId), userId)
+        const book: BookFull = await getBookById(Number(bookId))
 
         // 각 댓글에 랜덤 좋아요 수 추가 (0~20)
         const commentsWithLikes = book.comments.map(comment => ({

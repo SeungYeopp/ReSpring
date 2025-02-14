@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getBookById } from "@/lib/api";
-import {Book, Content} from "@/lib/api"
+import {BookFull, Content} from "@/lib/api"
 import { useAuth } from "@/hooks/useAuth";
 
 // ✅ 기본 목업 데이터 (API 실패 시 사용)
@@ -592,7 +592,7 @@ const fallbackBookData = `
             setIsLoading(true);
             console.log(`📢 API 요청 시작: /books/${bookId}`);
     
-            const book : Book = await getBookById(parseInt(bookId), userId);
+            const book : BookFull = await getBookById(parseInt(bookId));
     
             if (!book.content || Object.keys(book.content).length === 0) {
               throw new Error("📢 책 내용이 비어 있습니다. 목업 데이터를 사용합니다.");

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { getBookById, Book } from "@/lib/api/book" // API 호출 및 타입 import
+import { getBookById, BookFull } from "@/lib/api/book" // API 호출 및 타입 import
 import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
 
   /** ✅ 랜덤 프로필 이미지 생성 함수 */
@@ -19,9 +19,9 @@ import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
   };
 
 // 목데이터 설정
-const mockBookData: Book = {
+const mockBookData: BookFull = {
   id: 0,
-  authorId: "저자ID",
+  authorName: "저자ID",
   title: "목데이터 자서전 제목",
   content: { "1장": "이것은 목데이터 자서전 내용입니다." },
   coverImage: getRandomImage(),
@@ -37,7 +37,7 @@ const mockBookData: Book = {
 }
 
 export default function TopSection({ bookId }: { bookId: string }) {
-  const [book, setBook] = useState<Book | null>(null) // API 데이터 저장
+  const [book, setBook] = useState<BookFull | null>(null) // API 데이터 저장
   const [isLiked, setIsLiked] = useState(false)
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
@@ -47,7 +47,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const bookData = await getBookById(Number(bookId), userId) // API 호출
+        const bookData = await getBookById(Number(bookId)) // API 호출
         setBook(bookData)
         setIsLiked(bookData.liked) // 초기 좋아요 상태 설정
       } catch (error) {
@@ -158,9 +158,9 @@ export default function TopSection({ bookId }: { bookId: string }) {
         </div>
 
         <div className="flex items-center gap-4">
-          <Link href={`/profile/${book.authorId}`} className="flex items-center gap-1 text-white hover:underline">
+          <Link href={`/profile/${book.authorName}`} className="flex items-center gap-1 text-white hover:underline">
             <User className="w-4 h-4" />
-            <span>작성자 ID: {book.authorId}</span> {/* 나중에 닉네임으로 수정 가능 */}
+            <span>작성자 ID: {book.authorName}</span> {/* 나중에 닉네임으로 수정 가능 */}
           </Link>
           <div className="flex items-center gap-1">
             <EyeIcon className="w-5 h-5" />

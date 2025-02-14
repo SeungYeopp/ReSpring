@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { BookOpen, Clock } from "lucide-react";
 import type {CarouselIndicatorProps } from "../../types/maintypes";
 
-import {getTopThreeWeeklyBooks, getAllBooksByUserId, Book, BookInfo} from "@/lib/api"
+import {getTopThreeWeeklyBooks, getAllBooksByUserId, BookFull, Book} from "@/lib/api"
 import {getAllSubscribers} from "@/lib/api/subscribe"
 import { useRouter } from "next/navigation";
 
@@ -17,8 +17,8 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function TopCarousel() {
   const [activeTab, setActiveTab] = useState("weekly");
-  const [weeklyBooks, setWeeklyBooks] = useState<BookInfo[]>([]);
-  const [subscriberBooks, setSubscriberBooks] = useState<BookInfo[]>([]);
+  const [weeklyBooks, setWeeklyBooks] = useState<Book[]>([]);
+  const [subscriberBooks, setSubscriberBooks] = useState<Book[]>([]);
 
   const {userId} = useAuth(true);
 
@@ -28,7 +28,7 @@ export default function TopCarousel() {
 
     const handleInitials = async () => {
       try{
-        const weeklyResult = await getTopThreeWeeklyBooks(userId);
+        const weeklyResult = await getTopThreeWeeklyBooks();
         setWeeklyBooks(weeklyResult);
 
         const subscribersResult = await getAllSubscribers(userId);
@@ -85,7 +85,7 @@ export default function TopCarousel() {
 }
 
 interface BookCarouselProps {
-  books: BookInfo[];
+  books: Book[];
 }
 
 // ✅ 랜덤 이미지 생성 함수
