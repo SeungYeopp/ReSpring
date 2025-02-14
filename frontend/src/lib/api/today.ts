@@ -8,13 +8,16 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8
 export interface Comment {
   id: number;
   content: string;
-  userId : string;
+  userId? : string;
   userNickname: string;
   createdAt: string;
   updatedAt: string;
   parentId: number | null;
   postId?: number;
   bookId?: number;
+  postTitle? : string;
+  bookTitle? : string;
+  likeCount : number;
 };
 
 export interface Post {
@@ -278,5 +281,15 @@ export async function likeComment(commentId : number): Promise<boolean>{
     return response.data;
   }catch(error : any){
     throw new Error(error);
+  }
+}
+
+export async function getMyPostComments() : Promise<Comment[]> {
+  try{
+    const response = await axiosAPI.get('/comments/posts');
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error)
   }
 }
