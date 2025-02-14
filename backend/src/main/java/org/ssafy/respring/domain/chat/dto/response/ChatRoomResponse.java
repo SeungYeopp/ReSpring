@@ -15,7 +15,7 @@ public class ChatRoomResponse {
     private String name;
     private Boolean isOpenChat;
     private Boolean isMentoring;
-    private UUID mentorId;
+    private String mentorName;
     private int userCount;
 
     // ✅ ChatRoom -> ChatRoomResponse 변환 메서드 추가
@@ -25,7 +25,7 @@ public class ChatRoomResponse {
                 .name(chatRoom.getName())
                 .isOpenChat(chatRoom.isOpenChat())
                 .isMentoring(chatRoom.isMentoring())
-                .mentorId(chatRoom.getMentorId())
+                .mentorName(chatRoom.getMentor().getUserNickname())
                 .userCount(chatRoom.getUsers().size()) // 유저 수 반환
                 .build();
     }
