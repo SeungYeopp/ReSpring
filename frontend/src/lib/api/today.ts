@@ -270,3 +270,13 @@ export async function getCommentsByUserId(userId: string): Promise<Comment[]> {
     throw new Error("댓글을 불러오는 데 실패했습니다.");
   }
 }
+
+export async function likeComment(commentId : number): Promise<boolean>{
+  try{
+    const response = await axiosAPI.post(`/comments/${commentId}/like`);
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
