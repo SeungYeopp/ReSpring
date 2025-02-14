@@ -8,7 +8,6 @@ import java.util.UUID;
 @Getter
 @Setter
 public class CommentRequestDto {
-    private UUID userId;
     private String content;
     private Long postId;
     private Long bookId;
