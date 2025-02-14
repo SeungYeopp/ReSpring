@@ -243,7 +243,6 @@ public class CommentService {
         return new CommentDto(
                 comment.getId(),
                 content,
-                comment.getUser().getId(),
                 comment.getUser().getUserNickname(),
                 comment.getUser().getProfileImage(),
                 comment.getCreatedAt(),
