@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { X, Plus, Calendar } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
 
 interface TimelineCreationProps {
   onNext: () => void
@@ -32,8 +31,15 @@ const TimelineCreation: React.FC<TimelineCreationProps> = ({ onNext, onPrevious 
     setEvents(events.filter((_, i) => i !== index))
   }
 
+  const mockEvents = [
+    { title: "첫 직장 입사", date: "2020-03-15" },
+    { title: "대학교 졸업", date: "2019-02-28" },
+  ]
+
+  const displayEvents = events.length > 0 ? events : mockEvents
+
   return (
-    <div className="space-y-6 md:space-y-8 max-w-2xl mx-auto">
+    <div className="space-y-6 md:space-y-8 max-w-2xl mx-auto px-4 md:px-0">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-[#000000] text-center">
           당신의 인생을 발자취로 남겨보세요!
@@ -43,62 +49,48 @@ const TimelineCreation: React.FC<TimelineCreationProps> = ({ onNext, onPrevious 
         </p>
       </motion.div>
 
-      <div className="md:flex md:space-x-8">
-        <div className="md:w-1/2">
-          <div className="relative">
-            {events.length > 0 ? (
-              <>
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-[#dfeaa5]" />
-                <AnimatePresence>
-                  {events.map((event, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -50 }}
-                      transition={{ duration: 0.3 }}
-                      className="mb-4 ml-8 relative"
-                    >
-                      <div className="absolute -left-10 top-0 w-6 h-6 bg-[#96b23c] rounded-full flex items-center justify-center">
-                        <Calendar className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="bg-[#f0f0f0] p-4 rounded-lg shadow-md">
-                        <div className="flex justify-between items-center">
-                          <h3 className="font-semibold text-[#000000]">{event.title}</h3>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeEvent(index)}
-                            className="text-[#638d3e] hover:text-[#96b23c] hover:bg-[#dfeaa5]"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <p className="text-sm text-[#7b7878]">{event.date}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </>
-            ) : (
-              <div className="space-y-4">
-                {[1, 2, 3].map((_, index) => (
-                  <div key={index} className="flex items-start space-x-4">
-                    <Skeleton className="w-6 h-6 rounded-full" />
-                    <div className="space-y-2 flex-1">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
+      <div className="flex flex-col md:flex-row md:space-x-8 space-y-6 md:space-y-0">
+        <div className="w-full md:w-1/2">
+          <div className="relative px-4">
+            <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-[#dfeaa5]" />
+            <AnimatePresence>
+              {displayEvents.map((event, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                  className="mb-4 ml-8 relative"
+                >
+                  <div className="absolute -left-10 top-0 w-6 h-6 bg-[#96b23c] rounded-full flex items-center justify-center">
+                    <Calendar className="w-4 h-4 text-white" />
                   </div>
-                ))}
-              </div>
-            )}
+                  <div className="bg-[#f0f0f0] p-3 md:p-4 rounded-lg shadow-md">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-semibold text-[#000000] text-sm md:text-base">{event.title}</h3>
+                      {events.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeEvent(index)}
+                          className="text-[#638d3e] hover:text-[#96b23c] hover:bg-[#dfeaa5] p-1"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs md:text-sm text-[#7b7878]">{event.date}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
 
-        <div className="md:w-1/2">
+        <div className="w-full md:w-1/2">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-2 px-4">
               <Label htmlFor="event-title" className="text-sm text-[#000000]">
                 사건 제목
               </Label>
@@ -112,7 +104,7 @@ const TimelineCreation: React.FC<TimelineCreationProps> = ({ onNext, onPrevious 
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 px-4">
               <Label htmlFor="event-date" className="text-sm text-[#000000]">
                 날짜
               </Label>
@@ -127,7 +119,7 @@ const TimelineCreation: React.FC<TimelineCreationProps> = ({ onNext, onPrevious 
             </div>
             <Button
               type="submit"
-              className="w-full bg-[#96b23c] text-[#ffffff] hover:bg-[#638d3e] flex items-center justify-center"
+              className="w-full bg-[#96b23c] text-[#ffffff] hover:bg-[#638d3e] flex items-center justify-center py-2 md:py-3"
             >
               <Plus className="w-4 h-4 mr-2" />
               발자취 남기기
@@ -137,13 +129,16 @@ const TimelineCreation: React.FC<TimelineCreationProps> = ({ onNext, onPrevious 
       </div>
 
       <div className="space-y-4 md:flex md:flex-row-reverse md:space-y-0 md:space-x-4 md:space-x-reverse">
-        <Button onClick={onNext} className="w-full md:w-1/2 bg-[#96b23c] text-[#ffffff] hover:bg-[#638d3e]">
+        <Button
+          onClick={onNext}
+          className="w-full md:w-1/2 bg-[#96b23c] text-[#ffffff] hover:bg-[#638d3e] py-2 md:py-3"
+        >
           다음 단계로
         </Button>
         <Button
           onClick={onPrevious}
           variant="outline"
-          className="w-full md:w-1/2 text-[#638d3e] hover:text-[#96b23c] border-[#dfeaa5]"
+          className="w-full md:w-1/2 text-[#638d3e] hover:text-[#96b23c] border-[#dfeaa5] py-2 md:py-3"
         >
           이전 단계로
         </Button>
