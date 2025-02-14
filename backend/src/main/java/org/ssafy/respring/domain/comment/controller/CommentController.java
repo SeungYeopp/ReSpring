@@ -3,6 +3,7 @@ package org.ssafy.respring.domain.comment.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,22 +28,25 @@ public class CommentController {
     @Operation(summary = "나의 게시글 댓글 조회", description = "사용자가 작성한 모든 게시글 댓글을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
     @GetMapping("/posts")
-    public ResponseEntity<List<CommentDetailResponseDto>> getMyPostComments(@RequestParam UUID userId) {
+    public ResponseEntity<List<CommentDetailResponseDto>> getMyPostComments(HttpSession session) {
+        UUID userId = (UUID) session.getAttribute("userId");
         return ResponseEntity.ok(commentService.getMyPostComments(userId));
     }
 
     @Operation(summary = "게시글 댓글 생성", description = "게시글에 댓글을 작성합니다.")
     @ApiResponse(responseCode = "200", description = "댓글 생성 성공")
     @PostMapping("/posts")
-    public ResponseEntity<CommentResponseDto> createPostComment(@RequestBody CommentRequestDto dto) {
-        return ResponseEntity.ok(commentService.createComment(dto));
+    public ResponseEntity<CommentResponseDto> createPostComment(@RequestBody CommentRequestDto dto, HttpSession session) {
+        UUID userId = (UUID) session.getAttribute("userId");
+        return ResponseEntity.ok(commentService.createComment(dto,userId));
     }
 
     @Operation(summary = "책 댓글 생성", description = "책에 댓글을 작성합니다.")
     @ApiResponse(responseCode = "200", description = "댓글 생성 성공")
     @PostMapping("/books")
-    public ResponseEntity<CommentResponseDto> createBookComment(@RequestBody CommentRequestDto dto) {
-        return ResponseEntity.ok(commentService.createComment(dto));
+    public ResponseEntity<CommentResponseDto> createBookComment(@RequestBody CommentRequestDto dto,HttpSession session) {
+        UUID userId = (UUID) session.getAttribute("userId");
+        return ResponseEntity.ok(commentService.createComment(dto,userId));
     }
 
     @Operation(summary = "게시글 댓글 수정", description = "특정 게시글 댓글의 내용을 수정합니다.")
@@ -50,8 +54,9 @@ public class CommentController {
     @PatchMapping("/posts/{commentId}")
     public ResponseEntity<CommentResponseDto> updatePostComment(
             @PathVariable Long commentId,
-            @RequestParam UUID userId,
+            HttpSession session,
             @RequestBody String content) {
+        UUID userId = (UUID) session.getAttribute("userId");
         return ResponseEntity.ok(commentService.updateComment(commentId, userId, content));
     }
 
@@ -60,8 +65,9 @@ public class CommentController {
     @PatchMapping("/books/{commentId}")
     public ResponseEntity<CommentResponseDto> updateBookComment(
             @PathVariable Long commentId,
-            @RequestParam UUID userId,
+            HttpSession session,
             @RequestBody String content) {
+            UUID userId = (UUID) session.getAttribute("userId");
         return ResponseEntity.ok(commentService.updateComment(commentId, userId, content));
     }
 
@@ -70,7 +76,9 @@ public class CommentController {
     @DeleteMapping("/posts/{commentId}")
     public ResponseEntity<Void> deletePostComment(
             @PathVariable Long commentId,
-            @RequestParam UUID userId) {
+            HttpSession session
+            ) {
+        UUID userId = (UUID) session.getAttribute("userId");
         commentService.deleteComment(commentId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -80,7 +88,8 @@ public class CommentController {
     @DeleteMapping("/books/{commentId}")
     public ResponseEntity<Void> deleteBookComment(
             @PathVariable Long commentId,
-            @RequestParam UUID userId) {
+            HttpSession session) {
+        UUID userId = (UUID) session.getAttribute("userId");
         commentService.deleteComment(commentId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -102,7 +111,8 @@ public class CommentController {
     @Operation(summary = "나의 책 댓글 조회", description = "사용자가 작성한 모든 책 댓글을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
     @GetMapping("/books")
-    public ResponseEntity<List<CommentDetailResponseDto>> getMyBookComments(@RequestParam UUID userId) {
+    public ResponseEntity<List<CommentDetailResponseDto>> getMyBookComments(HttpSession session) {
+       UUID userId = (UUID) session.getAttribute("userId");
         return ResponseEntity.ok(commentService.getMyBookComments(userId));
     }
 
@@ -120,7 +130,8 @@ public class CommentController {
     @PostMapping("/{commentId}/like")
     public ResponseEntity<Boolean> toggleCommentLike(
             @PathVariable Long commentId,
-            @RequestParam UUID userId) {
+            HttpSession session) {
+        UUID userId = (UUID) session.getAttribute("userId");
         boolean liked = commentService.toggleCommentLike(commentId, userId);
         return ResponseEntity.ok(liked);
     }
@@ -140,7 +151,8 @@ public class CommentController {
     @GetMapping("/{commentId}/likes/check")
     public ResponseEntity<Boolean> isCommentLikedByUser(
             @PathVariable Long commentId,
-            @RequestParam UUID userId) {
+            HttpSession session) {
+        UUID userId = (UUID) session.getAttribute("userId");
         boolean liked = commentService.isCommentLikedByUser(commentId, userId);
         return ResponseEntity.ok(liked);
     }
@@ -157,7 +169,8 @@ public class CommentController {
     @Operation(summary = "사용자가 작성한 모든 댓글 조회", description = "사용자가 작성한 모든 댓글(게시글 + 책)을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
     @GetMapping("/my-comments")
-    public ResponseEntity<List<CommentDetailResponseDto>> getMyComments(@RequestParam UUID userId) {
+    public ResponseEntity<List<CommentDetailResponseDto>> getMyComments(HttpSession session) {
+        UUID userId = (UUID) session.getAttribute("userId");
         return ResponseEntity.ok(commentService.getMyAllComments(userId));
     }
 }

@@ -10,7 +10,6 @@ import java.util.UUID;
 public class CommentDto {
     private Long id;
     private String content;
-    private UUID userId;          // ✅ userId 추가
     private String userNickname;
     private String profileImg;
     private LocalDateTime createdAt;

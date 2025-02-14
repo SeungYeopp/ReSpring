@@ -49,10 +49,10 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDto createComment(CommentRequestDto dto) {
+    public CommentResponseDto createComment(CommentRequestDto dto,UUID userId) {
         // 1. 유저 설정
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + dto.getUserId()));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
         // 2. 댓글 객체 생성
         Comment comment = new Comment();
@@ -243,7 +243,6 @@ public class CommentService {
         return new CommentDto(
                 comment.getId(),
                 content,
-                comment.getUser().getId(),
                 comment.getUser().getUserNickname(),
                 comment.getUser().getProfileImage(),
                 comment.getCreatedAt(),

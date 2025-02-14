@@ -228,7 +228,6 @@ public class PostService {
                 .map(comment -> new CommentDto(
                         comment.getId(),
                         comment.getContent(),
-                        comment.getUser().getId(),
                         comment.getUser().getUserNickname(),
                         comment.getUser().getProfileImage(),
                         comment.getCreatedAt(),
