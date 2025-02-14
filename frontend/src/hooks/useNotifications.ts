@@ -19,72 +19,54 @@ const useNotifications = (sseUrl: string) => {
     let isCancelled = false;
 
     const connect = () => {
-      console.log("SSE 연결 시작:", sseUrl);
+      console.log("SSE 연결 시도:", sseUrl);
       const eventSource = new EventSource(sseUrl);
       eventSourceRef.current = eventSource;
 
-      // 🔵 "notification" 이벤트 핸들러
-      const handleNotification = (event: MessageEvent) => {
-        console.log("SSE [notification] 이벤트 발생:", event);
+      eventSource.onopen = () => console.log("SSE 연결 성공:", sseUrl);
+
+      eventSource.onerror = (error: Event & { status?: number }) => {
+        console.error("SSE 연결 에러:", error);
+        const status = error instanceof MessageEvent ? (error.data?.status ?? 0) : 0;
+
+        if (status === 401) {
+          console.warn("401 UNAUTHORIZED: SSE 재연결 중단");
+        } else if (!isCancelled) {
+          console.log("3초 후 SSE 재연결 시도");
+          retryTimeoutRef.current = setTimeout(connect, 3000);
+        }
+        eventSource.close();
+      };
+
+      eventSource.addEventListener("notification", (event: MessageEvent) => {
         try {
-          const parsedData: Notification = JSON.parse(event.data);
-          console.log("SSE 데이터 파싱 성공:", parsedData);
+          const parsedData = JSON.parse(event.data) as Notification;
           setNotifications((prev) => [...prev, parsedData]);
         } catch (error) {
           console.error("SSE 데이터 파싱 실패:", error);
         }
-      };
+      });
 
-      // 🟢 "connect" 이벤트 핸들러
-      const handleConnect = (event: MessageEvent) => {
-        console.log("SSE [connect] 이벤트 발생:", event.data);
-      };
+      eventSource.addEventListener("connect", (event: MessageEvent) => {
+        console.log("[connect] 이벤트 수신:", event.data);
+      });
 
-      // 🔴 "error" 이벤트 핸들러 (연결 끊김 시 재연결)
-      const handleError = (error: any) => {
-        console.error("SSE 연결 에러 발생:", error);
-        eventSource.close();
-
-        if (!isCancelled) {
-          console.log("SSE 재연결 시도 예정 (3초 후)");
-          retryTimeoutRef.current = setTimeout(() => {
-            connect();
-          }, 3000);
-        }
-      };
-
-      // 이벤트 리스너 등록 (이벤트별 핸들러 설정)
-      eventSource.addEventListener("notification", handleNotification);
-      eventSource.addEventListener("connect", handleConnect);
-      eventSource.addEventListener("error", handleError);
-
-      // 클린업 함수 - 언마운트 시 연결 종료 및 재연결 중단
-      return () => {
-        eventSource.removeEventListener("notification", handleNotification);
-        eventSource.removeEventListener("connect", handleConnect);
-        eventSource.removeEventListener("error", handleError);
-        eventSource.close();
-      };
+      return () => eventSource.close();
     };
 
-    // 최초 SSE 연결 시도
     const cleanup = connect();
 
-    // 언마운트 시 정리
     return () => {
       isCancelled = true;
-      console.log("SSE 연결 종료 및 재연결 중단:", sseUrl);
       if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
       if (eventSourceRef.current) eventSourceRef.current.close();
-
-      // 현재 이벤트 리스너도 제거 (위에서 반환된 cleanup 실행)
       cleanup();
     };
   }, [sseUrl]);
 
   const clearNotifications = () => {
     setNotifications([]);
-    console.log("알림 초기화");
+    console.log("알림 목록 초기화 완료");
   };
 
   return { notifications, clearNotifications };

@@ -17,16 +17,18 @@ export function LoginForm() {
     e.preventDefault();
     try {
       const result = await login(email, password);
-
-      if (!result){
+      if(result){
+        alert('안녕하세요!');
+        window.location.href="/main";
+      }else{
         alert('로그인 실패');
       }
+
     } catch (error) {
       alert('로그인 실패');
       console.error(error);
-    } finally{
-      window.location.reload();
     }
+
   };
 
   const handleTempLogin = async() => {
@@ -41,7 +43,7 @@ export function LoginForm() {
       alert('로그인 실패');
       console.error(error);
     } finally{
-      window.location.reload();
+      window.location.href="/main";
     }
   }
 
