@@ -28,7 +28,7 @@ export default function TopCarousel() {
 
     const handleInitials = async () => {
       try{
-        const weeklyResult = await getTopThreeWeeklyBooks(userId);
+        const weeklyResult = await getTopThreeWeeklyBooks();
         setWeeklyBooks(weeklyResult);
 
         const subscribersResult = await getAllSubscribers(userId);

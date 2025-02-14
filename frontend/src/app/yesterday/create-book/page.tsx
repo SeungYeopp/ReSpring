@@ -191,7 +191,6 @@ export default function CreateBook() {
       }, {} as Content);
     
       const result : number= await makeBook(
-        userId,
         compiledBook!,
         bookTags,
         selectedStorieIds,

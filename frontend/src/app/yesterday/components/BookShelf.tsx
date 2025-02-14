@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
-import { getMyBooks } from "@/lib/api/book";
+import { getAllBooksByUserId } from "@/lib/api/book";
 
 interface Book {
   id: string;
@@ -14,7 +14,7 @@ interface BookShelfProps {
   userId: string;
 }
 
-const BookShelf: React.FC<BookShelfProps> = ({ userId }) => {
+const BookShelf: React.FC<BookShelfProps> = ({ userId: userNickname }) => {
   const [books, setBooks] = useState<Book[]>([]);
   const [booksPerShelf, setBooksPerShelf] = useState(4);
   const [bookWidth, setBookWidth] = useState(160);
@@ -23,7 +23,7 @@ const BookShelf: React.FC<BookShelfProps> = ({ userId }) => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const fetchedBooks = await getMyBooks(userId);
+        const fetchedBooks = await getAllBooksByUserId(userNickname);
         const formattedBooks = fetchedBooks.map((book: any) => ({
           ...book,
           createdAt: book.createdAt instanceof Date ? book.createdAt.toISOString() : book.createdAt,
@@ -35,7 +35,7 @@ const BookShelf: React.FC<BookShelfProps> = ({ userId }) => {
     };
 
     fetchBooks();
-  }, [userId]);
+  }, [userNickname]);
 
   useEffect(() => {
     const updateLayout = () => {

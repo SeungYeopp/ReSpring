@@ -35,7 +35,7 @@ export default function TaggedPopularBooks() {
 
     const fetchBooks = async () => {
       try {
-        const allBooks = await getAllBooks(userId);
+        const allBooks = await getAllBooks();
 
         // 모든 책에서 태그 수집 후 고유한 5개 선택
         const allTags = allBooks.flatMap((book) => book.tags);

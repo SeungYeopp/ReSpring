@@ -21,7 +21,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
   const mockAuthorBooks: Book[] = [
     {
       id: 1,
-      authorId: "beb9ebc2-9d32-4039-8679-5d44393b7252",
+      authorName: "beb9ebc2-9d32-4039-8679-5d44393b7252",
       title: "목데이터 자서전 1",
       coverImage: getRandomImage(),
       tags: ["목데이터"],
@@ -34,7 +34,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
     },
     {
       id: 2,
-      authorId: "beb9ebc2-9d32-4039-8679-5d44393b7252",
+      authorName: "beb9ebc2-9d32-4039-8679-5d44393b7252",
       title: "목데이터 자서전 2",
       coverImage: getRandomImage(),
       tags: ["목데이터"],
@@ -47,7 +47,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
     },
     {
       id: 3,
-      authorId: "beb9ebc2-9d32-4039-8679-5d44393b7232",
+      authorName: "beb9ebc2-9d32-4039-8679-5d44393b7232",
       title: "목데이터 자서전 3",
       coverImage: getRandomImage(),
       tags: ["목데이터"],
@@ -60,7 +60,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
     },
     {
       id: 4,
-      authorId: "beb9ebc2-9d32-1039-8679-5d44393b7232",
+      authorName: "beb9ebc2-9d32-1039-8679-5d44393b7232",
       title: "목데이터 자서전 4",
       coverImage: getRandomImage(),
       tags: ["목데이터"],
@@ -76,7 +76,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
   const mockFollowedBooks: Book[] = [
     {
       id: 5,
-      authorId: "another-author-id",
+      authorName: "another-author-id",
       title: "구독 작가 자서전 1",
       coverImage: getRandomImage(),
       tags: ["테스트"],
@@ -89,7 +89,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
     },
     {
       id: 6,
-      authorId: "another-author-id",
+      authorName: "another-author-id",
       title: "구독 작가 자서전 2",
       coverImage: getRandomImage(),
       tags: ["테스트"],
@@ -102,7 +102,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
     },
     {
       id: 7,
-      authorId: "another-author-id",
+      authorName: "another-author-id",
       title: "구독 작가 자서전 3",
       coverImage: getRandomImage(),
       tags: ["테스트"],
@@ -115,7 +115,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
     },
     {
       id: 8,
-      authorId: "another-author-id",
+      authorName: "another-author-id",
       title: "구독 작가 자서전 4",
       coverImage: getRandomImage(),
       tags: ["테스트"],
@@ -136,14 +136,14 @@ export default function Recommendations({ bookId }: { bookId: string }) {
         const currentBookDetails = currentBook.find(book => book.id === Number(bookId))
 
         if (currentBookDetails) {
-          const authorId = currentBookDetails.authorId
+          const authorId = currentBookDetails.authorName
 
           // 저자의 다른 자서전 가져오기
           const authorBooksData = await getAllBooksByUserId(authorId)
           setAuthorBooks(authorBooksData.filter(book => book.id !== Number(bookId)))
 
           // 구독 중인 작가의 자서전 가져오기
-          const followedBooksData = await getLikedBooks(userId)
+          const followedBooksData = await getLikedBooks()
           setFollowedBooks(followedBooksData)
         }
       } catch (error) {
@@ -224,7 +224,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
                   </AspectRatio>
                   <div className="space-y-1 px-1">
                     <h4 className="font-medium text-sm leading-tight line-clamp-2">{book.title}</h4>
-                    <p className="text-xs text-muted-foreground">작성자 ID: {book.authorId}</p>
+                    <p className="text-xs text-muted-foreground">작성자 ID: {book.authorName}</p>
                   </div>
                 </CardContent>
               </Card>

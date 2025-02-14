@@ -16,7 +16,7 @@ export default function TableOfContents({ bookId }: { bookId: string }) {
     const fetchChapters = async () => {
       try {
         const userId = localStorage.getItem("userId") || "" // 임시로 userId 가져오기
-        const book: BookFull = await getBookById(Number(bookId), userId)
+        const book: BookFull = await getBookById(Number(bookId))
         
         // content에서 챕터 추출
         const contentChapters = Object.entries(book.content).map(([title], index) => ({

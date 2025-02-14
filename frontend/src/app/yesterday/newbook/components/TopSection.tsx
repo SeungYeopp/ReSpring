@@ -21,7 +21,7 @@ import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
 // 목데이터 설정
 const mockBookData: BookFull = {
   id: 0,
-  authorId: "저자ID",
+  authorName: "저자ID",
   title: "목데이터 자서전 제목",
   content: { "1장": "이것은 목데이터 자서전 내용입니다." },
   coverImage: getRandomImage(),
@@ -47,7 +47,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const bookData = await getBookById(Number(bookId), userId) // API 호출
+        const bookData = await getBookById(Number(bookId)) // API 호출
         setBook(bookData)
         setIsLiked(bookData.liked) // 초기 좋아요 상태 설정
       } catch (error) {
@@ -158,9 +158,9 @@ export default function TopSection({ bookId }: { bookId: string }) {
         </div>
 
         <div className="flex items-center gap-4">
-          <Link href={`/profile/${book.authorId}`} className="flex items-center gap-1 text-white hover:underline">
+          <Link href={`/profile/${book.authorName}`} className="flex items-center gap-1 text-white hover:underline">
             <User className="w-4 h-4" />
-            <span>작성자 ID: {book.authorId}</span> {/* 나중에 닉네임으로 수정 가능 */}
+            <span>작성자 ID: {book.authorName}</span> {/* 나중에 닉네임으로 수정 가능 */}
           </Link>
           <div className="flex items-center gap-1">
             <EyeIcon className="w-5 h-5" />

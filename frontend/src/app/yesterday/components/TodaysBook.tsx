@@ -34,7 +34,7 @@ export const TodaysBook = () => {
             return
         const setInitials = async () => {
             try {
-                const result: Book[] = await getTopThreeWeeklyBooks(userId);
+                const result: Book[] = await getTopThreeWeeklyBooks();
     
                 console.log(result);
                 setBookData(result);

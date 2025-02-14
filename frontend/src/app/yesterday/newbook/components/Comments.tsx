@@ -31,7 +31,7 @@ export default function Comments({ bookId }: { bookId: string }) {
     const fetchComments = async () => {
       try {
         const userId = localStorage.getItem("userId") || ""
-        const book: BookFull = await getBookById(Number(bookId), userId)
+        const book: BookFull = await getBookById(Number(bookId))
 
         // 각 댓글에 랜덤 좋아요 수 추가 (0~20)
         const commentsWithLikes = book.comments.map(comment => ({

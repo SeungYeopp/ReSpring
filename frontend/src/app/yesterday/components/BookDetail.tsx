@@ -19,7 +19,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   const [likeCount, setLikeCount] = useState<number>(240)
   const [book, setBook] = useState<BookFull>()
 
-  const {userId} = useAuth(true);
+  const {userId, userNickname} = useAuth(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -28,18 +28,18 @@ export default function BookDetail({ bookId }: BookDetailProps) {
 
     const getBook = async () => {
       try {
-        const result = await getBookById(parseInt(bookId, 10), userId)
+        const result = await getBookById(parseInt(bookId, 10))
         setBook(result)
         setLikeCount(result.likeCount)
 
-        const resultLiked = await likeOrUnlikeBook(parseInt(bookId, 10), userId);
+        const resultLiked = await likeOrUnlikeBook(parseInt(bookId, 10));
 
         if(resultLiked === 'Liked'){ // 좋아요를 안 누른 경우 확인.
             setIsLiked(false)
-            await likeOrUnlikeBook(parseInt(bookId, 10), userId); // 좋아요를 누른 경우 확인.
+            await likeOrUnlikeBook(parseInt(bookId, 10)); // 좋아요를 누른 경우 확인.
         }else if(resultLiked === 'Unliked'){
             setIsLiked(true)
-            await likeOrUnlikeBook(parseInt(bookId, 10), userId);
+            await likeOrUnlikeBook(parseInt(bookId, 10));
         }
         
       } catch (error) {
@@ -51,7 +51,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
 
   const handleLike = async () => {
     try{
-        const result = await likeOrUnlikeBook(book!.id, userId);
+        const result = await likeOrUnlikeBook(book!.id);
 
         if(result === 'Liked'){
             setIsLiked(true)
@@ -81,7 +81,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   }
 
   const handleProfileClick = () => {
-    router.push(`/profile/${book?.authorId}`);
+    router.push(`/profile/${book?.authorName}`);
   }
 
   return (
@@ -150,7 +150,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
                 <span>김싸피</span>
             </button>
 
-            {userId !== book?.authorId && 
+            {userNickname !== book?.authorName && 
               <div className="flex gap-2">
                 <Button
                 variant="outline"
