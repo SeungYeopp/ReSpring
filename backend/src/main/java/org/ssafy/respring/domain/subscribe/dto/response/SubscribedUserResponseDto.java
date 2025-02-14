@@ -10,7 +10,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SubscribedUserResponseDto {
     private UUID id;
-    private String nickname;
+    private String userNickname;
     private String email;
     private String profileImage;
     private LocalDateTime createdAt;

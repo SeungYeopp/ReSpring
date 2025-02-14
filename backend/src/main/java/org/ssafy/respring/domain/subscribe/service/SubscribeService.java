@@ -8,7 +8,6 @@ import org.ssafy.respring.domain.book.service.BookLikesRedisService;
 import org.ssafy.respring.domain.book.service.BookViewsRedisService;
 import org.ssafy.respring.domain.challenge.repository.ChallengeRepository;
 import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.notification.service.NotificationService;
@@ -179,7 +178,7 @@ public class SubscribeService {
             .likedUsers(bookLikesRedisService.getLikedUsers(book.getId())) // ✅ 좋아요 누른 사용자 목록
             .createdAt(book.getCreatedAt())
             .updatedAt(book.getUpdatedAt())
-            .authorName(book.getAuthor().getUserNickname()) // ✅ 작성자 이름
+            .authorNickname(book.getAuthor().getUserNickname()) // ✅ 작성자 이름
             .authorProfileImage(book.getAuthor().getProfileImage())
             .build())
           .collect(Collectors.toList());

@@ -4,7 +4,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 @Getter @Setter
 @NoArgsConstructor
@@ -22,6 +21,6 @@ public class SubscribedBookResponseDto {
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 
-	private String authorName;
+	private String authorNickname;
 	private String authorProfileImage;
 }

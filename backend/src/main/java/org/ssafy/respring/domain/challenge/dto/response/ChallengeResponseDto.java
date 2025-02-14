@@ -22,6 +22,6 @@ public class ChallengeResponseDto {
     private Long likes;
     private Long views;
     private Long participantCount;
-    private String ownerName; // 챌린지 생성자 정보 포함
+    private String ownerNickname; // 챌린지 생성자 정보 포함
     private Long chatroomId;
 }
