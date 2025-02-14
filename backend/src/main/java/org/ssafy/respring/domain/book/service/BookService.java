@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
 import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
+import org.ssafy.respring.domain.book.dto.response.BookAutocompleteResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookDetailResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
 import org.ssafy.respring.domain.book.repository.info.BookLikesRepository;
@@ -80,6 +81,7 @@ public class BookService {
 
 
 	private static final String RECENT_VIEW_KEY = "user:recent:books:";
+	private static final String BOOK_INDEX = "book_title";
 
 	@Transactional
     public Long createBook(BookRequestDto requestDto, MultipartFile coverImage, UUID userId) {
@@ -98,9 +100,13 @@ public class BookService {
         bookRepository.save(book);
 
         String coverImageUrl = imageService.saveImage(coverImage, ImageType.BOOK, book.getId());
-
         book.setCoverImage(coverImageUrl);
+
         bookRepository.save(book);
+
+		// ✅ Elasticsearch 색인 수행
+		indexBookData(book);
+
 
 		// ✅ MongoDB 키 변환 적용 ('.' → '_DOT_')
 		LinkedHashMap<String, String> sanitizedContent = escapeDots(requestDto.getContent());
@@ -109,9 +115,6 @@ public class BookService {
 		bookContent.setBookId(book.getId());
 		bookContent.setContent(sanitizedContent); // ✅ 변환된 키 적용
 		bookContentRepository.save(bookContent);
-
-        // ✅ Elasticsearch 색인 수행
-        indexBookData(book, "book_title");
 
 		// ✅ 새 책이 추가되었으므로 캐시 삭제
 		clearTrendingBooksCache();
@@ -179,7 +182,7 @@ public class BookService {
 			bookRepository.save(book);
 
 			// ✅ Elasticsearch 색인 업데이트 (검색 최적화를 위해)
-			indexBookData(book, "book_title");
+			indexBookData(book);
 		}
 	}
 
@@ -405,19 +408,21 @@ public class BookService {
 				.collect(Collectors.toList());
 	}
 
-	public void indexBookData(Book book, String indexName) {
+	public void indexBookData(Book book) {
 		try {
 			Map<String, Object> bookData = new HashMap<>();
 			bookData.put("id", book.getId());
+
+			// ✅ title을 그냥 문자열(String)로 저장
 			bookData.put("title", book.getTitle());
-			bookData.put("author", book.getAuthor().getUserNickname());
-			bookData.put("tags", book.getTags());
+
+			// ✅ 수정된 데이터 확인
+			System.out.println("📌 수정된 색인 요청 데이터: " + bookData);
 
 			IndexRequest<Map<String, Object>> request = IndexRequest.of(i -> i
-					.index(indexName)
+					.index(BOOK_INDEX)
 					.id(book.getId().toString())
-					.document(bookData)
-			);
+					.document(bookData));
 
 			esClient.index(request);
 			System.out.println("✅ Elasticsearch 색인 성공: " + book.getTitle());
@@ -426,6 +431,56 @@ public class BookService {
 		}
 	}
 
+	@Transactional
+	public List<BookAutocompleteResponseDto> autocompleteBookTitle(String prefix) throws IOException {
+		SearchRequest searchRequest = SearchRequest.of(s -> s
+				.index(BOOK_INDEX)
+				.query(q -> q
+						.bool(b -> b
+								.should(s1 -> s1.matchPhrasePrefix(mpp -> mpp // ✅ 입력한 prefix로 시작하는 제목 검색
+										.field("title.autocomplete")
+										.query(prefix)))
+								.should(s2 -> s2.match(m -> m // ✅ 입력한 prefix가 제목 내 포함된 경우도 검색
+										.field("title.autocomplete")
+										.query(prefix)))
+						)
+				)
+				.size(10) // ✅ 자동완성 결과 개수 제한
+		);
+
+		SearchResponse<Map> searchResponse = esClient.search(searchRequest, Map.class);
+		return mapToBookAutocompleteResponseDtoList(searchResponse);
+	}
+
+
+//	@Transactional
+//	public List<BookAutocompleteResponseDto> autocompleteBookTitle(String prefix) throws IOException {
+//		SearchRequest searchRequest = SearchRequest.of(s -> s
+//				.index(BOOK_INDEX)
+//				.query(q -> q.matchPhrasePrefix(m -> m.field("title.autocomplete").query(prefix)))); // ✅ 필드 수정
+//
+//		SearchResponse<Map> searchResponse = esClient.search(searchRequest, Map.class);
+//		return mapToBookAutocompleteResponseDtoList(searchResponse);
+//	}
+
+
+
+	private List<BookResponseDto> mapToBookResponseDtoList(SearchResponse<Map> searchResponse, UUID userId) {
+		return searchResponse.hits().hits().stream()
+				.map(hit -> {
+					try {
+						BookResponseDto bookDto = objectMapper.convertValue(hit.source(), BookResponseDto.class);
+						if (bookDto.getId() == null) {
+							bookDto.setId(Long.parseLong(hit.id()));
+						}
+						return enrichBookResponse(bookDto, userId);
+					} catch (Exception e) {
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
 
 	public void deleteBookFromIndex(Long bookId, String indexName) {
 		try {
@@ -481,40 +536,6 @@ public class BookService {
 
 		return books;
 	}
-
-	@Transactional
-	public List<BookResponseDto> autocompleteBookTitle(String prefix, UUID userId) throws IOException {
-		SearchRequest searchRequest = SearchRequest.of(s -> s
-				.index("book_title")
-				.query(q -> q
-						.matchPhrasePrefix(mpp -> mpp
-								.field("title.autocomplete")  // ✅ 자동완성 전용 필드에서 검색
-								.query(prefix)
-						)
-				)
-		);
-
-		SearchResponse<Map> searchResponse = esClient.search(searchRequest, Map.class);
-		ObjectMapper objectMapper = new ObjectMapper();
-
-		return searchResponse.hits().hits().stream()
-				.map(hit -> {
-					try {
-						BookResponseDto bookDto = objectMapper.convertValue(hit.source(), BookResponseDto.class);
-						if (bookDto.getId() == null) {
-							bookDto.setId(Long.parseLong(hit.id()));
-						}
-						return enrichBookResponseWithDB(bookDto, userId);
-					} catch (Exception e) {
-						System.err.println("❌ 자동완성 검색 변환 오류: " + e.getMessage());
-						return null;
-					}
-				})
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
-	}
-
-
 
 	// ✅ Elasticsearch에서 가져온 데이터에 DB 데이터 추가
 	private BookResponseDto enrichBookResponseWithDB(BookResponseDto bookDto, UUID userId) {
@@ -632,6 +653,24 @@ public class BookService {
 				imageService.getSingleImageByEntity(ImageType.BOOK,book.getId())
 		);
 	}
+
+	private List<BookAutocompleteResponseDto> mapToBookAutocompleteResponseDtoList(SearchResponse<Map> searchResponse) {
+		return searchResponse.hits().hits().stream()
+				.map(hit -> {
+					try {
+						BookAutocompleteResponseDto bookDto = objectMapper.convertValue(hit.source(), BookAutocompleteResponseDto.class);
+						if (bookDto.getId() == null) {
+							bookDto.setId(Long.parseLong(hit.id())); // Elasticsearch에서 ID 값 가져오기
+						}
+						return bookDto;
+					} catch (Exception e) {
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
+
 
 	private static String convertContentToJson(LinkedHashMap<String, String> content) {
 		ObjectMapper objectMapper = new ObjectMapper();

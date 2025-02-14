@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
 import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
+import org.ssafy.respring.domain.book.dto.response.BookAutocompleteResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookDetailResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
 import org.ssafy.respring.domain.book.service.BookService;
@@ -166,12 +167,12 @@ public class BookController {
 
 	@GetMapping("/autocomplete/book-title")
 	@Operation(summary = "봄날의 서 제목 자동완성 (Elasticsearch, 자동완성)", description = "Elasticsearch에서 책 제목을 검색할 때 자동완성을 지원합니다.")
-	public ResponseEntity<List<BookResponseDto>> autocompleteBookTitle(
+	public ResponseEntity<List<BookAutocompleteResponseDto>> autocompleteBookTitle(
 			@RequestParam String query,
 			HttpSession session
 	) throws IOException {
 		UUID userId = getUserIdFromSession(session);
-		return ResponseEntity.ok(bookService.autocompleteBookTitle(query, userId));
+		return ResponseEntity.ok(bookService.autocompleteBookTitle(query));
 	}
 
 	@GetMapping("/liked")
