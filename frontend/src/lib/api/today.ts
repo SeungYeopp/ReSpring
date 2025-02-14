@@ -143,15 +143,14 @@ export async function createPost(postData: CreatePostDto, images?: File[]): Prom
 //   });
 // }
 
-export async function createNewCommunityComment(postId: number, content: string, userId: string, bookId: string, parentId: number | null): Promise<Comment> {
+export async function createNewCommunityComment(postId: number, content: string): Promise<Comment> {
   try{
     const formData = new FormData();
 
     const postDto = {
-      userId, content, postId, bookId, parentId,
+      content, postId,
     }
     
-    console.log(formData)
     const response = await axiosAPI.post(`/comments/posts`, JSON.stringify(postDto), {headers : {'Content-Type': 'application/json'}})
     
     return response.data;
