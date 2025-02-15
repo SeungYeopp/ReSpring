@@ -11,7 +11,7 @@ import { useAuthWithUser } from "@/lib/hooks/tempUseAuthWithUser";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { todayAPI } from "@/app/today/api/todayDetail";
-import { getPostDetail, Post, getCommentsByPostId, deletePost, likePost, checkIfUserLiked, getMyPost} from "@/lib/api";
+import { getPostDetail, Post, getCommentsByPostId, deletePost, likePost, getMyPost} from "@/lib/api";
 //import type { Post } from "@/app/today/api/todayDetail";
 import { CommentSection } from "./comment-section";
 import { ImageGallery } from "./image-gallery";

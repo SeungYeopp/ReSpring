@@ -231,10 +231,9 @@ export async function likePost(postId: number, userId: string): Promise<"Liked" 
   }
 }
 
-export async function checkIfUserLiked(postId: number, userId: string): Promise<boolean> {
+export async function checkIfUserLiked(postId: number): Promise<boolean> {
   try{
-    const response = await axiosAPI.get(`/posts/like/${postId}?userId=${userId}`);
-    console.log(response.data)
+    const response = await axiosAPI.get(`/posts/like/${postId}`);
 
     return response.data;
   }catch(error){
