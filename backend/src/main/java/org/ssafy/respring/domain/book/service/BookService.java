@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.context.annotation.Lazy;
@@ -511,7 +512,7 @@ public class BookService {
 			Book book = optionalBook.get();
 
 			// ✅ Elasticsearch에서 빠진 데이터 보완
-			bookDto.setCoverImage(book.getCoverImage());
+			bookDto.setCoverImage(imageService.generatePresignedUrl(book.getCoverImage()));
 			bookDto.setCreatedAt(book.getCreatedAt());
 			bookDto.setUpdatedAt(book.getUpdatedAt());
 		} else {
