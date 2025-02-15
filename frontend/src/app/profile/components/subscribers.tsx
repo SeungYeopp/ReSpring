@@ -80,11 +80,11 @@ export default function SubscribersModal({ onClose }: SubscribersModalProps) {
               >
                 <img
                   src={subscriber.profileImage || "/placeholder_profilepic.png"}
-                  alt={subscriber.nickname}
+                  alt={subscriber.userNickname}
                   className="w-[40px] h-[40px] rounded-full object-cover"
                 />
                 <span className="text-lg font-semibold">
-                  {subscriber.nickname}
+                  {subscriber.userNickname}
                 </span>
               </Link>
               <button
