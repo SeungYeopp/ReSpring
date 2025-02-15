@@ -243,15 +243,15 @@ export async function checkIfUserLiked(postId: number): Promise<boolean> {
 
 /**
  * 특정 사용자의 게시물 목록을 가져오는 함수
- * @param userId - 게시물을 가져올 사용자 ID
+ * @param userNickname - 게시물을 가져올 사용자 닉네임
  * @returns Promise<PostDetails[]> - 해당 사용자의 게시물 배열
  */
-export async function getPostsByUserId(userId: string): Promise<Post[]> {
+export async function getPostsByUserId(userNickname: string): Promise<Post[]> {
   try {
-    const response = await axios.get<Post[]>(`${API_BASE_URL}/posts/users/${userId}`);
+    const response = await axios.get<Post[]>(`${API_BASE_URL}/posts/users/${userNickname}`);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching posts for user ${userId}:`, error);
+    console.error(`Error fetching posts for user ${userNickname}:`, error);
     throw new Error("게시물을 불러오는 데 실패했습니다.");
   }
 }

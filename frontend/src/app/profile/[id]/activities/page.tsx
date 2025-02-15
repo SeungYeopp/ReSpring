@@ -2,13 +2,13 @@
 
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import type { Post } from "@/lib/api";
+import type { Post, UserInfo } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
-import { getPostsByUserId } from "@/lib/api/";
+import { getPostsByUserId, getSessionInfo } from "@/lib/api/";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/custom/TabGreen";
 import { Button } from "@/components/ui/button";
 
@@ -19,17 +19,25 @@ export default function ActivitiesPage() {
 
   const router = useRouter();
   const { id: id } = useParams();
-  const userId = Array.isArray(id) ? id[0] : id;
+  //const userId = Array.isArray(id) ? id[0] : id;
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsToShow, setPostsToShow] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
+  const [userInfo, setUserInfo] = useState<UserInfo>();
 
   const fetchPosts = async () => {
-    setIsLoading(true);
-    const allPosts = await getPostsByUserId(userId);
-    setPosts(allPosts);
-    setIsLoading(false);
+    try{
+      setIsLoading(true);
+      const userInfo = await getSessionInfo();
+      setUserInfo(userInfo);
+      const allPosts = await getPostsByUserId(userInfo.userNickname);
+      setPosts(allPosts);
+      setIsLoading(false);
+
+    }catch(error){
+      console.error(error);
+    }
   };
 
   useEffect(() => {
