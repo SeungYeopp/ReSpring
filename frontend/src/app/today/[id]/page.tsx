@@ -11,7 +11,7 @@ import { useAuthWithUser } from "@/lib/hooks/tempUseAuthWithUser";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { todayAPI } from "@/app/today/api/todayDetail";
-import { getPostDetail, Post, getCommentsByPostId, deletePost, likePost, checkIfUserLiked} from "@/lib/api";
+import { getPostDetail, Post, getCommentsByPostId, deletePost, likePost, checkIfUserLiked, getMyPost} from "@/lib/api";
 //import type { Post } from "@/app/today/api/todayDetail";
 import { CommentSection } from "./comment-section";
 import { ImageGallery } from "./image-gallery";
@@ -32,6 +32,7 @@ async function getPost(id: number): Promise<Post> {
 export default function TodayDetailPage({ params }: { params: { id: string } }) {
 
   const {userId} = useAuth(true);
+  
 
   const { isLoggedIn } = useAuthWithUser(); // 로그인 정보 가져오기
   const router = useRouter();
@@ -42,15 +43,18 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
   const [likeByMe, setLikeByMe] = useState(false);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
-
-  // 본인 게시글 여부 확인
-  const isMyPost = userId === post?.userId;
+  const [isMyPost, setIsMyPost] = useState<boolean>(false);
 
   // 게시글 데이터 가져오기
   useEffect(() => {
     async function fetchPost() {
       try {
         const fetchedPost = await getPost(Number(params.id));
+        const fetchedMyPosts = await getMyPost();
+
+        if(fetchedMyPosts.map((post) => (post.id)).includes(fetchedPost.id))
+          setIsMyPost(true);
+
         setLikeByMe(fetchedPost.liked);
         setPost(fetchedPost);
         setLikes(fetchedPost.likes);
