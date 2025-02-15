@@ -76,7 +76,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
       return;
     }
     try {
-      const result = await likePost(post.id, userId);
+      const result = await likePost(post.id);
       if (result === "Liked") {
         setLikes((prev) => prev + 1);
         setLikeByMe(true);

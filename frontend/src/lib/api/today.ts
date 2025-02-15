@@ -222,9 +222,9 @@ export async function deletePost(postId: number, userId: string): Promise<void> 
   }
 }
 
-export async function likePost(postId: number, userId: string): Promise<"Liked" | "Unliked"> {
+export async function likePost(postId: number): Promise<"Liked" | "Unliked"> {
   try{
-    const response = await axiosAPI.patch(`/posts/like/${postId}?userId=${userId}`);
+    const response = await axiosAPI.patch(`/posts/like/${postId}`);
     return response.data; // "Liked" or "Unliked"
   }catch(error){
     throw new Error("게시글 좋아요/취소 실패");
