@@ -230,8 +230,8 @@ export default function CreateBook() {
       // const compiledBook: CompiledBook = await compileBookByAI(generatedContent)
       const generatedContent: Content = await compileBookByAI(convertedContent)
 
-      console.log("AI 생성 완료", generatedContent)
       const compiledBook : CompiledBook = convertToCompiledBook(title, generatedContent)
+
       setCompiledBook(compiledBook)
       setAiCompilationComplete(true)
       setTimeout(() => {

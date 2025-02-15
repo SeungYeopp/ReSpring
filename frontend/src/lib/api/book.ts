@@ -359,21 +359,31 @@ export const getAllBooksComments = async () : Promise<Comment[]> => {
 // 봄날의 서 AI 기능
 // 입력 : 글 조각 여러 개를 하나의 string으로 입력
 // 출력 : CompiledBook 형식으로 된 데이터.
-export const compileBookByAI = async (content : Content) : Promise<Content> => {
-    try{
-        const response = await axiosAPI.post('/books/ai-compile', content);
+export const compileBookByAI = async (content: Content): Promise<Content> => {
+    const maxAttempts = 3; // 최대 재시도 횟수
 
-        const uncleaned = response.data.response;
+    console.log(content)
+    for (let attempts = 0; attempts < maxAttempts; attempts++) {
+        try {
+            const response = await axiosAPI.post('/books/ai-compile', content);
+            const uncleaned = response.data.response;
 
-        console.log("AI 생성 RAW DATA", uncleaned)
+            console.log(`AI 생성 RAW DATA (시도 ${attempts + 1}):`, uncleaned);
 
-        //const cleaned = uncleaned.replaceAll("json","").replaceAll('```', "").replaceAll("\n","").replaceAll("  ", "") // 불필요한 단어 삭제.
-        const cleaned = uncleaned.replaceAll("```json","").replaceAll("```","").replaceAll("json","").replaceAll('`', "")
-        const jsoned = JSON.parse(cleaned); // JSON 으로 변환.
+            const cleaned = uncleaned.replaceAll("```json", "").replaceAll("```", "").replaceAll("json", "").replaceAll('`', "");
+            const jsoned = JSON.parse(cleaned); // JSON 변환
 
-        return jsoned as Content // CompiledBook 형식 명시.
-    }catch(error : any){
-        console.error(error)
-        throw new Error(error.response?.data?.message || 'compileBookByAI 함수 API 호출에서 오류가 발생했습니다.');
+            return jsoned as Content; // 성공 시 반환
+        } catch (error: any) {
+            if (error instanceof SyntaxError) {
+                console.warn(`JSON 파싱 실패 (시도 ${attempts + 1}/${maxAttempts}), 다시 요청합니다...`);
+            } else {
+                console.error("API 요청 중 오류 발생:", error);
+                throw new Error(error.response?.data?.message || 'compileBookByAI 함수 API 호출에서 오류가 발생했습니다.');
+            }
+        }
     }
-}
+
+    // 모든 시도가 실패한 경우
+    throw new Error('JSON 파싱 실패로 인해 API 요청을 중단합니다.');
+};
