@@ -244,6 +244,7 @@ export const getLikedBooks = async () : Promise<Book[]> => {
 // 입력 : 검색어
 // 출력 : 봄날의 서 배열
 export const getAllBooksAutocomplete = async (query : string) : Promise<Book[]> => {
+    if(query.length < 2) return [];
     try {
         const response = await axiosAPI.get(`/books/autocomplete/book-title?query=${query}`);
 
