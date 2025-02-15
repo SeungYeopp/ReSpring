@@ -5,7 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import StatSummary from "../components/stat-summary";
 import TabBar from "../components/tabbar";
-import { isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
+import {
+  isSubscribed,
+  newSubscription,
+  cancelSubscription,
+} from "@/lib/api/subscribe";
 import SubscribersModal from "../components/subscribers";
 import Link from "next/link";
 import { logout } from "@/lib/api";
@@ -17,7 +21,6 @@ export default function ProfilePage() {
   };
 
   const router = useRouter();
-  const myId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
   const { id } = useParams();
   const targetId = Array.isArray(id) ? id[0] : id;
 
@@ -30,7 +33,7 @@ export default function ProfilePage() {
 
   const checkIfSubscribed = async () => {
     try {
-      const subscribed = await isSubscribed(myId, targetId);
+      const subscribed = await isSubscribed(targetId);
       setIsSubscribedState(subscribed);
     } catch (error) {
       console.error("Error checking subscription status:", error);
@@ -40,10 +43,10 @@ export default function ProfilePage() {
   const handleSubscribeUnsubscribe = async () => {
     try {
       if (isSubscribedState) {
-        const success = await cancelSubscription(myId, targetId);
+        const success = await cancelSubscription(targetId);
         if (success) setIsSubscribedState(false);
       } else {
-        const success = await newSubscription(myId, targetId);
+        const success = await newSubscription(targetId);
         if (success) setIsSubscribedState(true);
       }
     } catch (error) {
@@ -52,10 +55,8 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    if (myId !== targetId) {
-      checkIfSubscribed();
-    }
-  }, [myId, targetId]);
+    checkIfSubscribed();
+  }, [targetId]);
 
   return (
     <main className="relative -mt-4">
@@ -78,9 +79,9 @@ export default function ProfilePage() {
         <div className="flex flex-col md:flex-[0.7] gap-4">
           <div className="flex justify-center items-center h-auto -mt-20 md:-mt-24">
             <div className="w-[125px] h-[125px] md:w-[160px] md:h-[160px] rounded-full bg-white flex justify-center items-center">
-              <img 
-                src="/placeholder_profilepic.png" 
-                alt="User Profile" 
+              <img
+                src="/placeholder_profilepic.png"
+                alt="User Profile"
                 className="w-[120px] md:w-[150px] rounded-full object-cover drop-shadow-lg"
               />
             </div>
@@ -94,10 +95,26 @@ export default function ProfilePage() {
 
           <div className="flex justify-center items-start text-sm">
             <div className="flex">
-              <img src="/placeholder_badge.svg" alt="Badge" className="w-[48px]" />
-              <img src="/placeholder_badge.svg" alt="Badge" className="w-[48px]" />
-              <img src="/placeholder_badge.svg" alt="Badge" className="w-[48px]" />
-              <img src="/placeholder_badge.svg" alt="Badge" className="w-[48px]" />
+              <img
+                src="/placeholder_badge.svg"
+                alt="Badge"
+                className="w-[48px]"
+              />
+              <img
+                src="/placeholder_badge.svg"
+                alt="Badge"
+                className="w-[48px]"
+              />
+              <img
+                src="/placeholder_badge.svg"
+                alt="Badge"
+                className="w-[48px]"
+              />
+              <img
+                src="/placeholder_badge.svg"
+                alt="Badge"
+                className="w-[48px]"
+              />
             </div>
           </div>
           <button
@@ -107,24 +124,14 @@ export default function ProfilePage() {
             로그아웃
           </button>
 
-          {/* 
-          {myId === targetId ? (
-            <button
-              className="bg-blue-500 text-white text-xl px-4 py-2 w-[50%] rounded-md mt-4 mx-auto block"
-              onClick={() => setIsModalOpen(true)}
-            >
-              구독자 목록
-            </button>
-          ) : (
-            <button
-              className={`${
-                isSubscribedState ? "bg-red-500" : "bg-green-500"
-              } text-white text-xl px-4 py-2 w-[50%] rounded-md mt-4 mx-auto block`}
-              onClick={handleSubscribeUnsubscribe}
-            >
-              {isSubscribedState ? "구독 취소하기" : "구독하기"}
-            </button>
-          )} */}
+          <button
+            className={`${
+              isSubscribedState ? "bg-red-500" : "bg-green-500"
+            } text-white text-xl px-4 py-2 w-[50%] rounded-md mt-4 mx-auto block`}
+            onClick={handleSubscribeUnsubscribe}
+          >
+            {isSubscribedState ? "구독 취소하기" : "구독하기"}
+          </button>
         </div>
 
         <div className="flex flex-col md:flex-[1.3] justify-start items-center">
@@ -132,7 +139,9 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {isModalOpen && <SubscribersModal userId={myId} onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && (
+        <SubscribersModal onClose={() => setIsModalOpen(false)} />
+      )}
     </main>
   );
 }

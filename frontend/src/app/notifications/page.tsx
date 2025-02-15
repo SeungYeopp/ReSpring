@@ -1,11 +1,25 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { BellOff, Bell, MessageSquare, ThumbsUp, UserPlus, Reply, Search } from "lucide-react";
+import {
+  BellOff,
+  Bell,
+  MessageSquare,
+  ThumbsUp,
+  UserPlus,
+  Reply,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import NotificationSkeleton from "./components/NotificationSkeleton";
@@ -36,14 +50,16 @@ type ReadStatus = "ALL" | "READ" | "UNREAD";
 // ------------------------------------------------------------------
 const NotificationPage = () => {
   // 사용자 UUID (하드코딩; 실제로는 인증정보 등에서 가져와야 함)
-  const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
+  // const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
 
-  // ----------------------------------------------------------------
+  // ------------------------------------------------------------------
   // API 호출 함수들 (GET, PATCH)
-  // ----------------------------------------------------------------
+  // ------------------------------------------------------------------
   const fetchInitialNotifications = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:8080/notifications/${userId}`);
+      const response = await fetch("http://localhost:8080/notifications", {
+        credentials: "include", // 세션 정보를 포함하여 요청
+      });
       if (!response.ok) {
         throw new Error("네트워크 응답이 정상이 아닙니다");
       }
@@ -53,17 +69,23 @@ const NotificationPage = () => {
       console.error("초기 알림 데이터 GET 요청 에러:", error);
       return [];
     }
-  }, [userId]);
+  }, []);
 
   const markNotificationRead = async (notificationId: number) => {
-    const response = await fetch(`http://localhost:8080/notifications/${notificationId}/read`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!response.ok) {
-      throw new Error("알림 읽음 처리에 실패했습니다.");
-    }
     try {
+      const response = await fetch(
+        `http://localhost:8080/notifications/${notificationId}/read`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("알림 읽음 처리에 실패했습니다.");
+      }
+
       const data = await response.json();
       return data;
     } catch (error) {
@@ -72,28 +94,58 @@ const NotificationPage = () => {
     }
   };
 
-  const markAllNotificationsRead = async (userId: string) => {
-    const response = await fetch(`http://localhost:8080/notifications/read-all/${userId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!response.ok) {
-      throw new Error("전체 알림 읽음 처리에 실패했습니다.");
-    }
+  const markAllNotificationsRead = async () => {
     try {
+      const response = await fetch(
+        "http://localhost:8080/notifications/read-all",
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("전체 알림 읽음 처리에 실패했습니다.");
+      }
+
       const data = await response.json();
+      setNotifications((prev) =>
+        prev.map((notif) => ({ ...notif, read: true }))
+      );
       return data;
     } catch (error) {
-      console.warn("전체 알림 읽음 처리 응답 본문이 비어 있습니다:", error);
+      console.error("전체 알림 읽음 처리 에러:", error);
       return null;
     }
   };
 
+  // ------------------------------------------------------------------
+  // 초기 GET 요청으로 기존 알림 데이터 불러오기 (최신순 정렬)
+  // ------------------------------------------------------------------
+  useEffect(() => {
+    const initFetch = async () => {
+      const initialData = await fetchInitialNotifications();
+      if (initialData.length > 0) {
+        // 최신순(내림차순) 정렬
+        const sortedData = initialData.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setNotifications(sortedData);
+        setIsInitialLoad(false);
+      }
+    };
+
+    initFetch();
+  }, [fetchInitialNotifications]);
   // ----------------------------------------------------------------
   // 상태 관리
   // ----------------------------------------------------------------
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [displayedNotifications, setDisplayedNotifications] = useState<Notification[]>([]);
+  const [displayedNotifications, setDisplayedNotifications] = useState<
+    Notification[]
+  >([]);
   const [filter, setFilter] = useState<NotificationType | "ALL">("ALL");
   const [readStatus, setReadStatus] = useState<ReadStatus>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
@@ -102,7 +154,7 @@ const NotificationPage = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
-  
+
   const { notifications: sseNotifications } = useNotificationsContext();
 
   const loadMore = useCallback(() => {
@@ -143,7 +195,8 @@ const NotificationPage = () => {
       if (initialData.length > 0) {
         // 최신순(내림차순) 정렬
         const sortedData = initialData.sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         setNotifications(sortedData);
         setIsInitialLoad(false);
@@ -160,22 +213,27 @@ const NotificationPage = () => {
   // (만약 전역 구독이 없다면 이 부분은 수정 후 사용하시길 바랍니다.)
   useEffect(() => {
     if (sseNotifications.length === 0) return;
-  
+
     setNotifications((prevNotifications) => {
       const newNotifications = sseNotifications.filter(
-        (sseNotif) => !prevNotifications.some((notif) => notif.id === sseNotif.id)
+        (sseNotif) =>
+          !prevNotifications.some((notif) => notif.id === sseNotif.id)
       );
-  
+
       if (newNotifications.length === 0) return prevNotifications;
-  
-      const updatedNotifications = [...newNotifications, ...prevNotifications].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+
+      const updatedNotifications = [
+        ...newNotifications,
+        ...prevNotifications,
+      ].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
-  
+
       return updatedNotifications;
     });
   }, [sseNotifications]);
-  
+
   // ----------------------------------------------------------------
   // 필터링, 검색 및 페이지네이션
   // ----------------------------------------------------------------
@@ -185,10 +243,14 @@ const NotificationPage = () => {
       filtered = filtered.filter((notif) => notif.type === filter);
     }
     if (readStatus !== "ALL") {
-      filtered = filtered.filter((notif) => (readStatus === "READ" ? notif.read : !notif.read));
+      filtered = filtered.filter((notif) =>
+        readStatus === "READ" ? notif.read : !notif.read
+      );
     }
     if (searchTerm) {
-      filtered = filtered.filter((notif) => notif.message.toLowerCase().includes(searchTerm.toLowerCase()));
+      filtered = filtered.filter((notif) =>
+        notif.message.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
     return filtered;
   }, [filter, readStatus, searchTerm, notifications]);
@@ -200,13 +262,15 @@ const NotificationPage = () => {
   }, [filterAndSearchNotifications, page]);
 
   // ----------------------------------------------------------------
-  // 알림 읽음 처리 (PATCH API 호출)
+  // 알림 읽음 처리 (PATCH API 호출) - userId 제거
   // ----------------------------------------------------------------
   const markAsRead = async (id: number) => {
     try {
       await markNotificationRead(id);
       setNotifications((prev) =>
-        prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
+        prev.map((notif) =>
+          notif.id === id ? { ...notif, read: true } : notif
+        )
       );
     } catch (error) {
       console.error("알림 읽음 처리 에러:", error);
@@ -215,30 +279,31 @@ const NotificationPage = () => {
 
   const markAllAsRead = async () => {
     try {
-      await markAllNotificationsRead(userId);
-      setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
+      await markAllNotificationsRead(); // ✅ userId 제거
+      setNotifications((prev) =>
+        prev.map((notif) => ({ ...notif, read: true }))
+      );
     } catch (error) {
       console.error("전체 알림 읽음 처리 에러:", error);
     }
   };
 
-// ----------------------------------------------------------------
-// 기타 유틸리티 함수들
-// ----------------------------------------------------------------
-const getNotificationLink = (targetType: string, targetId: number) => {
-  switch (targetType) {
-    case "POST":
-    case "COMMENT": // COMMENT도 POST와 동일하게 처리
-      return `/today/${targetId}`;
-    case "BOOK":
-      return `/yesterday/book/${targetId}`;
-    case "USER":
-      return `/profile/${targetId}`;
-    default:
-      return "/";
-  }
-};
-
+  // ----------------------------------------------------------------
+  // 기타 유틸리티 함수들
+  // ----------------------------------------------------------------
+  const getNotificationLink = (targetType: string, targetId: number) => {
+    switch (targetType) {
+      case "POST":
+      case "COMMENT": // COMMENT도 POST와 동일하게 처리
+        return `/today/${targetId}`;
+      case "BOOK":
+        return `/yesterday/book/${targetId}`;
+      case "USER":
+        return `/profile/${targetId}`;
+      default:
+        return "/";
+    }
+  };
 
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
@@ -308,13 +373,22 @@ const getNotificationLink = (targetType: string, targetId: number) => {
     return (
       <div className="space-y-4">
         {displayedNotifications.map((notif) => (
-          <div key={notif.id} className={`p-4 rounded-lg shadow-sm transition-all ${notif.read ? "bg-white" : "bg-blue-50"}`}>
+          <div
+            key={notif.id}
+            className={`p-4 rounded-lg shadow-sm transition-all ${
+              notif.read ? "bg-white" : "bg-blue-50"
+            }`}
+          >
             <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 mt-1">{getNotificationIcon(notif.type)}</div>
+              <div className="flex-shrink-0 mt-1">
+                {getNotificationIcon(notif.type)}
+              </div>
               <div className="flex-grow min-w-0">
                 <Link
                   href={getNotificationLink(notif.targetType, notif.targetId)}
-                  className={`block text-sm ${notif.read ? "text-gray-600" : "text-gray-800 font-medium"}`}
+                  className={`block text-sm ${
+                    notif.read ? "text-gray-600" : "text-gray-800 font-medium"
+                  }`}
                 >
                   {highlightText(notif.message, searchTerm)}
                 </Link>
@@ -340,7 +414,10 @@ const getNotificationLink = (targetType: string, targetId: number) => {
           </div>
         ))}
         {hasMore && (
-          <div ref={loaderRef} className="flex justify-center items-center h-20">
+          <div
+            ref={loaderRef}
+            className="flex justify-center items-center h-20"
+          >
             {isLoadingMore && <LoadingSpinner />}
           </div>
         )}
@@ -359,7 +436,11 @@ const getNotificationLink = (targetType: string, targetId: number) => {
           <span>알림</span>
         </h1>
         <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <Select onValueChange={(value) => setFilter(value as NotificationType | "ALL")}>
+          <Select
+            onValueChange={(value) =>
+              setFilter(value as NotificationType | "ALL")
+            }
+          >
             <SelectTrigger className="w-full sm:w-28 h-8 text-xs">
               <SelectValue placeholder="필터" />
             </SelectTrigger>
@@ -371,7 +452,11 @@ const getNotificationLink = (targetType: string, targetId: number) => {
               <SelectItem value="REPLY">답글</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={markAllAsRead} variant="outline" className="text-xs h-8 flex-grow sm:flex-grow-0">
+          <Button
+            onClick={markAllAsRead}
+            variant="outline"
+            className="text-xs h-8 flex-grow sm:flex-grow-0"
+          >
             모두 읽기
           </Button>
         </div>
@@ -388,7 +473,10 @@ const getNotificationLink = (targetType: string, targetId: number) => {
         <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
       </div>
 
-      <Tabs defaultValue="ALL" onValueChange={(value) => setReadStatus(value as ReadStatus)}>
+      <Tabs
+        defaultValue="ALL"
+        onValueChange={(value) => setReadStatus(value as ReadStatus)}
+      >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="ALL">전체</TabsTrigger>
           <TabsTrigger value="READ">읽은 알림</TabsTrigger>
