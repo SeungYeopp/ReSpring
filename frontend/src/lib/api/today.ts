@@ -184,14 +184,13 @@ export async function getChildrenComments(parentId: number): Promise<Comment[]> 
 
 }
 
-export async function updatePost(postId: number, title: string, content: string, category: string, userId: string, deleteImageIds?: number[], newFiles?: File[]): Promise<void> {
+export async function updatePost(postId: number, title: string, content: string, category: string, deleteImageIds?: number[], newFiles?: File[]): Promise<void> {
   try{
     const formData = new FormData();
     const postDto = {
       title,
       content,
       category,
-      userId,
       deleteImageIds,
     };
     console.log("🔍 보낼 데이터:", postDto);

@@ -125,7 +125,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     try {
       setIsSubmitting(true);
 
-      await updatePost(Number(params.id), formData.title, formData.content, formData.category, formData.userId, deleteImageIds, images.filter((img) => img !== null) as File[]);
+      await updatePost(Number(params.id), formData.title, formData.content, formData.category, deleteImageIds, images.filter((img) => img !== null) as File[]);
 
       alert("게시글이 수정되었습니다.");
       router.push(`/today/${params.id}`);
