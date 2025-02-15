@@ -356,3 +356,14 @@ export async function getCommentsIWrote() : Promise<Comment[]> {
     throw new Error(error);
   }
 }
+
+// 내가 작성한 게시글 전체 불러오기.
+export async function getMyPost() : Promise<Post[]>{
+  try{
+    const response = await axiosAPI.get('/posts/my');
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error)
+  }
+}
