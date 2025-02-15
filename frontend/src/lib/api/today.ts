@@ -8,13 +8,17 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8
 export interface Comment {
   id: number;
   content: string;
-  userId : string;
+  userId? : string;
   userNickname: string;
+  profileImg? : string;
   createdAt: string;
   updatedAt: string;
   parentId: number | null;
   postId?: number;
   bookId?: number;
+  postTitle? : string;
+  bookTitle? : string;
+  likeCount? : number;
 };
 
 export interface Post {
@@ -140,15 +144,14 @@ export async function createPost(postData: CreatePostDto, images?: File[]): Prom
 //   });
 // }
 
-export async function createNewCommunityComment(postId: number, content: string, userId: string, bookId: string, parentId: number | null): Promise<Comment> {
+export async function createNewCommunityComment(postId: number, content: string): Promise<Comment> {
   try{
     const formData = new FormData();
 
     const postDto = {
-      userId, content, postId, bookId, parentId,
+      content, postId,
     }
     
-    console.log(formData)
     const response = await axiosAPI.post(`/comments/posts`, JSON.stringify(postDto), {headers : {'Content-Type': 'application/json'}})
     
     return response.data;
@@ -268,5 +271,88 @@ export async function getCommentsByUserId(userId: string): Promise<Comment[]> {
   } catch (error) {
     console.error(`Error fetching comments for user ${userId}:`, error);
     throw new Error("댓글을 불러오는 데 실패했습니다.");
+  }
+}
+
+export async function likeComment(commentId : number): Promise<boolean>{
+  try{
+    const response = await axiosAPI.post(`/comments/${commentId}/like`);
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+export async function getMyPostComments() : Promise<Comment[]> {
+  try{
+    const response = await axiosAPI.get('/comments/posts');
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error)
+  }
+}
+
+export async function deleteComment(commentId : number) : Promise<boolean>{
+  try{
+    const response = await axiosAPI.delete(`/comments/posts/${commentId}`);
+
+    if(response.status === 200 || response.status === 201 || response.status === 204)
+      return true;
+    else
+      return false;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+export async function updateComment(commentId : number, content : string) : Promise<Comment>{
+  try{
+    const response = await axiosAPI.patch(`/comments/posts/${commentId}`, {content})
+    
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+export async function getCommentLikes(commentId : number) : Promise<number>{
+  try{
+    const response = await axiosAPI.get(`comments/${commentId}/likes/count`);
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+export async function checkIfUserLikedComment(commentId : number) : Promise<boolean>{
+  try{
+    const response = await axiosAPI.get(`/comments/${commentId}/likes/check`);
+
+    return response.data; // true면 좋아요 누름, false면 안 누름.
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+// 댓글 좋아요 순 정렬 미구현.
+// export async function getPostCommentsSortByLikes(postId : number) : Promise<Comment[]>{
+//   try{
+//     return []
+//   }catch(error : any){
+//     throw new Error(error)
+//   }
+// }
+
+// 내가 작성한 댓글 모두 보여주기. (책 + 게시글 포함)
+export async function getCommentsIWrote() : Promise<Comment[]> {
+  try{
+    const response = await axiosAPI.get('/comments/my-comments');
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
   }
 }
