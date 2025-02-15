@@ -32,31 +32,20 @@ export interface StoryDto {
 
 /**
  * 특정 사용자의 모든 스토리를 가져오는 함수
- * @param userId - 조회할 사용자의 ID
  * @returns Promise<Story[]> - 사용자의 모든 스토리 목록 반환
  */
-export const getAllStories = async (userId: string): Promise<Story[]> => {
+export const getAllStories = async (): Promise<Story[]> => {
     try {
-        const response = await axiosAPI.get(`/stories?userId=${userId}`);
+        const response = await axiosAPI.get('/stories');
 
-        // 응답 데이터의 날짜 정보를 Date 객체로 변환
-        const stories: Story[] = response.data.map((story: Story) => ({
-            ...story,
-            createdAt: new Date(story.createdAt),
-            updatedAt: new Date(story.updatedAt),
-            occurredAt: new Date(story.occurredAt)
-        }));
-
-        return stories;
+        return response.data;
     } catch (error) {
-        console.error(`getAllStories 에러 발생, 발생한 userId : ${userId}`, error);
         throw new Error('getAllStories 에러 발생');
     }
 };
 
 /**
  * 새로운 스토리를 생성하는 함수
- * @param userId - 작성자 ID
  * @param title - 스토리 제목
  * @param content - 스토리 내용
  * @param eventId - 관련 이벤트 ID
@@ -64,7 +53,6 @@ export const getAllStories = async (userId: string): Promise<Story[]> => {
  * @returns Promise<number> - 생성된 스토리의 ID 반환
  */
 export const makeStory = async (
-    userId: string,
     title: string,
     content: string,
     eventId: number,
@@ -73,7 +61,7 @@ export const makeStory = async (
     try {
         const formData = new FormData();
         formData.append('storyDto', new Blob([
-            JSON.stringify({ userId, title, content, eventId })
+            JSON.stringify({ title, content, eventId })
         ], { type: 'application/json' }));
 
         images.forEach((image) => {
@@ -96,23 +84,11 @@ export const makeStory = async (
  * @param storyId - 조회할 스토리의 ID
  * @returns Promise<Story> - 조회된 스토리 객체 반환
  */
-export const getStoryById = async (storyId: number, userId: string): Promise<Story> => {
+export const getStoryById = async (storyId: number): Promise<Story> => {
     try {
-        const response = await axiosAPI.get(`/stories/${storyId}`,
-            {
-                headers: {
-                    "X-User-Id": userId,
-                    "Accept": "*/*" // 서버로부터 아무 타입의 반환값을 받겠다는 것을 의미한데요.
-                }
-            }
-        );
+        const response = await axiosAPI.get(`/stories/${storyId}`);
 
-        return {
-            ...response.data,
-            createdAt: new Date(response.data.createdAt),
-            updatedAt: new Date(response.data.updatedAt),
-            occurredAt : new Date(response.data.occurredAt)
-        };
+        return response.data;
     } catch (error) {
         console.error('getStoryByStoryId 에러 발생!', error);
         throw new Error('getStoryByStoryId 에러 발생!');
@@ -122,19 +98,11 @@ export const getStoryById = async (storyId: number, userId: string): Promise<Sto
 /**
  * 특정 ID의 스토리를 삭제하는 함수
  * @param storyId - 삭제할 스토리의 ID
- * @param userId - 작성자 ID
  * @returns Promise<boolean> - 삭제 성공 여부 반환
  */
-export const deleteStory = async (storyId: number, userId: string): Promise<boolean> => {
+export const deleteStory = async (storyId: number): Promise<boolean> => {
     try {
-        const response = await axiosAPI.delete(`/stories/${storyId}`,
-            {
-                headers: {
-                    "X-User-Id": userId,
-                    "Accept": "*/*" // 서버로부터 아무 타입의 반환값을 받겠다는 것을 의미한데요.
-                }
-            }
-        )
+        const response = await axiosAPI.delete(`/stories/${storyId}`)
 
         if (response.status === 200) {
             return true;
@@ -151,7 +119,6 @@ export const deleteStory = async (storyId: number, userId: string): Promise<bool
 /**
  * 기존 스토리를 업데이트하는 함수
  * @param storyId - 수정할 스토리의 ID
- * @param userId - 작성자 ID
  * @param title - 수정할 제목
  * @param content - 수정할 내용
  * @param eventId - 관련 이벤트 ID
@@ -161,7 +128,6 @@ export const deleteStory = async (storyId: number, userId: string): Promise<bool
  */
 export const updateStory = async (
     storyId: number,
-    userId: string,
     title: string,
     content: string,
     eventId: number,
@@ -171,7 +137,7 @@ export const updateStory = async (
     try {
         const formData = new FormData();
 
-        const storyDto = JSON.stringify({ userId, title, content, eventId, deleteImageIds });
+        const storyDto = JSON.stringify({ title, content, eventId, deleteImageIds });
         formData.append('storyDto', new Blob([storyDto], { type: 'application/json' }));
 
         images.forEach((image) => {
