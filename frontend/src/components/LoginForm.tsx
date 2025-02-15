@@ -4,10 +4,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { login } from "@/lib/api";
-import {GoogleLoginButton} from "@/components/google-login-button"
-import {KakaoLoginButton} from "@/components/kakao-login-button"
+import { GoogleLoginButton } from "@/components/google-login-button";
+import { KakaoLoginButton } from "@/components/kakao-login-button";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -17,16 +23,16 @@ export function LoginForm() {
     e.preventDefault();
     try {
       const result = await login(email, password);
-      if(result){
-        alert('안녕하세요!');
-        window.location.href="/main";
-      }else{
-        alert('로그인 실패');
+      if (result) {
+        alert("안녕하세요!");
+        window.location.href = "/main";
+      } else {
+        alert("로그인 실패");
+        window.location.reload();
       }
     } catch (error) {
-      alert('로그인 실패');
+      alert("로그인 실패");
       console.error(error);
-    } finally{
       window.location.reload();
     }
   };
@@ -41,8 +47,8 @@ export function LoginForm() {
     } catch (error) {
       alert("로그인 실패");
       console.error(error);
-    } finally{
-      window.location.href="/main";
+    } finally {
+      window.location.href = "/main";
     }
   };
 
@@ -77,7 +83,10 @@ export function LoginForm() {
               className="border-brand-light focus:ring-brand-dark"
             />
           </div>
-          <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
+          <Button
+            type="submit"
+            className="w-full bg-brand hover:bg-brand-dark text-white"
+          >
             로그인
           </Button>
         </form>
@@ -85,7 +94,11 @@ export function LoginForm() {
         {/* ✅ form 바깥에서 렌더링 ✅ */}
         <KakaoLoginButton redirectUrl="https://i12a307.p.ssafy.io:8080/oauth2/authorization/kakao" />
         <GoogleLoginButton />
-        <Button type="button" onClick={handleTempLogin} className="w-full bg-brand hover:bg-brand-dark text-white">
+        <Button
+          type="button"
+          onClick={handleTempLogin}
+          className="w-full bg-brand hover:bg-brand-dark text-white"
+        >
           임시 로그인(개발용, 박싸피)
         </Button>
       </CardContent>
