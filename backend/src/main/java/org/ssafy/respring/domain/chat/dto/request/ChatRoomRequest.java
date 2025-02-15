@@ -12,6 +12,4 @@ public class ChatRoomRequest {
     private String name;
     private List<String> userIds;
     private boolean isOpenChat;
-    private boolean isMentoring;
-    private String mentorName;
 }

@@ -3,53 +3,40 @@ package org.ssafy.respring.domain.chat.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.servlet.http.HttpSession;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.chat.dto.request.ChatMessageRequest;
 import org.ssafy.respring.domain.chat.dto.request.ChatRoomPrivateRequest;
 import org.ssafy.respring.domain.chat.dto.request.ChatRoomRequest;
 import org.ssafy.respring.domain.chat.dto.response.ChatMessageResponse;
-import org.ssafy.respring.domain.chat.dto.response.ChatRoomMentoringResponseDto;
 import org.ssafy.respring.domain.chat.dto.response.ChatRoomResponse;
 import org.ssafy.respring.domain.chat.repository.MongoChatMessageRepository;
 import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatMessage;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
-import org.ssafy.respring.domain.notification.dto.NotificationDto;
 import org.ssafy.respring.domain.notification.service.NotificationService;
 import org.ssafy.respring.domain.notification.vo.NotificationType;
 import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
-@Tag(name = "Chat API", description = "채팅 관련 API")
-
 public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -61,27 +48,11 @@ public class ChatController {
 
     private static final String LAST_SEEN_PREFIX = "last_seen:";
 
-    private UUID getUserIdFromSession(HttpSession session) {
-        return (UUID) session.getAttribute("userId"); // 로그인 안 했으면 null 반환
-    }
-
-    private UUID requireLogin(HttpSession session) {
-        UUID userId = getUserIdFromSession(session);
-        if (userId == null) {
-            throw new IllegalArgumentException("❌ 로그인이 필요합니다.");
-        }
-        return userId;
-    }
-
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(
-            ChatMessageRequest messageRequest,
-            HttpSession session
-    ) {
-        UUID userId = requireLogin(session);
+    public void sendMessage(ChatMessageRequest messageRequest) {
         ChatMessageResponse response = chatService.saveMessage(
                 messageRequest.getRoomId(),
-                userId,
+                messageRequest.getUserId(),
                 messageRequest.getReceiver(),
                 messageRequest.getContent()
         );
@@ -94,7 +65,7 @@ public class ChatController {
         // ✅ 사용자 목록 조회
         List<User> roomUsers = chatService.getRoomById(messageRequest.getRoomId()).getUsers();
         for (User user : roomUsers) {
-            if (!user.getId().equals(userId)) {  // ✅ 발신자는 제외
+            if (!user.getId().equals(messageRequest.getUserId())) {  // ✅ 발신자는 제외
                 boolean isUserInRoom = chatService.isUserCurrentlyInRoom(messageRequest.getRoomId(), user.getId());
 
                 // ✅ 사용자가 현재 방에 없으면 알림 전송
@@ -103,7 +74,7 @@ public class ChatController {
 
                     notificationService.sendNotification(
                             user.getId(),                 // 알림을 받을 사용자 UUID
-                            userId,   // 메시지를 보낸 사용자 UUID
+                            messageRequest.getUserId(),   // 메시지를 보낸 사용자 UUID
                             NotificationType.COMMENT,     // 알림 타입
                             TargetType.CHAT,              // 대상 유형 (CHAT)
                             messageRequest.getRoomId(),   // 채팅방 ID
@@ -126,8 +97,6 @@ public class ChatController {
                         .roomId(chatRoom.getId())
                         .name(chatRoom.getName())
                         .isOpenChat(chatRoom.isOpenChat())
-                        .mentorName(chatRoom.getMentor().getUserNickname())
-                        .isMentoring(chatRoom.isMentoring())
                         .userCount(chatRoom.getUsers().size())
                         .build())
                 .collect(Collectors.toList());
@@ -142,25 +111,7 @@ public class ChatController {
                         .roomId(chatRoom.getId())
                         .name(chatRoom.getName())
                         .isOpenChat(chatRoom.isOpenChat())
-                        .isMentoring(chatRoom.isMentoring())
-                        .mentorName(chatRoom.getMentor().getUserNickname())
                         .userCount(chatRoom.getUsers().size())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    /** ✅ 멘토링 채팅방 조회 (WebSocket) */
-    @MessageMapping("/chat/mentoringRooms")
-    @SendTo("/topic/chat/mentoringRooms")
-    public List<ChatRoomMentoringResponseDto> getMentoringRooms() {
-        return chatService.getMentoringRooms().stream()
-                .map(room -> ChatRoomMentoringResponseDto.builder()
-                        .roomId(room.getId())
-                        .name(room.getName())
-                        .isMentoring(true)
-                        .mentorNickname(room.getMentor().getUserNickname())
-                        .userCount(room.getUsers().size())
-                        .participants(room.getUsers().stream().map(User::getUserNickname).collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -174,6 +125,8 @@ public class ChatController {
         // 참가한 사용자에게 업데이트된 방 정보를 전송
         messagingTemplate.convertAndSend("/topic/chat/myRooms/" + userId, getMyRooms(userId));
     }
+
+
 
 
     @Operation(summary = "채팅방 생성", description = "새로운 채팅방을 생성합니다.")
@@ -190,11 +143,11 @@ public class ChatController {
                 .roomId(chatRoom.getId())
                 .name(chatRoom.getName())
                 .isOpenChat(chatRoom.isOpenChat())
-                .isMentoring(chatRoom.isMentoring())
-                .mentorName(chatRoom.getMentor().getUserNickname())
                 .userCount(chatRoom.getUsers().size())
                 .build();
     }
+
+
 
 
 //    @Operation(summary = "파일 업로드", description = "채팅 메시지에 파일을 업로드합니다.")
@@ -243,6 +196,9 @@ public class ChatController {
         return ResponseEntity.ok(messages);
     }
 
+
+
+
 //    @Operation(summary = "방 이름으로 Room ID 조회", description = "특정 방 이름에 해당하는 Room ID를 반환합니다.")
 //    @GetMapping("/chat/room/findByName")
 //    @ResponseBody
@@ -254,81 +210,47 @@ public class ChatController {
 //        return chatRoom.getId();
 //    }
 
+
+
     @Operation(summary = "채팅방 나가기", description = "사용자가 채팅방을 나갑니다.")
     @MessageMapping("/chat.leaveRoom")
     public void leaveRoom(ChatRoomRequest request) {
         chatService.leaveRoom(request.getRoomId(), UUID.fromString(request.getUserIds().get(0)));
     }
 
+
     @MessageMapping("/chat.private")
     public void getOrJoinPrivateRoom(ChatRoomPrivateRequest request) {
-
-        if (request.getUser1Name() == null || request.getUser2Name() == null) {
+        if (request.getUser1() == null || request.getUser2() == null) {
             throw new IllegalArgumentException("Both user1 and user2 must be provided for private chat.");
         }
 
         ChatRoom chatRoom = chatService.getOrJoinPrivateRoom(
-                request.getUser1Name(),
-                request.getUser2Name()
+                request.getUser1(),
+                request.getUser2()
         );
 
         ChatRoomResponse response = ChatRoomResponse.from(chatRoom);
 
-        User user1 = userRepository.findByUserNickname(request.getUser1Name())
-                .orElseThrow(() -> new IllegalArgumentException("❌ 잘못된 유저 닉네임입니다!"));
-        User user2 = userRepository.findByUserNickname(request.getUser2Name())
-                .orElseThrow(() -> new IllegalArgumentException("❌ 잘못된 유저 닉네임입니다!"));
-
         // ✅ WebSocket을 통해 두 사용자에게 새로운 1:1 채팅방 정보 전송
-        messagingTemplate.convertAndSend("/topic/newRoom/" + user1.getId(), response);
-        messagingTemplate.convertAndSend("/topic/newRoom/" + user2.getId(), response);
+        messagingTemplate.convertAndSend("/topic/newRoom/" + request.getUser1(), response);
+        messagingTemplate.convertAndSend("/topic/newRoom/" + request.getUser2(), response);
     }
 
-    // ✅ 멘토링(강연자) 방 생성
-    @PostMapping("/chat/room/mentoring")
-    @ResponseBody
-    public ChatRoomMentoringResponseDto createMentoringRoom(
-            @RequestParam String name,
-            HttpSession session
-    ) {
 
-        UUID mentorId = requireLogin(session);
-        ChatRoom chatRoom = chatService.createMentoringRoom(name, mentorId);
 
-        return ChatRoomMentoringResponseDto.builder()
-                .roomId(chatRoom.getId())
-                .name(chatRoom.getName())
-                .isMentoring(true)
-                .mentorNickname(chatRoom.getMentor().getUserNickname())
-                .userCount(chatRoom.getUsers().size())
-                .build();
-    }
 
-    @MessageMapping("/chat.getRoomInfo/{roomId}")
-    @SendTo("/topic/chat/roomInfo/{roomId}")
-    public ChatRoomMentoringResponseDto getRoomInfo(@DestinationVariable Long roomId) {
-        ChatRoom chatRoom = chatService.getRoomById(roomId);
-        return ChatRoomMentoringResponseDto.builder()
-                .roomId(chatRoom.getId())
-                .name(chatRoom.getName())
-                .isMentoring(chatRoom.isMentoring())
-                .mentorNickname(chatRoom.getMentor().getUserNickname())
-                .userCount(chatRoom.getUsers().size())
-                .build();
-    }
 
     // ✅ 채팅방 접속 시 마지막 접속 시간 업데이트 (프론트에서 호출)
     @PostMapping("/chat/last-seen")
-    public ResponseEntity<Void> updateLastSeen(@RequestParam Long roomId, HttpSession session) {
-        UUID userId = requireLogin(session);
+    public ResponseEntity<Void> updateLastSeen(@RequestParam Long roomId, @RequestParam UUID userId) {
         chatService.saveLastSeenTime(roomId, userId);
         return ResponseEntity.ok().build();
     }
 
     // ✅ 특정 채팅방의 마지막 접속 시간 조회 (Timestamp + Human-readable)
     @GetMapping("/chat/last-seen")
-    public ResponseEntity<Map<String, Object>> getLastSeenTime(@RequestParam Long roomId, HttpSession session) {
-        UUID userId = requireLogin(session);
+    public ResponseEntity<Map<String, Object>> getLastSeenTime(@RequestParam Long roomId, @RequestParam UUID userId) {
         Long lastSeenTime = chatService.getLastSeenTime(roomId, userId);
         String lastSeenHuman = chatService.getLastSeenTimeHuman(roomId, userId);
 
@@ -341,9 +263,7 @@ public class ChatController {
 
     // ✅ 사용자의 모든 채팅방 마지막 접속 시간 조회
     @GetMapping("/chat/last-seen/all")
-    public ResponseEntity<Map<Long, Map<String, Object>>> getAllLastSeenTimes(HttpSession session) {
-
-        UUID userId = requireLogin(session);
+    public ResponseEntity<Map<Long, Map<String, Object>>> getAllLastSeenTimes(@RequestParam UUID userId) {
         Map<Long, Map<String, Object>> lastSeenMap = new HashMap<>();
 
         List<ChatRoom> userRooms = chatService.getUserRooms(userId);
@@ -364,8 +284,7 @@ public class ChatController {
 
     // ✅ 특정 채팅방의 안 읽은 메시지 개수 조회
     @GetMapping("/chat/unread-messages")
-    public ResponseEntity<Integer> getUnreadMessageCount(@RequestParam Long roomId, HttpSession session) {
-        UUID userId = requireLogin(session);
+    public ResponseEntity<Integer> getUnreadMessageCount(@RequestParam Long roomId, @RequestParam UUID userId) {
         Long lastSeenTime = chatService.getLastSeenTime(roomId, userId);
         List<ChatMessage> unreadMessages = chatMessageRepository.findByChatRoomIdAndTimestampGreaterThan(roomId, lastSeenTime);
         return ResponseEntity.ok(unreadMessages.size());
@@ -373,24 +292,21 @@ public class ChatController {
 
     // ✅ 사용자가 채팅방에 입장할 때 Redis 상태 저장
     @PostMapping("/chat/room/join")
-    public ResponseEntity<Void> joinRoom(@RequestParam Long roomId, HttpSession session) {
-        UUID userId = requireLogin(session);
+    public ResponseEntity<Void> joinRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
         chatService.markUserAsInRoom(roomId, userId);
         return ResponseEntity.ok().build();
     }
 
     // ✅ 사용자가 채팅방을 나갈 때 Redis 상태 제거
     @PostMapping("/chat/room/leave")
-    public ResponseEntity<Void> leaveRoom(@RequestParam Long roomId, HttpSession session) {
-        UUID userId = requireLogin(session);
+    public ResponseEntity<Void> leaveRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
         chatService.markUserAsLeftRoom(roomId, userId);
         return ResponseEntity.ok().build();
     }
 
     // ✅ 사용자가 현재 채팅방에 있는지 확인
     @GetMapping("/chat/room/status")
-    public ResponseEntity<Boolean> checkUserInRoom(@RequestParam Long roomId, HttpSession session) {
-        UUID userId = requireLogin(session);
+    public ResponseEntity<Boolean> checkUserInRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
         boolean isInRoom = chatService.isUserCurrentlyInRoom(roomId, userId);
         return ResponseEntity.ok(isInRoom);
     }
