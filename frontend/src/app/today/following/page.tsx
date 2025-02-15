@@ -25,7 +25,7 @@ const getRandomImage = () => {
  * 커뮤니티 게시글 목록 페이지
  */
 export default function CommunityPosts() {
-  const {userId} = useAuth(true);
+  const {userNickname: userNickname} = useAuth(true);
 
   
 
@@ -58,14 +58,14 @@ export default function CommunityPosts() {
 
   /** ✅ 전체 게시물 불러오기 */
   useEffect(() => {
-    if(!userId)
+    if(!userNickname)
       return;
 
     const fetchPosts = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const newPosts = await getAllSubscribersActivities(userId);
+        const newPosts = await getAllSubscribersActivities();
         const formattedPosts = newPosts.map((post) => ({
           ...post,
           category: CATEGORY_MAP[post.category] || post.category, // 변환되지 않으면 원래 값 유지
@@ -80,7 +80,7 @@ export default function CommunityPosts() {
       }
     };
     fetchPosts();
-  }, [userId]);
+  }, [userNickname]);
 
   /** ✅ 카테고리 변경 시 필터링 */
   useEffect(() => {

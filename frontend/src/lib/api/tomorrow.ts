@@ -10,12 +10,6 @@ import {
   SubscribedUserChallenge,
 } from "@/app/tomorrow/types/challenge";
 
-import mockChallenges from "@/app/tomorrow/mocks/ChallengeMocks";
-import mockChallengeDetail from "@/app/tomorrow/mocks/ChallengeDetailMocks";
-import mockParticipants from "@/app/tomorrow/mocks/ChallengeParticipantsMock";
-import mockParticipatedChallenges from "@/app/tomorrow/mocks/ParticipatedChallengesMock";
-import mockSubscribedUserChallenges from "@/app/tomorrow/mocks/SubscribedUserChallengesMock";
-import mockSubscribedUsers from "@/app/tomorrow/mocks/SubscribedUsersMock";
 import type { SortOption } from "@/app/tomorrow/types/challenge";
 import axiosAPI from "./axios";
 
@@ -252,7 +246,7 @@ export const fetchSubscribedUserChallenges = async (): Promise<
  */
 export const fetchSubscribedUsers = async (): Promise<SubscribedUser[]> => {
   try {
-    const response = await axiosAPI.get(`${BASE_URL}/subscriptions/me /users`);
+    const response = await axiosAPI.get(`${BASE_URL}/subscriptions/me/users`);
     return response.data;
   } catch (error) {
     console.error("구독한 사용자 목록 조회 실패:", error);

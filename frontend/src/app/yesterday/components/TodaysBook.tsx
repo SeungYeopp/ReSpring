@@ -22,7 +22,7 @@ export const TodaysBook = () => {
     const [bookData, setBookData] = useState<Book[]>([]);
     const [current, setCurrent] = useState(0);
 
-    const {userId} = useAuth(true);
+    const {userNickname: userId} = useAuth(true);
 
     const onSelect = useCallback(() => {
         if (!api) return;

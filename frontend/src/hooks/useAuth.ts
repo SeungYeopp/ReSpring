@@ -38,5 +38,5 @@ export function useAuth(blockUnauthenticated : boolean) {
     checkAuth();
   }, []);
 
-  return { isAuthenticated, setIsAuthenticated, userId, userNickname };  // setIsAuthenticated를 반환하여 외부에서 상태를 변경할 수 있도록 함.
+  return { isAuthenticated, setIsAuthenticated, userNickname: userId, userNickname };  // setIsAuthenticated를 반환하여 외부에서 상태를 변경할 수 있도록 함.
 }
