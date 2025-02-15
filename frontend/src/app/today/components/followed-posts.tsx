@@ -80,7 +80,7 @@ export default function FollowedPosts() {
                 <div className="flex items-center space-x-3">
                   <Avatar>
                     <AvatarFallback>{post.authorName}</AvatarFallback>
-                    <AvatarImage src={getRandomImage()} alt={post.authorName} />
+                    <AvatarImage src={post.authorImage} alt={post.authorName} />
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">{post.authorName}</p>
