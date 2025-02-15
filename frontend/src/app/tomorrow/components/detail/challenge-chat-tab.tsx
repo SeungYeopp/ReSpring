@@ -107,14 +107,13 @@ export function ChallengeChatTab() {
 
   const handleLeaveChallenge = async () => {
     try {
-      const userId = "user1" // 실제 로그인된 유저 ID로 교체 필요
       const challengeId = Number("챌린지_ID") // 문자열을 숫자로 변환
 
       if (isNaN(challengeId)) {
         throw new Error("유효하지 않은 챌린지 ID입니다.")
       }
 
-      const success = await leaveChallenge(challengeId, userId)
+      const success = await leaveChallenge(challengeId)
       if (success) {
         console.log("챌린지 나가기 성공")
         setIsParticipating(false)

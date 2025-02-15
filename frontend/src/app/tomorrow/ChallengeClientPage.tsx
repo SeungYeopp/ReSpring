@@ -34,12 +34,9 @@ export default function ChallengeClientPage({ serverChallenges }: ChallengeClien
     const loadData = async () => {
       setIsLoading(true)
       try {
-        const storedUserId = localStorage.getItem("userId") || "default-mock-user"
-        setUserId(storedUserId)
-
         const [participated, userChallenges] = await Promise.all([
-          fetchParticipatedChallenges(storedUserId),
-          fetchSubscribedUserChallenges(storedUserId),
+          fetchParticipatedChallenges(),
+          fetchSubscribedUserChallenges(),
         ])
 
         setMyChallenges(participated)
