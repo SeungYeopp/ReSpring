@@ -64,82 +64,73 @@ export interface Challenge {
   ownerId: string;
   ownerName: string;
 }
-
 /**
  * 특정 사용자를 구독하는 함수
- * @param subscriberId - 구독자의 ID
- * @param subscribedToId - 구독할 사용자의 ID
+ * @param subscribedToNickname - 구독할 사용자의 닉네임
  * @returns Promise<boolean> - 구독 성공 여부 반환
  */
-export const newSubscription = async (subscriberId: string, subscribedToId: string) : Promise<boolean> => {
+export const newSubscription = async (
+  subscribedToNickname: string
+): Promise<boolean> => {
   try {
-    const response = await axiosAPI.post(`/subscriptions/${subscriberId}/${subscribedToId}`);
+    const response = await axiosAPI.post(
+      `/subscriptions/${subscribedToNickname}`
+    );
 
-    if (response.status === 200) {
-      return true;
-    } else {
-      console.log(`newSubscription에서 status : 200 이 아닌 다른 상태를 반환했습니다. subscriberID : ${subscriberId}, subscribedToId : ${subscribedToId}`);
-      return false;
-    }
+    return response.status === 200;
   } catch (error) {
-    console.error('newSubscription 에러 발생', error);
-    throw new Error('newSubscription 에러 발생');
+    console.error("newSubscription 에러 발생", error);
+    throw new Error("newSubscription 에러 발생");
   }
 };
 
 /**
  * 특정 사용자를 구독 취소하는 함수
- * @param subscriberId - 구독자의 ID
- * @param subscribedToId - 구독 취소할 사용자의 ID
+ * @param subscribedToNickname - 구독 취소할 사용자의 닉네임
  * @returns Promise<boolean> - 취소 성공 여부 반환
  */
-export const cancelSubscription = async (subscriberId: string, subscribedToId: string) : Promise<boolean> => {
+export const cancelSubscription = async (
+  subscribedToNickname: string
+): Promise<boolean> => {
   try {
-    const response = await axiosAPI.delete(`/subscriptions/${subscriberId}/${subscribedToId}`);
+    const response = await axiosAPI.delete(
+      `/subscriptions/${subscribedToNickname}`
+    );
 
-    if (response.status === 200) {
-      return true;
-    } else {
-      console.log(`cancelSubscription에서 status : 200 이 아닌 다른 상태를 반환했습니다. subscriberID : ${subscriberId}, subscribedToId : ${subscribedToId}`);
-      return false;
-    }
+    return response.status === 200;
   } catch (error) {
-    console.error('cancelSubscription 에러 발생', error);
-    throw new Error('cancelSubscription 에러 발생');
-  }
-}
-
-/**
- * 특정 사용자의 모든 구독자를 가져오는 함수
- * @param userId - 사용자의 ID
- * @returns Promise<Subscriber[]> - 사용자의 모든 구독자 목록 반환
- */
-export const getAllSubscribers = async (userId: string): Promise<Subscriber[]> => {
-  try {
-    const response = await axiosAPI.get(`/subscriptions/${userId}/users`);
-
-    const subscribers: Subscriber[] = response.data.map((subscriber: Subscriber) => ({
-      ...subscriber,
-      createdAt: new Date(subscriber.createdAt)
-    }));
-
-    return subscribers;
-  } catch (error) {
-    console.error(`getAllSubscribers 에러 발생, 발생한 userId : ${userId}`, error);
-    throw new Error('getAllSubscribers 에러 발생');
+    console.error("cancelSubscription 에러 발생", error);
+    throw new Error("cancelSubscription 에러 발생");
   }
 };
 
 /**
- * 특정 사용자의 모든 구독자의 게시글 및 댓글을 가져오는 함수
- * @param userId - 사용자의 ID
- * @returns Promise<Post[]> - 사용자의 모든 구독자의 게시글 및 댓글 목록 반환
+ * 내가 구독한 사용자 목록 조회
+ * @returns Promise<Subscriber[]> - 내가 구독한 사용자 목록 반환
  */
-export const getAllSubscribersActivities = async (userId: string): Promise<Post[]> => {
+export const getAllSubscribers = async (): Promise<Subscriber[]> => {
   try {
-    const response = await axiosAPI.get(`/subscriptions/${userId}/posts`);
+    const response = await axiosAPI.get(`/subscriptions/me/users`);
 
-    const activities: Post[] = response.data.map((post: Post) => ({
+    return response.data.map((subscriber: Subscriber) => ({
+      ...subscriber,
+      createdAt: new Date(subscriber.createdAt),
+    }));
+  } catch (error) {
+    console.error("getAllSubscribers 에러 발생", error);
+    throw new Error("getAllSubscribers 에러 발생");
+  }
+};
+
+/**
+ * 내가 구독한 사용자들의 게시글 및 활동 조회
+ * @returns Promise<Post[]> - 내가 구독한 사용자들의 게시글 목록 반환
+ */
+export const getAllSubscribersActivities = async (): Promise<Post[]> => {
+  try {
+    const response = await axiosAPI.get(`/subscriptions/me/posts`);
+
+    return response.data.map((post: Post) => ({
       ...post,
       createdAt: new Date(post.createdAt),
       updatedAt: new Date(post.updatedAt),
@@ -149,47 +140,48 @@ export const getAllSubscribersActivities = async (userId: string): Promise<Post[
         updatedAt: new Date(comment.updatedAt),
       })),
     }));
-
-    return activities;
   } catch (error) {
-    console.error(`getAllSubscribersActivities 에러 발생, userId: ${userId}`, error);
+    console.error("getAllSubscribersActivities 에러 발생", error);
     throw new Error("getAllSubscribersActivities 에러 발생");
   }
 };
 
 /**
- * 특정 사용자의 모든 구독자의 챌린지를 가져오는 함수
- * @param userId - 사용자의 ID
- * @returns Promise<Challenge[]> - 사용자의 구독자의 챌린지 목록 반환
+ * 내가 구독한 사용자들의 챌린지 조회
+ * @returns Promise<Challenge[]> - 내가 구독한 사용자들의 챌린지 목록 반환
  */
-export const getAllSubscribersChallenges = async (userId: string): Promise<Challenge[]> => {
+export const getAllSubscribersChallenges = async (): Promise<Challenge[]> => {
   try {
-    const response = await axiosAPI.get(`/subscriptions/${userId}/challenges`);
+    const response = await axiosAPI.get(`/subscriptions/me/challenges`);
 
-    const challenges: Challenge[] = response.data.map((challenge: Challenge) => ({
+    return response.data.map((challenge: Challenge) => ({
       ...challenge,
       registerDate: new Date(challenge.registerDate),
     }));
-
-    return challenges;
   } catch (error) {
-    console.error(`getAllSubscribersChallenges 에러 발생, 발생한 userId: ${userId}`, error);
+    console.error("getAllSubscribersChallenges 에러 발생", error);
     throw new Error("getAllSubscribersChallenges 에러 발생");
   }
 };
 
 /**
- * 특정 사용자가 다른 사용자를 구독하고 있는지 확인하는 함수
- * @param subscriberId - 구독하는 사용자 ID
- * @param subscribedToId - 구독 대상 사용자 ID
+ * 특정 사용자를 구독하고 있는지 확인
+ * @param subscribedToNickname - 구독 대상 사용자의 닉네임
  * @returns Promise<boolean> - 구독 여부 반환
  */
-export const isSubscribed = async (subscriberId: string, subscribedToId: string): Promise<boolean> => {
+export const isSubscribed = async (
+  subscribedToNickname: string
+): Promise<boolean> => {
   try {
-    const response = await axiosAPI.get(`/subscriptions/${subscriberId}/${subscribedToId}/check`);
+    const response = await axiosAPI.get(
+      `/subscriptions/${subscribedToNickname}/check`
+    );
     return response.data;
   } catch (error) {
-    console.error(`isSubscribed 에러 발생, 발생한 subscriberId: ${subscriberId}, subscribedToId: ${subscribedToId}`, error);
+    console.error(
+      `isSubscribed 에러 발생, subscribedToNickname: ${subscribedToNickname}`,
+      error
+    );
     throw new Error("isSubscribed 에러 발생");
   }
 };
