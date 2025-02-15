@@ -99,7 +99,7 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
     return (
       <div className={`flex gap-3 ${isReply ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4' : ""}`}>
         <Avatar className="h-7 w-7 flex-shrink-0">
-          <AvatarImage src={getRandomImage()} alt={comment.userNickname} />
+          <AvatarImage src={comment.profileImg} alt={comment.userNickname} />
           <AvatarFallback>{comment.userNickname}</AvatarFallback>
         </Avatar>
         <div className="flex-1">

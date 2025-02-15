@@ -12,8 +12,6 @@ import { Spinner } from "../components/ui/spinner";
 import { createPost, type CreatePostDto } from "@/lib/api/today";
 import { ArrowLeft } from "lucide-react";
 
-import { useAuth } from "@/hooks/useAuth";
-
 const MAX_IMAGES = 6; // 최대 이미지 개수
 
 export default function WritePage() {
@@ -22,20 +20,11 @@ export default function WritePage() {
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  const {userId} = useAuth(true);
-
-  useEffect(() => {
-    if (userId) {
-      setFormData((prev) => ({ ...prev, userId }));
-    }
-  }, [userId]);
-
   // 폼 상태 관리
   const [formData, setFormData] = useState<CreatePostDto>({
     title: "",
     content: "",
     category: "",
-    userId: "", // 실제 사용자 ID로 교체 필요
   });
 
   // 특정 인덱스에 이미지 추가
@@ -82,7 +71,6 @@ export default function WritePage() {
 
       // 빈 값을 제외한 실제 이미지 파일들만 필터링
       const validImages = images.filter((img) => img);
-      setFormData((prev) => ({ ...prev, userId: userId }))
       console.log("formData sent", formData);
       // API 호출
       await createPost(formData, validImages);

@@ -11,7 +11,7 @@ import { useAuthWithUser } from "@/lib/hooks/tempUseAuthWithUser";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { todayAPI } from "@/app/today/api/todayDetail";
-import { getPostDetail, Post, getCommentsByPostId, deletePost, likePost, checkIfUserLiked} from "@/lib/api";
+import { getPostDetail, Post, getCommentsByPostId, deletePost, likePost, getMyPost} from "@/lib/api";
 //import type { Post } from "@/app/today/api/todayDetail";
 import { CommentSection } from "./comment-section";
 import { ImageGallery } from "./image-gallery";
@@ -32,8 +32,9 @@ async function getPost(id: number): Promise<Post> {
 export default function TodayDetailPage({ params }: { params: { id: string } }) {
 
   const {userId} = useAuth(true);
+  
 
-  const { user, isLoggedIn } = useAuthWithUser(); // 로그인 정보 가져오기
+  const { isLoggedIn } = useAuthWithUser(); // 로그인 정보 가져오기
   const router = useRouter();
 
   // 상태 관리
@@ -42,24 +43,19 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
   const [likeByMe, setLikeByMe] = useState(false);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
-
-  // 본인 게시글 여부 확인
-  const isMyPost = userId === post?.userId;
+  const [isMyPost, setIsMyPost] = useState<boolean>(false);
 
   // 게시글 데이터 가져오기
   useEffect(() => {
     async function fetchPost() {
-      if(userId === null)
-        return;
-
       try {
         const fetchedPost = await getPost(Number(params.id));
+        const fetchedMyPosts = await getMyPost();
 
-        if(userId){
-          const checkIfLiked = await checkIfUserLiked(Number(params.id), userId);
-          setLikeByMe(checkIfLiked);
-        }
-          
+        if(fetchedMyPosts.map((post) => (post.id)).includes(fetchedPost.id))
+          setIsMyPost(true);
+
+        setLikeByMe(fetchedPost.liked);
         setPost(fetchedPost);
         setLikes(fetchedPost.likes);
 
@@ -70,7 +66,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
       }
     }
     fetchPost();
-  }, [params.id, userId]);
+  }, [params.id]);
 
   // 좋아요 버튼 클릭 핸들러
   const handleLike = useCallback(async () => {
@@ -80,7 +76,7 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
       return;
     }
     try {
-      const result = await likePost(post.id, userId);
+      const result = await likePost(post.id);
       if (result === "Liked") {
         setLikes((prev) => prev + 1);
         setLikeByMe(true);
@@ -140,11 +136,11 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
             </Button>
             <div className="flex gap-2 flex-1">
               <Avatar className="h-10 w-10">
-                <AvatarImage src="/corgis/placeholder1.jpg" />
-                <AvatarFallback>{post.userName}</AvatarFallback>
+                <AvatarImage src={post.ownerProfileImage} />
+                <AvatarFallback>{post.ownerNickname}</AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-base font-semibold">{post.userName}</h2>
+                <h2 className="text-base font-semibold">{post.ownerNickname}</h2>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-600">{timeAgo}</span>
                   <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full">정보 공유</span>
