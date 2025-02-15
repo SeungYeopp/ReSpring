@@ -32,24 +32,14 @@ export interface StoryDto {
 
 /**
  * 특정 사용자의 모든 스토리를 가져오는 함수
- * @param userId - 조회할 사용자의 ID
  * @returns Promise<Story[]> - 사용자의 모든 스토리 목록 반환
  */
-export const getAllStories = async (userId: string): Promise<Story[]> => {
+export const getAllStories = async (): Promise<Story[]> => {
     try {
-        const response = await axiosAPI.get(`/stories?userId=${userId}`);
+        const response = await axiosAPI.get('/stories');
 
-        // 응답 데이터의 날짜 정보를 Date 객체로 변환
-        const stories: Story[] = response.data.map((story: Story) => ({
-            ...story,
-            createdAt: new Date(story.createdAt),
-            updatedAt: new Date(story.updatedAt),
-            occurredAt: new Date(story.occurredAt)
-        }));
-
-        return stories;
+        return response.data;
     } catch (error) {
-        console.error(`getAllStories 에러 발생, 발생한 userId : ${userId}`, error);
         throw new Error('getAllStories 에러 발생');
     }
 };

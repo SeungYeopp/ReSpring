@@ -36,7 +36,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userId }) => {
     const fetchStoriesAndEvents = async () => {
       try {
         const [fetchedStories, fetchedEvents] = await Promise.all([
-          getAllStories(userId),
+          getAllStories(),
           getAllEvents(userId)
         ]);
 

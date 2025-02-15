@@ -77,7 +77,6 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
 }
 
 export default function CreateBook() {
-  const [userId, setUserId] = useState<string>("")
   const [stories, setStories] = useState<Story[]>([])
   const [selectedStorieIds, setSelectedStorieIds] = useState<number[]>([])
   const [step, setStep] = useState(1)
@@ -106,8 +105,7 @@ export default function CreateBook() {
     const handleInitialSettings = async () => {
       try {
         const sessionInfo = await getSessionInfo()
-        setUserId(sessionInfo.userId)
-        const allStoriesGot = await getAllStories(sessionInfo.userId)
+        const allStoriesGot = await getAllStories()
         setStories(allStoriesGot)
       } catch (error) {
         setMsg("유저의 글 조각 목록을 받아오는 데 실패하였습니다..")
