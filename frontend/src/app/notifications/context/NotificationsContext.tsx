@@ -14,9 +14,8 @@ const NotificationsContext = createContext<NotificationsContextType | undefined>
 
 export const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
   // 사용자 ID는 여기서 하드코딩하거나, 인증 정보 등에서 가져올 수 있습니다.
-  const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
   const { notifications, clearNotifications } = useNotifications(
-    `http://localhost:8080/notifications/subscribe/${userId}`
+    `http://localhost:8080/notifications/subscribe`
   );
 
   return (

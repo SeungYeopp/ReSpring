@@ -17,14 +17,16 @@ export function LoginForm() {
     e.preventDefault();
     try {
       const result = await login(email, password);
-
-      if (!result) {
-        alert("로그인 실패");
+      if(result){
+        alert('안녕하세요!');
+        window.location.href="/main";
+      }else{
+        alert('로그인 실패');
       }
     } catch (error) {
-      alert("로그인 실패");
+      alert('로그인 실패');
       console.error(error);
-    } finally {
+    } finally{
       window.location.reload();
     }
   };
@@ -39,8 +41,8 @@ export function LoginForm() {
     } catch (error) {
       alert("로그인 실패");
       console.error(error);
-    } finally {
-      window.location.reload();
+    } finally{
+      window.location.href="/main";
     }
   };
 
@@ -60,6 +62,7 @@ export function LoginForm() {
               placeholder="example@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
               className="border-brand-light focus:ring-brand-dark"
             />
           </div>
@@ -70,6 +73,7 @@ export function LoginForm() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
               className="border-brand-light focus:ring-brand-dark"
             />
           </div>
