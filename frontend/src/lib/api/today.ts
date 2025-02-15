@@ -345,3 +345,14 @@ export async function checkIfUserLikedComment(commentId : number) : Promise<bool
 //     throw new Error(error)
 //   }
 // }
+
+// 내가 작성한 댓글 모두 보여주기. (책 + 게시글 포함)
+export async function getCommentsIWrote() : Promise<Comment[]> {
+  try{
+    const response = await axiosAPI.get('/comments/my-comments');
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
