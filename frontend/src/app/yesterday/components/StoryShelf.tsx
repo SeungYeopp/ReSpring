@@ -24,7 +24,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userId }) => {
   const handleDelete = async (storyId: number) => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
-      await deleteStory(storyId, userId);
+      await deleteStory(storyId);
       setStories((prevStories) => prevStories.filter((story) => story.id !== storyId));
     } catch (error) {
       console.error("Error deleting story:", error);
