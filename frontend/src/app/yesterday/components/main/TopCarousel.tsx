@@ -20,7 +20,7 @@ export default function TopCarousel() {
   const [weeklyBooks, setWeeklyBooks] = useState<Book[]>([]);
   const [subscriberBooks, setSubscriberBooks] = useState<Book[]>([]);
 
-  const {userId} = useAuth(true);
+  const {userNickname: userId} = useAuth(true);
 
   useEffect(() => {
     if(!userId)

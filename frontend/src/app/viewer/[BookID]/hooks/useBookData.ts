@@ -581,7 +581,7 @@ const fallbackBookData = `
       const [bookTitle, setBookTitle] = useState<string>();
       const [isLoading, setIsLoading] = useState<boolean>(true);
       const [imageUrls, setImageUrls] = useState<string[]>([]);
-      const {userId} = useAuth(true)
+      const {userNickname: userId} = useAuth(true)
     
       useEffect(() => {
         if(!userId)

@@ -18,17 +18,17 @@ const getRandomImage = () => {
 };
 
 export default function FollowedPosts() {
-  const {userId} = useAuth(true);
+  const {userNickname} = useAuth(true);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if(!userId) return;
+    if(!userNickname) return;
 
     const handleInitialSetting = async () => {
       setLoading(true);
       try {
-        const result : Post[] = await getAllSubscribersActivities(userId);
+        const result : Post[] = await getAllSubscribersActivities();
         setPosts(result);
       } catch(error) {
         console.error(error);
@@ -37,7 +37,7 @@ export default function FollowedPosts() {
       }
     }
     handleInitialSetting();
-  }, [userId])
+  }, [userNickname])
 
   const CATEGORY_MAP: Record<string, string> = {
     INFORMATION_SHARING: "정보 공유",

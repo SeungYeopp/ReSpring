@@ -7,7 +7,7 @@ interface ChallengeListProps {
   userId: string;
 }
 
-const Challenges: React.FC<ChallengeListProps> = ({ userId }) => {
+const Challenges: React.FC<ChallengeListProps> = ({ userId: userNickname }) => {
   const [challenges, setChallenges] = useState<ParticipatedChallenge[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +15,7 @@ const Challenges: React.FC<ChallengeListProps> = ({ userId }) => {
   useEffect(() => {
     const fetchChallenges = async () => {
       try {
-        const result = await fetchParticipatedChallenges(userId);
+        const result = await fetchParticipatedChallenges();
         setChallenges(result);
         setLoading(false);
       } catch (err) {
@@ -25,7 +25,7 @@ const Challenges: React.FC<ChallengeListProps> = ({ userId }) => {
     };
 
     fetchChallenges();
-  }, [userId]);
+  }, [userNickname]);
 
   if (loading) {
     return <div>Loading...</div>;

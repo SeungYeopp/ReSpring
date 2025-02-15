@@ -223,3 +223,33 @@ export const fetchChallengeParticipants = async (
     throw new Error("챌린지 참여자 조회 실패");
   }
 };
+
+/**
+ * 📌 13. 구독한 사용자의 챌린지 목록 조회
+ */
+export const fetchSubscribedUserChallenges = async (): Promise<
+  SubscribedUserChallenge[]
+> => {
+  try {
+    const response = await axiosAPI.get(
+      `${BASE_URL}/subscriptions/me/challenges`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("구독한 사용자의 챌린지 조회 실패:", error);
+    throw new Error("구독한 사용자의 챌린지 조회 실패");
+  }
+};
+
+/**
+ * 📌 14. 내가 구독한 사용자 목록 조회
+ */
+export const fetchSubscribedUsers = async (): Promise<SubscribedUser[]> => {
+  try {
+    const response = await axiosAPI.get(`${BASE_URL}/subscriptions/me/users`);
+    return response.data;
+  } catch (error) {
+    console.error("구독한 사용자 목록 조회 실패:", error);
+    throw new Error("구독한 사용자 목록 조회 실패");
+  }
+};

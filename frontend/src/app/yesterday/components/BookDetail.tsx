@@ -19,7 +19,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   const [likeCount, setLikeCount] = useState<number>(240)
   const [book, setBook] = useState<BookFull>()
 
-  const { userId, userNickname } = useAuth(true)
+  const { userNickname: userId, userNickname } = useAuth(true)
   const router = useRouter()
 
   useEffect(() => {
