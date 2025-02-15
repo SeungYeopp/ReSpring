@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import axios from "axios";
 import type { Notification } from "@/app/notifications/types/notifications";
 
 /**
@@ -18,22 +19,36 @@ const useNotifications = (sseUrl: string) => {
   useEffect(() => {
     let isCancelled = false;
 
+    const checkSessionAndConnect = async () => {
+      try {
+        console.log("리스폰스 응답 :");
+
+        const response = await axios.get("/user/me", { withCredentials: true });
+        console.log(response.data);
+        if (response.status === 200) {
+          console.log("✅ 세션 확인됨, SSE 연결 시작...");
+          connect();
+        }
+      } catch (error) {
+        console.warn("⚠️ 세션 없음, SSE 연결 중단");
+      }
+    };
+
     const connect = () => {
       console.log("SSE 연결 시도:", sseUrl);
-      const eventSource = new EventSource(sseUrl);
+      const eventSource = new EventSource(sseUrl, { withCredentials: true });
       eventSourceRef.current = eventSource;
 
-      eventSource.onopen = () => console.log("SSE 연결 성공:", sseUrl);
+      eventSource.onopen = () => {
+        console.log("✅ SSE 연결 성공:", sseUrl);
+      };
 
-      eventSource.onerror = (error: Event & { status?: number }) => {
-        console.error("SSE 연결 에러:", error);
-        const status = error instanceof MessageEvent ? (error.data?.status ?? 0) : 0;
+      eventSource.onerror = () => {
+        console.error("SSE 연결 에러");
 
-        if (status === 401) {
-          console.warn("401 UNAUTHORIZED: SSE 재연결 중단");
-        } else if (!isCancelled) {
-          console.log("3초 후 SSE 재연결 시도");
-          retryTimeoutRef.current = setTimeout(connect, 3000);
+        if (!isCancelled) {
+          console.log("⏳ 3초 후 SSE 재연결 시도");
+          retryTimeoutRef.current = setTimeout(checkSessionAndConnect, 3000);
         }
         eventSource.close();
       };
@@ -43,7 +58,7 @@ const useNotifications = (sseUrl: string) => {
           const parsedData = JSON.parse(event.data) as Notification;
           setNotifications((prev) => [...prev, parsedData]);
         } catch (error) {
-          console.error("SSE 데이터 파싱 실패:", error);
+          console.error("❌ SSE 데이터 파싱 실패:", error);
         }
       });
 
@@ -51,22 +66,24 @@ const useNotifications = (sseUrl: string) => {
         console.log("[connect] 이벤트 수신:", event.data);
       });
 
-      return () => eventSource.close();
+      return () => {
+        eventSource.close();
+        eventSourceRef.current = null;
+      };
     };
 
-    const cleanup = connect();
+    checkSessionAndConnect(); // 🔹 세션 확인 후 연결
 
     return () => {
       isCancelled = true;
       if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
       if (eventSourceRef.current) eventSourceRef.current.close();
-      cleanup();
     };
   }, [sseUrl]);
 
   const clearNotifications = () => {
     setNotifications([]);
-    console.log("알림 목록 초기화 완료");
+    console.log("🔄 알림 목록 초기화 완료");
   };
 
   return { notifications, clearNotifications };

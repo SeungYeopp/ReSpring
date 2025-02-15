@@ -65,9 +65,9 @@ export interface Challenge {
   ownerId: string;
   ownerName: string;
 }
-
 /**
  * 특정 사용자를 구독하는 함수
+ * @param subscribedToNickname - 구독할 사용자의 닉네임
  * @param subscribedToNickname - 구독할 사용자의 닉네임
  * @returns Promise<boolean> - 구독 성공 여부 반환
  */
@@ -82,8 +82,8 @@ export const newSubscription = async (subscribedToNickname: string) : Promise<bo
       return false;
     }
   } catch (error) {
-    console.error('newSubscription 에러 발생', error);
-    throw new Error('newSubscription 에러 발생');
+    console.error("newSubscription 에러 발생", error);
+    throw new Error("newSubscription 에러 발생");
   }
 };
 
@@ -103,10 +103,10 @@ export const cancelSubscription = async (subscribedToNickname: string) : Promise
       return false;
     }
   } catch (error) {
-    console.error('cancelSubscription 에러 발생', error);
-    throw new Error('cancelSubscription 에러 발생');
+    console.error("cancelSubscription 에러 발생", error);
+    throw new Error("cancelSubscription 에러 발생");
   }
-}
+};
 
 /**
  * 다른 사용자를 구독하고 있는지 확인하는 함수
@@ -131,12 +131,10 @@ export const getAllSubscribers = async (): Promise<Subscriber[]> => {
   try {
     const response = await axiosAPI.get(`/subscriptions/me/users`);
 
-    const subscribers: Subscriber[] = response.data.map((subscriber: Subscriber) => ({
+    return response.data.map((subscriber: Subscriber) => ({
       ...subscriber,
-      createdAt: new Date(subscriber.createdAt)
+      createdAt: new Date(subscriber.createdAt),
     }));
-
-    return subscribers;
   } catch (error) {
     console.error(`getAllSubscribers 에러 발생`, error);
     throw new Error('getAllSubscribers 에러 발생');
@@ -151,7 +149,7 @@ export const getAllSubscribersActivities = async (): Promise<Post[]> => {
   try {
     const response = await axiosAPI.get(`/subscriptions/me/posts`);
 
-    const activities: Post[] = response.data.map((post: Post) => ({
+    return response.data.map((post: Post) => ({
       ...post,
       createdAt: new Date(post.createdAt),
       updatedAt: new Date(post.updatedAt),
@@ -161,8 +159,6 @@ export const getAllSubscribersActivities = async (): Promise<Post[]> => {
         updatedAt: new Date(comment.updatedAt),
       })),
     }));
-
-    return activities;
   } catch (error) {
     console.error(`getAllSubscribersActivities 에러 발생`, error);
     throw new Error("getAllSubscribersActivities 에러 발생");
@@ -177,12 +173,10 @@ export const getAllSubscribersChallenges = async (): Promise<Challenge[]> => {
   try {
     const response = await axiosAPI.get(`/subscriptions/me/challenges`);
 
-    const challenges: Challenge[] = response.data.map((challenge: Challenge) => ({
+    return response.data.map((challenge: Challenge) => ({
       ...challenge,
       registerDate: new Date(challenge.registerDate),
     }));
-
-    return challenges;
   } catch (error) {
     console.error(`getAllSubscribersChallenges 에러 발생`, error);
     throw new Error("getAllSubscribersChallenges 에러 발생");
