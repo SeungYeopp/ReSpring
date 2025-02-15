@@ -15,7 +15,7 @@ export interface UserInfo{
 export const signup = async (userNickname : string, email : string, password : string, provider : string, image : File) : Promise<boolean>=> {
     try{
         const formData = new FormData;
-        
+
         formData.append('signUpRequestDto', JSON.stringify({
             userNickname,
             email,
@@ -41,13 +41,16 @@ export const signup = async (userNickname : string, email : string, password : s
 // 입력 : email(string), password(string)
 // 출력 : 로그인 성공 여부 (true/false)
 export const login = async (email : string, password : string) : Promise<boolean>=> {
-    try{
-        const formData = new FormData();
+    try {
+        const response = await axiosAPI.post('/auth/login', {
+            email,
+            password,
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-        formData.append('email', email);
-        formData.append('password', password);
-
-        const response = await axiosAPI.post('/auth/login', formData);
 
         if(response.status === 200 || response.status === 201 || response.status === 204)
             return true;
