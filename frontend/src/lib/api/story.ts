@@ -119,7 +119,6 @@ export const deleteStory = async (storyId: number): Promise<boolean> => {
 /**
  * 기존 스토리를 업데이트하는 함수
  * @param storyId - 수정할 스토리의 ID
- * @param userId - 작성자 ID
  * @param title - 수정할 제목
  * @param content - 수정할 내용
  * @param eventId - 관련 이벤트 ID
@@ -129,7 +128,6 @@ export const deleteStory = async (storyId: number): Promise<boolean> => {
  */
 export const updateStory = async (
     storyId: number,
-    userId: string,
     title: string,
     content: string,
     eventId: number,
@@ -139,7 +137,7 @@ export const updateStory = async (
     try {
         const formData = new FormData();
 
-        const storyDto = JSON.stringify({ userId, title, content, eventId, deleteImageIds });
+        const storyDto = JSON.stringify({ title, content, eventId, deleteImageIds });
         formData.append('storyDto', new Blob([storyDto], { type: 'application/json' }));
 
         images.forEach((image) => {

@@ -83,7 +83,7 @@ export default function WriteStoryPage() {
       const deleteImageIds: number[] = [];
 
       if (storyId) {
-        await updateStory(storyId, userId, title, content, eventId!, deleteImageIds, []);
+        await updateStory(storyId, title, content, eventId!, deleteImageIds, []);
         router.push(`/yesterday/booklist/${userId}?tab=stories`);
       } else {
         if (stage === "select") {
