@@ -13,32 +13,22 @@ import {getTopThreeWeeklyBooks, getAllBooksByUserId, BookFull, Book} from "@/lib
 import {getAllSubscribers} from "@/lib/api/subscribe"
 import { useRouter } from "next/navigation";
 
-import { useAuth } from "@/hooks/useAuth";
-
 export default function TopCarousel() {
   const [activeTab, setActiveTab] = useState("weekly");
   const [weeklyBooks, setWeeklyBooks] = useState<Book[]>([]);
   const [subscriberBooks, setSubscriberBooks] = useState<Book[]>([]);
 
-  const {userNickname} = useAuth(true);
-
   useEffect(() => {
-    if(!userNickname)
-      return;
-
     const handleInitials = async () => {
       try{
         const weeklyResult = await getTopThreeWeeklyBooks();
         setWeeklyBooks(weeklyResult);
 
         const subscribersResult = await getAllSubscribers();
-        const subscriberNicknames = subscribersResult.map((subbedUser) => subbedUser.nickname);
-        
+        const subscriberNicknames = subscribersResult.map((subbedUser) => subbedUser.userNickname);
         const randomSubscribers = getRandomSubscribers(subscriberNicknames, 1); // 구독한 사람 랜덤 한 명 뽑기.
 
         const subscriberBooks = await getAllBooksByUserId(randomSubscribers[0]);
-
-        console.log(subscriberBooks)
 
         setSubscriberBooks(subscriberBooks);
       }catch(error){
@@ -46,7 +36,7 @@ export default function TopCarousel() {
       }
     }
     handleInitials();
-  }, [userNickname])
+  }, [])
 
   const getRandomSubscribers = (ids : string[], count : number) => {
     if (ids.length <= count) {
@@ -88,12 +78,6 @@ interface BookCarouselProps {
   books: Book[];
 }
 
-// ✅ 랜덤 이미지 생성 함수
-const getRandomImage = () => {
-  const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
-  return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
-};
-
 function BookCarousel({ books }: BookCarouselProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
@@ -125,7 +109,7 @@ function BookCarousel({ books }: BookCarouselProps) {
   }, [scrollToNext]);
 
   const handleOnClickBook = (bookId : number) => {
-    router.push(`/yesterday/book/${bookId}`)
+    router.push(`/yesterday/newbook/${bookId}`)
   }
 
   return (
@@ -163,10 +147,10 @@ function BookCarousel({ books }: BookCarouselProps) {
                   </div>
                   <div className="flex items-center gap-2 mt-4">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={getRandomImage()} />
-                      <AvatarFallback className="bg-spring-olive text-white">박싸피</AvatarFallback>
+                      <AvatarImage src={book.authorProfileImage} />
+                      <AvatarFallback className="bg-spring-olive">{book.authorNickname}</AvatarFallback>
                     </Avatar>
-                    <span className="text-gray-700 font-medium">박싸피</span>
+                    <span className="text-gray-700 font-medium">{book.authorNickname}</span>
                   </div>
                 </div>
               </CardContent>

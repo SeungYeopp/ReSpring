@@ -6,7 +6,7 @@ import { Book } from "./book";
  */
 export interface Subscriber {
   id: string;
-  nickname: string;
+  userNickname: string;
   email: string;
   profileImage: string;
   createdAt: Date;
