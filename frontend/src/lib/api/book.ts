@@ -362,10 +362,9 @@ export const getAllBooksComments = async () : Promise<Comment[]> => {
 export const compileBookByAI = async (content: Content): Promise<Content> => {
     const maxAttempts = 3; // 최대 재시도 횟수
 
-    console.log(content)
     for (let attempts = 0; attempts < maxAttempts; attempts++) {
         try {
-            const response = await axiosAPI.post('/books/ai-compile', content);
+            const response = await axiosAPI.post('/books/ai-compile', {content});
             const uncleaned = response.data.response;
 
             console.log(`AI 생성 RAW DATA (시도 ${attempts + 1}):`, uncleaned);
