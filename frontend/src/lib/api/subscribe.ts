@@ -124,6 +124,24 @@ export const isSubscribed = async (subscribedToNickname: string): Promise<boolea
 };
 
 /**
+ * 모든 구독자를 가져오는 함수
+ * @returns Promise<Subscriber[]> - 사용자의 모든 구독자 목록 반환
+ */
+export const getAllSubscribers = async (): Promise<Subscriber[]> => {
+  try {
+    const response = await axiosAPI.get(`/subscriptions/me/users`);
+
+    return response.data.map((subscriber: Subscriber) => ({
+      ...subscriber,
+      createdAt: new Date(subscriber.createdAt),
+    }));
+  } catch (error) {
+    console.error(`getAllSubscribers 에러 발생`, error);
+    throw new Error('getAllSubscribers 에러 발생');
+  }
+};
+
+/**
  * 모든 구독자의 게시글 및 댓글을 가져오는 함수
  * @returns Promise<Post[]> - 사용자의 모든 구독자의 게시글 및 댓글 목록 반환
  */
@@ -144,6 +162,24 @@ export const getAllSubscribersActivities = async (): Promise<Post[]> => {
   } catch (error) {
     console.error(`getAllSubscribersActivities 에러 발생`, error);
     throw new Error("getAllSubscribersActivities 에러 발생");
+  }
+};
+
+/**
+ * 모든 구독자의 챌린지를 가져오는 함수
+ * @returns Promise<Challenge[]> - 사용자의 구독자의 챌린지 목록 반환
+ */
+export const getAllSubscribersChallenges = async (): Promise<Challenge[]> => {
+  try {
+    const response = await axiosAPI.get(`/subscriptions/me/challenges`);
+
+    return response.data.map((challenge: Challenge) => ({
+      ...challenge,
+      registerDate: new Date(challenge.registerDate),
+    }));
+  } catch (error) {
+    console.error(`getAllSubscribersChallenges 에러 발생`, error);
+    throw new Error("getAllSubscribersChallenges 에러 발생");
   }
 };
 

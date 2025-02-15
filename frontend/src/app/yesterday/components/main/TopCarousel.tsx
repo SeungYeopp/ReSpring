@@ -20,10 +20,10 @@ export default function TopCarousel() {
   const [weeklyBooks, setWeeklyBooks] = useState<Book[]>([]);
   const [subscriberBooks, setSubscriberBooks] = useState<Book[]>([]);
 
-  const {userNickname: userId} = useAuth(true);
+  const {userNickname} = useAuth(true);
 
   useEffect(() => {
-    if(!userId)
+    if(!userNickname)
       return;
 
     const handleInitials = async () => {
@@ -31,10 +31,10 @@ export default function TopCarousel() {
         const weeklyResult = await getTopThreeWeeklyBooks();
         setWeeklyBooks(weeklyResult);
 
-        const subscribersResult = await getAllSubscribers(userId);
-        const subscriberIds = subscribersResult.map((subbedUser) => subbedUser.id);
+        const subscribersResult = await getAllSubscribers();
+        const subscriberNicknames = subscribersResult.map((subbedUser) => subbedUser.nickname);
         
-        const randomSubscribers = getRandomSubscribers(subscriberIds, 1); // 구독한 사람 랜덤 한 명 뽑기.
+        const randomSubscribers = getRandomSubscribers(subscriberNicknames, 1); // 구독한 사람 랜덤 한 명 뽑기.
 
         const subscriberBooks = await getAllBooksByUserId(randomSubscribers[0]);
 
@@ -46,7 +46,7 @@ export default function TopCarousel() {
       }
     }
     handleInitials();
-  }, [userId])
+  }, [userNickname])
 
   const getRandomSubscribers = (ids : string[], count : number) => {
     if (ids.length <= count) {
