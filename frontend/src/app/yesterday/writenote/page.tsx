@@ -60,7 +60,7 @@ export default function WriteStoryPage() {
 
   const fetchStoryData = async (storyId: number) => {
     try {
-      const fetchedStory = await getStoryById(storyId, userId);
+      const fetchedStory = await getStoryById(storyId);
       setStory(fetchedStory);
       setTitle(fetchedStory.title);
       setContent(fetchedStory.content);

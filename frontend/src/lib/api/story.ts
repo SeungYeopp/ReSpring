@@ -84,23 +84,11 @@ export const makeStory = async (
  * @param storyId - 조회할 스토리의 ID
  * @returns Promise<Story> - 조회된 스토리 객체 반환
  */
-export const getStoryById = async (storyId: number, userId: string): Promise<Story> => {
+export const getStoryById = async (storyId: number): Promise<Story> => {
     try {
-        const response = await axiosAPI.get(`/stories/${storyId}`,
-            {
-                headers: {
-                    "X-User-Id": userId,
-                    "Accept": "*/*" // 서버로부터 아무 타입의 반환값을 받겠다는 것을 의미한데요.
-                }
-            }
-        );
+        const response = await axiosAPI.get(`/stories/${storyId}`);
 
-        return {
-            ...response.data,
-            createdAt: new Date(response.data.createdAt),
-            updatedAt: new Date(response.data.updatedAt),
-            occurredAt : new Date(response.data.occurredAt)
-        };
+        return response.data;
     } catch (error) {
         console.error('getStoryByStoryId 에러 발생!', error);
         throw new Error('getStoryByStoryId 에러 발생!');
