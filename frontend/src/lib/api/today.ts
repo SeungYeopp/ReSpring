@@ -88,7 +88,7 @@ export interface CreatePostDto {
   title: string;
   content: string;
   category: string;
-  userId: string;
+  userId?: string;
 }
 
 export interface CreatePostResponse {
@@ -107,10 +107,9 @@ export async function createPost(postData: CreatePostDto, images?: File[]): Prom
     const title = postData.title;
     const content = postData.content;
     const category = postData.category;
-    const userId = postData.userId
 
     const postDto = {
-      userId, title, content, category
+      title, content, category
     }
     
     formData.append("postDto", JSON.stringify(postDto));
