@@ -261,21 +261,22 @@ export const getAllBooksAutocomplete = async (query : string) : Promise<Book[]> 
 // 출력 : 봄날의 서 배열
 export const getAllBooksScrolled = async (lastLikes : number, lastViews : number, lastBookId : number, lastCreatedAt : Date | null, size : number) : Promise<Book[]> => {
     try{
+        console.log(lastLikes, lastViews, lastBookId, size)
         const params: Record<string, any> = {
             lastLikes, lastViews, lastBookId, size
         }
         
-        if (lastCreatedAt) {
-            params.lastCreatedAt = lastCreatedAt.toISOString();
-        }
+        // if (lastCreatedAt) {
+        //     params.lastCreatedAt = lastCreatedAt.toISOString();
+        // }
         
-        const response = await axiosAPI.get(`/books/all`, { params });
+        const response = await axiosAPI.get(`/books/all?lastLikes=${lastLikes}&lastViews=${lastViews}&lastBookId=${lastBookId}&size=${size}`);
         
         const responseBooks : Book[] = response.data as Book[];
     
         return responseBooks;
 }catch(error : any){
-    throw new Error(error.response?.data?.message || 'getAllBooksScrolled 함수 API 호출에서 오류가 발생했습니다.')
+    throw new Error(error);
 }
 }
 

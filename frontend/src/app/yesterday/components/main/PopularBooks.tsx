@@ -1,48 +1,83 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { type Book as OldBook } from "../../types/maintypes";
-import { likedBooks } from "./mocks/books";
-import { viewedBooks } from "./mocks/books";
-import { MainBookCarousel } from "./MainBookCarousel";
+import { useState, useEffect, useCallback } from "react"
+import { MainBookCarousel } from "./MainBookCarousel"
+import { getAllBooksScrolled, type Book } from "@/lib/api"
+import { Button } from "@/components/ui/button"
 
-// 임시 데이터를 가져오는 함수 (실제 API 호출을 시뮬레이션)
-const fetchBooks = (books: OldBook[]): Promise<OldBook[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(books.slice(0, 10)), 1000); // 상위 10개만 반환
-  });
-};
+const INITIAL_LOAD_SIZE = 5
+const LOAD_MORE_SIZE = 10
 
 export default function PopularBooks() {
-  const [likedBooksData, setLikedBooksData] = useState<OldBook[]>([]);
-  const [viewedBooksData, setViewedBooksData] = useState<OldBook[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [books, setBooks] = useState<Book[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(true)
+  const [lastBook, setLastBook] = useState<Book | null>(null)
+
+  const fetchBooks = useCallback(
+    async (isInitial = false) => {
+      if (!hasMore && !isInitial) return
+
+      setIsLoading(true)
+      try {
+        const newBooks = await getAllBooksScrolled(
+          lastBook?.likeCount ?? 1987654321,
+          lastBook?.viewCount ?? 1987654321,
+          lastBook?.id ?? 1987654321,
+          lastBook?.createdAt ?? null,
+          isInitial ? INITIAL_LOAD_SIZE : LOAD_MORE_SIZE,
+        )
+
+        if (newBooks.length === 0 || newBooks.length < (isInitial ? INITIAL_LOAD_SIZE : LOAD_MORE_SIZE)) {
+          setHasMore(false)
+        }
+        
+        if (newBooks.length > 0) {
+          setBooks((prevBooks) => {
+            const uniqueNewBooks = newBooks.filter(
+              (newBook) => !prevBooks.some((existingBook) => existingBook.id === newBook.id)
+            )
+            return [...prevBooks, ...uniqueNewBooks]
+          })
+          setLastBook(newBooks[newBooks.length - 1])
+        }
+      } catch (err) {
+        setError("책 정보를 불러오는 데 실패했습니다.")
+        console.error(err)
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [lastBook, hasMore],
+  )
 
   useEffect(() => {
-    const fetchAllBooks = async () => {
-      try {
-        const [liked, viewed] = await Promise.all([fetchBooks(likedBooks), fetchBooks(viewedBooks)]);
-        setLikedBooksData(liked);
-        setViewedBooksData(viewed);
-      } catch (error) {
-        console.error("Error fetching books:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    fetchBooks(true)
+  }, []) // Remove fetchBooks from the dependency array
 
-    fetchAllBooks();
-  }, []);
+  const loadMore = () => {
+    if (!isLoading && hasMore) {
+      fetchBooks()
+    }
+  }
 
-  if (isLoading) {
-    return <div className="mt-8 px-4">책 정보를 불러오는 중입니다...</div>;
+  if (error) {
+    return <div className="mt-8 px-4">{error}</div>
   }
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4 text-spring-forest">인기 서적 TOP 10</h2>
-      <MainBookCarousel title="좋아요 순 TOP 10" books={likedBooksData} />
-      <MainBookCarousel title="조회수 순 TOP 10" books={viewedBooksData} />
+      <h2 className="text-2xl font-bold mb-4 text-spring-forest">봄날의 서들</h2>
+      {books.length > 0 && <MainBookCarousel title="봄날의 서들" books={books} />}
+      {isLoading && <div className="text-center mt-4">책 정보를 불러오는 중입니다...</div>}
+      {!isLoading && hasMore && (
+        <div className="text-center mt-4">
+          <Button onClick={loadMore} className="bg-spring-olive text-white hover:bg-spring-olive/80">
+            더 보기
+          </Button>
+        </div>
+      )}
     </div>
-  );
+  )
 }

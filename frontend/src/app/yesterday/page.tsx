@@ -33,9 +33,9 @@ export default function YesterdayPage({ searchParams }: { searchParams: { q?: st
               )}
             </div>
 
-            <div className="lg:flex-1 lg:ml-8">
+            {/* <div className="lg:flex-1 lg:ml-8">
               <TaggedPopularBooks />
-            </div>
+            </div> */}
           </div>
         </div>
         <BubbleMenuYesterday />
