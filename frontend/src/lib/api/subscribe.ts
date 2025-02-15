@@ -28,6 +28,7 @@ export interface Post {
   comments: Comment[];
   authorId: string;
   authorName: string;
+  authorImage: string;
 }
 
 /**
