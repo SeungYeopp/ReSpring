@@ -120,7 +120,8 @@ public class SubscribeService {
                                     ))
                                     .collect(Collectors.toList()),
                             post.getUser().getId(),
-                            post.getUser().getUserNickname()
+                            post.getUser().getUserNickname(),
+                            imageService.generatePresignedUrl(post.getUser().getProfileImage())
                     );
                 })
                 .collect(Collectors.toList());
