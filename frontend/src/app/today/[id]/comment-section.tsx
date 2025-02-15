@@ -75,12 +75,12 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
 
     setIsLoading(true);
     try {
-      const comment = await createNewCommunityComment(postId, newComment, userId, "string", replyTo?.id || null);
+      const comment = await createNewCommunityComment(postId, newComment);
 
       if (replyTo) {
-        setComments((prev) =>
-          prev.map((c) => (c.id === replyTo.id ? { ...c, replies: [...(c.replies || []), comment] } : c))
-        );
+        // setComments((prev) =>
+        //   prev.map((c) => (c.id === replyTo.id ? { ...c, replies: [...(c.replies || []), comment] } : c))
+        // );
       } else {
         setComments((prev) => [{ ...comment, replies: [] }, ...prev]);
       }

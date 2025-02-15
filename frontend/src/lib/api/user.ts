@@ -22,7 +22,6 @@ export const signup = async (userNickname : string, email : string, password : s
             password,
             provider
           }));
-
         formData.append('image', image);
         const response = await axiosAPI.post('/user/signup', formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
@@ -52,7 +51,7 @@ export const login = async (email : string, password : string) : Promise<boolean
             },
         });
 
-        
+
         if(response.status === 200 || response.status === 201 || response.status === 204)
             return true;
         else{
@@ -106,3 +105,57 @@ export const logout = async() : Promise<boolean> => {
         throw new Error("logout() 함수 호출 에러 발생!");
     }
 }
+
+
+// 회원 정보 조회 API 호출 함수
+export const getUserInfo = async (): Promise<UserInfo> => {
+    const response = await axiosAPI.get<UserInfo>('/user/me');
+    return response.data;
+  };
+
+
+  /**
+ * ✅ 사용법 예시
+ *
+ * 1. 비동기 함수 안에서 사용:
+ *    const userInfo = await getUserInfo();
+ *    console.log(userInfo.userNickname); // 닉네임 출력
+ *
+ * 2. React 컴포넌트에서 CSR(클라이언트 사이드 렌더링)로 쓰기:
+ *    import { useEffect, useState } from 'react';
+ *    import { getUserInfo } from '@/lib/api/user';
+ *
+ *    const ExampleComponent = () => {
+ *      const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+ *
+ *      useEffect(() => {
+ *        const fetchUserInfo = async () => {
+ *          try {
+ *            const data = await getUserInfo();
+ *            setUserInfo(data);
+ *          } catch (error) {
+ *            console.error('유저 정보 불러오기 실패:', error);
+ *          }
+ *        };
+ *
+ *        fetchUserInfo();
+ *      }, []);
+ *
+ *      return <div>닉네임: {userInfo ? userInfo.userNickname : '로딩 중...'}</div>;
+ *    };
+ *
+ * 3. SSR(Server Side Rendering)에서 가져와서 props로 넘길 때:
+ *    import { getUserInfo } from '@/lib/api/user';
+ *
+ *    const Page = async () => {
+ *      const userInfo = await getUserInfo(); // 서버 사이드에서 실행
+ *
+ *      return <div>닉네임: {userInfo.userNickname}</div>;
+ *    };
+ *
+ *    export default Page;
+ *
+ * ⚠️ 주의사항:
+ * - 반드시 로그인된 상태여야 정상 동작함!
+ * - 쿠키/세션 정보를 포함해서 요청하려면 axios 인스턴스(axiosAPI)를 써야 함 (withCredentials 설정되어 있음)
+ */

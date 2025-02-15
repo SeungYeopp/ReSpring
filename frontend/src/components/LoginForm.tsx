@@ -23,29 +23,28 @@ export function LoginForm() {
       }else{
         alert('로그인 실패');
       }
-
-    } catch (error) {
-      alert('로그인 실패');
-      console.error(error);
-    }
-
-  };
-
-  const handleTempLogin = async() => {
-
-    try {
-      const result = await login("parkssafy@gmail.com", "password");
-
-      if (!result){
-        alert('로그인 실패');
-      }
     } catch (error) {
       alert('로그인 실패');
       console.error(error);
     } finally{
+      window.location.reload();
+    }
+  };
+
+  const handleTempLogin = async () => {
+    try {
+      const result = await login("parkssafy@gmail.com", "password");
+
+      if (!result) {
+        alert("로그인 실패");
+      }
+    } catch (error) {
+      alert("로그인 실패");
+      console.error(error);
+    } finally{
       window.location.href="/main";
     }
-  }
+  };
 
   return (
     <Card className="w-full mx-auto">
@@ -81,12 +80,14 @@ export function LoginForm() {
           <Button type="submit" className="w-full bg-brand hover:bg-brand-dark text-white">
             로그인
           </Button>
-          <KakaoLoginButton/>
-          <GoogleLoginButton/>
-          <Button type="button" onClick={handleTempLogin} className="w-full bg-brand hover:bg-brand-dark text-white">
-            임시 로그인(개발용, 박싸피)
-          </Button>
         </form>
+
+        {/* ✅ form 바깥에서 렌더링 ✅ */}
+        <KakaoLoginButton redirectUrl="https://i12a307.p.ssafy.io:8080/oauth2/authorization/kakao" />
+        <GoogleLoginButton />
+        <Button type="button" onClick={handleTempLogin} className="w-full bg-brand hover:bg-brand-dark text-white">
+          임시 로그인(개발용, 박싸피)
+        </Button>
       </CardContent>
     </Card>
   );

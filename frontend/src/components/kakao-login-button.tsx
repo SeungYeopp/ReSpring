@@ -1,11 +1,15 @@
 interface KakaoLoginButtonProps {
-  onClick?: () => void
+  redirectUrl: string;
 }
 
-export function KakaoLoginButton({ onClick }: KakaoLoginButtonProps) {
+export function KakaoLoginButton({ redirectUrl }: KakaoLoginButtonProps) {
+  const handleClick = () => {
+    window.location.href = redirectUrl;
+  };
+
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       className="flex w-full items-center justify-center gap-2 rounded-md bg-[#FEE500] px-4 py-3 text-sm font-medium text-[#000000] shadow-sm hover:bg-[#FEE500]/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FEE500]"
     >
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -13,6 +17,5 @@ export function KakaoLoginButton({ onClick }: KakaoLoginButtonProps) {
       </svg>
       카카오 로그인
     </button>
-  )
+  );
 }
-
