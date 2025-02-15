@@ -60,7 +60,7 @@ export default function WriteStoryPage() {
 
   const fetchStoryData = async (storyId: number) => {
     try {
-      const fetchedStory = await getStoryById(storyId, userId);
+      const fetchedStory = await getStoryById(storyId);
       setStory(fetchedStory);
       setTitle(fetchedStory.title);
       setContent(fetchedStory.content);
@@ -83,13 +83,13 @@ export default function WriteStoryPage() {
       const deleteImageIds: number[] = [];
 
       if (storyId) {
-        await updateStory(storyId, userId, title, content, eventId!, deleteImageIds, []);
+        await updateStory(storyId, title, content, eventId!, deleteImageIds, []);
         router.push(`/yesterday/booklist/${userId}?tab=stories`);
       } else {
         if (stage === "select") {
           setStage("editor");
         } else {
-          const newStoryId = await makeStory(userId, title, content, selected!, []);
+          const newStoryId = await makeStory(title, content, selected!, []);
           router.push(`/stories/${newStoryId}`);
         }
       }

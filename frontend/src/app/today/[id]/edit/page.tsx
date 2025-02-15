@@ -11,40 +11,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { todayAPI } from "@/app/today/api/todayDetail";
 import { useAuthWithUser } from "@/lib/hooks/tempUseAuthWithUser";
 
-import {getPostDetail, updatePost} from "@/lib/api"
+import {getMyPost, getPostDetail, updatePost} from "@/lib/api"
 
 import type React from "react"; // Added import for React
-
-import {useAuth} from "@/hooks/useAuth"
 
 const MAX_IMAGES = 6;
 
 export default function EditPostPage({ params }: { params: { id: string } }) {
   const router = useRouter();
 
-  const {userId} = useAuth(true);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<(File | null)[]>(Array(MAX_IMAGES).fill(null));
-  const [previews, setPreviews] = useState<({ imageId: number; imageUrl: string } | null)[]>(Array(MAX_IMAGES).fill(null));
+  const [previews, setPreviews] = useState<string[]>(Array(MAX_IMAGES).fill(null));
   const [deleteImageIds, setDeleteImageIds] = useState<number[]>([]);
 
   const [formData, setFormData] = useState({
     title: "",
     content: "",
     category: "",
-    userId: "",
   });
 
   useEffect(() => {
-    if (!userId) return; // userId가 없으면 fetch 안 함
-
     async function fetchPost() {
       try {
         const fetchedPost = await getPostDetail(Number(params.id));
-        console.log('fetchedPost.userId', fetchedPost.userId)
-        console.log('userId', userId)
-        if (fetchedPost.userId !== userId) {
+        const fetchedMyPosts = await getMyPost();
+
+        if (!fetchedMyPosts.map((post) => (post.id)).includes(fetchedPost.id)) {
           router.replace(`/today/${params.id}`); // replace 사용으로 뒤로 가기 방지
           return;
         }
@@ -55,7 +48,6 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
           title: fetchedPost.title,
           content: fetchedPost.content,
           category: fetchedPost.category,
-          userId: fetchedPost.userId,
         });
 
         if (fetchedPost.images.length > 0) {
@@ -74,7 +66,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     }
 
     fetchPost();
-  }, [params.id, userId, router]);
+  }, [params.id, router]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const files = e.target.files;
@@ -90,16 +82,16 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
 
     setPreviews((prev) => {
       const newPreviews = [...prev];
-      newPreviews[index] = { imageId: Date.now(), imageUrl: URL.createObjectURL(file) };
+      newPreviews[index] = URL.createObjectURL(file)
       return newPreviews;
     });
   };
 
   const removeImage = (index: number) => {
     const imageToRemove = previews[index];
-    if (imageToRemove && "imageId" in imageToRemove) {
-      setDeleteImageIds((prev) => [...prev, imageToRemove.imageId]);
-    }
+    // if (imageToRemove && "imageId" in imageToRemove) {
+    //   setDeleteImageIds((prev) => [...prev, imageToRemove.imageId]);
+    // }
 
     setImages((prev) => {
       const newImages = [...prev];
@@ -109,7 +101,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
 
     setPreviews((prev) => {
       const newPreviews = [...prev];
-      newPreviews[index] = null;
+      newPreviews[index] = "";
       return newPreviews;
     });
   };
@@ -125,7 +117,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     try {
       setIsSubmitting(true);
 
-      await updatePost(Number(params.id), formData.title, formData.content, formData.category, formData.userId, deleteImageIds, images.filter((img) => img !== null) as File[]);
+      await updatePost(Number(params.id), formData.title, formData.content, formData.category, deleteImageIds, images.filter((img) => img !== null) as File[]);
 
       alert("게시글이 수정되었습니다.");
       router.push(`/today/${params.id}`);
@@ -176,7 +168,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
                 {preview ? (
                   <>
                     {/* 이미지 변경해야 함 */}
-                    <Image src={"/corgis/placeholder1.jpg"} alt={`이미지 ${index + 1}`} fill className="object-cover rounded-lg" />
+                    <Image src={preview} alt={`이미지 ${index + 1}`} fill className="object-cover rounded-lg" />
                     <button type="button" onClick={() => removeImage(index)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1">
                       <X size={16} />
                     </button>

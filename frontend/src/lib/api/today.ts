@@ -8,13 +8,17 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8
 export interface Comment {
   id: number;
   content: string;
-  userId : string;
+  userId? : string;
   userNickname: string;
+  profileImg? : string;
   createdAt: string;
   updatedAt: string;
   parentId: number | null;
   postId?: number;
   bookId?: number;
+  postTitle? : string;
+  bookTitle? : string;
+  likeCount? : number;
 };
 
 export interface Post {
@@ -22,14 +26,16 @@ export interface Post {
   title: string; // 게시물 제목
   content: string; // 게시물 내용
   category: string; // 게시물 카테고리 (INFORMATION_SHARING, 고민/질문)
-  userId: string; // 작성자 ID
-  userName: string; // 작성자 이름
+  userId?: string; // 작성자 ID
+  ownerNickname?: string; // 작성자 이름
+  ownerProfileImage? : string;
   createdAt: string; // 생성 날짜 및 시간
   updatedAt: string; // 수정 날짜 및 시간
   likes: number; // 좋아요 수
   images: string[]; // 게시물에 첨부된 이미지 URL 배열
   commentCount : number,
-  comments : string[]
+  comments : Comment[],
+  liked: boolean
 }
 
 /**
@@ -82,7 +88,7 @@ export interface CreatePostDto {
   title: string;
   content: string;
   category: string;
-  userId: string;
+  userId?: string;
 }
 
 export interface CreatePostResponse {
@@ -101,10 +107,9 @@ export async function createPost(postData: CreatePostDto, images?: File[]): Prom
     const title = postData.title;
     const content = postData.content;
     const category = postData.category;
-    const userId = postData.userId
 
     const postDto = {
-      userId, title, content, category
+      title, content, category
     }
     
     formData.append("postDto", JSON.stringify(postDto));
@@ -140,15 +145,14 @@ export async function createPost(postData: CreatePostDto, images?: File[]): Prom
 //   });
 // }
 
-export async function createNewCommunityComment(postId: number, content: string, userId: string, bookId: string, parentId: number | null): Promise<Comment> {
+export async function createNewCommunityComment(postId: number, content: string): Promise<Comment> {
   try{
     const formData = new FormData();
 
     const postDto = {
-      userId, content, postId, bookId, parentId,
+      content, postId,
     }
     
-    console.log(formData)
     const response = await axiosAPI.post(`/comments/posts`, JSON.stringify(postDto), {headers : {'Content-Type': 'application/json'}})
     
     return response.data;
@@ -157,6 +161,24 @@ export async function createNewCommunityComment(postId: number, content: string,
     throw new Error("댓글 생성 실패");
   }
 }
+
+export async function createNewCommunityChildComment(postId: number, content: string, parentId : number): Promise<Comment> {
+  try{
+    const formData = new FormData();
+
+    const postDto = {
+      content, postId, parentId
+    }
+    
+    const response = await axiosAPI.post(`/comments/posts`, JSON.stringify(postDto), {headers : {'Content-Type': 'application/json'}})
+    
+    return response.data;
+  }catch(error){
+    console.error(error);
+    throw new Error("댓글 생성 실패");
+  }
+}
+
 
 export async function getCommentsByPostId(postId: number): Promise<Comment[]> {
   try {
@@ -180,14 +202,13 @@ export async function getChildrenComments(parentId: number): Promise<Comment[]> 
 
 }
 
-export async function updatePost(postId: number, title: string, content: string, category: string, userId: string, deleteImageIds?: number[], newFiles?: File[]): Promise<void> {
+export async function updatePost(postId: number, title: string, content: string, category: string, deleteImageIds?: number[], newFiles?: File[]): Promise<void> {
   try{
     const formData = new FormData();
     const postDto = {
       title,
       content,
       category,
-      userId,
       deleteImageIds,
     };
     console.log("🔍 보낼 데이터:", postDto);
@@ -219,19 +240,18 @@ export async function deletePost(postId: number, userId: string): Promise<void> 
   }
 }
 
-export async function likePost(postId: number, userId: string): Promise<"Liked" | "Unliked"> {
+export async function likePost(postId: number): Promise<"Liked" | "Unliked"> {
   try{
-    const response = await axiosAPI.patch(`/posts/like/${postId}?userId=${userId}`);
+    const response = await axiosAPI.patch(`/posts/like/${postId}`);
     return response.data; // "Liked" or "Unliked"
   }catch(error){
     throw new Error("게시글 좋아요/취소 실패");
   }
 }
 
-export async function checkIfUserLiked(postId: number, userId: string): Promise<boolean> {
+export async function checkIfUserLiked(postId: number): Promise<boolean> {
   try{
-    const response = await axiosAPI.get(`/posts/like/${postId}?userId=${userId}`);
-    console.log(response.data)
+    const response = await axiosAPI.get(`/posts/like/${postId}`);
 
     return response.data;
   }catch(error){
@@ -241,15 +261,15 @@ export async function checkIfUserLiked(postId: number, userId: string): Promise<
 
 /**
  * 특정 사용자의 게시물 목록을 가져오는 함수
- * @param userId - 게시물을 가져올 사용자 ID
+ * @param userNickname - 게시물을 가져올 사용자 닉네임
  * @returns Promise<PostDetails[]> - 해당 사용자의 게시물 배열
  */
-export async function getPostsByUserId(userId: string): Promise<Post[]> {
+export async function getPostsByUserId(userNickname: string): Promise<Post[]> {
   try {
-    const response = await axios.get<Post[]>(`${API_BASE_URL}/posts/users/${userId}`);
+    const response = await axios.get<Post[]>(`${API_BASE_URL}/posts/users/${userNickname}`);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching posts for user ${userId}:`, error);
+    console.error(`Error fetching posts for user ${userNickname}:`, error);
     throw new Error("게시물을 불러오는 데 실패했습니다.");
   }
 }
@@ -268,5 +288,120 @@ export async function getCommentsByUserId(userId: string): Promise<Comment[]> {
   } catch (error) {
     console.error(`Error fetching comments for user ${userId}:`, error);
     throw new Error("댓글을 불러오는 데 실패했습니다.");
+  }
+}
+
+export async function likeComment(commentId : number): Promise<boolean>{
+  try{
+    const response = await axiosAPI.post(`/comments/${commentId}/like`);
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+export async function getMyPostComments() : Promise<Comment[]> {
+  try{
+    const response = await axiosAPI.get('/comments/posts');
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error)
+  }
+}
+
+export async function deleteComment(commentId : number) : Promise<boolean>{
+  try{
+    const response = await axiosAPI.delete(`/comments/posts/${commentId}`);
+
+    if(response.status === 200 || response.status === 201 || response.status === 204)
+      return true;
+    else
+      return false;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+export async function updateComment(commentId : number, content : string) : Promise<Comment>{
+  try{
+    const response = await axiosAPI.patch(`/comments/posts/${commentId}`, {content})
+    
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+export async function getCommentLikes(commentId : number) : Promise<number>{
+  try{
+    const response = await axiosAPI.get(`comments/${commentId}/likes/count`);
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+export async function checkIfUserLikedComment(commentId : number) : Promise<boolean>{
+  try{
+    const response = await axiosAPI.get(`/comments/${commentId}/likes/check`);
+
+    return response.data; // true면 좋아요 누름, false면 안 누름.
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+// 댓글 좋아요 순 정렬 미구현.
+// export async function getPostCommentsSortByLikes(postId : number) : Promise<Comment[]>{
+//   try{
+//     return []
+//   }catch(error : any){
+//     throw new Error(error)
+//   }
+// }
+
+// 내가 작성한 댓글 모두 보여주기. (책 + 게시글 포함)
+export async function getCommentsIWrote() : Promise<Comment[]> {
+  try{
+    const response = await axiosAPI.get('/comments/my-comments');
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+// 내가 작성한 게시글 전체 불러오기.
+export async function getMyPost() : Promise<Post[]>{
+  try{
+    const response = await axiosAPI.get('/posts/my');
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error)
+  }
+}
+
+// 제목으로 포스트 검색.
+export async function searchPostsByTitle(title : string) : Promise<Post[]>{
+  try{
+    const response = await axiosAPI.get('/posts/search');
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
+
+export async function filterPosts(category : string) : Promise<Post[]>{
+  try{
+    const response = await axiosAPI.get(`/posts/filter?category=${category}`);
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
   }
 }

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/hooks/tempUseAuth";
 import { Loader2 } from "lucide-react";
 
-import { Comment, getCommentsByPostId, getChildrenComments, createNewCommunityComment } from "@/lib/api";
+import { Comment, getCommentsByPostId, getChildrenComments, createNewCommunityComment, createNewCommunityChildComment } from "@/lib/api";
 
 interface CommentSectionProps {
   postId: number;
@@ -49,10 +49,10 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
     setIsLoading(true);
     try {
       const parentComments = await getCommentsByPostId(postId);
+      const newParentsComments = parentComments.filter((comment) => (!comment.parentId))
 
-      console.log(parentComments)
       const commentsWithReplies = await Promise.all(
-        parentComments.map(async (comment) => {
+        newParentsComments.map(async (comment) => {
           const replies = await getChildrenComments(comment.id);
           return {
             ...comment,
@@ -75,15 +75,25 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
 
     setIsLoading(true);
     try {
-      const comment = await createNewCommunityComment(postId, newComment, userId, "string", replyTo?.id || null);
-
       if (replyTo) {
-        setComments((prev) =>
-          prev.map((c) => (c.id === replyTo.id ? { ...c, replies: [...(c.replies || []), comment] } : c))
-        );
+        const comment = await createNewCommunityChildComment(postId, newComment, replyTo.id)
       } else {
-        setComments((prev) => [{ ...comment, replies: [] }, ...prev]);
+        const comment = await createNewCommunityComment(postId, newComment);
       }
+      const parentComments = await getCommentsByPostId(postId);
+      const newParentsComments = parentComments.filter((comment) => (!comment.parentId))
+
+      const commentsWithReplies = await Promise.all(
+        newParentsComments.map(async (comment) => {
+          const replies = await getChildrenComments(comment.id);
+          return {
+            ...comment,
+            replies,
+          };
+        })
+      );
+      setComments(commentsWithReplies);
+      setHasMore(commentsWithReplies.length > 0);
 
       setNewComment("");
       setReplyTo(null);
@@ -99,7 +109,7 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
     return (
       <div className={`flex gap-3 ${isReply ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4' : ""}`}>
         <Avatar className="h-7 w-7 flex-shrink-0">
-          <AvatarImage src={getRandomImage()} alt={comment.userNickname} />
+          <AvatarImage src={comment.profileImg} alt={comment.userNickname} />
           <AvatarFallback>{comment.userNickname}</AvatarFallback>
         </Avatar>
         <div className="flex-1">

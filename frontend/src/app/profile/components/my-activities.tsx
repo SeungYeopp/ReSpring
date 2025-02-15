@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
-import type { Comment, Post } from "@/lib/api";
-import { getPostsByUserId, getCommentsByUserId } from "@/lib/api/";
+import type { Comment, Post, UserInfo } from "@/lib/api";
+import { getPostsByUserId, getCommentsByUserId, getSessionInfo } from "@/lib/api/";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/custom/TabGreen";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -17,12 +17,20 @@ export default function CommunityPosts({ userId }: { userId: string }) {
   const [postsToShow, setPostsToShow] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
+  const [userInfo, setUserInfo] = useState<UserInfo>();
 
   const fetchPosts = async () => {
-    setIsLoading(true);
-    const allPosts = await getPostsByUserId(userId);
-    setPosts(allPosts);
-    setIsLoading(false);
+    try{
+      setIsLoading(true);
+      const userInfo = await getSessionInfo();
+      setUserInfo(userInfo);
+      const allPosts = await getPostsByUserId(userInfo.userNickname);
+      setPosts(allPosts);
+      setIsLoading(false);
+    }catch(error){
+      console.error(error);
+    }
+
   };
 
   const fetchComments = async () => {

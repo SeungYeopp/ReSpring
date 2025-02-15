@@ -99,11 +99,11 @@ export default function PopularPosts() {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
                       <Avatar>
-                        <AvatarFallback>{post.userName}</AvatarFallback>
-                        <AvatarImage src={getRandomImage()} alt={post.userName} />
+                        <AvatarFallback>{post.ownerNickname}</AvatarFallback>
+                        <AvatarImage src={post.ownerProfileImage} alt={post.ownerNickname} />
                       </Avatar>
                       <div>
-                        <p className="text-sm font-medium">{post.userName}</p>
+                        <p className="text-sm font-medium">{post.ownerNickname}</p>
                         <p className="text-xs text-muted-foreground">
                         {formatDistanceToNowStrict(new Date(post.createdAt), { addSuffix: true, locale: ko })}
                       </p>                      
