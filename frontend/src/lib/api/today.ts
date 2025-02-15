@@ -162,6 +162,24 @@ export async function createNewCommunityComment(postId: number, content: string)
   }
 }
 
+export async function createNewCommunityChildComment(postId: number, content: string, parentId : number): Promise<Comment> {
+  try{
+    const formData = new FormData();
+
+    const postDto = {
+      content, postId, parentId
+    }
+    
+    const response = await axiosAPI.post(`/comments/posts`, JSON.stringify(postDto), {headers : {'Content-Type': 'application/json'}})
+    
+    return response.data;
+  }catch(error){
+    console.error(error);
+    throw new Error("댓글 생성 실패");
+  }
+}
+
+
 export async function getCommentsByPostId(postId: number): Promise<Comment[]> {
   try {
     const response = await axiosAPI.get<Comment[]>(`/comments/posts/${postId}`);
