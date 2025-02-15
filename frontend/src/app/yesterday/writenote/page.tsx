@@ -89,7 +89,7 @@ export default function WriteStoryPage() {
         if (stage === "select") {
           setStage("editor");
         } else {
-          const newStoryId = await makeStory(userId, title, content, selected!, []);
+          const newStoryId = await makeStory(title, content, selected!, []);
           router.push(`/stories/${newStoryId}`);
         }
       }

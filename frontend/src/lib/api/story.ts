@@ -46,7 +46,6 @@ export const getAllStories = async (): Promise<Story[]> => {
 
 /**
  * 새로운 스토리를 생성하는 함수
- * @param userId - 작성자 ID
  * @param title - 스토리 제목
  * @param content - 스토리 내용
  * @param eventId - 관련 이벤트 ID
@@ -54,7 +53,6 @@ export const getAllStories = async (): Promise<Story[]> => {
  * @returns Promise<number> - 생성된 스토리의 ID 반환
  */
 export const makeStory = async (
-    userId: string,
     title: string,
     content: string,
     eventId: number,
@@ -63,7 +61,7 @@ export const makeStory = async (
     try {
         const formData = new FormData();
         formData.append('storyDto', new Blob([
-            JSON.stringify({ userId, title, content, eventId })
+            JSON.stringify({ title, content, eventId })
         ], { type: 'application/json' }));
 
         images.forEach((image) => {
