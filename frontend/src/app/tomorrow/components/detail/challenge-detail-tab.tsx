@@ -59,8 +59,7 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
   // 챌린지 참가 핸들러
   const handleJoinChallenge = async () => {
     try {
-      const userId = "현재 사용자 ID" // 여기에 실제 사용자 ID를 가져오는 로직 추가
-      const success = await joinChallenge(localChallenge.id, userId)
+      const success = await joinChallenge(localChallenge.id)
       if (success) {
         setIsParticipating(true) // 참가 성공 시 상태 업데이트
       }

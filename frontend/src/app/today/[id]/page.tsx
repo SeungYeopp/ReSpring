@@ -31,7 +31,7 @@ async function getPost(id: number): Promise<Post> {
 // 오늘의 상세 페이지 컴포넌트
 export default function TodayDetailPage({ params }: { params: { id: string } }) {
 
-  const {userId} = useAuth(true);
+  const {userNickname: userId} = useAuth(true);
   
 
   const { isLoggedIn } = useAuthWithUser(); // 로그인 정보 가져오기

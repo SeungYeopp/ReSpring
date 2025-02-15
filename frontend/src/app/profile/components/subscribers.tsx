@@ -9,6 +9,7 @@ import {
 } from "@/lib/api/subscribe";
 import { Subscriber } from "@/lib/api/subscribe";
 import Link from "next/link";
+import { fetchSubscribedUsers } from "@/lib/api";
 
 interface SubscribersModalProps {
   onClose: () => void;

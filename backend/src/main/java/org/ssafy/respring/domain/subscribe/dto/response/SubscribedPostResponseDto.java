@@ -26,4 +26,5 @@ public class SubscribedPostResponseDto {
     // ✅ 추가: 게시글 작성자 정보 (구독한 사람의 게시글인지 확인)
     private UUID authorId;
     private String authorNickname;
+    private String authorImage;
 }

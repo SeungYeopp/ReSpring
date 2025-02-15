@@ -27,7 +27,7 @@ export default function TaggedPopularBooks() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const {userId} = useAuth(true);
+  const {userNickname: userId} = useAuth(true);
 
   useEffect(() => {
     if(!userId)
