@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { updateEvent, deleteEvent, Event } from "@/lib/api/event";
 import { Button } from "../ui/button";
+import { EventCategories } from "./EventCategories";
 
 interface EditEventProps {
   event: Event | null;
@@ -120,14 +121,15 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
               <input type="date" value={date} onChange={handleDateChange} />
 
               <label className="font-bold">카테고리</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)}>
+              <select value={category} onChange={(event) => setCategory(event.target.value)}>
                 <option value="" disabled>
                   카테고리 선택
                 </option>
-                <option value="work">Work</option>
-                <option value="personal">Personal</option>
-                <option value="important">Important</option>
-                <option value="vacation">Vacation</option>
+                {EventCategories.map(({ eventName }) => (
+                  <option key={eventName} value={eventName}>
+                    {eventName}
+                  </option>
+                ))}
               </select>
 
               <div className="modal-footer">

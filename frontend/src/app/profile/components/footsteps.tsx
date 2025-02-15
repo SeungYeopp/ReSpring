@@ -5,7 +5,7 @@ import { getAllEvents, Event } from '@/lib/api/event';
 import EditEvent from '@/components/custom/EditEvent';
 import AddEvent from '@/components/custom/AddEvent';
 
-const Footsteps: React.FC<{ userId: string }> = ({ userId }) => {
+const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
   const [footstepsData, setFootstepsData] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -16,7 +16,7 @@ const Footsteps: React.FC<{ userId: string }> = ({ userId }) => {
 
   const fetchEvents = async () => {
     try {
-      const events = await getAllEvents(userId);
+      const events = await getAllEvents(userNickname);
       const formattedEvents = events.map(event => ({
         id: event.id,
         eventName: event.eventName,
@@ -92,7 +92,7 @@ const Footsteps: React.FC<{ userId: string }> = ({ userId }) => {
       {isEditModalOpen && selectedEvent && (
         <EditEvent
           event={selectedEvent}
-          userId={userId}
+          userId={userNickname}
           onClose={() => setIsEditModalOpen(false)}
           onEventUpdated={handleEventUpdated}
           onEventDeleted={handleEventUpdated}

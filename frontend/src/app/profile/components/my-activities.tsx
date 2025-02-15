@@ -11,38 +11,37 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/custom/Ta
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function CommunityPosts({ userId }: { userId: string }) {
+export default function CommunityPosts({ userNickname }: { userNickname: string }) {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]); // State for comments
+  const [comments, setComments] = useState<Comment[]>([]);
   const [postsToShow, setPostsToShow] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
   const [userInfo, setUserInfo] = useState<UserInfo>();
 
   const fetchPosts = async () => {
-    try{
+    try {
       setIsLoading(true);
       const userInfo = await getSessionInfo();
       setUserInfo(userInfo);
       const allPosts = await getPostsByUserId(userInfo.userNickname);
       setPosts(allPosts);
       setIsLoading(false);
-    }catch(error){
+    } catch (error) {
       console.error(error);
     }
-
   };
 
   const fetchComments = async () => {
     setIsLoading(true);
-    const allComments = await getCommentsByUserId(userId);
+    const allComments = await getCommentsByUserId(userNickname);
     setComments(allComments);
     setIsLoading(false);
   };
 
   useEffect(() => {
     fetchPosts();
-    fetchComments(); // Fetch comments when the component loads
+    fetchComments();
   }, []);
 
   const loadMorePosts = () => {
@@ -59,13 +58,11 @@ export default function CommunityPosts({ userId }: { userId: string }) {
           <div className="flex flex-col items-center">
             <TabsTrigger value="posts" className="flex flex-col items-center">
               <div>작성한 글</div>
-              {/* <div>{posts.length}</div> */}
             </TabsTrigger>
           </div>
           <div className="flex flex-col items-center">
             <TabsTrigger value="comments" className="flex flex-col items-center">
               <div>작성한 댓글</div>
-              {/* <div>{comments.length}</div> */}
             </TabsTrigger>
           </div>
         </TabsList>
@@ -91,9 +88,6 @@ export default function CommunityPosts({ userId }: { userId: string }) {
           {activeTab === "comments" && (
             <div className="space-y-4 w-full mt-4">
               <CommentList comments={comments} />
-              {comments.length === 0 && (
-                <p className="text-center text-gray-500">작성한 댓글이 없습니다.</p>
-              )}
             </div>
           )}
         </TabsContent>
@@ -135,34 +129,33 @@ function PostList({ posts }: { posts: Post[] }) {
   );
 }
 
-// New Component for Comments
 function CommentList({ comments }: { comments: Comment[] }) {
-  if (comments.length === 0) {
-    return <p className="text-center text-gray-500 mt-4">작성한 댓글이 없습니다.</p>;
-  }
-
   return (
     <div className="space-y-3">
-      {comments.map((comment) => (
-        <Link key={comment.id} href={`/today/${comment.postId}`} passHref>
-          <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
-            <CardContent className="p-4">
-              <div className="flex justify-between items-center my-2">
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-semibold truncate">
-                    {comment.content}
-                  </p>
+      {comments.length === 0 ? (
+        <p className="text-center text-gray-500 mt-4">작성한 댓글이 없습니다.</p>
+      ) : (
+        comments.map((comment) => (
+          <Link key={comment.id} href={`/today/${comment.postId}`} passHref>
+            <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center my-2">
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-semibold truncate">
+                      {comment.content}
+                    </p>
+                  </div>
+                  <div className="flex flex-col ml-4 items-end text-right">
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formatDistanceToNowStrict(new Date(comment.updatedAt), { addSuffix: true, locale: ko })}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex flex-col ml-4 items-end text-right">
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatDistanceToNowStrict(new Date(comment.updatedAt), { addSuffix: true, locale: ko })}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
+              </CardContent>
+            </Card>
+          </Link>
+        ))
+      )}
     </div>
   );
 }

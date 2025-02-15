@@ -1,14 +1,25 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getSessionInfo } from "@/lib/api/user";
 
 export default function ProfileRedirectPage() {
   const router = useRouter();
-  // const myId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
+  const [myNickname, setMyNickname] = useState<string | null>(null);
 
   useEffect(() => {
-    router.replace(`/profile`);
+    const fetchUserInfo = async () => {
+      try {
+        const userInfo = await getSessionInfo();
+        setMyNickname(userInfo.userNickname);
+        router.replace(`/profile/${userInfo.userNickname}`);
+      } catch (error) {
+        console.error("Failed to fetch user info:", error);
+      }
+    };
+
+    fetchUserInfo();
   }, [router]);
 
   return <p>Redirecting...</p>;

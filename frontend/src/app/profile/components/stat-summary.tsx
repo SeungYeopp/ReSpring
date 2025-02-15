@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { getAllBooksByUserId } from "@/lib/api/book";
 import Link from "next/link";
 
-const StatSummary: React.FC<{ userId: string }> = ({ userId }) => {
+const StatSummary: React.FC<{ userNickname: string, challengeCount: number }> = ({ userNickname: userId, challengeCount: challengeCount }) => {
   const [bookCount, setBookCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const StatSummary: React.FC<{ userId: string }> = ({ userId }) => {
         <Link href={`/yesterday/booklist/${userId}`} className="h-[30px] flex items-bottom justify-center text-3xl font-bold text-blue-500 hover:underline">
           {bookCount !== null ? bookCount : "..."}
         </Link>
-        <div className="h-[30px] flex items-bottom justify-center text-3xl font-bold">13</div>
+        <div className="h-[30px] flex items-bottom justify-center text-3xl font-bold">{challengeCount}</div>
         <div className="h-[30px] flex justify-center">받은 응원</div>
         <Link href={`/yesterday/booklist/${userId}`} className="h-[30px] flex justify-center text-blue-500 hover:underline">
           봄날의 서

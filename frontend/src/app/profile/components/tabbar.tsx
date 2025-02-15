@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import Footsteps from "./footsteps";
 import CommunityPosts from "./my-activities";
 import Challenges from "./challenges";
+import { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
 
-export const Tabbar: React.FC<{ userId: string }> = ({ userId }) => {
+interface TabBarProps {
+  userNickname: string;
+  challenges: ParticipatedChallenge[];
+}
+
+export const TabBar: React.FC<TabBarProps> = ({ userNickname, challenges }) => {
   const [selectedTab, setSelectedTab] = useState("challenges");
 
   return (
@@ -32,12 +38,12 @@ export const Tabbar: React.FC<{ userId: string }> = ({ userId }) => {
       </div>
 
       <div className="mt-8 w-full">
-        {selectedTab === "footsteps" && <Footsteps userId={userId} />}
-        {selectedTab === "my-activities" && <CommunityPosts userId={userId} />}
-        {selectedTab === "challenges" && <Challenges userId={userId} />}
+        {selectedTab === "footsteps" && <Footsteps userNickname={userNickname} />}
+        {selectedTab === "my-activities" && <CommunityPosts userNickname={userNickname} />}
+        {selectedTab === "challenges" && <Challenges challenges={challenges} />}
       </div>
     </div>
   );
 };
 
-export default Tabbar;
+export default TabBar;
