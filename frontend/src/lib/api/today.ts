@@ -377,3 +377,13 @@ export async function searchPostsByTitle(title : string) : Promise<Post[]>{
     throw new Error(error);
   }
 }
+
+export async function filterPosts(category : string) : Promise<Post[]>{
+  try{
+    const response = await axiosAPI.get(`/posts/filter?category=${category}`);
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
