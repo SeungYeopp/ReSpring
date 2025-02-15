@@ -26,14 +26,16 @@ export interface Post {
   title: string; // 게시물 제목
   content: string; // 게시물 내용
   category: string; // 게시물 카테고리 (INFORMATION_SHARING, 고민/질문)
-  userId: string; // 작성자 ID
-  userName: string; // 작성자 이름
+  userId?: string; // 작성자 ID
+  ownerNickname?: string; // 작성자 이름
+  ownerProfileImage? : string;
   createdAt: string; // 생성 날짜 및 시간
   updatedAt: string; // 수정 날짜 및 시간
   likes: number; // 좋아요 수
   images: string[]; // 게시물에 첨부된 이미지 URL 배열
   commentCount : number,
-  comments : string[]
+  comments : Comment[],
+  liked: boolean
 }
 
 /**
