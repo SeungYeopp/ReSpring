@@ -366,3 +366,14 @@ export async function getMyPost() : Promise<Post[]>{
     throw new Error(error)
   }
 }
+
+// 제목으로 포스트 검색.
+export async function searchPostsByTitle(title : string) : Promise<Post[]>{
+  try{
+    const response = await axiosAPI.get('/posts/search');
+
+    return response.data;
+  }catch(error : any){
+    throw new Error(error);
+  }
+}
