@@ -6,6 +6,7 @@ export const mockChallengeData: ChallengeDetail = {
   title: "30일 독서 챌린지",
   description: "매일 30분 독서를 목표로 하는 챌린지입니다.",
   image: "http://example.com/images/challenge1.jpg",
+  imageUrl: "http://example.com/images/challenge1.jpg",
   registerDate: "2024-01-15T09:00:00",
   likes: 50,
   views: 500,
@@ -15,7 +16,11 @@ export const mockChallengeData: ChallengeDetail = {
   // 상세 정보
   startDate: "2024-02-01T00:00:00",
   endDate: "2024-02-28T23:59:59",
-  tags: ["독서", "습관", "성장"],
+  tags: [
+    {id: 1, name: "독서"}, 
+    {id: 2, name: "습관"},
+    {id: 3, name: "성장"},
+  ],
   isSuccessToday: true,
   longestStreak: 15,
   currentStreak: 5,

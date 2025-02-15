@@ -27,7 +27,6 @@ export default function CreateChallengePage() {
         tags: data.tags,
         startDate: data.startDate.toISOString(),
         endDate: data.endDate.toISOString(),
-        ownerId: ownerId, // ✅ 세션 정보 사용
         image: data.image ?? undefined, // 이미지가 있을 경우 포함
       };
 

@@ -231,8 +231,8 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
               </div>
               <div className="flex flex-wrap gap-2 p-2 bg-gray-50 rounded-lg border border-[#8BC34A] min-h-[42px] mb-2">
                 {challenge.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="bg-[#F8BBD0] text-gray-700 text-xs">
-                    {tag}
+                  <Badge key={tag.id} variant="secondary" className="bg-[#F8BBD0] text-gray-700 text-xs">
+                    {tag.name}
                   </Badge>
                 ))}
               </div>
