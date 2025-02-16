@@ -16,11 +16,9 @@ const GoalSetting: React.FC<GoalSettingProps> = ({ onNext, onPrevious }) => {
   const [selectedGoals, setSelectedGoals] = useState<string[]>([])
 
   const goals = [
-    "첫 번째 봄날의 서 완성하기",
-    "5명의 친구와 연결하기",
-    "내 발자취에 사건 3개 추가하기",
+    "매일 아침 글쓰기",
+    "하루 30분 걷기",
     "매주 한 편의 글 작성하기",
-    "가족 역사 기록 시작하기",
   ]
 
   const handleGoalToggle = (goal: string) => {
@@ -47,11 +45,11 @@ const GoalSetting: React.FC<GoalSettingProps> = ({ onNext, onPrevious }) => {
         <div className="space-y-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
           {goals.map((goal, index) => (
             <div key={index} className="flex items-center space-x-2 bg-[#f0f0f0] p-3 rounded-lg">
-              <Checkbox
+              {/* <Checkbox
                 id={`goal-${index}`}
                 checked={selectedGoals.includes(goal)}
                 onCheckedChange={() => handleGoalToggle(goal)}
-              />
+              /> */}
               <Label htmlFor={`goal-${index}`} className="text-sm md:text-base text-[#000000] cursor-pointer flex-grow">
                 {goal}
               </Label>

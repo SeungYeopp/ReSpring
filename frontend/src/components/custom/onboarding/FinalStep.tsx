@@ -8,9 +8,10 @@ import { useRouter } from "next/navigation"
 
 interface FinalStepProps {
   onGoBack: () => void
+  onSignUp: () => void
 }
 
-const FinalStep: React.FC<FinalStepProps> = ({ onGoBack }) => {
+const FinalStep: React.FC<FinalStepProps> = ({ onGoBack, onSignUp }) => {
   const router = useRouter()
   const completedSteps = ["봄날의 여정 시작", "타임라인 생성", "친구들과 연결", "목표 설정"]
 
@@ -65,7 +66,7 @@ const FinalStep: React.FC<FinalStepProps> = ({ onGoBack }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
       >
-        <h3 className="font-semibold mb-2 md:text-lg">완료한 단계</h3>
+        {/* <h3 className="font-semibold mb-2 md:text-lg">완료한 단계</h3> */}
         <ul className="text-left">
           {completedSteps.map((step, index) => (
             <motion.li
@@ -90,13 +91,13 @@ const FinalStep: React.FC<FinalStepProps> = ({ onGoBack }) => {
           className="md:w-1/2"
         >
           <Button
-            onClick={onWriteRecord}
+            onClick={onSignUp}
             className="w-full bg-[#96b23c] text-[#ffffff] hover:bg-[#638d3e] flex items-center justify-center py-6 md:py-6 rounded-lg transition-all duration-300 transform hover:scale-105"
           >
             <BookOpen className="w-6 h-6 mr-3" />
             <div>
-              <div className="font-semibold">봄날의 기록 작성하기</div>
-              <div className="text-sm opacity-80">첫 번째 이야기를 남겨보세요</div>
+              <div className="font-semibold">화원가입하기</div>
+              <div className="text-sm opacity-80">당신의 여정을 시작하세요.</div>
             </div>
           </Button>
         </motion.div>
@@ -107,7 +108,7 @@ const FinalStep: React.FC<FinalStepProps> = ({ onGoBack }) => {
           transition={{ delay: 1.2 }}
           className="md:w-1/2"
         >
-          <Button
+          {/* <Button
             onClick={onGoToMainPage}
             variant="outline"
             className="w-full text-[#638d3e] hover:text-[#96b23c] border-[#dfeaa5] flex items-center justify-center py-6 rounded-lg transition-all duration-300 transform hover:scale-105"
@@ -117,7 +118,7 @@ const FinalStep: React.FC<FinalStepProps> = ({ onGoBack }) => {
               <div className="font-semibold">메인 페이지로 이동</div>
               <div className="text-sm opacity-80">첫 번째 여정 시작하기</div>
             </div>
-          </Button>
+          </Button> */}
         </motion.div>
       </div>
 
@@ -136,4 +137,3 @@ const FinalStep: React.FC<FinalStepProps> = ({ onGoBack }) => {
 }
 
 export default FinalStep
-

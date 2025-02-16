@@ -61,7 +61,8 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
       return;
     } else if (isAuthenticated === false) {
       // 인증되지 않은 경우 로그인 페이지로 리다이렉트
-      router.push("/auth");
+      if(!isTestOnboardingPage)
+        router.push("/auth");
       return;
     }
 
@@ -113,7 +114,7 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
       {/* 메인 콘텐츠 영역 렌더링 */}
       <main
         className={`${
-          isViewerPage || isChatPage || isTestOnboardingPage || isMainPage
+          isViewerPage || isChatPage || isTestOnboardingPage || isMainPage || !isAuthenticated
             ? "pt-0 pb-0 md:py-0" // 특정 페이지에서는 패딩 제거하여 전체 화면 사용
             : "pt-14 pb-16 md:py-4" // 기본 페이지에서는 상하 패딩 적용
         } ${isTestOnboardingPage ? "" : "md:ml-64"}`} // 온보딩 테스트 페이지에서는 좌측 마진 제거, 그 외는 사이드바 공간 적용
