@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -22,33 +21,36 @@ export function LoginForm() {
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
     try {
-      const result = await login(email, password)
+      const result = await login(email, password);
       if (result) {
-        router.push("/main")
+        alert("안녕하세요!");
+        window.location.href = "/main";
       } else {
-        throw new Error("로그인 실패")
+        alert("로그인 실패");
+        window.location.reload();
       }
     } catch (error) {
-      console.error(error)
-      alert("로그인에 실패했습니다. 다시 시도해 주세요.")
-    } finally {
-      setIsLoading(false)
+      alert("로그인 실패");
+      console.error(error);
+      window.location.reload();
     }
-  }
+  };
+
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto bg-white/90 backdrop-blur-sm shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">로그인</CardTitle>
-        <CardDescription className="text-center">계정에 로그인하여 서비스를 이용하세요.</CardDescription>
+        <CardTitle className="text-2xl font-bold text-center text-[#638d3e]">로그인</CardTitle>
+        <CardDescription className="text-center text-[#4a6d2e]">계정에 로그인하여 서비스를 이용하세요.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">이메일</Label>
+            <Label htmlFor="email" className="text-[#4a6d2e]">
+              이메일
+            </Label>
             <Input
               id="email"
               type="email"
@@ -56,11 +58,13 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="border-brand-light focus:ring-brand-dark transition-all duration-200"
+              className="border-[#96b23c] focus:ring-[#638d3e] transition-all duration-200"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">비밀번호</Label>
+            <Label htmlFor="password" className="text-[#4a6d2e]">
+              비밀번호
+            </Label>
             <div className="relative">
               <Input
                 id="password"
@@ -68,7 +72,7 @@ export function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="border-brand-light focus:ring-brand-dark pr-10 transition-all duration-200"
+                className="border-[#96b23c] focus:ring-[#638d3e] pr-10 transition-all duration-200"
               />
               <button
                 type="button"
@@ -76,16 +80,16 @@ export function LoginForm() {
                 className="absolute right-3 top-1/2 transform -translate-y-1/2"
               >
                 {showPassword ? (
-                  <EyeOff className="h-4 w-4 text-gray-500" />
+                  <EyeOff className="h-4 w-4 text-[#638d3e]" />
                 ) : (
-                  <Eye className="h-4 w-4 text-gray-500" />
+                  <Eye className="h-4 w-4 text-[#638d3e]" />
                 )}
               </button>
             </div>
           </div>
           <Button
             type="submit"
-            className="w-full bg-brand hover:bg-brand-dark text-white transition-colors duration-200"
+            className="w-full bg-[#638d3e] hover:bg-[#4a6d2e] text-white transition-colors duration-200"
             disabled={isLoading}
           >
             {isLoading ? "로그인 중..." : "로그인"}
@@ -97,11 +101,11 @@ export function LoginForm() {
         </div>
       </CardContent>
       <CardFooter className="flex justify-center">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-[#4a6d2e]">
           처음이신가요?{" "}
           <Link
             href="/test/onboarding"
-            className="text-brand hover:text-brand-dark font-semibold transition-colors duration-200"
+            className="text-[#638d3e] hover:text-[#4a6d2e] font-semibold transition-colors duration-200"
           >
             회원가입하기
           </Link>
