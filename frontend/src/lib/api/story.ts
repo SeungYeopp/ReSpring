@@ -122,7 +122,7 @@ export const deleteStory = async (storyId: number): Promise<boolean> => {
  * @param title - 수정할 제목
  * @param content - 수정할 내용
  * @param eventId - 관련 이벤트 ID
- * @param deleteImageIds
+ * @param deleteImageIds - 삭제할 이미지 ID
  * @param images - 업데이트할 이미지 목록
  * @returns Promise<Story> - 업데이트된 스토리 객체 반환
  */
