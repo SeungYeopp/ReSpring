@@ -171,7 +171,7 @@ public class SubscribeService {
           .map(book -> SubscribedBookResponseDto.builder()
             .id(book.getId())
             .title(book.getTitle())
-            .coverImage(book.getCoverImage())
+            .coverImage(imageService.generatePresignedUrl(book.getCoverImage()))
             .tags(book.getTags())
             .isLiked(bookLikesRedisService.isLiked(book.getId(), userId)) // ✅ 좋아요 여부
             .likeCount(bookLikesRedisService.getLikeCount(book.getId())) // ✅ 좋아요 수
@@ -180,7 +180,7 @@ public class SubscribeService {
             .createdAt(book.getCreatedAt())
             .updatedAt(book.getUpdatedAt())
             .authorNickname(book.getAuthor().getUserNickname()) // ✅ 작성자 이름
-            .authorProfileImage(book.getAuthor().getProfileImage())
+            .authorProfileImage(imageService.generatePresignedUrl(book.getAuthor().getProfileImage()))
             .build())
           .collect(Collectors.toList());
     }
@@ -196,7 +196,7 @@ public class SubscribeService {
                         subscribedUser.getId(),
                         subscribedUser.getUserNickname(),
                         subscribedUser.getEmail(),
-                        subscribedUser.getProfileImage(),
+                        imageService.generatePresignedUrl(subscribedUser.getProfileImage()),
                         subscribedUser.getCreatedAt()
                 ))
                 .collect(Collectors.toList());
