@@ -7,7 +7,7 @@ import { useState, useEffect, type ChangeEvent } from "react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { getAllBooksAutocomplete } from "@/lib/api"
-import type { Book } from "@/lib/api"
+import type { Book, BookAutoComplete } from "@/lib/api"
 
 interface AutocompleteBookSearchBarProps {
   defaultValue: string | null
@@ -18,7 +18,7 @@ export const AutocompleteBookSearchBar = ({ defaultValue, placeholder }: Autocom
   const router = useRouter()
   const pathname = usePathname()
   const [inputValue, setInputValue] = useState(defaultValue || "")
-  const [suggestions, setSuggestions] = useState<Book[]>([])
+  const [suggestions, setSuggestions] = useState<BookAutoComplete[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export const AutocompleteBookSearchBar = ({ defaultValue, placeholder }: Autocom
     }
   }
 
-  const handleSuggestionClick = (book: Book) => {
+  const handleSuggestionClick = (book: BookAutoComplete) => {
     setInputValue(book.title)
     setSuggestions([])
     handleSearch(book.title)
@@ -103,7 +103,6 @@ export const AutocompleteBookSearchBar = ({ defaultValue, placeholder }: Autocom
               className="p-2 hover:bg-gray-100 cursor-pointer"
             >
               <div className="font-medium">{book.title}</div>
-              <div className="text-sm text-gray-500">{book.authorNickname}</div>
             </li>
           ))}
         </ul>
