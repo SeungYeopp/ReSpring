@@ -13,11 +13,22 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import type { ChallengeDetail } from "@/app/tomorrow/types/challenge"
 import { format, parseISO } from "date-fns"
 import { ko } from "date-fns/locale"
-import { getChallengeDetail } from "@/lib/api"
+import { getChallengeDetail, toggleChallengeLike } from "@/lib/api"
 
 export default function ChallengePage({ params }: { params: { id: number } }) {
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null)
   const router = useRouter()
+  const [isLiked, setIsLiked] = useState(false);
+  const handleLikeClick = async () => {
+    try {
+      const success = await toggleChallengeLike(challenge!.id);
+      if (success) {
+        setIsLiked(!isLiked);
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -30,7 +41,7 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
     };
   
     fetchChallenge();
-  }, [params.id]);
+  }, [params.id, isLiked]);
 
   if (!challenge) {
     return <div>Loading...</div> // Todo: 로딩스크린으로 바꾸자
@@ -96,8 +107,8 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
                       <h1 className="text-2xl font-bold text-white">{challenge.title}</h1>
                     </div>
                     <div className="flex items-center space-x-4">
-                      <div className="flex items-center text-white">
-                        <Heart className="w-5 h-5 mr-1 fill-red-500" />
+                      <div className="flex items-center text-white" onClick={handleLikeClick}>
+                        <Heart className={`w-5 h-5 mr-1 ${isLiked ? "fill-red-500" : "fill-gray-500"}`} />
                         <span>{challenge.likes}</span>
                       </div>
                       <div className="flex items-center text-white">

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -6,7 +6,7 @@ import { ArrowLeft, LogOut, UserPlus, UserMinus } from "lucide-react";
 import StatSummary from "../components/stat-summary";
 import TabBar from "../components/tabbar";
 import { isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
-import { fetchParticipatedChallenges } from "@/lib/api";
+import { UserInfo, fetchParticipatedChallenges, getSessionInfo } from "@/lib/api";
 import SubscribersModal from "../components/subscribers";
 import Link from "next/link";
 import { logout } from "@/lib/api";
@@ -21,6 +21,8 @@ export default function ProfilePage() {
   const router = useRouter();
   const { userNickname } = useParams();
   const targetNickname = Array.isArray(userNickname) ? userNickname[0] : userNickname;
+  const [mySession, setSession] = useState<UserInfo | null>(null);
+  const [myNickname, setMyNickname] = useState<string | null>(null);
 
   const [isSubscribedState, setIsSubscribedState] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -73,6 +75,27 @@ export default function ProfilePage() {
 
     fetchChallenges();
   }, [targetNickname]);
+
+  // Fetch the session info on mount
+  useEffect(() => {
+    const fetchMySession = async () => {
+      try {
+        const result = await getSessionInfo();
+        setSession(result);
+      } catch (error) {
+        console.error("Failed to fetch session info:", error);
+      }
+    };
+
+    fetchMySession();
+  }, []);
+
+  // Update myNickname after mySession is set
+  useEffect(() => {
+    if (mySession && mySession.userNickname) {
+      setMyNickname(mySession.userNickname);
+    }
+  }, [mySession]); // This will run every time mySession changes
 
   return (
     <main className="relative -mt-4">
@@ -134,33 +157,36 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
-            <button
-              onClick={handleLogout}
-              className="flex items-center justify-center w-full sm:w-40 px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              로그아웃
-            </button>
-            <button
-              onClick={handleSubscribeUnsubscribe}
-              className={`flex items-center justify-center w-full sm:w-40 px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 ${
-                isSubscribedState
-                  ? "bg-red-500 hover:bg-red-600 focus:ring-red-500"
-                  : "bg-blue-500 hover:bg-blue-600 focus:ring-blue-500"
-              }`}
-            >
-              {isSubscribedState ? (
-                <>
-                  <UserMinus className="w-4 h-4 mr-2" />
-                  구독 취소하기
-                </>
-              ) : (
-                <>
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  구독하기
-                </>
-              )}
-            </button>
+            {myNickname && myNickname === decodeURIComponent(targetNickname) ? (
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                로그아웃
+              </button>
+            ) : (
+              <button
+                onClick={handleSubscribeUnsubscribe}
+                className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 ${
+                  isSubscribedState
+                    ? "bg-red-500 hover:bg-red-600 focus:ring-red-500"
+                    : "bg-blue-500 hover:bg-blue-600 focus:ring-blue-500"
+                }`}
+              >
+                {isSubscribedState ? (
+                  <>
+                    <UserMinus className="w-4 h-4 mr-2" />
+                    구독 취소하기
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    구독하기
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
 
