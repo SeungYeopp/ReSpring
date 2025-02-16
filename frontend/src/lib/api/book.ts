@@ -378,7 +378,9 @@ export const compileBookByAI = async (content: Content): Promise<Content> => {
 
             console.log(`AI 생성 RAW DATA (시도 ${attempts + 1}):`, uncleaned);
 
-            const cleaned = uncleaned.replaceAll("```json", "").replaceAll("```", "").replaceAll("json", "").replaceAll('`', "");
+            //const cleaned = uncleaned.replaceAll("```json", "").replaceAll("```", "").replaceAll("json", "").replaceAll('`', "");
+            const cleaned = uncleaned.replace(/```json|```/g, "").replace(/\s{2,}/g, "");
+            
             const jsoned = JSON.parse(cleaned); // JSON 변환
 
             return jsoned as Content; // 성공 시 반환
