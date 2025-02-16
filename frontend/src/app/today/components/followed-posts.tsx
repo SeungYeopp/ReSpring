@@ -79,11 +79,11 @@ export default function FollowedPosts() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
                   <Avatar>
-                    <AvatarFallback>{post.authorName}</AvatarFallback>
-                    <AvatarImage src={post.authorImage} alt={post.authorName} />
+                    <AvatarFallback>{post.authorNickname}</AvatarFallback>
+                    <AvatarImage src={post.authorImage} alt={post.authorNickname} />
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium">{post.authorName}</p>
+                    <p className="text-sm font-medium">{post.authorNickname}</p>
                     <p className="text-xs text-muted-foreground">
                       {formatDistanceToNowStrict(new Date(post.createdAt), { addSuffix: true, locale: ko })}
                     </p>
