@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
@@ -55,17 +55,19 @@ const Chat1 = () => {
         console.log("✅ 로그인한 사용자:", data.userNickname);
       } catch (error) {
         console.error("❌ 사용자 정보를 가져오는 데 실패했습니다:", error);
-        setCurrentUserId(null); // ✅ 로그아웃 상태 설정
+        setCurrentUserId(null);
       }
     };
 
     fetchUserSession();
-  }, []);
+  }, [currentUserId]);
 
+  /* ✅ WebSocket 및 WebRTC 초기화 */
   /* ✅ WebSocket 및 WebRTC 초기화 */
   useEffect(() => {
     if (!currentUserId) return;
 
+    console.log("-----------------------------", currentUserId);
     const socket = new SockJS(SERVER_URL);
     const client = Stomp.over(socket);
     const rtcSocket = io(SOCKET_SERVER_URL, { transports: ["websocket"] });
@@ -93,7 +95,7 @@ const Chat1 = () => {
       if (client) client.disconnect();
       if (rtcSocket) rtcSocket.disconnect();
     };
-  }, []);
+  }, [currentUserId]);
 
   useEffect(() => {
     const handleBeforeUnload = async () => {
@@ -101,14 +103,12 @@ const Chat1 = () => {
         console.log(
           `🚀 Leaving room ${currentRoom.id}. Updating last seen time...`
         );
-
-        // ✅ 🔹 Redis에서 사용자 퇴장 처리
-        await fetch(`${SERVER_URL}/room/leave?roomId=${currentRoom.id}`, {
-          method: "POST",
-        });
-        await fetch(`${SERVER_URL}/last-seen?roomId=${currentRoom.id}`, {
-          method: "POST",
-        });
+        await fetch(
+          `http://localhost:8080/chat/last-seen?roomId=${currentRoom.id}&userId=${currentUserId}`,
+          {
+            method: "POST",
+          }
+        );
       }
     };
 
@@ -307,12 +307,10 @@ const Chat1 = () => {
     setIsActive(true);
 
     try {
-      // ✅ 🔹 방에 입장할 때 Redis에 업데이트
-      await fetch(`${SERVER_URL}/room/join?roomId=${roomId}`, {
-        method: "POST",
-      });
       // ✅ 1️⃣ 채팅 메시지 불러오기
-      const response = await fetch(`${SERVER_URL}/messages/${roomId}`);
+      const response = await fetch(
+        `http://localhost:8080/chat/messages/${roomId}`
+      );
       if (!response.ok)
         throw new Error(
           `Failed to fetch messages (Status: ${response.status})`
@@ -324,7 +322,7 @@ const Chat1 = () => {
       let lastSeenTime = 0;
       try {
         const lastSeenResponse = await fetch(
-          `${SERVER_URL}/last-seen?roomId=${roomId}`
+          `http://localhost:8080/chat/last-seen?roomId=${roomId}&userId=${currentUserId}`
         );
         if (lastSeenResponse.ok) {
           lastSeenTime = await lastSeenResponse.json();
