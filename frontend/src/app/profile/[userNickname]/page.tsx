@@ -86,7 +86,6 @@ export default function ProfilePage() {
     fetchChallenges();
   }, [targetNickname]);
 
-  // Fetch the session info on mount
   useEffect(() => {
     const fetchMySession = async () => {
       try {
@@ -100,12 +99,11 @@ export default function ProfilePage() {
     fetchMySession();
   }, []);
 
-  // Update myNickname after mySession is set
   useEffect(() => {
     if (mySession && mySession.userNickname) {
       setMyNickname(mySession.userNickname);
     }
-  }, [mySession]); // This will run every time mySession changes
+  }, [mySession]);
 
   return (
     <main className="relative -mt-4">
