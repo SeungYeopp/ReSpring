@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { getBookById, BookFull } from "@/lib/api/book" // API 호출 및 타입 import
 import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
 import { useRouter } from "next/navigation"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { deleteBook, getUserInfo } from "@/lib/api"
 
@@ -185,8 +186,11 @@ export default function TopSection({ bookId }: { bookId: string }) {
 
         <div className="flex items-center gap-4">
           <Link href={`/profile/${book.authorNickname}`} className="flex items-center gap-1 text-white hover:underline">
-            <User className="w-4 h-4" />
-            <span>작성자 ID: {book.authorNickname}</span> {/* 나중에 닉네임으로 수정 가능 */}
+            <Avatar className="h-6 w-6 flex-shrink-0">
+              <AvatarImage src={book.authorProfileImage} alt={book.authorNickname} />
+              <AvatarFallback>{book.authorNickname}</AvatarFallback>
+            </Avatar>
+            <span>{book.authorNickname}</span> {/* 나중에 닉네임으로 수정 가능 */}
           </Link>
           <div className="flex items-center gap-1">
             <EyeIcon className="w-5 h-5" />

@@ -6,6 +6,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio"
 import Image from "next/image"
 import Link from "next/link"
 import { getAllBooksByUserId, getLikedBooks, Book } from "@/lib/api/book" // API 함수 가져오기
+import { getUserInfo } from "@/lib/api"
 
 export default function Recommendations({ bookId }: { bookId: string }) {
   const [authorBooks, setAuthorBooks] = useState<Book[]>([])
@@ -139,8 +140,8 @@ export default function Recommendations({ bookId }: { bookId: string }) {
   useEffect(() => {
     const fetchRecommendations = async () => {
       try {
-        const userId = localStorage.getItem("userId") || ""
-        const currentBook = await getAllBooksByUserId(userId)
+        const myInfo = await getUserInfo();
+        const currentBook = await getAllBooksByUserId(myInfo.userNickname)
         const currentBookDetails = currentBook.find(book => book.id === Number(bookId))
 
         if (currentBookDetails) {
@@ -205,7 +206,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
 
       {/* 구독 중인 작가의 자서전 */}
       <div className="space-y-4">
-        <h3 className="text-lg font-bold px-4">구독 중인 작가의 자서전</h3>
+        <h3 className="text-lg font-bold px-4">내가 좋아요한 봄날의 서들</h3>
         <div className="overflow-x-auto">
           <div className="flex px-4 pb-4">
             {followedBooks.map((book) => (
