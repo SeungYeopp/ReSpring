@@ -27,7 +27,7 @@ export interface Post {
   commentCount: number;
   comments: Comment[];
   authorId: string;
-  authorName: string;
+  authorNickname: string;
   authorImage: string;
 }
 

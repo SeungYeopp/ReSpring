@@ -135,12 +135,12 @@ function PostList({
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
                   <Avatar>
-                    <AvatarFallback>{post.authorName?.[0] ?? "?"}</AvatarFallback>
+                    <AvatarFallback>{post.authorNickname}</AvatarFallback>
                     {/* ✅ 랜덤 프로필 이미지 적용 */}
-                    <AvatarImage src={getRandomImage()} alt={post.authorName} />
+                    <AvatarImage src={post.authorImage} alt={post.authorNickname} />
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium">{post.authorName}</p>
+                    <p className="text-sm font-medium">{post.authorNickname}</p>
                     <p className="text-xs text-muted-foreground">
                       {formatDistanceToNowStrict(new Date(post.createdAt), {
                         addSuffix: true,
