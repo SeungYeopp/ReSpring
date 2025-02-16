@@ -32,8 +32,10 @@ const TimelineCreation: React.FC<TimelineCreationProps> = ({ onNext, onPrevious 
   }
 
   const mockEvents = [
-    { title: "첫 직장 입사", date: "2020-03-15" },
-    { title: "대학교 졸업", date: "2019-02-28" },
+    { title: "생일", date: "1964-03-15" },
+    { title: "대학 입학", date: "1984-03-15" },
+    { title: "첫 직장 입사", date: "1990-03-15" },
+    { title: "은퇴", date: "2025-02-11" },
   ]
 
   const displayEvents = events.length > 0 ? events : mockEvents
@@ -88,7 +90,7 @@ const TimelineCreation: React.FC<TimelineCreationProps> = ({ onNext, onPrevious 
           </div>
         </div>
 
-        <div className="w-full md:w-1/2">
+        {/* <div className="w-full md:w-1/2">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2 px-4">
               <Label htmlFor="event-title" className="text-sm text-[#000000]">
@@ -125,7 +127,7 @@ const TimelineCreation: React.FC<TimelineCreationProps> = ({ onNext, onPrevious 
               발자취 남기기
             </Button>
           </form>
-        </div>
+        </div> */}
       </div>
 
       <div className="space-y-4 md:flex md:flex-row-reverse md:space-y-0 md:space-x-4 md:space-x-reverse">
