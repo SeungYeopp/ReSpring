@@ -67,7 +67,7 @@ export const BookSearchResult: React.FC<BookSearchResultProps> = ({ query }) => 
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {searchResults.map((book: Book) => (
-            <Card key={book.id ?? Math.random()} className="flex overflow-hidden hover:shadow-lg transition-shadow duration-300" onClick={() => onClickBook(book.id)}>
+            <Card key={book.id ?? Math.random()} className="flex overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => onClickBook(book.id)}>
               <div className="w-1/3 relative">
                 <Image
                   src={book.coverImage || getRandomImage()}
