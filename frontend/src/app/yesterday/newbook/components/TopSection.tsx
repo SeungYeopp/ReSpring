@@ -11,6 +11,10 @@ import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { getBookById, BookFull } from "@/lib/api/book" // API 호출 및 타입 import
 import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
+import { useRouter } from "next/navigation"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import { deleteBook, getUserInfo, likeOrUnlikeBook } from "@/lib/api"
 
   /** ✅ 랜덤 프로필 이미지 생성 함수 */
   const getRandomImage = () => {
@@ -42,8 +46,12 @@ export default function TopSection({ bookId }: { bookId: string }) {
   const [isLiked, setIsLiked] = useState(false)
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
+  const [isMyBook, setIsMyBook] = useState<boolean>(false);
+  const [likeCount, setLikeCount] = useState<number>(0);
 
-  const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252"; // 박싸피의 테스트 ID
+  const router = useRouter();
+
+  //const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252"; // 박싸피의 테스트 ID
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -51,13 +59,19 @@ export default function TopSection({ bookId }: { bookId: string }) {
         const bookData = await getBookById(Number(bookId)) // API 호출
         setBook(bookData)
         setIsLiked(bookData.liked) // 초기 좋아요 상태 설정
+
+        setLikeCount(bookData.likeCount);
+        const myInfo = await getUserInfo();
+        if(myInfo.userNickname === bookData.authorNickname)
+          setIsMyBook(true)
+
       } catch (error) {
         console.error("책 데이터를 불러오는 중 오류 발생, 목데이터로 대체:", error)
         setBook(mockBookData) // 요청 실패 시 목데이터 설정
       }
     }
     fetchBook()
-  }, [bookId, userId])
+  }, [bookId])
 
   const handleImageClick = () => {
     setIsImageExpanded(true)
@@ -78,6 +92,37 @@ export default function TopSection({ bookId }: { bookId: string }) {
 
   if (!book) return <TopSectionSkeleton /> // 데이터 로딩 중 스켈레톤 표시
 
+  const handleChevronLeft = () => {
+    router.replace('/yesterday');
+  }
+
+  const handleBookDelete = async () => {
+    try{
+      const result = await deleteBook(parseInt(bookId, 10));
+
+      router.replace('/yesterday');
+    }catch(error : any){
+      alert('책 삭제에 실패했습니다.')
+    }
+  }
+
+  const handleClickLike = async () => {
+    try{
+      const result = await likeOrUnlikeBook(parseInt(bookId, 10));
+
+      if(result === 'Liked'){
+        setIsLiked(true);
+        setLikeCount(likeCount + 1);
+      }else{
+        setIsLiked(false);
+        setLikeCount(likeCount - 1);
+      }
+
+    }catch(error){
+      alert('책 좋아요에 실패했습니다.')
+    }
+  }
+
   return (
     <section className="relative min-h-[80vh] text-white">
       {/* 배경 이미지 */}
@@ -94,10 +139,8 @@ export default function TopSection({ bookId }: { bookId: string }) {
       {/* 상단 네비게이션 */}
       <div className="relative z-10 flex items-center justify-between p-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild className="text-white hover:text-white/80">
-            <Link href="/books">
-              <ChevronLeft className="w-6 h-6" />
-            </Link>
+          <Button variant="ghost" size="icon" asChild className="text-white hover:text-white/80 cursor-pointer" onClick={handleChevronLeft}>
+            <ChevronLeft className="w-6 h-6" />
           </Button>
           <Button variant="ghost" size="icon" asChild className="text-white hover:text-white/80">
             <Link href="/">
@@ -105,23 +148,25 @@ export default function TopSection({ bookId }: { bookId: string }) {
             </Link>
           </Button>
         </div>
-        <DropdownMenu>
+        {isMyBook && (
+          <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="text-white hover:text-white/80">
               <MoreVertical className="w-6 h-6" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">
               <Pencil className="mr-2 h-4 w-4" />
               <span>편집하기</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">
               <Trash className="mr-2 h-4 w-4" />
-              <span>삭제하기</span>
+              <span onClick={handleBookDelete}>삭제하기</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
       </div>
 
       {/* 컨텐츠 */}
@@ -160,8 +205,11 @@ export default function TopSection({ bookId }: { bookId: string }) {
 
         <div className="flex items-center gap-4">
           <Link href={`/profile/${book.authorNickname}`} className="flex items-center gap-1 text-white hover:underline">
-            <User className="w-4 h-4" />
-            <span>작성자 ID: {book.authorNickname}</span> {/* 나중에 닉네임으로 수정 가능 */}
+            <Avatar className="h-6 w-6 flex-shrink-0">
+              <AvatarImage src={book.authorProfileImage} alt={book.authorNickname} />
+              <AvatarFallback>{book.authorNickname}</AvatarFallback>
+            </Avatar>
+            <span>{book.authorNickname}</span> {/* 나중에 닉네임으로 수정 가능 */}
           </Link>
           <div className="flex items-center gap-1">
             <EyeIcon className="w-5 h-5" />
@@ -172,11 +220,11 @@ export default function TopSection({ bookId }: { bookId: string }) {
               variant="ghost"
               size="sm"
               className={cn("p-0 text-white hover:text-white/80", isHeartAnimating && !isLiked && "animate-bounce")}
-              onClick={() => setIsLiked(!isLiked)}
+              onClick={handleClickLike}
             >
               <Heart className={cn("w-5 h-5", isLiked && "fill-red-500 text-red-500")} />
             </Button>
-            <span>{book.likeCount}</span>
+            <span>{likeCount}</span>
           </div>
         </div>
       </div>
