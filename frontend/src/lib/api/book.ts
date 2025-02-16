@@ -368,8 +368,6 @@ export const getAllBooksComments = async () : Promise<Comment[]> => {
 // 책 댓글 생성.
 export async function createNewBookComment(bookId: number, content: string): Promise<Comment> {
     try{
-      const formData = new FormData();
-  
       const postDto = {
         content, bookId,
       }
@@ -384,7 +382,7 @@ export async function createNewBookComment(bookId: number, content: string): Pro
 }
 
 // 책 댓글 삭제
-export async function deleteComment(commentId : number) : Promise<boolean>{
+export async function deleteBookComment(commentId : number) : Promise<boolean>{
     try{
       const response = await axiosAPI.delete(`/comments/books/${commentId}`);
   
