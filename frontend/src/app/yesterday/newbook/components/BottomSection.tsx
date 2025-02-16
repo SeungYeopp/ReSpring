@@ -53,7 +53,7 @@ export default function BottomSection({ bookId }: { bookId: string }) {
         {/* 댓글 탭 */}
         <TabsContent value="comments" className="p-4">
           <Suspense fallback={<CommentsSkeleton />}>
-            <Comments bookId={bookId} />
+            <Comments bookId={parseInt(bookId, 10)} />
           </Suspense>
         </TabsContent>
       </Tabs>

@@ -1,158 +1,149 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { Button } from "@/components/ui/button"
+import React from "react"
+
+import { useEffect, useState, useCallback } from "react"
+import { formatDistanceToNowStrict } from "date-fns"
+import { ko } from "date-fns/locale"
+import { motion, AnimatePresence } from "framer-motion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardFooter, CardHeader } from "@/components/ui/card"
-import { Heart, MessageCircle, MoreHorizontal, ChevronDown, ChevronUp } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { getBookById, BookFull } from "@/lib/api/book"
-import { Comment } from "@/lib/api/today" // 실제 Comment 타입 import
+import { Button } from "@/components/ui/button"
+import { Loader2, Send } from "lucide-react"
+import { createNewBookComment, deleteBookComment, getCommentsByBookId, type UserInfo, type Comment } from "@/lib/api"
+import { getUserInfo } from "@/lib/api"
 
-export default function Comments({ bookId }: { bookId: string }) {
-  const [comments, setComments] = useState<(Comment & { likes: number })[]>([]) // 댓글 + 좋아요 필드
-  const [sortBy, setSortBy] = useState<"likes" | "date">("likes")
-  const [expandedComments, setExpandedComments] = useState<number[]>([])
-  /** ✅ 랜덤 프로필 이미지 생성 함수 */
-  const getRandomImage = () => {
-    const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
-    return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
-  };
-  // 목데이터 설정
-  const mockComments: (Comment & { likes: number })[] = [
-    { id: 1, content: "목데이터 댓글 1", userId : "userId", userNickname: "박싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: null, likes: 5 },
-    { id: 2, content: "목데이터 댓글 2", userId : "userId", userNickname: "김싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: null, likes: 3 },
-    { id: 3, content: "목데이터 대댓글 1", userId : "userId", userNickname: "이싸피", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), parentId: 1, likes: 2 },
-  ]
+export default function Comments({ bookId }: { bookId: number }) {
+  const [comments, setComments] = useState<Comment[]>([])
+  const [newComment, setNewComment] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
 
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const userId = localStorage.getItem("userId") || ""
-        const book: BookFull = await getBookById(Number(bookId))
-
-        // 각 댓글에 랜덤 좋아요 수 추가 (0~20)
-        const commentsWithLikes = book.comments.map(comment => ({
-          ...comment,
-          likes: Math.floor(Math.random() * 20),
-        }))
-
-        setComments(commentsWithLikes)
-      } catch (error) {
-        console.error("댓글 데이터를 불러오는 중 오류 발생, 목데이터로 대체:", error)
-        setComments(mockComments) // 요청 실패 시 목데이터로 대체
-      }
+  const fetchUserInfo = useCallback(async () => {
+    try {
+      const info = await getUserInfo()
+      setUserInfo(info)
+    } catch (error) {
+      console.error("사용자 정보를 불러오는 중 오류 발생:", error)
     }
+  }, [])
 
-    fetchComments()
+  const fetchComments = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const fetchedComments = await getCommentsByBookId(bookId)
+      setComments(fetchedComments)
+    } catch (error) {
+      console.error("댓글을 불러오는 중 오류 발생:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }, [bookId])
 
-  const handleLike = (commentId: number) => {
-    setComments(comments.map((c) => (c.id === commentId ? { ...c, likes: c.likes + 1 } : c)))
+  useEffect(() => {
+    fetchComments()
+    fetchUserInfo()
+  }, [fetchComments, fetchUserInfo])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newComment.trim() || isLoading) return
+
+    setIsLoading(true)
+    try {
+      const comment = await createNewBookComment(bookId, newComment)
+      setComments((prevComments) => [
+        { ...comment, profileImg: userInfo?.profileImageUrl, userNickname: userInfo?.userNickname ?? "" },
+        ...prevComments,
+      ])
+      setNewComment("")
+    } catch (error) {
+      console.error("댓글 작성에 실패했습니다:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const toggleReplies = (commentId: number) => {
-    setExpandedComments((prev) =>
-      prev.includes(commentId) ? prev.filter((id) => id !== commentId) : [...prev, commentId],
-    )
-  }
-
-  const sortedComments = useMemo(() => {
-    return [...comments].sort((a, b) => {
-      if (sortBy === "likes") {
-        return b.likes - a.likes
-      } else {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      const success = await deleteBookComment(commentId)
+      if (success) {
+        setComments((prevComments) => prevComments.filter((comment) => comment.id !== commentId))
       }
-    })
-  }, [comments, sortBy])
+    } catch (error) {
+      console.error("댓글 삭제 중 오류 발생:", error)
+    }
+  }
 
-  const renderComment = (comment: Comment & { likes: number }, isReply = false) => (
-    <Card key={comment.id} className={`mb-4 ${isReply ? "ml-12" : ""} border border-border bg-background`}>
-      <CardHeader className="flex flex-row items-start gap-4 p-4">
-        <Avatar className="w-10 h-10">
-          <AvatarImage src={getRandomImage()} />
-          <AvatarFallback>{comment.userNickname}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1 space-y-1">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold">{comment.userNickname}</span>
-              {!isReply && sortBy === "likes" && <Badge variant="secondary">BEST</Badge>}
-            </div>
-            <span className="text-xs text-muted-foreground">
-              {new Date(comment.createdAt).toLocaleDateString()}
-            </span>
-          </div>
-          <p className="text-sm">{comment.content}</p>
+  const CommentItem = React.memo(({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) => (
+    <div
+      className={`flex gap-3 ${isReply ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4' : ""}`}
+    >
+      <Avatar className="h-8 w-8 flex-shrink-0">
+        <AvatarImage src={comment.profileImg} alt={comment.userNickname} />
+        <AvatarFallback>{comment.userNickname[0]}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1">
+        <div className="flex items-baseline gap-1">
+          <span className="text-sm font-semibold">{comment.userNickname}</span>
+          <time className="text-xs text-gray-500">
+            {formatDistanceToNowStrict(new Date(comment.createdAt), {
+              locale: ko,
+              addSuffix: true,
+            })}
+          </time>
         </div>
-      </CardHeader>
-      <CardFooter className="p-4 pt-0">
-        <div className="flex items-center gap-4 text-sm">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleLike(comment.id)}
-            className="text-muted-foreground hover:text-primary"
-          >
-            <Heart className="w-4 h-4 mr-1" fill={comment.likes > 0 ? "currentColor" : "none"} />
-            {comment.likes}
-          </Button>
-          {!isReply && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toggleReplies(comment.id)}
-              className="text-muted-foreground hover:text-primary"
-            >
-              <MessageCircle className="w-4 h-4 mr-1" />
-              답글 {comments.filter((reply) => reply.parentId === comment.id).length}
-              {expandedComments.includes(comment.id) ? (
-                <ChevronUp className="w-3 h-3 ml-1" />
-              ) : (
-                <ChevronDown className="w-3 h-3 ml-1" />
-              )}
-            </Button>
-          )}
-          <Button variant="ghost" size="sm" className="ml-auto p-0">
-            <MoreHorizontal className="w-4 h-4" />
-          </Button>
+        <p className="text-sm text-gray-800 mt-0.5">{comment.content}</p>
+        <div className="flex gap-2 mt-1 text-xs text-gray-500">
+          <button className="hover:text-gray-700">좋아요</button>
+          {!isReply && <button className="hover:text-gray-700">답글달기</button>}
+          <button onClick={() => handleDeleteComment(comment.id)} className="hover:text-gray-700">
+            삭제
+          </button>
         </div>
-      </CardFooter>
-    </Card>
-  )
-
-  const rootComments = sortedComments.filter(comment => comment.parentId === null)
+      </div>
+    </div>
+  ))
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <span className="text-muted-foreground">전체 {comments.length}개</span>
-        <Select defaultValue="likes" onValueChange={(value) => setSortBy(value as "likes" | "date")}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="정렬 기준" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="likes">인기순</SelectItem>
-            <SelectItem value="date">최신순</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+    <div className="space-y-6 p-4 bg-gradient-to-b from-background to-background/80">
+      <div className="text-sm text-gray-600 font-medium mb-4">총 {comments.length}개의 댓글</div>
 
-      <div className="space-y-6">
-        {rootComments.map((comment) => (
-          <div key={comment.id}>
-            {renderComment(comment)}
-            {expandedComments.includes(comment.id) &&
-              comments
-                .filter((reply) => reply.parentId === comment.id)
-                .map((reply) => renderComment(reply, true))}
-            <Separator className="my-6" />
-          </div>
-        ))}
-      </div>
+      <AnimatePresence>
+        {isLoading && comments.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex justify-center items-center h-20"
+          >
+            <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+          </motion.div>
+        ) : (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+            {comments.map((comment) => (
+              <CommentItem key={comment.id} comment={comment} />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <form onSubmit={handleSubmit} className="flex items-center gap-2">
+        <Avatar className="h-8 w-8 flex-shrink-0">
+          <AvatarImage src={userInfo?.profileImageUrl} alt={userInfo?.userNickname} />
+          <AvatarFallback>{userInfo?.userNickname?.[0]}</AvatarFallback>
+        </Avatar>
+        <input
+          type="text"
+          placeholder="따뜻한 댓글을 입력해주세요 :)"
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          className="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+        <Button type="submit" disabled={isLoading || !newComment.trim()} className="rounded-full" size="icon">
+          <Send className="h-4 w-4" />
+        </Button>
+      </form>
     </div>
   )
 }
+

@@ -365,6 +365,48 @@ export const getAllBooksComments = async () : Promise<Comment[]> => {
     }
 }
 
+// 책 댓글 생성.
+export async function createNewBookComment(bookId: number, content: string): Promise<Comment> {
+    try{
+      const postDto = {
+        content, bookId,
+      }
+      
+      const response = await axiosAPI.post(`/comments/books`, JSON.stringify(postDto), {headers : {'Content-Type': 'application/json'}})
+      
+      return response.data;
+    }catch(error){
+      console.error(error);
+      throw new Error("댓글 생성 실패");
+    }
+}
+
+// 책 댓글 삭제
+export async function deleteBookComment(commentId : number) : Promise<boolean>{
+    try{
+      const response = await axiosAPI.delete(`/comments/books/${commentId}`);
+  
+      if(response.status === 200 || response.status === 201 || response.status === 204)
+        return true;
+      else
+        return false;
+    }catch(error : any){
+      throw new Error(error);
+    }
+}
+
+// 책 내 모든 댓글 가져오기.
+export async function getCommentsByBookId(bookId: number): Promise<Comment[]> {
+    try {
+      const response = await axiosAPI.get<Comment[]>(`/comments/books/${bookId}`);
+  
+      return response.data;
+    } catch (error) {
+      console.error("게시글에 달린 댓글들 가져오기 실패:", error);
+      throw new Error("게시글에 달린 댓글들 가져오기 실패");
+    }
+}
+
 // 봄날의 서 AI 기능
 // 입력 : 글 조각 여러 개를 하나의 string으로 입력
 // 출력 : CompiledBook 형식으로 된 데이터.
