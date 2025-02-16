@@ -202,7 +202,7 @@ export const getAllBooksByUserId = async(nickname : string) : Promise<Book[]> =>
 // 출력 : 봄날의 서 배열
 export const searchBook = async (keyword : string) : Promise<Book[]> => {
     try{
-        const response = await axiosAPI.get(`/books/search?keyword=${keyword}`)
+        const response = await axiosAPI.get(`/books/search?keyword=${encodeURIComponent(keyword)}`)
 
         const responseBooks : Book[] = response.data as Book[];
 
@@ -240,15 +240,22 @@ export const getLikedBooks = async () : Promise<Book[]> => {
     }
 }
 
+export interface BookAutoComplete{
+    id : number,
+    title : string
+}
+
 // 봄날의 서 제목 자동완성
 // 입력 : 검색어
 // 출력 : 봄날의 서 배열
-export const getAllBooksAutocomplete = async (query : string) : Promise<Book[]> => {
+export const getAllBooksAutocomplete = async (query : string) : Promise<BookAutoComplete[]> => {
     if(query.length < 2) return [];
-    try {
-        const response = await axiosAPI.get(`/books/autocomplete/book-title?query=${query}`);
 
-        const responseBooks : Book[] = response.data as Book[];
+    console.log("자동생성 쿼리문", encodeURIComponent(query))
+    try {
+        const response = await axiosAPI.get(`/books/autocomplete/title?query=${encodeURIComponent(query)}`);
+
+        const responseBooks : BookAutoComplete[] = response.data as BookAutoComplete[];
 
         return responseBooks;
     } catch (error : any) {

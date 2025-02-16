@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { searchBook } from "@/lib/api"
 import type { Book } from "@/lib/api" // Book 인터페이스 import
+import { useRouter, usePathname } from "next/navigation"
 
 interface BookSearchResultProps {
   query: string
@@ -22,6 +23,13 @@ export const BookSearchResult: React.FC<BookSearchResultProps> = ({ query }) => 
   const [searchResults, setSearchResults] = useState<Book[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const onClickBook = (bookId : number) => {
+    router.push(`/yesterday/newbook/${bookId}`)
+  }
 
   useEffect(() => {
     const fetchSearchResults = async () => {
@@ -59,30 +67,38 @@ export const BookSearchResult: React.FC<BookSearchResultProps> = ({ query }) => 
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {searchResults.map((book: Book) => (
-            <Card key={book.id} className="flex overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <Card key={book.id ?? Math.random()} className="flex overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => onClickBook(book.id)}>
               <div className="w-1/3 relative">
                 <Image
                   src={book.coverImage || getRandomImage()}
-                  alt={`${book.title} 표지`}
+                  alt={`${book.title ?? "제목 없음"} 표지`}
                   layout="fill"
                   objectFit="cover"
                 />
               </div>
               <CardContent className="w-2/3 p-4 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-spring-forest line-clamp-2">{book.title}</h3>
-                  <p className="text-sm text-gray-600 mt-1">저자: {book.authorNickname}</p>
+                  <h3 className="text-lg font-semibold text-spring-forest line-clamp-2">
+                    {book.title ?? "제목 없음"}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    저자: {book.authorNickname ?? "알 수 없음"}
+                  </p>
                   <div className="flex items-center text-sm text-gray-500 mt-2">
-                    <span className="mr-3">👁️ {book.viewCount}</span>
-                    <span>❤️ {book.likeCount}</span>
+                    <span className="mr-3">👁️ {book.viewCount ?? 0}</span>
+                    <span>❤️ {book.likeCount ?? 0}</span>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-3">
-                  {book.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="bg-spring-olive text-white">
-                      {tag}
-                    </Badge>
-                  ))}
+                  {(book.tags && book.tags.length > 0) ? (
+                    book.tags.map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="bg-spring-olive text-white">
+                        {tag}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-gray-500 text-sm">태그 없음</span>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -92,4 +108,3 @@ export const BookSearchResult: React.FC<BookSearchResultProps> = ({ query }) => 
     </div>
   )
 }
-
