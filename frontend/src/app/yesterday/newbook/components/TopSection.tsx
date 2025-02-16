@@ -14,7 +14,7 @@ import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
 import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import { deleteBook, getUserInfo } from "@/lib/api"
+import { deleteBook, getUserInfo, likeOrUnlikeBook } from "@/lib/api"
 
   /** ✅ 랜덤 프로필 이미지 생성 함수 */
   const getRandomImage = () => {
@@ -47,6 +47,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
   const [isMyBook, setIsMyBook] = useState<boolean>(false);
+  const [likeCount, setLikeCount] = useState<number>(0);
 
   const router = useRouter();
 
@@ -59,6 +60,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
         setBook(bookData)
         setIsLiked(bookData.liked) // 초기 좋아요 상태 설정
 
+        setLikeCount(bookData.likeCount);
         const myInfo = await getUserInfo();
         if(myInfo.userNickname === bookData.authorNickname)
           setIsMyBook(true)
@@ -101,6 +103,23 @@ export default function TopSection({ bookId }: { bookId: string }) {
       router.replace('/yesterday');
     }catch(error : any){
       alert('책 삭제에 실패했습니다.')
+    }
+  }
+
+  const handleClickLike = async () => {
+    try{
+      const result = await likeOrUnlikeBook(parseInt(bookId, 10));
+
+      if(result === 'Liked'){
+        setIsLiked(true);
+        setLikeCount(likeCount + 1);
+      }else{
+        setIsLiked(false);
+        setLikeCount(likeCount - 1);
+      }
+
+    }catch(error){
+      alert('책 좋아요에 실패했습니다.')
     }
   }
 
@@ -201,11 +220,11 @@ export default function TopSection({ bookId }: { bookId: string }) {
               variant="ghost"
               size="sm"
               className={cn("p-0 text-white hover:text-white/80", isHeartAnimating && !isLiked && "animate-bounce")}
-              onClick={() => setIsLiked(!isLiked)}
+              onClick={handleClickLike}
             >
               <Heart className={cn("w-5 h-5", isLiked && "fill-red-500 text-red-500")} />
             </Button>
-            <span>{book.likeCount}</span>
+            <span>{likeCount}</span>
           </div>
         </div>
       </div>
