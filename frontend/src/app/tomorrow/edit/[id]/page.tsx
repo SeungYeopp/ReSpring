@@ -90,7 +90,7 @@ export default function EditChallengePage() {
               <ChallengePreview
                 title={previewData.title}
                 description={previewData.description}
-                tags={previewData.tags}
+                tags={previewData.tags.map(tag => tag.name)}
                 startDate={new Date(previewData.startDate)}
                 endDate={typeof previewData.endDate === "string" ? new Date(previewData.endDate) : previewData.endDate}
                 preview={typeof previewData.image === "string" ? previewData.image : ""}

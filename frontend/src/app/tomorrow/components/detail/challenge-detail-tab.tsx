@@ -74,8 +74,8 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
       <div className="flex justify-between items-center">
         <div className="flex flex-wrap gap-2 -mb-3">
           {localChallenge.tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="bg-[#F8BBD0] text-gray-700">
-              {tag}
+            <Badge key={tag.id} variant="secondary" className="bg-[#F8BBD0] text-gray-700">
+              {tag.name}
             </Badge>
           ))}
         </div>

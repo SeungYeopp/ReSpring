@@ -11,23 +11,29 @@ import { ChallengeChatTab } from "../components/detail/challenge-chat-tab"
 import { Heart, Eye, Edit, ArrowLeft } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { ChallengeDetail } from "@/app/tomorrow/types/challenge"
-import { getMockChallengeDetail } from "../mocks/ChallengeDetailMocks"
 import { format, parseISO } from "date-fns"
 import { ko } from "date-fns/locale"
+import { getChallengeDetail } from "@/lib/api"
 
-export default function ChallengePage({ params }: { params: { id: string } }) {
+export default function ChallengePage({ params }: { params: { id: number } }) {
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null)
   const router = useRouter()
 
   useEffect(() => {
-    const challengeData = getMockChallengeDetail(params.id)
-    if (challengeData) {
-      setChallenge(challengeData)
-    }
-  }, [params.id])
+    const fetchChallenge = async () => {
+      try {
+        const challengeData = await getChallengeDetail(params.id);
+        setChallenge(challengeData);
+      } catch (error) {
+        console.error("Failed to fetch challenge details:", error);
+      }
+    };
+  
+    fetchChallenge();
+  }, [params.id]);
 
   if (!challenge) {
-    return <div>Loading...</div> // Todo:로딩스크린으로 바꾸자
+    return <div>Loading...</div> // Todo: 로딩스크린으로 바꾸자
   }
 
   return (
@@ -38,7 +44,7 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
             <Card className="w-full lg:w-[55%] overflow-hidden">
               <div className="relative w-full aspect-[16/9]">
                 <Image
-                  src={challenge.image || "/placeholder.svg"}
+                  src={challenge.imageUrl || "/placeholder.svg"}
                   alt={challenge.title}
                   layout="fill"
                   objectFit="cover"
