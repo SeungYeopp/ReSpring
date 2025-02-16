@@ -13,6 +13,8 @@ import { getBookById, BookFull } from "@/lib/api/book" // API 호출 및 타입 
 import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
 import { useRouter } from "next/navigation"
 
+import { deleteBook } from "@/lib/api/book"
+
   /** ✅ 랜덤 프로필 이미지 생성 함수 */
   const getRandomImage = () => {
     const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
@@ -85,7 +87,15 @@ export default function TopSection({ bookId }: { bookId: string }) {
     router.replace('/yesterday');
   }
 
-  //const handleBookDelete
+  const handleBookDelete = async () => {
+    try{
+      const result = await deleteBook(parseInt(bookId, 10));
+
+      router.replace('/yesterday');
+    }catch(error : any){
+      alert('책 삭제에 실패했습니다.')
+    }
+  }
 
   return (
     <section className="relative min-h-[80vh] text-white">
@@ -119,13 +129,13 @@ export default function TopSection({ bookId }: { bookId: string }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">
               <Pencil className="mr-2 h-4 w-4" />
               <span>편집하기</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">
               <Trash className="mr-2 h-4 w-4" />
-              <span>삭제하기</span>
+              <span onClick={handleBookDelete}>삭제하기</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
