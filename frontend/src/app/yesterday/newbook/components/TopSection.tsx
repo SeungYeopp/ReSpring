@@ -13,7 +13,7 @@ import { getBookById, BookFull } from "@/lib/api/book" // API 호출 및 타입 
 import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
 import { useRouter } from "next/navigation"
 
-import { deleteBook } from "@/lib/api/book"
+import { deleteBook, getUserInfo } from "@/lib/api"
 
   /** ✅ 랜덤 프로필 이미지 생성 함수 */
   const getRandomImage = () => {
@@ -45,6 +45,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
   const [isLiked, setIsLiked] = useState(false)
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
+  const [isMyBook, setIsMyBook] = useState<boolean>(false);
 
   const router = useRouter();
 
@@ -56,6 +57,11 @@ export default function TopSection({ bookId }: { bookId: string }) {
         const bookData = await getBookById(Number(bookId)) // API 호출
         setBook(bookData)
         setIsLiked(bookData.liked) // 초기 좋아요 상태 설정
+
+        const myInfo = await getUserInfo();
+        if(myInfo.userNickname === bookData.authorNickname)
+          setIsMyBook(true)
+
       } catch (error) {
         console.error("책 데이터를 불러오는 중 오류 발생, 목데이터로 대체:", error)
         setBook(mockBookData) // 요청 실패 시 목데이터 설정
@@ -122,7 +128,8 @@ export default function TopSection({ bookId }: { bookId: string }) {
             </Link>
           </Button>
         </div>
-        <DropdownMenu>
+        {isMyBook && (
+          <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="text-white hover:text-white/80">
               <MoreVertical className="w-6 h-6" />
@@ -139,6 +146,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
       </div>
 
       {/* 컨텐츠 */}
