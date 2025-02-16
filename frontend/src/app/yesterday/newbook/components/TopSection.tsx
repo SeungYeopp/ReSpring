@@ -11,6 +11,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { getBookById, BookFull } from "@/lib/api/book" // API 호출 및 타입 import
 import { TopSectionSkeleton } from "./Skeletons/TopSectionSkeleton"
+import { useRouter } from "next/navigation"
 
   /** ✅ 랜덤 프로필 이미지 생성 함수 */
   const getRandomImage = () => {
@@ -43,7 +44,9 @@ export default function TopSection({ bookId }: { bookId: string }) {
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
 
-  const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252"; // 박싸피의 테스트 ID
+  const router = useRouter();
+
+  //const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252"; // 박싸피의 테스트 ID
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -57,7 +60,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
       }
     }
     fetchBook()
-  }, [bookId, userId])
+  }, [bookId])
 
   const handleImageClick = () => {
     setIsImageExpanded(true)
@@ -78,6 +81,12 @@ export default function TopSection({ bookId }: { bookId: string }) {
 
   if (!book) return <TopSectionSkeleton /> // 데이터 로딩 중 스켈레톤 표시
 
+  const handleChevronLeft = () => {
+    router.replace('/yesterday');
+  }
+
+  //const handleBookDelete
+
   return (
     <section className="relative min-h-[80vh] text-white">
       {/* 배경 이미지 */}
@@ -94,10 +103,8 @@ export default function TopSection({ bookId }: { bookId: string }) {
       {/* 상단 네비게이션 */}
       <div className="relative z-10 flex items-center justify-between p-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild className="text-white hover:text-white/80">
-            <Link href="/books">
-              <ChevronLeft className="w-6 h-6" />
-            </Link>
+          <Button variant="ghost" size="icon" asChild className="text-white hover:text-white/80 cursor-pointer" onClick={handleChevronLeft}>
+            <ChevronLeft className="w-6 h-6" />
           </Button>
           <Button variant="ghost" size="icon" asChild className="text-white hover:text-white/80">
             <Link href="/">
