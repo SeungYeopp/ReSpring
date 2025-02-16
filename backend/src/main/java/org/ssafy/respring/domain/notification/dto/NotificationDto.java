@@ -14,9 +14,9 @@ import java.util.UUID;
 @Builder
 public class NotificationDto {
     private Long id;
-    private NotificationType type;
-    private TargetType targetType;  // ✅ 추가
-    private Long targetId; // ✅ 숫자 ID로 변경
+    private NotificationType type;  // 좋아요, 구독, 댓글 등
+    private TargetType targetType;  // 알림 (Post, Challenge, Book)
+    private Long targetId;          // target의 Id
     private String message;
     private boolean isRead;
     private LocalDateTime createdAt;

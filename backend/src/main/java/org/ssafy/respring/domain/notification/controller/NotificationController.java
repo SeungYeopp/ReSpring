@@ -30,38 +30,27 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final ConcurrentHashMap<UUID, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-    private UUID requireLogin(HttpSession session) {
-        UUID userId = (UUID) session.getAttribute("userId");
-        if (userId == null) {
-            throw new IllegalArgumentException("❌ 로그인이 필요합니다.");
-        }
-        return userId;
-    }
-
-    @GetMapping
+    @GetMapping("/{userId}")
     @Operation(summary = "전체 알림 조회", description = "사용자가 받은 알림을 조회합니다.")
-    public ResponseEntity<List<NotificationDto>> getNotifications(HttpSession session) {
-        UUID userId = requireLogin(session);
+    public ResponseEntity<List<NotificationDto>> getNotifications(@PathVariable UUID userId) {
         return ResponseEntity.ok(notificationService.getNotifications(userId));
     }
 
     // ✅ 특정 알림 읽음 처리
-    @PatchMapping("/{notificationId}/read")
+    @PatchMapping("/{notificationId}/read/{userId}")
     @Operation(summary = "특정 알림 읽음 처리", description = "특정 알림을 읽음 처리합니다.")
     public ResponseEntity<Void> markNotificationAsRead(
             @PathVariable Long notificationId,
-            HttpSession session
+            @PathVariable UUID userId
     ) {
-        UUID userId = requireLogin(session);
         notificationService.markAsRead(notificationId, userId);
         return ResponseEntity.ok().build();
     }
 
     // ✅ 모든 알림 읽음 처리
-    @PatchMapping("/read-all")
+    @PatchMapping("/read-all/{userId}")
     @Operation(summary = "모든 알림 읽음 처리", description = "모든 알림을 동시에 읽음 처리합니다.")
-    public ResponseEntity<Void> markAllNotificationsAsRead(HttpSession session) {
-        UUID userId = requireLogin(session);
+    public ResponseEntity<Void> markAllNotificationsAsRead(@PathVariable UUID userId) {
         notificationService.markAllAsRead(userId);
         return ResponseEntity.ok().build();
     }

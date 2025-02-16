@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final SseService sseService; // ✅ SSE 서비스 전담
+    private final SseService sseService;
     private final UserRepository userRepository;
 
 
@@ -68,7 +68,7 @@ public class NotificationService {
         notificationRepository.save(notification);
 
         // ✅ `initiatorId` 포함하여 DTO 변환 후 SSE 전송
-        sseService.sendNotification(receiverId, NotificationSubscriptionDto.from(notification, initiator.getUserNickname()));
+        sseService.sendNotification(receiverId, NotificationSubscriptionDto.from(notification, initiator.getId()));
     }
 
 

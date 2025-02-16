@@ -19,19 +19,19 @@ public class NotificationSubscriptionDto {
     private Long id;
     private NotificationType type;
     private TargetType targetType;
-    private Long targetId; // ✅ Long → UUID 변환 후 저장
-    private String initiatorName;
+    private Long targetId;
+    private UUID initiatorId;           // receiver 정보
     private String message;
     private boolean isRead;
     private LocalDateTime createdAt;
 
-    public static NotificationSubscriptionDto from(Notification notification, String initiatorName) {
+    public static NotificationSubscriptionDto from(Notification notification, UUID initiatorId) {
         return NotificationSubscriptionDto.builder()
                 .id(notification.getId())
                 .type(notification.getType())
                 .targetType(notification.getTargetType())
-                .targetId(notification.getTargetId()) // ✅ 변환된 UUID 적용
-                .initiatorName(initiatorName) // ✅ receiver의 UUID 추가
+                .targetId(notification.getTargetId())
+                .initiatorId(initiatorId)
                 .message(notification.getMessage())
                 .isRead(notification.isRead())
                 .createdAt(notification.getCreatedAt())
