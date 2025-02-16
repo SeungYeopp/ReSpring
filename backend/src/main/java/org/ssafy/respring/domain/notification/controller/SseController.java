@@ -18,17 +18,14 @@ import java.util.UUID;
 public class SseController {
     private final SseService sseService;
 
-    @GetMapping(value = "/subscribe", produces = "text/event-stream")
+    @GetMapping(value = "/subscribe/{userId}", produces = "text/event-stream")
     @Operation(summary = "SSE 구독", description = "사용자가 실시간 알림을 구독합니다.")
-    public ResponseEntity<SseEmitter> subscribe(HttpSession session) {
-        UUID userId = (UUID) session.getAttribute("userId");
-
+    public ResponseEntity<SseEmitter> subscribe(@PathVariable UUID userId) {
         if (userId == null) {
             SseEmitter emitter = new SseEmitter(0L);
             emitter.complete();
             return ResponseEntity.ok(emitter);
         }
-
         return ResponseEntity.ok(sseService.subscribe(userId));
     }
 }
