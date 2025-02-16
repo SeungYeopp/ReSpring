@@ -14,6 +14,7 @@ import org.ssafy.respring.domain.comment.repository.CommentLikesRepository;
 import org.ssafy.respring.domain.comment.repository.CommentRepository;
 import org.ssafy.respring.domain.comment.vo.Comment;
 import org.ssafy.respring.domain.comment.vo.CommentLikes;
+import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.notification.service.NotificationService;
 import org.ssafy.respring.domain.notification.vo.NotificationType;
 import org.ssafy.respring.domain.notification.vo.TargetType;
@@ -40,6 +41,8 @@ public class CommentService {
     private final NotificationService notificationService;
     private final PostRepository postRepository;
     private final BookRepository bookRepository;
+
+    private final ImageService imageService;
 
     public List<CommentDetailResponseDto> getMyPostComments(UUID userId) {
         return commentRepository.findByUserIdAndPostNotNull(userId)
@@ -244,7 +247,7 @@ public class CommentService {
                 comment.getId(),
                 content,
                 comment.getUser().getUserNickname(),
-                comment.getUser().getProfileImage(),
+                imageService.generatePresignedUrl(comment.getUser().getProfileImage()),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getParent() != null ? comment.getParent().getId() : null,
