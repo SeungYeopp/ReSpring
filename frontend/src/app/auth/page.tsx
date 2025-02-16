@@ -13,7 +13,7 @@ export default function AuthPage() {
       <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="w-full max-w-md">
           <div className="flex justify-center mb-6">
-            <Button
+            {/* <Button
               onClick={() => setIsLogin(true)}
               variant={isLogin ? "default" : "outline"}
               className={`mr-2 ${isLogin ? "bg-brand text-white" : "border-brand-light text-brand-dark"}`}
@@ -26,7 +26,7 @@ export default function AuthPage() {
               className={`${!isLogin ? "bg-brand text-white" : "border-brand-light text-brand-dark"}`}
             >
               회원가입
-            </Button>
+            </Button> */}
           </div>
           {isLogin ? <LoginForm /> : <SignUpForm />}
         </div>
