@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChallengeCalendar } from "./challnege-callender"
 import { ExpandableDescription } from "./expandable-description"
 import { Badge } from "@/components/ui/badge"
@@ -9,7 +9,7 @@ import { format, parseISO, differenceInDays } from "date-fns"
 import type { ChallengeDetail } from "../../types/challenge"
 import { ChallengeActionButton } from "./challenge-action-button"
 import type { Theme } from "../../types/theme"
-import { joinChallenge } from "@/lib/api"
+import { checkParticipationStatus, joinChallenge, recordChallengeSuccess } from "@/lib/api"
 import { Separator } from "@/components/ui/separator"
 
 interface ChallengeDetailTabProps {
@@ -19,7 +19,7 @@ const Divider = ({ thick = false }: { thick?: boolean }) => <div className={`h-p
 
 export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
   const [localChallenge, setLocalChallenge] = useState(challenge)
-  const [isParticipating, setIsParticipating] = useState(false)
+  const [isParticipating, setIsParticipating] = useState(false);
   const [isTodayCompleted, setIsTodayCompleted] = useState(false)
   const [theme, setTheme] = useState<Theme>("light")
 
@@ -41,7 +41,7 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
 
   const handleCompleteToday = async () => {
     try {
-      // 실제 구현에서는 여기에 서버 액션이나 API 호출이 들어갈 것입니다
+      recordChallengeSuccess(challenge.id, true);
       setLocalChallenge((prev) => ({
         ...prev,
         records: {
@@ -67,6 +67,20 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
       console.error("챌린지 참가 중 오류 발생:", error)
     }
   }
+
+  useEffect(() => {
+    async function fetchParticipationStatus() {
+      try {
+        const response = await checkParticipationStatus(challenge.id); // Example API call
+        setIsParticipating(response); // Ensure this is a boolean
+      } catch (error) {
+        console.error("Error fetching participation status:", error);
+        setIsParticipating(false); // Default to false if fetching fails
+      }
+    }
+  
+    fetchParticipationStatus();
+  }, []);
 
   return (
     <div className="space-y-6 p-5">

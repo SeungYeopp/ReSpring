@@ -197,7 +197,7 @@ export const recordChallengeSuccess = async (
   isSuccess: boolean
 ): Promise<boolean> => {
   try {
-    await axiosAPI.post(`${BASE_URL}/records/${challengeId}/success`, {
+    await axiosAPI.post(`${BASE_URL}/records/${challengeId}?isSuccess=${isSuccess}`, {
       isSuccess,
     });
     return true;
@@ -251,5 +251,18 @@ export const fetchSubscribedUsers = async (): Promise<SubscribedUser[]> => {
   } catch (error) {
     console.error("구독한 사용자 목록 조회 실패:", error);
     throw new Error("구독한 사용자 목록 조회 실패");
+  }
+};
+
+/**
+ * 📌 15. 챌린지 참여 여부 반환
+ */
+export const checkParticipationStatus = async (challengeId: number): Promise<boolean> => {
+  try {
+    const participatedChallenges = await fetchParticipatedChallenges();
+    return participatedChallenges.some((challenge) => challenge.id === challengeId);
+  } catch (error) {
+    console.error("챌린지 참가 여부 확인 실패:", error);
+    return false; // Default to false if fetching fails
   }
 };
