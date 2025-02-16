@@ -47,9 +47,11 @@ export const AutocompleteBookSearchBar = ({ defaultValue, placeholder }: Autocom
     setInputValue(event.target.value)
   }
 
-  const handleSearch = (query: string) => {
+  const handleSearch: (query: string) => void = (query) => {
     if (query) {
       router.push(`${pathname}?q=${encodeURIComponent(query)}`)
+      setInputValue("");
+      setSuggestions([]);
     } else {
       router.push(pathname)
     }

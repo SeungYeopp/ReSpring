@@ -202,7 +202,7 @@ export const getAllBooksByUserId = async(nickname : string) : Promise<Book[]> =>
 // 출력 : 봄날의 서 배열
 export const searchBook = async (keyword : string) : Promise<Book[]> => {
     try{
-        const response = await axiosAPI.get(`/books/search?keyword=${keyword}`)
+        const response = await axiosAPI.get(`/books/search?keyword=${encodeURIComponent(keyword)}`)
 
         const responseBooks : Book[] = response.data as Book[];
 
