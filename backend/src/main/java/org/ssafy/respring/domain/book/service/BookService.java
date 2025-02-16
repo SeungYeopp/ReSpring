@@ -612,14 +612,17 @@ public class BookService {
 		  .map(User::getUserNickname)
 		  .collect(Collectors.toSet());
 
-		return BookResponseDto.toResponseDto(
+		BookResponseDto response = BookResponseDto.toResponseDto(
 				book,
 				isBookLiked(book.getId(), userId),
 				bookLikesRedisService.getLikeCount(book.getId()), // 좋아요 수
 				likedUserNames,
 				bookViewsRedisService.getViewCount(book.getId()),
-				imageService.getSingleImageByEntity(ImageType.BOOK,book.getId())
-		);
+				imageService.getSingleImageByEntity(ImageType.BOOK,book.getId()));
+
+		response.setAuthorProfileImage(imageService.generatePresignedUrl(book.getAuthor().getProfileImage()));
+
+		return response;
 	}
 
 	private List<BookAutocompleteResponseDto> mapToBookAutocompleteResponseDtoList(SearchResponse<Map> searchResponse) {

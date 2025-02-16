@@ -501,7 +501,7 @@ public class ChallengeService {
                     User user = userChallenge.getUser();
                     return new ParticipantInfoDto(
                             user.getUserNickname(),       // ✅ 닉네임 가져오기
-                            user.getProfileImage()    // ✅ 프로필 이미지 가져오기
+                            imageService.generatePresignedUrl(user.getProfileImage())    // ✅ 프로필 이미지 가져오기
                     );
                 })
                 .collect(Collectors.toList());
