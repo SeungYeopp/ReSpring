@@ -512,6 +512,8 @@ public class BookService {
 			Book book = optionalBook.get();
 
 			// ✅ Elasticsearch에서 빠진 데이터 보완
+			bookDto.setAuthorNickname(book.getAuthor().getUserNickname());
+			bookDto.setAuthorProfileImage(imageService.generatePresignedUrl(book.getAuthor().getProfileImage()));
 			bookDto.setCoverImage(imageService.generatePresignedUrl(book.getCoverImage()));
 			bookDto.setCreatedAt(book.getCreatedAt());
 			bookDto.setUpdatedAt(book.getUpdatedAt());
