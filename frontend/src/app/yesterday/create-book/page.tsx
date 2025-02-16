@@ -81,7 +81,7 @@ export default function CreateBook() {
   const [selectedStorieIds, setSelectedStorieIds] = useState<number[]>([])
   const [step, setStep] = useState(1)
   const [msg, setMsg] = useState<string>("...")
-  const [bookTags, setBookTags] = useState<string[]>([])
+  const [bookTags, setBookTags] = useState<string[]>(["은퇴"])
   const [bookCoverImg, setBookCoverImg] = useState<File>()
   const [compiledBook, setCompiledBook] = useState<CompiledBook>()
   const [generatedCompiledBookId, setGeneratedCompiledBookId] = useState<number>()
@@ -95,7 +95,7 @@ export default function CreateBook() {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null)
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false)
 
-  const [title, setTitle] = useState<string>("제목을 직접 작성하세요!")
+  const [title, setTitle] = useState<string>("제목")
 
   const router = useRouter()
 
@@ -376,7 +376,6 @@ export default function CreateBook() {
 
           {step === 2 && compiledBook && (
             <div className="w-full max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold text-center mb-6">{compiledBook.title}</h2>
               <Carousel className="w-full">
                 <CarouselContent>
                   {pages.map((page, index) => (
@@ -395,7 +394,7 @@ export default function CreateBook() {
             <div className="flex flex-col gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">제목</label>
-                <Input type="text" value={compiledBook?.title} onChange={handleBookTitleChange} className="w-full" />
+                <Input type="text" value={compiledBook?.title} onChange={handleBookTitleChange} placeholder="제목을 입력하세요." className="w-full" />
               </div>
 
               <div>
