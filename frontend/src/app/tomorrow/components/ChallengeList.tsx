@@ -78,8 +78,9 @@ export default function ChallengeList({ initialChallenges }: ChallengeListProps)
             image={challenge.image}
             like={challenge.likes}
             participants={challenge.participantCount}
-            tags={[]} 
+            tags={challenge.tags?.map((tag) => tag.name) || []} // 수정된 부분
             status={challenge.status}
+            isParticipating={challenge.isParticipating} // 사용자의 참여 여부 전달
           />
         ))}
       </div>

@@ -11,6 +11,9 @@ export interface Challenge {
   views: number;
   participantCount: number;
   status: "UPCOMING" | "ONGOING" | "ENDED"; // 상태값 업데이트
+ // 아래 두 속성을 추가합니다.
+ tags?: Tag[];             // 태그 배열, optional 처리
+ isParticipating?: boolean; // 사용자의 참여 여부, optional 처리
 }
 
 // 예시: Tag 타입 (필요에 따라 수정)
