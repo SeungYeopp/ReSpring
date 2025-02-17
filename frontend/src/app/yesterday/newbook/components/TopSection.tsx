@@ -41,8 +41,8 @@ const mockBookData: BookFull = {
   liked: false,
 }
 
-export default function TopSection({ bookId }: { bookId: string }) {
-  const [book, setBook] = useState<BookFull | null>(null) // API 데이터 저장
+export default function TopSection({ book }: { book: BookFull }) {
+  //const [book, setBook] = useState<BookFull | null>(null) // API 데이터 저장
   const [isLiked, setIsLiked] = useState(false)
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
@@ -53,30 +53,32 @@ export default function TopSection({ bookId }: { bookId: string }) {
 
   //const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252"; // 박싸피의 테스트 ID
 
-  useEffect(() => {
-    const fetchBook = async () => {
-      try {
-        const bookData = await getBookById(Number(bookId)) // API 호출
-        setBook(bookData)
-        setIsLiked(bookData.liked) // 초기 좋아요 상태 설정
+  // useEffect(() => {
+  //   console.log("📌 useEffect 실행됨 - bookId:", bookId);
+  //   const fetchBook = async () => {
+  //     console.log("📌 getBookById 호출 - bookId:", bookId);
+  //     try {
+  //       const bookData = await getBookById(Number(bookId)); // API 호출
+  //       setBook(bookData);
+  //       setIsLiked(bookData.liked);
+  //       setLikeCount(bookData.likeCount);
 
-        setLikeCount(bookData.likeCount);
-        const myInfo = await getUserInfo();
-        if(myInfo.userNickname === bookData.authorNickname)
-          setIsMyBook(true)
+  //       const myInfo = await getUserInfo();
+  //       if (myInfo.userNickname === bookData.authorNickname) setIsMyBook(true);
+  //     } catch (error) {
+  //       console.error("책 데이터를 불러오는 중 오류 발생, 목데이터로 대체:", error);
+  //       setBook(mockBookData);
+  //     }
+  //   };
 
-      } catch (error) {
-        console.error("책 데이터를 불러오는 중 오류 발생, 목데이터로 대체:", error)
-        setBook(mockBookData) // 요청 실패 시 목데이터 설정
-      }
-    }
-    fetchBook()
-  }, [bookId])
+  //   fetchBook();
+  // }, [bookId]);
+
 
   const handleImageClick = () => {
     setIsImageExpanded(true)
     setTimeout(() => {
-      window.location.href = `/viewer/${bookId}`
+      window.location.href = `/viewer/${book.id}`
     }, 500)
   }
 
@@ -98,7 +100,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
 
   const handleBookDelete = async () => {
     try{
-      const result = await deleteBook(parseInt(bookId, 10));
+      const result = await deleteBook(book.id);
 
       router.replace('/yesterday');
     }catch(error : any){
@@ -108,7 +110,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
 
   const handleClickLike = async () => {
     try{
-      const result = await likeOrUnlikeBook(parseInt(bookId, 10));
+      const result = await likeOrUnlikeBook(book.id);
 
       if(result === 'Liked'){
         setIsLiked(true);
