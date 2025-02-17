@@ -26,6 +26,7 @@ pipeline {
         KAKAO_CLIENT_ID = credentials('KAKAO_CLIENT_ID')
         KAKAO_CLIENT_SECRET = credentials('KAKAO_CLIENT_SECRET')
         KAKAO_REDIRECT_URI = credentials('KAKAO_REDIRECT_URI')
+        NEXT_PUBLIC_API_BASE_URL = credentials('NEXT_PUBLIC_API_BASE_URL')
     }
     stages {
         stage('Backend Build') {
