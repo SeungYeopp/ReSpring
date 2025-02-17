@@ -86,7 +86,7 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
     const timer = setTimeout(() => {
       setShowSplash(false); // 4초 후 스플래시 종료
       localStorage.setItem("splashTimestamp", String(now)); // 현재 시간을 저장하여 재표시 방지
-      router.replace("/today"); // 스플래시 종료 후 "/today"로 리다이렉트
+      router.replace("/main"); // 스플래시 종료 후 "/main"으로 리다이렉트
     }, 4000);
 
     return () => clearTimeout(timer); // 컴포넌트 언마운트 시 타이머 정리
