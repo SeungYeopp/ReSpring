@@ -17,15 +17,19 @@ export const mockChallengeData: ChallengeDetail = {
   startDate: "2024-02-01T00:00:00",
   endDate: "2024-02-28T23:59:59",
   tags: [
-    {id: 1, name: "독서"}, 
-    {id: 2, name: "습관"},
-    {id: 3, name: "성장"},
+    { id: 1, name: "독서" },
+    { id: 2, name: "습관" },
+    { id: 3, name: "성장" },
   ],
-  isSuccessToday: true,
+  successToday: true,
   longestStreak: 15,
   currentStreak: 5,
   successRate: 90.5,
 
   // 소유자 정보 (API 응답 포함 가정)
   ownerId: "abcd-1234-efgh-5678",
+
+  // 추가된 필드: 참여 여부와 좋아요 여부
+  isParticipating: true,
+  isLike: true,
 };

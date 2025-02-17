@@ -359,14 +359,13 @@ export function ChallengeChatTab() {
       </div>
       {/* <ChallengeActionButton isParticipating={isParticipating} isTodayCompleted={isTodayCompleted} theme={theme} onComplete={handleCompleteToday} onJoin={handleJoinChallenge} /> */}
       {participantList && (
-        <ParticipantListModal
-          isOpen={isParticipantListOpen}
-          onClose={() => setIsParticipantListOpen(false)}
-          participants={participantList.participants}
-          participantCount={participantList.participantCount}
-          theme={theme}
-        />
-      )}
+  <ParticipantListModal
+    isOpen={isParticipantListOpen}
+    onClose={() => setIsParticipantListOpen(false)}
+    challengeId={participantList.challengeId} // participants 대신 challengeId 전달
+    theme={theme}
+  />
+)}
     </div>
   )
 }

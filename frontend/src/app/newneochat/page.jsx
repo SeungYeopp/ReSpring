@@ -388,9 +388,7 @@ const Chat1 = () => {
         }
       );
       // ✅ 1️⃣ 채팅 메시지 불러오기
-      const response = await fetch(
-        `http://localhost:8080/chat/messages/${roomId}`
-      );
+      const response = await fetch(`${SERVER_URL}/messages/${roomId}`);
       if (!response.ok)
         throw new Error(
           `Failed to fetch messages (Status: ${response.status})`
@@ -402,7 +400,7 @@ const Chat1 = () => {
       let lastSeenTime = 0;
       try {
         const lastSeenResponse = await fetch(
-          `http://localhost:8080/chat/last-seen?roomId=${roomId}&userId=${currentUserId}`
+          `${SERVER_URL}/last-seen?roomId=${roomId}&userId=${currentUserId}`
         );
         if (lastSeenResponse.ok) {
           lastSeenTime = await lastSeenResponse.json();

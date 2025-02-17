@@ -37,14 +37,15 @@ const mockChallengeDetails: ChallengeDetail[] = [
     startDate: "2025-02-01T00:00:00",
     endDate: "2025-03-02T23:59:59",
     tags: [
-      {id: 1, name: "독서"},
-      {id: 2, name: "자기계발"},
-      {id: 3, name: "습관형성"}
+      { id: 1, name: "독서" },
+      { id: 2, name: "자기계발" },
+      { id: 3, name: "습관형성" }
     ],
     participantCount: 1250,
     likes: 328,
     views: 5420,
-    isSuccessToday: true,
+    // 기존 isSuccessToday -> successToday
+    successToday: true,
     longestStreak: 15,
     currentStreak: 5,
     successRate: 90.5,
@@ -52,6 +53,8 @@ const mockChallengeDetails: ChallengeDetail[] = [
     ownerId: "user123",
     records: generateRecentRecords(),
     isParticipating: true,
+    // 추가: isLike 프로퍼티 (예시로 true 설정)
+    isLike: true,
   },
   {
     id: 2,
@@ -63,14 +66,14 @@ const mockChallengeDetails: ChallengeDetail[] = [
     startDate: "2025-03-05T00:00:00",
     endDate: "2025-04-05T23:59:59",
     tags: [
-      {id: 1, name: "운동"},
-      {id: 2, name: "건강"},
-      {id: 3, name: "다이어트트"}
+      { id: 1, name: "운동" },
+      { id: 2, name: "건강" },
+      { id: 3, name: "다이어트트" }
     ],
     participantCount: 3780,
     likes: 952,
     views: 12500,
-    isSuccessToday: false,
+    successToday: false,
     longestStreak: 7,
     currentStreak: 0,
     successRate: 75.8,
@@ -78,6 +81,7 @@ const mockChallengeDetails: ChallengeDetail[] = [
     ownerId: "user456",
     records: {},
     isParticipating: false,
+    isLike: false,
   },
   {
     id: 3,
@@ -89,14 +93,14 @@ const mockChallengeDetails: ChallengeDetail[] = [
     startDate: "2025-01-25T00:00:00",
     endDate: "2025-06-30T23:59:59",
     tags: [
-      {id: 1, name: "코딩"},
-      {id: 2, name: "개발"},
-      {id: 3, name: "GitHub"}
+      { id: 1, name: "코딩" },
+      { id: 2, name: "개발" },
+      { id: 3, name: "GitHub" }
     ],
     participantCount: 5230,
     likes: 1890,
     views: 28700,
-    isSuccessToday: true,
+    successToday: true,
     longestStreak: 45,
     currentStreak: 45,
     successRate: 98.2,
@@ -104,6 +108,7 @@ const mockChallengeDetails: ChallengeDetail[] = [
     ownerId: "user789",
     records: generateRecentRecords(),
     isParticipating: true,
+    isLike: true,
   },
   {
     id: 4,
@@ -115,14 +120,14 @@ const mockChallengeDetails: ChallengeDetail[] = [
     startDate: "2025-01-01T00:00:00",
     endDate: "2025-01-31T23:59:59",
     tags: [
-      {id: 1, name: "명상"},
-      {id: 2, name: "마음챙김"},
-      {id: 3, name: "웰빙빙"}
+      { id: 1, name: "명상" },
+      { id: 2, name: "마음챙김" },
+      { id: 3, name: "웰빙빙" }
     ],
     participantCount: 820,
     likes: 245,
     views: 3600,
-    isSuccessToday: false,
+    successToday: false,
     longestStreak: 12,
     currentStreak: 3,
     successRate: 68.5,
@@ -130,6 +135,7 @@ const mockChallengeDetails: ChallengeDetail[] = [
     ownerId: "user101",
     records: generateRecentRecords(),
     isParticipating: true,
+    isLike: false,
   },
   {
     id: 5,
@@ -141,14 +147,14 @@ const mockChallengeDetails: ChallengeDetail[] = [
     startDate: "2025-03-01T00:00:00",
     endDate: "2025-03-31T23:59:59",
     tags: [
-      {id: 1, name: "환경"},
-      {id: 2, name: "에코"},
-      {id: 3, name: "지속가능성성"}
+      { id: 1, name: "환경" },
+      { id: 2, name: "에코" },
+      { id: 3, name: "지속가능성성" }
     ],
     participantCount: 2100,
     likes: 780,
     views: 9500,
-    isSuccessToday: false,
+    successToday: false,
     longestStreak: 0,
     currentStreak: 0,
     successRate: 0,
@@ -156,6 +162,7 @@ const mockChallengeDetails: ChallengeDetail[] = [
     ownerId: "user202",
     records: {},
     isParticipating: false,
+    isLike: false,
   },
 ];
 
