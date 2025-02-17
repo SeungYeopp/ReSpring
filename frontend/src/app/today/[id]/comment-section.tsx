@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/hooks/tempUseAuth"
 import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 import {
   type Comment,
@@ -44,6 +45,8 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
   const [hasMore, setHasMore] = useState(true)
   const [commentCount, setCommentCount] = useState(0) // ✅ 내부 상태 관리
   const [likedComments, setLikedComments] = useState<Set<number>>(new Set())
+
+  const router = useRouter();
 
   useEffect(() => {
     loadComments()
@@ -147,17 +150,21 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
       }
     }
 
+    const handleOnClickProfile = () => {
+      router.push(`/profile/${comment.userNickname}`)
+    }
+
     return (
       <div
         className={`flex gap-3 ${isReply ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4' : ""}`}
       >
-        <Avatar className="h-7 w-7 flex-shrink-0">
+        <Avatar className="h-7 w-7 flex-shrink-0 cursor-pointer" onClick={handleOnClickProfile}>
           <AvatarImage src={comment.profileImg} alt={comment.userNickname} />
           <AvatarFallback>{comment.userNickname}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
           <div className="flex items-baseline gap-1">
-            <span className="text-sm font-semibold">{comment.userNickname}</span>
+            <span className="text-sm font-semibold cursor-pointer" onClick={handleOnClickProfile}>{comment.userNickname}</span>
             <time className="text-xs text-gray-500">
               {formatDistanceToNowStrict(new Date(comment.createdAt), {
                 locale: ko,
