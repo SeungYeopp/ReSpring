@@ -96,8 +96,8 @@ export function LoginForm() {
           </Button>
         </form>
         <div className="mt-4 space-y-2">
-          <KakaoLoginButton redirectUrl="https://i12a307.p.ssafy.io:8080/oauth2/authorization/kakao" />
-          <GoogleLoginButton />
+          <KakaoLoginButton redirectUrl="https://i12a307.p.ssafy.io/api/oauth2/authorization/kakao" />
+          <GoogleLoginButton redirectUrl="https://i12a307.p.ssafy.io/api/oauth2/authorization/google"/>
         </div>
       </CardContent>
       <CardFooter className="flex justify-center">
