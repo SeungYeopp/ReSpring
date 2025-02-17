@@ -52,14 +52,16 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
       const newParentsComments = parentComments.filter((comment) => (!comment.parentId))
 
       const commentsWithReplies = await Promise.all(
-        newParentsComments.map(async (comment) => {
-          const replies = await getChildrenComments(comment.id);
+        newParentsComments.map(async (parentComment) => {
+          const replies = parentComments.filter((comment) => (comment.parentId === parentComment.id))
+          //const replies = await getChildrenComments(comment.id);
           return {
-            ...comment,
+            ...parentComment,
             replies,
           };
         })
       );
+      // console.log("commentsWithReplies", commentsWithReplies)
       setComments(commentsWithReplies);
       setHasMore(commentsWithReplies.length > 0);
     } catch (error) {
@@ -97,6 +99,8 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
 
       setNewComment("");
       setReplyTo(null);
+
+      loadComments();
     } catch (error) {
       console.error("댓글 작성에 실패했습니다:", error);
     } finally {
