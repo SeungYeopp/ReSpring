@@ -1,12 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { MainBookCarousel } from "./MainBookCarousel"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { getAllBooksScrolled, type Book } from "@/lib/api"
-import { Button } from "@/components/ui/button"
+import { BookCard } from "./BookCard"
 
-const INITIAL_LOAD_SIZE = 5
-const LOAD_MORE_SIZE = 10
+const INITIAL_LOAD_SIZE = 10
+const LOAD_MORE_SIZE = 5
 
 export default function PopularBooks() {
   const [books, setBooks] = useState<Book[]>([])
@@ -15,69 +14,76 @@ export default function PopularBooks() {
   const [hasMore, setHasMore] = useState(true)
   const [lastBook, setLastBook] = useState<Book | null>(null)
 
-  const fetchBooks = useCallback(
-    async (isInitial = false) => {
-      if (!hasMore && !isInitial) return
-
-      setIsLoading(true)
-      try {
-        const newBooks = await getAllBooksScrolled(
-          lastBook?.likeCount ?? 1987654321,
-          lastBook?.viewCount ?? 1987654321,
-          lastBook?.id ?? 1987654321,
-          lastBook?.createdAt ?? null,
-          isInitial ? INITIAL_LOAD_SIZE : LOAD_MORE_SIZE,
-        )
-
-        if (newBooks.length === 0 || newBooks.length < (isInitial ? INITIAL_LOAD_SIZE : LOAD_MORE_SIZE)) {
-          setHasMore(false)
+  const observer = useRef<IntersectionObserver | null>(null)
+  const lastBookElementRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (isLoading) return
+      if (observer.current) observer.current.disconnect()
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchBooks()
         }
-        
-        if (newBooks.length > 0) {
-          setBooks((prevBooks) => {
-            const uniqueNewBooks = newBooks.filter(
-              (newBook) => !prevBooks.some((existingBook) => existingBook.id === newBook.id)
-            )
-            return [...prevBooks, ...uniqueNewBooks]
-          })
-          setLastBook(newBooks[newBooks.length - 1])
-        }
-      } catch (err) {
-        setError("책 정보를 불러오는 데 실패했습니다.")
-        console.error(err)
-      } finally {
-        setIsLoading(false)
-      }
+      })
+      if (node) observer.current.observe(node)
     },
-    [lastBook, hasMore],
+    [isLoading, hasMore],
   )
 
-  useEffect(() => {
-    fetchBooks(true)
-  }, []) // Remove fetchBooks from the dependency array
+  const fetchBooks = useCallback(async () => {
+    if (!hasMore) return
 
-  const loadMore = () => {
-    if (!isLoading && hasMore) {
-      fetchBooks()
+    setIsLoading(true)
+    try {
+      const newBooks = await getAllBooksScrolled(
+        lastBook?.likeCount ?? 1987654321,
+        lastBook?.viewCount ?? 1987654321,
+        lastBook?.id ?? 1987654321,
+        lastBook?.createdAt ?? null,
+        books.length === 0 ? INITIAL_LOAD_SIZE : LOAD_MORE_SIZE,
+      )
+
+      if (newBooks.length === 0 || newBooks.length < LOAD_MORE_SIZE) {
+        setHasMore(false)
+      }
+
+      if (newBooks.length > 0) {
+        setBooks((prevBooks) => {
+          const uniqueNewBooks = newBooks.filter(
+            (newBook) => !prevBooks.some((existingBook) => existingBook.id === newBook.id),
+          )
+          return [...prevBooks, ...uniqueNewBooks]
+        })
+        setLastBook(newBooks[newBooks.length - 1])
+      }
+    } catch (err) {
+      setError("책 정보를 불러오는 데 실패했습니다.")
+      console.error(err)
+    } finally {
+      setIsLoading(false)
     }
-  }
+  }, [lastBook, books.length, hasMore]) // Added hasMore dependency
+
+  useEffect(() => {
+    fetchBooks()
+  }, [fetchBooks]) // Added fetchBooks dependency
 
   if (error) {
-    return <div className="mt-8 px-4">{error}</div>
+    return <div className="mt-8 px-4 text-red-500">{error}</div>
   }
 
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4 text-spring-forest">봄날의 서들</h2>
-      {books.length > 0 && <MainBookCarousel title="봄날의 서들" books={books} />}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {books.map((book, index) => (
+          <div key={book.id} ref={index === books.length - 1 ? lastBookElementRef : null}>
+            <BookCard book={book} />
+          </div>
+        ))}
+      </div>
       {isLoading && <div className="text-center mt-4">책 정보를 불러오는 중입니다...</div>}
-      {!isLoading && hasMore && (
-        <div className="text-center mt-4">
-          <Button onClick={loadMore} className="bg-spring-olive text-white hover:bg-spring-olive/80">
-            더 보기
-          </Button>
-        </div>
-      )}
+      {/* {!isLoading && !hasMore && <div className="text-center mt-4 text-gray-500">더 이상 표시할 책이 없습니다.</div>} */}
     </div>
   )
 }
+
