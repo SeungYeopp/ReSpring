@@ -1,9 +1,9 @@
 "use client"
 
-import { useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useResizeObserver } from "@/hooks/useResizeObserver"
+import Image from "next/image"
 import type { Book } from "@/lib/api"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export interface BookCardProps {
   book: Book
@@ -11,8 +11,6 @@ export interface BookCardProps {
 
 export function BookCard({ book }: BookCardProps) {
   const router = useRouter()
-  const titleRef = useRef<HTMLDivElement>(null)
-  const { ref, size } = useResizeObserver()
 
   const handleClick = () => {
     router.push(`/yesterday/newbook/${book.id}`)
@@ -20,40 +18,51 @@ export function BookCard({ book }: BookCardProps) {
 
   const placeholderImage = `/placeholder/bookcover/thumb (${Math.floor(Math.random() * 7) + 1}).webp`
 
-  // 카드 크기에 따라 폰트 크기 계산
-  const fontSize = Math.max(12, size.width * 0.08) // 최소 12px, 카드 크기에 비례
-
-  useEffect(() => {
-    const titleElement = titleRef.current
-    if (titleElement) {
-      const isOverflowing = titleElement.scrollWidth > titleElement.clientWidth
-      if (isOverflowing) {
-        titleElement.style.animation = `slide ${titleElement.scrollWidth / 50}s linear infinite`
-      } else {
-        titleElement.style.animation = "none"
-      }
-    }
-  }, [titleRef])
-
   return (
     <div
-      ref={titleRef}
-      className="relative cursor-pointer border border-gray-300 rounded-lg shadow-sm transition-transform duration-300 hover:shadow-md"
+      className="flex border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer overflow-hidden h-48"
       onClick={handleClick}
     >
-      <div className="pb-[150%] relative">
-        <img
-          src={book.coverImage || placeholderImage}
-          alt={book.title}
-          className="absolute inset-0 w-full h-full object-cover rounded-t-lg"
-        />
+      <div className="w-1/3 relative">
+      <Image 
+        src={book.coverImage || placeholderImage} 
+        alt={book.title} 
+        fill 
+        className="object-cover"
+      />
       </div>
-      <div
-        ref={titleRef}
-        className="p-2 text-center whitespace-nowrap overflow-hidden"
-        style={{ fontSize: `${fontSize}px` }}
-      >
-        {book.title}
+      <div className="w-2/3 p-4 flex flex-col justify-between">
+        <div className="overflow-hidden">
+          <h3 className="text-lg font-semibold mb-2 line-clamp-2">{book.title}</h3>
+          <div className="flex flex-wrap gap-1 mb-2 overflow-hidden max-h-12">
+            {book.tags.slice(0, 3).map((tag, index) => (
+              <div key={index} className="bg-brand text-white px-3 py-1 text-sm rounded-full shadow-sm">{tag}</div>
+              // <span key={index} className="bg-spring-olive text-white text-xs px-2 py-1 rounded-full whitespace-nowrap">
+              //   {tag}
+              // </span>
+            ))}
+          </div>
+        </div>
+        <div className="mt-auto">
+          <div className="flex items-center mb-2">
+            {/* <Image
+              src={book.authorProfileImage || "/placeholder/profile.png"}
+              alt={book.authorNickname}
+              width={24}
+              height={24}
+              className="rounded-full mr-2"
+            /> */}
+            <Avatar className="h-7 w-7 flex-shrink-0">
+              <AvatarImage src={book.authorProfileImage} alt={'/placeholder/profile.png'} />
+              <AvatarFallback>{book.authorNickname}</AvatarFallback>
+            </Avatar>
+            <span className="p-2 text-sm text-gray-600 truncate">{book.authorNickname}</span>
+          </div>
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>좋아요 {book.likeCount}</span>
+            <span>조회수 {book.viewCount}</span>
+          </div>
+        </div>
       </div>
     </div>
   )
