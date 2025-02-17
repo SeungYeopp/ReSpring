@@ -158,13 +158,16 @@ function BookCarousel({ books }: BookCarouselProps) {
           </CarouselItem>
         ))}
       </CarouselContent>
+      {/* 점 인디케이터 (최대 5개까지만 표시) */}
       <div className="flex justify-center mt-4">
-        {books.map((_, index) => (
-          <CarouselIndicator
+        {" "}
+        {/* mt-6에서 mt-4로 변경 */}
+        {books.slice(0, 5).map((_, index) => (
+          <button
             key={index}
-            index={index}
-            isActive={index === current}
+            className={`h-2 w-2 rounded-full mx-1 ${current === index ? "bg-blue-500" : "bg-gray-300"}`}
             onClick={() => api?.scrollTo(index)}
+            aria-label={`슬라이드 ${index + 1}로 이동`}
           />
         ))}
       </div>
