@@ -1,47 +1,27 @@
 "use client";
 
 import { useRouter, useParams, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/custom/TabGreen";
 import BookShelf from "../../components/BookShelf";
 import StoryShelf from "../../components/StoryShelf";
-import { getSessionInfo, UserInfo } from "@/lib/api/user";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function BookList() {
-  const [myNickname, setMyNickname] = useState<string | null>(null);
-  const [mySession, setMySession] = useState<UserInfo | null>(null);
-  const { userNickname } = useParams();
-  const targetNickname = userNickname && !Array.isArray(userNickname) ? decodeURIComponent(userNickname) : myNickname;
+  const { isAuthenticated, userNickname } = useAuth(true);
+  const { userNickname: urlNickname } = useParams();
   const searchParams = useSearchParams();
   const tab = searchParams?.get("tab") || "books";
   const router = useRouter();
 
-  // Fetch session info and set myNickname
-  useEffect(() => {
-    const fetchSessionInfo = async () => {
-      try {
-        const session = await getSessionInfo();
-        setMySession(session);
-      } catch (error) {
-        console.error("Failed to fetch user session:", error);
-      }
-    };
-
-    fetchSessionInfo();
-  }, []);
-
-  useEffect(() => {
-    if (mySession && mySession.userNickname) {
-      setMyNickname(mySession.userNickname);
-    }
-  }, [mySession]);
+  const targetNickname =
+    urlNickname && !Array.isArray(urlNickname) ? decodeURIComponent(urlNickname) : userNickname;
 
   const handleBack = () => {
     router.back();
   };
 
-  if (!myNickname || !targetNickname) {
+  if (!isAuthenticated || !userNickname || !targetNickname) {
     return (
       <div className="flex justify-center items-center h-screen">
         <p className="text-gray-500">로딩 중...</p>
@@ -49,7 +29,7 @@ export default function BookList() {
     );
   }
 
-  const isMine = myNickname === targetNickname;
+  const isMine = userNickname === targetNickname;
 
   return (
     <div className="relative flex flex-col items-center w-full p-4">

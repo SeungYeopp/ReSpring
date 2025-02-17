@@ -1,17 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getAllBooksByUserId } from "@/lib/api/book";
+import { getAllBooksByUserNickname } from "@/lib/api/book";
 import Link from "next/link";
 
 const StatSummary: React.FC<{ userNickname: string, challengeCount: number }> = ({ userNickname: userId, challengeCount: challengeCount }) => {
   const [bookCount, setBookCount] = useState<number | null>(null);
+  const [totalLikes, setTotalLikes] = useState<number>(0);
 
   useEffect(() => {
     const fetchBookCount = async () => {
       try {
-        const books = await getAllBooksByUserId(userId);
+        const books = await getAllBooksByUserNickname(userId);
         setBookCount(books.length);
+        const total = books.reduce((sum, book) => sum + book.likeCount, 0);
+        setTotalLikes(total);
       } catch (error) {
         console.error("Failed to fetch book count:", error);
       }
@@ -23,7 +26,7 @@ const StatSummary: React.FC<{ userNickname: string, challengeCount: number }> = 
   return (
     <main className="flex flex-col items-center">
       <div className="grid grid-cols-3 grid-rows-2 pt-6 gap-2 w-[90%]">
-        <div className="h-[30px] flex items-bottom justify-center text-3xl font-bold">12</div>
+        <div className="h-[30px] flex items-bottom justify-center text-3xl font-bold">{totalLikes}</div>
         <Link href={`/yesterday/booklist/${userId}`} className="h-[30px] flex items-bottom justify-center text-3xl font-bold text-blue-500 hover:underline">
           {bookCount !== null ? bookCount : "..."}
         </Link>

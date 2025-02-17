@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { NavigationItemProps } from "./types";
-import { Sprout, MessageCircle, Bell, HelpCircle, Pencil, MessageSquare, Target, User } from "lucide-react";
+import { Sprout, MessageCircle, Bell, HelpCircle, Pencil, MessageSquare, Target, User, Bean, Flower2, LogOut } from "lucide-react";
 
 // 아이콘 맵 정의
 const IconMap = {
@@ -16,6 +16,9 @@ const IconMap = {
   MessageSquare,
   Target,
   User,
+  Bean,
+  Flower2,
+  LogOut,
 };
 
 export function NavigationItem({
@@ -27,6 +30,7 @@ export function NavigationItem({
   isLogo = false,
   isBottomNav = false, // 바텀네비 여부
   isTopNav = false, // 상단 네비 여부
+  onClick,
 }: NavigationItemProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
@@ -38,8 +42,9 @@ export function NavigationItem({
   }
 
   return (
-    <Link
+    <a
       href={href}
+      onClick={onClick ? (e) => onClick(e) : undefined}
       className={cn(
         "flex items-center transition-colors",
         isBottomNav
@@ -93,6 +98,6 @@ export function NavigationItem({
           {label}
         </span>
       )}
-    </Link>
+    </a>
   );
 }

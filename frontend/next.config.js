@@ -9,7 +9,7 @@ const nextConfig = {
     return [
       {
         source: "/", // 기존 메인 페이지
-        destination: "/today", // 이동할 경로
+        destination: "/main", // 이동할 경로
         permanent: true, // 301 영구 리다이렉트
       },
     ];

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { BookOpen, Clock } from "lucide-react";
 import type {CarouselIndicatorProps } from "../../types/maintypes";
 
-import {getTopThreeWeeklyBooks, getAllBooksByUserId, BookFull, Book} from "@/lib/api"
+import {getTopThreeWeeklyBooks, getAllBooksByUserNickname, BookFull, Book} from "@/lib/api"
 import {getAllSubscribers} from "@/lib/api/subscribe"
 import { useRouter } from "next/navigation";
 
@@ -28,7 +28,7 @@ export default function TopCarousel() {
         const subscriberNicknames = subscribersResult.map((subbedUser) => subbedUser.userNickname);
         const randomSubscribers = getRandomSubscribers(subscriberNicknames, 1); // 구독한 사람 랜덤 한 명 뽑기.
 
-        const subscriberBooks = await getAllBooksByUserId(randomSubscribers[0]);
+        const subscriberBooks = await getAllBooksByUserNickname(randomSubscribers[0]);
 
         setSubscriberBooks(subscriberBooks);
       }catch(error){

@@ -6,7 +6,7 @@ import { ArrowLeft, LogOut, UserPlus, UserMinus } from "lucide-react";
 import StatSummary from "../components/stat-summary";
 import TabBar from "../components/tabbar";
 import { isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
-import { fetchParticipatedChallenges } from "@/lib/api";
+import { fetchParticipatedChallenges, getUserInfoByNickname } from "@/lib/api";
 import SubscribersModal from "../components/subscribers";
 import { logout } from "@/lib/api";
 import { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
@@ -19,6 +19,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const { userNickname } = useParams();
   const targetNickname = Array.isArray(userNickname) ? userNickname[0] : userNickname;
+  const [profilePic, setProfilePic] = useState<string | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<string | null>(null);
   const [isSubscribedState, setIsSubscribedState] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,6 +86,22 @@ export default function ProfilePage() {
     fetchChallenges();
   }, [targetNickname]);
 
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userInfo = await getUserInfoByNickname(decodeURI(targetNickname));
+        setProfilePic(userInfo.profileImageUrl || "/placeholder_profilepic.png"); // Fallback image
+      } catch (err) {
+        console.error("Error fetching user info:", err);
+        setProfilePic("/placeholder_profilepic.png"); // Use default image if there's an error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, [targetNickname]);
+
   return (
     <main className="relative -mt-4">
       <button onClick={handleBack} className="absolute top-6 left-6 p-2 text-xl text-gray-600 hover:text-gray-800 z-0">
@@ -98,8 +115,8 @@ export default function ProfilePage() {
       <div className="relative flex flex-col md:flex-row gap-4 pt-4 z-10">
         <div className="flex flex-col md:flex-[0.7] gap-4">
           <div className="flex justify-center items-center h-auto -mt-20 md:-mt-24">
-            <div className="w-[125px] h-[125px] md:w-[160px] md:h-[160px] rounded-full bg-white flex justify-center items-center">
-              <img src="/placeholder_profilepic.png" alt="User Profile" className="w-[120px] md:w-[150px] rounded-full object-cover drop-shadow-lg" />
+            <div className="w-[125px] h-[125px] md:w-[155px] md:h-[155px] rounded-full bg-white flex justify-center items-center overflow-hidden">
+              <img src={profilePic || "/placeholder_profilepic.png"} alt="User Profile" className="w-[120px] md:w-[150px] h-[120px] md:h-[150px] rounded-full object-cover" />
             </div>
           </div>
 
