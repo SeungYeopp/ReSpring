@@ -408,7 +408,9 @@ export default function CreateBook() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">태그 입력</label>
-                <div className="flex flex-wrap gap-2 p-2 border rounded-md">
+                
+                {/* 태그 리스트 */}
+                <div className="flex flex-wrap gap-2 mb-2">
                   {bookTags.map((tag, index) => (
                     <Badge key={index} variant="secondary" className="text-sm bg-brand-light text-white">
                       {tag}
@@ -421,16 +423,19 @@ export default function CreateBook() {
                       </button>
                     </Badge>
                   ))}
-                  <Input
-                    type="text"
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={handleTagKeyDown}
-                    className="flex-1 border-none"
-                    placeholder="태그 입력 후 Enter"
-                  />
                 </div>
+
+                {/* 입력 필드 */}
+                <Input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  className="w-full p-2 border rounded-md"
+                  placeholder="태그 입력 후 Enter"
+                />
               </div>
+
 
               <Accordion type="multiple" className="w-full space-y-2">
                 {compiledBook?.chapters.map((chapter, index) => (
