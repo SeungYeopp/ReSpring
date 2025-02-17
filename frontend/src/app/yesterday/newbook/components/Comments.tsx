@@ -1,8 +1,7 @@
 "use client"
 
-import React from "react"
-
-import { useEffect, useState, useCallback } from "react"
+import React, { useEffect, useState, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { formatDistanceToNowStrict } from "date-fns"
 import { ko } from "date-fns/locale"
 import { motion, AnimatePresence } from "framer-motion"
@@ -13,6 +12,7 @@ import { createNewBookComment, deleteBookComment, getCommentsByBookId, type User
 import { getUserInfo } from "@/lib/api"
 
 export default function Comments({ bookId }: { bookId: number }) {
+  const router = useRouter()
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState("")
   const [isLoading, setIsLoading] = useState(true)
@@ -74,17 +74,28 @@ export default function Comments({ bookId }: { bookId: number }) {
     }
   }
 
+  const handleOnClickProfile = (userNickname: string) => {
+    router.push(`/profile/${userNickname}`)
+  }
+
   const CommentItem = React.memo(({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) => (
     <div
       className={`flex gap-3 ${isReply ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4' : ""}`}
     >
-      <Avatar className="h-8 w-8 flex-shrink-0">
+      {/* 프로필 이미지 클릭 시 이동 */}
+      <Avatar className="h-8 w-8 flex-shrink-0 cursor-pointer" onClick={() => handleOnClickProfile(comment.userNickname)}>
         <AvatarImage src={comment.profileImg} alt={comment.userNickname} />
         <AvatarFallback>{comment.userNickname[0]}</AvatarFallback>
       </Avatar>
       <div className="flex-1">
         <div className="flex items-baseline gap-1">
-          <span className="text-sm font-semibold">{comment.userNickname}</span>
+          {/* 닉네임 클릭 시 이동 */}
+          <span 
+            className="text-sm font-semibold cursor-pointer hover:underline"
+            onClick={() => handleOnClickProfile(comment.userNickname)}
+          >
+            {comment.userNickname}
+          </span>
           <time className="text-xs text-gray-500">
             {formatDistanceToNowStrict(new Date(comment.createdAt), {
               locale: ko,
@@ -146,4 +157,3 @@ export default function Comments({ bookId }: { bookId: number }) {
     </div>
   )
 }
-
