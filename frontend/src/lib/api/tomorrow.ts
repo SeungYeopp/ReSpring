@@ -41,12 +41,13 @@ export const getChallengeDetail = async (
     const response = await axiosAPI.get(
       `${BASE_URL}/challenges/${challengeId}`
     );
-    return response.data;
+    return response.data; // 새 필드들이 포함된 응답 데이터를 그대로 반환
   } catch (error) {
     console.error("챌린지 상세 조회 실패:", error);
     throw new Error("챌린지 상세 조회 실패");
   }
 };
+
 
 /**
  * 📌 3. 챌린지 상태별 조회 (UPCOMING, ONGOING, COMPLETED)
