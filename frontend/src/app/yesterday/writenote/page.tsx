@@ -91,7 +91,7 @@ export default function WriteStoryPage() {
           setStage("editor");
         } else {
           const newStoryId = await makeStory(title, content, selected!, images);
-          router.push(`/stories/${newStoryId}`);
+          router.push(`/yesterday/create-book`);
         }
       }
     } catch (error) {
