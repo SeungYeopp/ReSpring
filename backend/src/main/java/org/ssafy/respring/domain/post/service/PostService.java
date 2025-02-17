@@ -96,10 +96,10 @@ public class PostService {
             isUpdated = true;
         }
 
-        // ✅ 기존 이미지 삭제
-        List<Long> deleteImageIds = requestDto.getDeleteImageIds();
+        // ✅ 삭제할 이미지 리스트 확인 후 삭제 실행 (S3 Key 기반)
+        List<String> deleteImageIds = requestDto.getDeleteImageIds();
         if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-            imageService.deleteImages(ImageType.POST, postId);
+            imageService.deleteImagesByEntityAndS3Key(ImageType.POST, postId, deleteImageIds);
         }
 
         // ✅ 새로운 이미지 추가
