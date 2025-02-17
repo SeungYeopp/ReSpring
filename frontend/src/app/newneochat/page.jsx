@@ -39,6 +39,7 @@ const Chat1 = () => {
   /* ✅ 로그인 사용자 정보 */
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userNickname, setUserNickname] = useState("");
+  const currentRoomRef = useRef(null);
 
   useEffect(() => {
     const fetchUserSession = async () => {
@@ -103,8 +104,16 @@ const Chat1 = () => {
         console.log(
           `🚀 Leaving room ${currentRoom.id}. Updating last seen time...`
         );
+
+        // ✅ 🔹 Redis에서 사용자 퇴장 처리
         await fetch(
-          `http://localhost:8080/chat/last-seen?roomId=${currentRoom.id}&userId=${currentUserId}`,
+          `${SERVER_URL}/room/leave?roomId=${currentRoom.id}&userId=${currentUserId}`,
+          {
+            method: "POST",
+          }
+        );
+        await fetch(
+          `${SERVER_URL}/last-seen?roomId=${currentRoom.id}&userId=${currentUserId}`,
           {
             method: "POST",
           }
@@ -118,6 +127,41 @@ const Chat1 = () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [currentRoom]);
+
+  useEffect(() => {
+    // currentRoom이 바뀔 때마다 ref를 최신으로 갱신
+    currentRoomRef.current = currentRoom;
+  }, [currentRoom]);
+
+  // 컴포넌트가 언마운트되거나 페이지 이동될 때 실행
+  useEffect(() => {
+    return () => {
+      // unmount 시점에 마지막에 설정된 currentRoomRef.current를 사용
+      if (currentRoomRef.current) {
+        const roomId = currentRoomRef.current.id;
+        console.log("🚪 [Cleanup] leaving room on unmount:", roomId);
+
+        // 1) REST 호출
+        fetch(
+          `${SERVER_URL}/room/leave?roomId=${roomId}&userId=${currentUserId}`,
+          {
+            method: "POST",
+          }
+        ).catch(console.error);
+
+        // 2) STOMP 호출
+        stompClient.send(
+          "/app/chat.leaveRoom",
+          {},
+          JSON.stringify({
+            roomId,
+            userIds: [currentUserId],
+            is_active: false,
+          })
+        );
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!socket || !currentRoom) return;
@@ -270,6 +314,36 @@ const Chat1 = () => {
     setIsStreaming(true); // ✅ 스트리밍 상태 ON
   };
 
+  const handleRoomClick = async (newRoom) => {
+    // 1) 만약 이미 접속 중인 방(currentRoom)이 있고, 그 방과 다른 방이면 leaveRoom API 호출
+    if (currentRoom && currentRoom.id !== newRoom.roomId) {
+      try {
+        // 1-1) REST로 퇴장 처리
+        await fetch(
+          `${SERVER_URL}/room/leave?roomId=${currentRoom.id}&userId=${currentUserId}`,
+          { method: "POST" }
+        );
+
+        // 1-2) STOMP send 로직이 있다면 여기서도 처리
+        stompClient.send(
+          "/app/chat.leaveRoom",
+          {},
+          JSON.stringify({
+            roomId: currentRoom.id,
+            userIds: [currentUserId],
+            is_active: false,
+          })
+        );
+        console.log(`✅ Left previous room: ${currentRoom.id}`);
+      } catch (err) {
+        console.error("❌ Failed to leave previous room:", err);
+      }
+    }
+
+    // 2) 이제 새로운 방으로 이동
+    fetchMessagesAndConnect(newRoom.roomId, newRoom.name, newRoom.isOpenChat);
+  };
+
   const stopVideoStreaming = () => {
     console.log("📴 Stopping video stream...");
 
@@ -307,6 +381,12 @@ const Chat1 = () => {
     setIsActive(true);
 
     try {
+      await fetch(
+        `${SERVER_URL}/room/join?roomId=${roomId}&userId=${currentUserId}`,
+        {
+          method: "POST",
+        }
+      );
       // ✅ 1️⃣ 채팅 메시지 불러오기
       const response = await fetch(
         `http://localhost:8080/chat/messages/${roomId}`
@@ -597,16 +677,7 @@ const Chat1 = () => {
           <h3>My Chat Rooms</h3>
           <ul>
             {myRooms.map((room) => (
-              <li
-                key={room.roomId}
-                onClick={() =>
-                  fetchMessagesAndConnect(
-                    room.roomId,
-                    room.name,
-                    room.isOpenChat
-                  )
-                }
-              >
+              <li key={room.roomId} onClick={() => handleRoomClick(room)}>
                 {room.name}
               </li>
             ))}
