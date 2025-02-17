@@ -16,7 +16,7 @@ const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
 
   const fetchEvents = async () => {
     try {
-      const events = await getAllEvents(userNickname);
+      const events = await getAllEvents();
       const formattedEvents = events.map(event => ({
         id: event.id,
         eventName: event.eventName,
