@@ -29,4 +29,8 @@ public class ChallengeDetailResponseDto {
     private String ownerNickname;
     private String ownerProfileImage;
     private Object records;
+
+    // ====== 새로 추가할 필드 ====== //
+    private boolean isParticipating;  // 사용자가 이 챌린지에 참가 중인지 여부
+    private boolean isLiked;          // 사용자가 이 챌린지를 좋아하는지 여부
 }

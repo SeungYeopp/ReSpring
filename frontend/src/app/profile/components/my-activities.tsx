@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { Comment, Post, UserInfo } from "@/lib/api";
-import { getPostsByUserId, getCommentsByUserId, getSessionInfo } from "@/lib/api/";
+import { getPostsByUserId, getCommentsIWrote, getSessionInfo } from "@/lib/api/";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/custom/TabGreen";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -34,7 +34,7 @@ export default function CommunityPosts({ userNickname }: { userNickname: string 
 
   const fetchComments = async () => {
     setIsLoading(true);
-    const allComments = await getCommentsByUserId(userNickname);
+    const allComments = await getCommentsIWrote();
     setComments(allComments);
     setIsLoading(false);
   };
@@ -107,10 +107,10 @@ function PostList({ posts }: { posts: Post[] }) {
         <Link key={post.id} href={`/today/${post.id}`} passHref>
           <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
             <CardContent className="p-4">
-              <div className="flex justify-between items-center my-2">
+              <div className="flex justify-between items-center">
                 <div className="flex-1 text-left">
-                  <h3 className="text-sm font-semibold truncate">{post.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                  <h3 className="text-sm font-semibold truncate text-gray-800">{post.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2 text-gray-500">
                     {post.content}
                   </p>
                 </div>
@@ -131,30 +131,39 @@ function PostList({ posts }: { posts: Post[] }) {
 
 function CommentList({ comments }: { comments: Comment[] }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {comments.length === 0 ? (
         <p className="text-center text-gray-500 mt-4">작성한 댓글이 없습니다.</p>
       ) : (
-        comments.map((comment) => (
-          <Link key={comment.id} href={`/today/${comment.postId}`} passHref>
-            <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center my-2">
-                  <div className="flex-1 text-left">
-                    <p className="text-sm font-semibold truncate">
-                      {comment.content}
-                    </p>
+        comments.map((comment) => {
+          const isPost = !!comment.postId;
+          const link = isPost ? `/today/${comment.postId}` : `/yesterday/newbook/${comment.bookId}`;
+          const title = isPost ? comment.postTitle : comment.bookTitle;
+          
+          return (
+            <Link key={comment.id} href={link} passHref>
+              <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer mt-3"> 
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex flex-col space-y-1 flex-1">
+                      <p className="text-sm text-gray-800">{comment.content}</p>
+                      <p className="text-xs text-gray-500">{title}</p>
+                    </div>
+
+                    <div className="flex flex-col items-end text-xs text-muted-foreground">
+                      <p>{formatDistanceToNowStrict(new Date(comment.updatedAt), { addSuffix: true, locale: ko })}</p>
+                      {isPost && comment.likeCount !== undefined && (
+                        <p className="flex items-center gap-1 text-gray-600 mt-1">
+                          👍 {comment.likeCount}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex flex-col ml-4 items-end text-right">
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {formatDistanceToNowStrict(new Date(comment.updatedAt), { addSuffix: true, locale: ko })}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })
       )}
     </div>
   );

@@ -218,7 +218,7 @@ public class BookService {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다!"));
 
-		String authorProfileImage = imageService.generatePresignedUrl(user.getProfileImage());
+		String authorProfileImage = imageService.generatePresignedUrl(book.getAuthor().getProfileImage());
 
 		// ✅ 댓글 조회
 		List<CommentDto> comments = commentService.getCommentsByBookId(bookId);

@@ -83,102 +83,152 @@
 //   );
 // }
 
-import React from "react";
-import Link from "next/link";
-import { Bean, Sprout, Flower2 } from "lucide-react"
+'use client';
+
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { Bean, Sprout, Flower2, Pencil, BookOpen, LogOut } from "lucide-react"
+import { logout, getSessionInfo } from "@/lib/api/user"
 
 const Home = () => {
-  const tileLinks = [
-    { 
-      id: 1, 
-      url: "/yesterday", 
-      title: "어제", 
-      content: "당신의 이야기를 자서전으로 만들어보세요.", 
-      bgColor: "bg-red-100", 
-      circleColor: "bg-red-400", // Custom circle color
-      icon: <Bean className="text-white w-8 h-8" />, // Custom icon
-    },
-    { 
-      id: 2, 
-      url: "/today", 
-      title: "오늘", 
-      content: "당신의 궁금증을 해결해보세요.", 
-      bgColor: "bg-green-100", 
-      circleColor: "bg-green-400", // Custom circle color
-      icon: <Sprout className="text-white w-8 h-8" />, // Custom icon
-    },
-    { 
-      id: 3, 
-      url: "/tomorrow", 
-      title: "내일", 
-      content: "당신의 목표를 세워보세요.", 
-      bgColor: "bg-blue-100", 
-      circleColor: "bg-blue-400", // Custom circle color
-      icon: <Flower2 className="text-white w-8 h-8" />, // Custom icon
-    },
-  ];
+  const router = useRouter()
+  const [userNickname, setUserNickname] = useState<string | null>(null)
 
-  const squareTileLinks = [
-    { id: 4, url: "/square1", title: "글조각 작성", content: "글조각을 작성해보세요.", imageUrl: "/placeholder_badge.svg" },
-    { id: 5, url: "/square2", title: "글 구경", content: "구독자의 글을 구경해보세요.", imageUrl: "/placeholder_badge.svg" },
-    { id: 6, url: "/square3", title: "무언가", content: "아힝흥헹", imageUrl: "/placeholder_badge.svg" },
-  ];
+  useEffect(() => {
+    const fetchUserNickname = async () => {
+      try {
+        const session = await getSessionInfo()
+        setUserNickname(session.userNickname)
+      } catch (error) {
+        console.error("Failed to fetch user nickname:", error)
+      }
+    }
+
+    fetchUserNickname()
+  }, [])
+
+  const handleLogout = async () => {
+    try {
+      const success = await logout()
+      if (success) {
+        router.push("/login") // Redirect to login page after logout
+      } else {
+        alert("로그아웃 실패! 다시 시도해주세요.")
+      }
+    } catch (error) {
+      console.error(error)
+      alert("로그아웃 중 오류 발생!")
+    }
+  }
+
+  const tileLinks = [
+    {
+      id: 1,
+      url: "/yesterday",
+      title: "어제",
+      content: "당신의 이야기를 나누어보세요.",
+      bgColor: "bg-red-100",
+      circleColor: "bg-red-400",
+      icon: <Bean className="text-white w-8 h-8" />,
+    },
+    {
+      id: 2,
+      url: "/today",
+      title: "오늘",
+      content: "당신의 궁금증을 해결해보세요.",
+      bgColor: "bg-green-100",
+      circleColor: "bg-green-400",
+      icon: <Sprout className="text-white w-8 h-8" />,
+    },
+    {
+      id: 3,
+      url: "/tomorrow",
+      title: "내일",
+      content: "당신의 목표를 세워보세요.",
+      bgColor: "bg-blue-100",
+      circleColor: "bg-blue-400",
+      icon: <Flower2 className="text-white w-8 h-8" />,
+    },
+  ]
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="md:-pt-12 pb-4">
-        <Sprout className="w-8 h-8 text-[#96b23c]" />
+      <div className="md:-pt-12 pb-8">
+        <Sprout className="w-16 h-16 text-[#96b23c]" />
       </div>
 
-      {/* Vertical Tiles Section */}
+      {/* Rounded Rectangular Links */}
       <div className="w-full max-w-md space-y-4 flex flex-col">
         {tileLinks.map((tile) => (
           <Link key={tile.id} href={tile.url} passHref>
-            <div className={`${tile.bgColor} p-6 rounded-2xl shadow-md cursor-pointer hover:opacity-80 flex items-center max-h-32 overflow-hidden`}>
-              {/* Right part with Circle and Custom Icon */}
+            <div
+              className={`${tile.bgColor} p-6 rounded-2xl shadow-md cursor-pointer hover:opacity-80 flex items-center max-h-32 overflow-hidden`}
+            >
               <div className="w-1/3 -ml-8 -mr-2 flex justify-center items-center">
                 <div className={`w-16 h-16 ${tile.circleColor} rounded-full flex justify-center items-center`}>
-                  {tile.icon} {/* Render the custom icon passed in the tile object */}
+                  {tile.icon}
                 </div>
               </div>
-              {/* Left part for text */}
               <div className="flex flex-col w-2/3">
                 <h2 className="text-xl font-semibold">{tile.title}</h2>
                 <p className="text-gray-600">{tile.content}</p>
               </div>
-
             </div>
           </Link>
         ))}
       </div>
 
-      {/* Square Tiles Section */}
-      <div className="w-full max-w-md mt-8 flex justify-between gap-4">
-        {squareTileLinks.map((tile) => (
-          <Link key={tile.id} href={tile.url} passHref>
-            <div className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full aspect-square flex flex-col">
-              {/* Top part with Image (33%) */}
-              <div className="h-1/3 w-full overflow-hidden flex justify-end">
-                <img
-                  src={tile.imageUrl}
-                  alt={tile.title}
-                  className="h-full object-cover"
-                />
+      {/* Square Tile Links with Icons */}
+      <div className="w-full max-w-md mt-8 grid grid-cols-3 gap-4">
+        {/* 글조각 작성 */}
+        <Link href="/yesterday/writenote" passHref className="block">
+          <div className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full aspect-square flex flex-col items-start justify-between p-4 relative">
+            <div className="absolute top-2 right-2">
+              <Pencil className="text-gray-700 w-6 h-6" />
+            </div>
+            <div className="mt-auto">
+              <h2 className="text-md font-semibold">글조각 작성</h2>
+              <p className="text-xs text-gray-600 mt-1">글조각을 작성해보세요.</p>
+            </div>
+          </div>
+        </Link>
+
+        {/* 서재 보기 */}
+        {userNickname ? (
+          <Link href={`/yesterday/booklist/${userNickname}`} passHref className="block">
+            <div className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full aspect-square flex flex-col items-start justify-between p-4 relative">
+              <div className="absolute top-2 right-2">
+                <BookOpen className="text-gray-700 w-6 h-6" />
               </div>
-              {/* Center part for text (33%) */}
-              <div className="h-1/3 p-4 flex items-start">
-                <h2 className="text-md font-semibold">{tile.title}</h2>
-              </div>
-              {/* Bottom part for text (33%) */}
-              <div className="h-1/3 p-4 -mt-4 flex flex-col justify-start items-start">
-                <p className="text-sm text-gray-600">{tile.content}</p>
+              <div className="mt-auto">
+                <h2 className="text-md font-semibold">서재 보기</h2>
+                <p className="text-xs text-gray-600 mt-1">내가 쓴 글을 확인해보세요.</p>
               </div>
             </div>
           </Link>
-        ))}
+        ) : (
+          <div className="bg-gray-100 rounded-2xl shadow-md w-full aspect-square flex flex-col items-center justify-center p-4">
+            <p className="text-sm text-gray-500">로딩 중...</p>
+          </div>
+        )}
+
+        {/* 로그아웃 */}
+        <button
+          onClick={handleLogout}
+          className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full aspect-square flex flex-col items-start justify-between p-4 relative"
+        >
+          <div className="absolute top-2 right-2">
+            <LogOut className="text-gray-700 w-6 h-6" />
+          </div>
+          <div className="mt-auto text-left">
+            <h2 className="text-md font-semibold">로그아웃</h2>
+            <p className="text-xs text-gray-600 mt-1">휴식도 필요한 법이지요.</p>
+          </div>
+        </button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

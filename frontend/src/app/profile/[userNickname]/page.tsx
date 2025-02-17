@@ -11,6 +11,7 @@ import SubscribersModal from "../components/subscribers";
 import Link from "next/link";
 import { logout } from "@/lib/api";
 import { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
+import BadgeModal from "../components/badge";
 
 export default function ProfilePage() {
   const handleLogout = async () => {
@@ -23,6 +24,7 @@ export default function ProfilePage() {
   const targetNickname = Array.isArray(userNickname) ? userNickname[0] : userNickname;
   const [mySession, setSession] = useState<UserInfo | null>(null);
   const [myNickname, setMyNickname] = useState<string | null>(null);
+  const [selectedBadge, setSelectedBadge] = useState<string | null>(null);
 
   const [isSubscribedState, setIsSubscribedState] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,6 +59,14 @@ export default function ProfilePage() {
     }
   };
 
+  const openBadgeModal = (badge: string) => {
+    setSelectedBadge(badge);
+  };
+  
+  const closeBadgeModal = () => {
+    setSelectedBadge(null);
+  };
+
   useEffect(() => {
     checkIfSubscribed();
   }, [targetNickname]);
@@ -76,7 +86,6 @@ export default function ProfilePage() {
     fetchChallenges();
   }, [targetNickname]);
 
-  // Fetch the session info on mount
   useEffect(() => {
     const fetchMySession = async () => {
       try {
@@ -90,12 +99,11 @@ export default function ProfilePage() {
     fetchMySession();
   }, []);
 
-  // Update myNickname after mySession is set
   useEffect(() => {
     if (mySession && mySession.userNickname) {
       setMyNickname(mySession.userNickname);
     }
-  }, [mySession]); // This will run every time mySession changes
+  }, [mySession]);
 
   return (
     <main className="relative -mt-4">
@@ -133,29 +141,16 @@ export default function ProfilePage() {
           <StatSummary userNickname={targetNickname} challengeCount={challenges.length} />
 
           <div className="flex justify-center items-start text-sm">
-            <div className="flex">
-              <img
-                src="/placeholder_badge.svg"
-                alt="Badge"
-                className="w-[48px]"
-              />
-              <img
-                src="/placeholder_badge.svg"
-                alt="Badge"
-                className="w-[48px]"
-              />
-              <img
-                src="/placeholder_badge.svg"
-                alt="Badge"
-                className="w-[48px]"
-              />
-              <img
-                src="/placeholder_badge.svg"
-                alt="Badge"
-                className="w-[48px]"
-              />
+            <div className="flex gap-x-2">
+              <button onClick={() => openBadgeModal("badge1")}>
+                <img src="/badge1.png" alt="새로 가입" className="h-[48px]" />
+              </button>
+              <button onClick={() => openBadgeModal("badge2")}>
+                <img src="/badge2.png" alt="프로필 작성" className="h-[48px]" />
+              </button>
             </div>
           </div>
+          {selectedBadge && <BadgeModal badge={selectedBadge} onClose={closeBadgeModal} />}
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
             {myNickname && myNickname === decodeURIComponent(targetNickname) ? (
               <button
