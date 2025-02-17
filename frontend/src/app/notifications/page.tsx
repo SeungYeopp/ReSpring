@@ -26,6 +26,9 @@ import NotificationSkeleton from "./components/NotificationSkeleton";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNotificationsContext } from "./context/NotificationsContext";
+import { getSessionInfo } from "@/lib/api";
+
+
 // ------------------------------------------------------------------
 // 타입 선언
 // ------------------------------------------------------------------
@@ -55,9 +58,30 @@ const NotificationPage = () => {
   // ------------------------------------------------------------------
   // API 호출 함수들 (GET, PATCH)
   // ------------------------------------------------------------------
+  // const fetchInitialNotifications = useCallback(async () => {
+  //   try {
+  //     const response = await fetch("http://localhost:8080/notifications", {
+  //       credentials: "include", // 세션 정보를 포함하여 요청
+  //     });
+  //     if (!response.ok) {
+  //       throw new Error("네트워크 응답이 정상이 아닙니다");
+  //     }
+  //     const data: Notification[] = await response.json();
+  //     return data;
+  //   } catch (error) {
+  //     console.error("초기 알림 데이터 GET 요청 에러:", error);
+  //     return [];
+  //   }
+  // }, []);
+
   const fetchInitialNotifications = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8080/notifications", {
+      // 세션 정보에서 userId를 가져옵니다.
+      const userInfo = await getSessionInfo();
+      const userId = userInfo.userId;
+  
+      // userId를 쿼리 파라미터로 전달하여 알림 데이터를 요청합니다.
+      const response = await fetch(`http://localhost:8080/notifications/${userId}`, {
         credentials: "include", // 세션 정보를 포함하여 요청
       });
       if (!response.ok) {
@@ -70,6 +94,7 @@ const NotificationPage = () => {
       return [];
     }
   }, []);
+  
 
   const markNotificationRead = async (notificationId: number) => {
     try {
@@ -133,12 +158,14 @@ const NotificationPage = () => {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         setNotifications(sortedData);
-        setIsInitialLoad(false);
       }
+      // 데이터가 있든 없든 로딩 상태 해제
+      setIsInitialLoad(false);
     };
-
+  
     initFetch();
   }, [fetchInitialNotifications]);
+  
   // ----------------------------------------------------------------
   // 상태 관리
   // ----------------------------------------------------------------
@@ -343,6 +370,7 @@ const NotificationPage = () => {
   // 렌더링 함수
   // ----------------------------------------------------------------
   const renderNotifications = () => {
+    // 로딩 중인 경우
     if (isInitialLoad) {
       return (
         <div className="space-y-4">
@@ -352,16 +380,9 @@ const NotificationPage = () => {
         </div>
       );
     }
-
-    if (notifications.length === 0) {
-      return (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-lg text-gray-600">알림을 불러오는 중...</p>
-        </div>
-      );
-    }
-
-    if (displayedNotifications.length === 0) {
+  
+    // 로딩 완료 후, 알림 데이터가 없는 경우
+    if (!isInitialLoad && notifications.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center h-64 text-gray-400">
           <BellOff className="w-12 h-12 mb-2" />
@@ -369,7 +390,17 @@ const NotificationPage = () => {
         </div>
       );
     }
-
+  
+    // 데이터는 있으나, 현재 필터나 검색으로 표시될 알림이 없는 경우
+    if (displayedNotifications.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+          <p className="text-lg">조건에 맞는 알림이 없습니다</p>
+        </div>
+      );
+    }
+  
+    // 알림 데이터가 있는 경우
     return (
       <div className="space-y-4">
         {displayedNotifications.map((notif) => (
@@ -414,17 +445,14 @@ const NotificationPage = () => {
           </div>
         ))}
         {hasMore && (
-          <div
-            ref={loaderRef}
-            className="flex justify-center items-center h-20"
-          >
+          <div ref={loaderRef} className="flex justify-center items-center h-20">
             {isLoadingMore && <LoadingSpinner />}
           </div>
         )}
       </div>
     );
   };
-
+  
   // ----------------------------------------------------------------
   // 최종 렌더링
   // ----------------------------------------------------------------

@@ -12,7 +12,6 @@ export interface Event{
 
 // 새로운 이벤트를 생성할 때 사용되는 인터페이스.
 export interface EventPostDto{
-    userId: string,
     eventName: string,
     occurredAt: Date,
     category: string,
@@ -22,9 +21,9 @@ export interface EventPostDto{
 // user ID를 기반으로 해당 유저의 모든 이벤트 목록을 반환한다.
 // 입력 : user ID (String)
 // 출력 : Event 배열 (Event[])
-export const getAllEvents = async (userId : string): Promise<Event[]> => {
+export const getAllEvents = async (): Promise<Event[]> => {
     try{
-        const response = await axiosAPI.get(`/events?userId=${userId}`)
+        const response = await axiosAPI.get(`/events`)
         return response.data;
     } catch(error){
         console.error('에러 발생 : ', error);
@@ -48,16 +47,9 @@ export const makeEvent = async (eventPostData : EventPostDto) : Promise<number>=
 // 이벤트를 삭제한다. 이 때 이벤트 id와 유저 id를 받아서 처리한다.
 // 입력 : 이벤트 ID(number), 유저 ID(string)
 // 출력 : 삭제가 제대로 되었는지 여부 boolean
-export const deleteEvent = async (eventId : number, userId : string) : Promise<boolean> => {
+export const deleteEvent = async (eventId : number) : Promise<boolean> => {
     try{
-        const response = await axiosAPI.delete(`/events/${eventId}`,
-            {
-                headers: {
-                    "X-User-Id": userId,
-                    "Accept": "*/*" // 서버로부터 아무 타입의 반환값을 받겠다는 것을 의미한데요.
-                }
-            }
-        )
+        const response = await axiosAPI.delete(`/events/${eventId}`)
 
         if(response.status === 200){
             return true; // 성공 시 true 반환.
@@ -93,9 +85,9 @@ export const updateEvent = async (eventId : number, eventPostData : EventPostDto
 // 어떤 사용자의 타임라인 내 이벤트 목록을 불러옵니다.
 // 입력 : 유저 ID(string)
 // 출력 : 타임라인 내 이벤트 배열(Event[])
-export const getTimelineEvents = async (userId : string) : Promise<Event[]> => {
+export const getTimelineEvents = async (nickname : string) : Promise<Event[]> => {
     try{
-        const response = await axiosAPI.get(`/events/timeline/${userId}`);
+        const response = await axiosAPI.get(`/events/timeline/${nickname}`);
         return response.data;
     }catch(error){
         console.error('getTimeline 에러 발생', error);

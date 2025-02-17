@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useViewerSettings } from "../context/ViewerSettingsContext";
 import { usePageContext } from "../context/PageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
-
+import { usePanelContext } from "../context/usePanelContext";
 interface TableOfContentsProps {
   pages: { body: string[] }[];
   chapters?: { title: string; page: number }[];
 }
 
+// 내용 검색 결과 인터페이스
 interface ContentMatch {
   text: string;
   page: number;
@@ -20,7 +21,7 @@ interface ContentMatch {
 
 export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) {
   const { theme } = useViewerSettings();
-  const { setCurrentPage, setHighlightKeyword } = usePageContext();
+  const { currentPage, totalPages, setCurrentPage, setHighlightKeyword } = usePageContext();
 
   const [isOpen, setIsOpen] = useState(false);
   const [searchType, setSearchType] = useState("chapter"); // ✅ 검색 유형 상태 추가
@@ -29,13 +30,29 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
 
   const ITEMS_PER_PAGE = 10;
 
+  // PanelContext에서 현재 열린 패널의 ID와, 패널을 열기(openPanel) 및 닫기(closePanel) 위한 함수를 가져옵니다.
+  const { currentOpenPanel, openPanel, closePanel } = usePanelContext();
+
+    // // 효과: imageUrls가 변경될 때 콘솔에 출력합니다.
+    // useEffect(() => {
+    //   console.log(imageUrls);
+    // }, [imageUrls]);
+  
+    // 효과: 전역 패널 상태(currentOpenPanel)를 감시하여,
+    // 만약 이 TableOfContents 패널이 열려있는데(currentOpenPanel가 "toc"여야 함),
+    // 다른 패널이 열리면 자동으로 로컬 패널을 닫습니다.
+    useEffect(() => {
+      if (isOpen && currentOpenPanel !== "toc") {
+        setIsOpen(false);
+      }
+    }, [currentOpenPanel, isOpen]);
+
   // ✅ 챕터 검색
   const filteredChapters = useMemo(() => 
     chapters?.filter((chap) => chap.title.toLowerCase().includes(searchTerm.toLowerCase())) || [], 
     [chapters, searchTerm]
   );
 
-  // ✅ 내용 검색
   const contentMatches = useMemo(() => 
     pages.flatMap((page, idx) => 
       page.body.map((bodyText) => ({ text: bodyText, page: idx }))
@@ -43,19 +60,40 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
     [pages, searchTerm]
   );
 
-  // ✅ 패널 열고 닫기
-  const togglePanel = () => {
-    setIsOpen((prev) => {
-      if (prev) setHighlightKeyword(null); // 패널 닫힐 때 강조 해제
-      return !prev;
-    });
-  };
+    /*
+    패널 토글 함수:
+    - 사용자가 버튼을 클릭하면 호출됩니다.
+    - 만약 패널을 열면, 자신의 고유 ID "toc"를 전역 상태에 등록합니다.
+    - 만약 패널을 닫으면, 전역 상태를 해제하고 강조 효과도 초기화합니다.
+  */
 
+    const togglePanel = () => {
+      setIsOpen((prev: boolean) => {
+        const newState = !prev;
+        if (newState) {
+          // 패널이 열리면 자신의 ID "toc"를 전역 상태에 등록합니다.
+          openPanel("toc");
+        } else {
+          // 패널이 닫히면 전역 상태를 해제하고 강조 효과를 초기화합니다.
+          closePanel();
+          setHighlightKeyword(null);
+        }
+        return newState;
+      });
+    };
+
+  /*
+    페이지 이동 함수:
+    - 목표 페이지와 현재 페이지의 차이를 계산하여 setCurrentPage에 전달합니다.
+    - 또한, 검색어(keyword)가 있으면 강조 효과를 설정합니다.
+    - 마지막으로 패널을 닫으며 전역 패널 상태를 해제합니다.
+  */
   // ✅ 페이지 이동 및 키워드 강조
   const goToPage = (targetPage: number, keyword?: string) => {
     setCurrentPage(targetPage);
     setHighlightKeyword(keyword || null);
     setIsOpen(false);
+    closePanel();
   };
 
   // ✅ 현재 페이지네이션 설정
@@ -63,6 +101,7 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
   const totalListPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const startIndex = (currentListPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
+
 
   const paginatedItems = searchType === "chapter" 
     ? filteredChapters.slice(startIndex, endIndex) 
@@ -86,28 +125,25 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
     const lowerSearchTerm = searchTerm.toLowerCase();
     const index = text.toLowerCase().indexOf(lowerSearchTerm);
     if (index === -1) return text.slice(0, maxLength);
-
     const start = Math.max(0, index - 20);
     const end = Math.min(text.length, index + searchTerm.length + 20);
     let preview = text.slice(start, end);
-
     if (start > 0) preview = "..." + preview;
     if (end < text.length) preview = preview + "...";
-
     return preview;
   };
 
   return (
     <>
+      {/* 패널을 열기 위한 버튼 */}
       {/* ✅ 오른쪽 아래 목차 버튼 */}
       <Button variant="ghost" size="icon" onClick={togglePanel}>
         <BookOpen className="h-6 w-6" />
       </Button>
 
-      {/* ✅ 오버레이 (배경을 어둡게 하고 패널이 뷰어 위로 올라오도록 처리) */}
-      {isOpen && <div className="fixed inset-0 bg-black/50 z-40 transition-opacity" onClick={togglePanel} />}
+      {/* 오버레이: 클릭 시 패널 닫힘 */}
+      {isOpen && <div className="fixed inset-0 bg-black/40 transition-opacity" onClick={togglePanel} />}
 
-      {/* ✅ 오른쪽에서 슬라이드되는 목차 패널 */}
       <div
         className={`fixed top-0 right-0 h-full w-[70%] max-w-md p-4 transition-transform duration-300 ease-in-out border-l-2 rounded-l-lg overflow-y-auto z-50
           ${isOpen ? "translate-x-0" : "translate-x-full"}
@@ -115,8 +151,13 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
       >
         <h2 className="text-xl font-bold mb-4">📖 목차 및 검색</h2>
 
-        {/* ✅ 검색 유형 선택 */}
-        <Select value={searchType} onValueChange={(value) => { setSearchType(value); setCurrentListPage(1); }}>
+        <Select
+          value={searchType}
+          onValueChange={(value) => {
+            setSearchType(value);
+            setCurrentListPage(1);
+          }}
+        >
           <SelectTrigger className="w-full mb-2">
             <SelectValue placeholder="검색 유형 선택" />
           </SelectTrigger>
@@ -126,7 +167,6 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
           </SelectContent>
         </Select>
 
-        {/* ✅ 검색 입력창 */}
         <Input
           type="text"
           placeholder={searchType === "chapter" ? "🔍 챕터 제목 검색..." : "🔍 책 내용 검색..."}
@@ -159,6 +199,13 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
             </Button>
           </div>
         )}
+
+        {/* 현재 페이지 정보 표시 */}
+        <div className="mt-4 text-center">
+          <span className="font-semibold">
+            현재 페이지: {currentPage + 1} / {totalPages}
+          </span>
+        </div>
       </div>
     </>
   );

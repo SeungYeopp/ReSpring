@@ -61,6 +61,7 @@ export const convertToContent = (compiledBook: CompiledBook): Content => {
 // 출력 : 봄날의 서
 export const getBookById = async (bookId : number) : Promise<BookFull>=> {
     try{
+        console.log("getBookById 호출!")
         const response = await axiosAPI.get(`/books/${bookId}`);
 
         // Date 형 변환.

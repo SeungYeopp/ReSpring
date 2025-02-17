@@ -41,8 +41,8 @@ const mockBookData: BookFull = {
   liked: false,
 }
 
-export default function TopSection({ bookId }: { bookId: string }) {
-  const [book, setBook] = useState<BookFull | null>(null) // API 데이터 저장
+export default function TopSection({ book }: { book: BookFull }) {
+  //const [book, setBook] = useState<BookFull | null>(null) // API 데이터 저장
   const [isLiked, setIsLiked] = useState(false)
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
@@ -56,27 +56,27 @@ export default function TopSection({ bookId }: { bookId: string }) {
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const bookData = await getBookById(Number(bookId)) // API 호출
-        setBook(bookData)
-        setIsLiked(bookData.liked) // 초기 좋아요 상태 설정
+        // const bookData = await getBookById(Number(bookId)); // API 호출
+        // setBook(bookData);
+        setIsLiked(book.liked);
+        setLikeCount(book.likeCount);
 
-        setLikeCount(bookData.likeCount);
         const myInfo = await getUserInfo();
-        if(myInfo.userNickname === bookData.authorNickname)
-          setIsMyBook(true)
-
+        if (myInfo.userNickname === book.authorNickname) setIsMyBook(true);
       } catch (error) {
-        console.error("책 데이터를 불러오는 중 오류 발생, 목데이터로 대체:", error)
-        setBook(mockBookData) // 요청 실패 시 목데이터 설정
+        console.error("책 데이터를 불러오는 중 오류 발생", error);
+        //setBook(mockBookData);
       }
-    }
-    fetchBook()
-  }, [bookId])
+    };
+
+    fetchBook();
+  }, [book]);
+
 
   const handleImageClick = () => {
     setIsImageExpanded(true)
     setTimeout(() => {
-      window.location.href = `/viewer/${bookId}`
+      window.location.href = `/viewer/${book.id}`
     }, 500)
   }
 
@@ -98,7 +98,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
 
   const handleBookDelete = async () => {
     try{
-      const result = await deleteBook(parseInt(bookId, 10));
+      const result = await deleteBook(book.id);
 
       router.replace('/yesterday');
     }catch(error : any){
@@ -108,7 +108,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
 
   const handleClickLike = async () => {
     try{
-      const result = await likeOrUnlikeBook(parseInt(bookId, 10));
+      const result = await likeOrUnlikeBook(book.id);
 
       if(result === 'Liked'){
         setIsLiked(true);
@@ -196,7 +196,7 @@ export default function TopSection({ bookId }: { bookId: string }) {
         <h1 className="text-2xl font-bold text-center mb-4 mt-6">{book.title}</h1>
 
         <div className="flex flex-wrap justify-center gap-2 mb-4">
-          {book.tags.map((tag) => (
+          {book.tags && book.tags.length > 0 && book.tags.map((tag) => (
             <span key={tag} className="px-3 py-1 bg-white/20 text-white rounded-full text-sm">
               {tag}
             </span>

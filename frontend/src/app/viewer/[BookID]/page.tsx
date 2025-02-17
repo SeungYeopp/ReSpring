@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { PageProvider } from "./context/PageContext";
-import { ViewerSettingsProvider } from "./context/ViewerSettingsContext";
+import { ViewerSettingsProvider, useViewerSettings } from "./context/ViewerSettingsContext";
+import { PanelProvider } from "./context/usePanelContext"; // 패널 Provider 임포트
 import { TopToolbar } from "./components/Toolbar/TopToolbar";
 import { BottomToolbar } from "./components/Toolbar/BottomToolbar";
 import { Reader } from "./components/Reader";
-import { useViewerSettings } from "./context/ViewerSettingsContext";
 import { usePageControls } from "./hooks/usePageControls"; // ✅ 페이지 이동 관련 훅
 import { useBookData } from "./hooks/useBookData"; // ✅ API 호출 훅 추가
 import { Content } from "@/lib/api";
 import LoadingScreen from "@/components/custom/LoadingScreen";
+
 interface ViewerPageProps {
   params: {
     BookID: string;
@@ -32,8 +33,16 @@ export default function ViewerPage({ params }: ViewerPageProps) {
   return (
     <PageProvider initialTotalPages={totalPages}>
       <ViewerSettingsProvider>
-        <MainLayout BookID={BookID} bookContent={bookContent ?? defaultContent} isLoading={isLoading} BookTitle={bookTitle ?? defaultTitle} imageUrls={imageUrls ?? []} />
-        {/* <MainLayout BookID={BookID} bookContent={bookContent} isLoading={isLoading} BookTitle={bookTitle!} BookChapters={bookChapters!} plainBookContent={plainBookContent!}/> */}
+        {/* 여기서 PanelProvider로 감싸서 페이지 내에서만 패널 상태 관리 */}
+        <PanelProvider>
+          <MainLayout
+            BookID={BookID}
+            bookContent={bookContent ?? defaultContent}
+            isLoading={isLoading}
+            BookTitle={bookTitle ?? defaultTitle}
+            imageUrls={imageUrls ?? []}
+          />
+        </PanelProvider>
       </ViewerSettingsProvider>
     </PageProvider>
   );
@@ -42,6 +51,7 @@ export default function ViewerPage({ params }: ViewerPageProps) {
 /** ✅ 메인 레이아웃 */
 //function MainLayout({ BookID, bookContent, isLoading, BookTitle, BookChapters, plainBookContent }: { BookID: string; bookContent: string; isLoading: boolean, BookTitle : string, BookChapters : Chapter[], plainBookContent : string }) {
 function MainLayout({ BookID, bookContent, isLoading, BookTitle, imageUrls }: { BookID: string; bookContent: Content; isLoading: boolean; BookTitle: string; imageUrls: string[] }) {
+  // 페이지 이동 및 툴바 토글 관련 훅이 내부에서 PanelContext를 사용하게 됨
   usePageControls();
   const { theme } = useViewerSettings();
 

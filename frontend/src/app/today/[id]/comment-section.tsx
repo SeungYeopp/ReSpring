@@ -1,113 +1,156 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns";
-import { ko } from "date-fns/locale";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/hooks/tempUseAuth";
-import { Loader2 } from "lucide-react";
+import type React from "react"
 
-import { Comment, getCommentsByPostId, getChildrenComments, createNewCommunityComment, createNewCommunityChildComment } from "@/lib/api";
+import { useEffect, useState } from "react"
+import { formatDistanceToNowStrict } from "date-fns"
+import { ko } from "date-fns/locale"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { useAuth } from "@/lib/hooks/tempUseAuth"
+import { Loader2 } from "lucide-react"
+
+import {
+  type Comment,
+  getCommentsByPostId,
+  getChildrenComments,
+  createNewCommunityComment,
+  createNewCommunityChildComment,
+  checkIfUserLikedComment,
+  likeComment,
+} from "@/lib/api"
 
 interface CommentSectionProps {
-  postId: number;
-  userId: string;
+  postId: number
+  userId: string
 }
 
 interface CommentWithReplies extends Comment {
-  replies?: Comment[];
+  replies?: Comment[]
 }
 
 /** ✅ 랜덤 프로필 이미지 생성 함수 */
 const getRandomImage = () => {
-  const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
-  return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
-};
+  const imageNumber = Math.floor(Math.random() * 9) + 1 // 1~9 숫자 랜덤 선택
+  return `/corgis/placeholder${imageNumber}.jpg` // public 폴더 내 이미지 경로
+}
 
 export function CommentSection({ postId, userId }: CommentSectionProps) {
-  const [comments, setComments] = useState<CommentWithReplies[]>([]);
-  const [newComment, setNewComment] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [replyTo, setReplyTo] = useState<{ id: number; username: string } | null>(null);
-  const { login } = useAuth();
-  const [hasMore, setHasMore] = useState(true);
-  const [commentCount, setCommentCount] = useState(0); // ✅ 내부 상태 관리
+  const [comments, setComments] = useState<CommentWithReplies[]>([])
+  const [newComment, setNewComment] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [replyTo, setReplyTo] = useState<{ id: number; username: string } | null>(null)
+  const { login } = useAuth()
+  const [hasMore, setHasMore] = useState(true)
+  const [commentCount, setCommentCount] = useState(0) // ✅ 내부 상태 관리
+  const [likedComments, setLikedComments] = useState<Set<number>>(new Set())
 
   useEffect(() => {
-    loadComments();
+    loadComments()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [postId]);
+  }, [postId])
 
   // ✅ 댓글 개수가 변경될 때 내부 상태 업데이트
   useEffect(() => {
-    setCommentCount(comments.length);
-  }, [comments.length]);
+    setCommentCount(comments.length)
+  }, [comments.length])
 
   async function loadComments() {
-    if (isLoading || !hasMore) return;
-    setIsLoading(true);
+    if (isLoading || !hasMore) return
+    setIsLoading(true)
     try {
-      const parentComments = await getCommentsByPostId(postId);
-      const newParentsComments = parentComments.filter((comment) => (!comment.parentId))
+      const parentComments = await getCommentsByPostId(postId)
+      const newParentsComments = parentComments.filter((comment) => !comment.parentId)
 
       const commentsWithReplies = await Promise.all(
-        newParentsComments.map(async (comment) => {
-          const replies = await getChildrenComments(comment.id);
+        newParentsComments.map(async (parentComment) => {
+          const replies = parentComments.filter((comment) => comment.parentId === parentComment.id)
+          //const replies = await getChildrenComments(comment.id);
           return {
-            ...comment,
+            ...parentComment,
             replies,
-          };
-        })
-      );
-      setComments(commentsWithReplies);
-      setHasMore(commentsWithReplies.length > 0);
+          }
+        }),
+      )
+      // console.log("commentsWithReplies", commentsWithReplies)
+      setComments(commentsWithReplies)
+      setHasMore(commentsWithReplies.length > 0)
+      setLikedComments(new Set()) // Reset liked comments state
     } catch (error) {
-      console.error("댓글을 불러오는데 실패했습니다:", error);
+      console.error("댓글을 불러오는데 실패했습니다:", error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newComment.trim() || isLoading) return;
+    e.preventDefault()
+    if (!newComment.trim() || isLoading) return
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       if (replyTo) {
         const comment = await createNewCommunityChildComment(postId, newComment, replyTo.id)
       } else {
-        const comment = await createNewCommunityComment(postId, newComment);
+        const comment = await createNewCommunityComment(postId, newComment)
       }
-      const parentComments = await getCommentsByPostId(postId);
-      const newParentsComments = parentComments.filter((comment) => (!comment.parentId))
+      const parentComments = await getCommentsByPostId(postId)
+      const newParentsComments = parentComments.filter((comment) => !comment.parentId)
 
       const commentsWithReplies = await Promise.all(
         newParentsComments.map(async (comment) => {
-          const replies = await getChildrenComments(comment.id);
+          const replies = await getChildrenComments(comment.id)
           return {
             ...comment,
             replies,
-          };
-        })
-      );
-      setComments(commentsWithReplies);
-      setHasMore(commentsWithReplies.length > 0);
+          }
+        }),
+      )
+      setComments(commentsWithReplies)
+      setHasMore(commentsWithReplies.length > 0)
 
-      setNewComment("");
-      setReplyTo(null);
+      setNewComment("")
+      setReplyTo(null)
+
+      loadComments()
     } catch (error) {
-      console.error("댓글 작성에 실패했습니다:", error);
+      console.error("댓글 작성에 실패했습니다:", error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
   // ✅ 개별 댓글 렌더링 컴포넌트
   function CommentItem({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) {
+    const [isLiked, setIsLiked] = useState(false)
+    const [likeCount, setLikeCount] = useState(comment.likeCount || 0)
+
+    useEffect(() => {
+      async function checkLikeStatus() {
+        try {
+          const liked = await checkIfUserLikedComment(comment.id)
+          setIsLiked(liked)
+        } catch (error) {
+          console.error("Failed to check like status:", error)
+        }
+      }
+      checkLikeStatus()
+    }, [comment.id])
+
+    const handleLike = async () => {
+      try {
+        const liked = await likeComment(comment.id)
+        setIsLiked(liked)
+        setLikeCount((prev) => (liked ? prev + 1 : prev - 1))
+      } catch (error) {
+        console.error("Failed to like/unlike comment:", error)
+      }
+    }
+
     return (
-      <div className={`flex gap-3 ${isReply ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4' : ""}`}>
+      <div
+        className={`flex gap-3 ${isReply ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4' : ""}`}
+      >
         <Avatar className="h-7 w-7 flex-shrink-0">
           <AvatarImage src={comment.profileImg} alt={comment.userNickname} />
           <AvatarFallback>{comment.userNickname}</AvatarFallback>
@@ -127,27 +170,27 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
             {!isReply && (
               <button
                 onClick={() => {
-                  setReplyTo({ id: comment.id, username: comment.userNickname });
-                  setNewComment(`@${comment.userNickname} `);
+                  setReplyTo({ id: comment.id, username: comment.userNickname })
+                  setNewComment(`@${comment.userNickname} `)
                 }}
                 className="hover:text-gray-700"
               >
                 답글달기
               </button>
             )}
-            <button className="hover:text-gray-700">좋아요</button>
+            <button onClick={handleLike} className={`hover:text-gray-700 ${isLiked ? "text-blue-500" : ""}`}>
+              좋아요 {likeCount > 0 && `(${likeCount})`}
+            </button>
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="relative">
       {/* 댓글 개수 표시 */}
-      <div className="text-sm text-gray-600 font-medium mb-4">
-        총 {commentCount}개의 댓글
-      </div>
+      <div className="text-sm text-gray-600 font-medium mb-4">총 {commentCount}개의 댓글</div>
 
       {/* 댓글 목록 */}
       <div className="space-y-6">
@@ -184,8 +227,8 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    setReplyTo(null);
-                    setNewComment("");
+                    setReplyTo(null)
+                    setNewComment("")
                   }}
                   className="text-sm text-gray-500 hover:text-gray-700"
                 >
@@ -201,7 +244,12 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
                 onChange={(e) => setNewComment(e.target.value)}
                 className="flex-1 bg-gray-100 rounded-full px-3 py-1.5 text-sm"
               />
-              <Button type="submit" disabled={isLoading || !newComment.trim()} className="rounded-full text-sm h-8 px-3" size="sm">
+              <Button
+                type="submit"
+                disabled={isLoading || !newComment.trim()}
+                className="rounded-full text-sm h-8 px-3"
+                size="sm"
+              >
                 {isLoading ? "작성 중..." : "작성"}
               </Button>
             </div>
@@ -216,5 +264,6 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
         )}
       </div>
     </div>
-  );
+  )
 }
+

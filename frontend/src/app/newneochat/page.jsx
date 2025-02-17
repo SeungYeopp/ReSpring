@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
@@ -39,6 +39,7 @@ const Chat1 = () => {
   /* ✅ 로그인 사용자 정보 */
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userNickname, setUserNickname] = useState("");
+  const currentRoomRef = useRef(null);
 
   useEffect(() => {
     const fetchUserSession = async () => {
@@ -55,17 +56,19 @@ const Chat1 = () => {
         console.log("✅ 로그인한 사용자:", data.userNickname);
       } catch (error) {
         console.error("❌ 사용자 정보를 가져오는 데 실패했습니다:", error);
-        setCurrentUserId(null); // ✅ 로그아웃 상태 설정
+        setCurrentUserId(null);
       }
     };
 
     fetchUserSession();
-  }, []);
+  }, [currentUserId]);
 
+  /* ✅ WebSocket 및 WebRTC 초기화 */
   /* ✅ WebSocket 및 WebRTC 초기화 */
   useEffect(() => {
     if (!currentUserId) return;
 
+    console.log("-----------------------------", currentUserId);
     const socket = new SockJS(SERVER_URL);
     const client = Stomp.over(socket);
     const rtcSocket = io(SOCKET_SERVER_URL, { transports: ["websocket"] });
@@ -93,7 +96,7 @@ const Chat1 = () => {
       if (client) client.disconnect();
       if (rtcSocket) rtcSocket.disconnect();
     };
-  }, []);
+  }, [currentUserId]);
 
   useEffect(() => {
     const handleBeforeUnload = async () => {
@@ -103,12 +106,18 @@ const Chat1 = () => {
         );
 
         // ✅ 🔹 Redis에서 사용자 퇴장 처리
-        await fetch(`${SERVER_URL}/room/leave?roomId=${currentRoom.id}`, {
-          method: "POST",
-        });
-        await fetch(`${SERVER_URL}/last-seen?roomId=${currentRoom.id}`, {
-          method: "POST",
-        });
+        await fetch(
+          `${SERVER_URL}/room/leave?roomId=${currentRoom.id}&userId=${currentUserId}`,
+          {
+            method: "POST",
+          }
+        );
+        await fetch(
+          `${SERVER_URL}/last-seen?roomId=${currentRoom.id}&userId=${currentUserId}`,
+          {
+            method: "POST",
+          }
+        );
       }
     };
 
@@ -118,6 +127,41 @@ const Chat1 = () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [currentRoom]);
+
+  useEffect(() => {
+    // currentRoom이 바뀔 때마다 ref를 최신으로 갱신
+    currentRoomRef.current = currentRoom;
+  }, [currentRoom]);
+
+  // 컴포넌트가 언마운트되거나 페이지 이동될 때 실행
+  useEffect(() => {
+    return () => {
+      // unmount 시점에 마지막에 설정된 currentRoomRef.current를 사용
+      if (currentRoomRef.current) {
+        const roomId = currentRoomRef.current.id;
+        console.log("🚪 [Cleanup] leaving room on unmount:", roomId);
+
+        // 1) REST 호출
+        fetch(
+          `${SERVER_URL}/room/leave?roomId=${roomId}&userId=${currentUserId}`,
+          {
+            method: "POST",
+          }
+        ).catch(console.error);
+
+        // 2) STOMP 호출
+        stompClient.send(
+          "/app/chat.leaveRoom",
+          {},
+          JSON.stringify({
+            roomId,
+            userIds: [currentUserId],
+            is_active: false,
+          })
+        );
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!socket || !currentRoom) return;
@@ -270,6 +314,36 @@ const Chat1 = () => {
     setIsStreaming(true); // ✅ 스트리밍 상태 ON
   };
 
+  const handleRoomClick = async (newRoom) => {
+    // 1) 만약 이미 접속 중인 방(currentRoom)이 있고, 그 방과 다른 방이면 leaveRoom API 호출
+    if (currentRoom && currentRoom.id !== newRoom.roomId) {
+      try {
+        // 1-1) REST로 퇴장 처리
+        await fetch(
+          `${SERVER_URL}/room/leave?roomId=${currentRoom.id}&userId=${currentUserId}`,
+          { method: "POST" }
+        );
+
+        // 1-2) STOMP send 로직이 있다면 여기서도 처리
+        stompClient.send(
+          "/app/chat.leaveRoom",
+          {},
+          JSON.stringify({
+            roomId: currentRoom.id,
+            userIds: [currentUserId],
+            is_active: false,
+          })
+        );
+        console.log(`✅ Left previous room: ${currentRoom.id}`);
+      } catch (err) {
+        console.error("❌ Failed to leave previous room:", err);
+      }
+    }
+
+    // 2) 이제 새로운 방으로 이동
+    fetchMessagesAndConnect(newRoom.roomId, newRoom.name, newRoom.isOpenChat);
+  };
+
   const stopVideoStreaming = () => {
     console.log("📴 Stopping video stream...");
 
@@ -307,12 +381,16 @@ const Chat1 = () => {
     setIsActive(true);
 
     try {
-      // ✅ 🔹 방에 입장할 때 Redis에 업데이트
-      await fetch(`${SERVER_URL}/room/join?roomId=${roomId}`, {
-        method: "POST",
-      });
+      await fetch(
+        `${SERVER_URL}/room/join?roomId=${roomId}&userId=${currentUserId}`,
+        {
+          method: "POST",
+        }
+      );
       // ✅ 1️⃣ 채팅 메시지 불러오기
-      const response = await fetch(`${SERVER_URL}/messages/${roomId}`);
+      const response = await fetch(
+        `http://localhost:8080/chat/messages/${roomId}`
+      );
       if (!response.ok)
         throw new Error(
           `Failed to fetch messages (Status: ${response.status})`
@@ -324,7 +402,7 @@ const Chat1 = () => {
       let lastSeenTime = 0;
       try {
         const lastSeenResponse = await fetch(
-          `${SERVER_URL}/last-seen?roomId=${roomId}`
+          `http://localhost:8080/chat/last-seen?roomId=${roomId}&userId=${currentUserId}`
         );
         if (lastSeenResponse.ok) {
           lastSeenTime = await lastSeenResponse.json();
@@ -599,16 +677,7 @@ const Chat1 = () => {
           <h3>My Chat Rooms</h3>
           <ul>
             {myRooms.map((room) => (
-              <li
-                key={room.roomId}
-                onClick={() =>
-                  fetchMessagesAndConnect(
-                    room.roomId,
-                    room.name,
-                    room.isOpenChat
-                  )
-                }
-              >
+              <li key={room.roomId} onClick={() => handleRoomClick(room)}>
                 {room.name}
               </li>
             ))}
