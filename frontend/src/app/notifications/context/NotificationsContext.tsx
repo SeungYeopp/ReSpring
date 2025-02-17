@@ -16,6 +16,8 @@ const NotificationsContext = createContext<NotificationsContextType | undefined>
 export const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
+  console.log("🔍 NEXT_PUBLIC_API_BASE_URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
+
   // (예시) 사용자 세션 정보 가져오기
   useEffect(() => {
     const fetchUserSession = async () => {
