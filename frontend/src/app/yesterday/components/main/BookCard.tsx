@@ -36,7 +36,7 @@ export function BookCard({ book }: BookCardProps) {
           <h3 className="text-lg font-semibold mb-2 line-clamp-2">{book.title}</h3>
           <div className="flex flex-wrap gap-1 mb-2 overflow-hidden max-h-12">
             {book.tags.slice(0, 3).map((tag, index) => (
-              <div key={index} className="bg-brand text-white px-3 py-1 text-sm rounded-full shadow-sm">{tag}</div>
+              <div key={index} className="bg-tag-purple font-semibold text-tag-darkpurple px-3 py-1 text-sm rounded-full shadow-sm">{tag}</div>
               // <span key={index} className="bg-spring-olive text-white text-xs px-2 py-1 rounded-full whitespace-nowrap">
               //   {tag}
               // </span>

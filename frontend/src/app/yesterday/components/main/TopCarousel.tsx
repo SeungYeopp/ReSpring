@@ -138,7 +138,7 @@ function BookCarousel({ books }: BookCarouselProps) {
                       {book.tags.map((tag, idx) => (
                         <span
                           key={idx}
-                          className="bg-brand text-white px-3 py-1 text-sm rounded-full shadow-sm"
+                          className="bg-tag-lightgreen font-semibold text-tag-darkgreen px-3 py-1 text-sm rounded-full shadow-sm"
                         >
                           {tag}
                         </span>

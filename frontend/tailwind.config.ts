@@ -84,6 +84,12 @@ export default {
           DEFAULT: "#96b23c",
           dark: "#638d3e",
         },
+        tag: {
+          purple: "#E9DEF7",
+          darkpurple: "#785C96",
+          lightgreen: "#F0FDF4",
+          darkgreen: "#57986B"
+        },
         // ✅ 스플래시 스크린 색상 추가
         splash: {
           background: "#e8f3d6", // 연한 초록색 배경
