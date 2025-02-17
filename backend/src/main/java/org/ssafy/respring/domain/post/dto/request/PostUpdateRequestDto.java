@@ -11,5 +11,5 @@ public class PostUpdateRequestDto {
     private String title;
     private String content;
     private Category category;
-    private List<Long> deleteImageIds;
+    private List<String> deleteImageIds;
 }
