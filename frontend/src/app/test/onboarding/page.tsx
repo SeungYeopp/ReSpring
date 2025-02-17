@@ -6,7 +6,7 @@ const OnboardingPage: React.FC = () => {
     <div
       className="
         flex items-center justify-center min-h-screen bg-gray-50
-        -mt-14 -mb-16 md:-my-4
+        -mt-14 -mb-16 md:-my-0
         px-4 py-6 md:px-8 md:py-12 // 추가된 패딩
       "
     >
