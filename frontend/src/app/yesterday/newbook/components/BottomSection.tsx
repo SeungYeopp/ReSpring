@@ -40,7 +40,7 @@ export default function BottomSection({ book }: { book: BookFull }) {
         {/* 목차 탭 */}
         <TabsContent value="toc" className="p-4">
           <Suspense fallback={<TableOfContentsSkeleton />}>
-            <TableOfContents bookId={book.id.toString()} />
+            <TableOfContents book={book} />
           </Suspense>
         </TabsContent>
 

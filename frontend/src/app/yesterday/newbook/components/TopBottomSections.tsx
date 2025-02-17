@@ -9,9 +9,9 @@ export default function TopBottomSection({ bookId }: { bookId: number }) {
     const [bookData, setBookData] = useState<BookFull | undefined>();
 
     useEffect(() => {
-        console.log("📌 useEffect 실행됨 - bookId:", bookId);
+        //console.log("📌 useEffect 실행됨 - bookId:", bookId);
         const fetchBook = async () => {
-        console.log("📌 getBookById 호출 - bookId:", bookId);
+        //console.log("📌 getBookById 호출 - bookId:", bookId);
         try {
             const bookData = await getBookById(Number(bookId)); // API 호출
             setBookData(bookData);

@@ -53,26 +53,24 @@ export default function TopSection({ book }: { book: BookFull }) {
 
   //const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252"; // 박싸피의 테스트 ID
 
-  // useEffect(() => {
-  //   console.log("📌 useEffect 실행됨 - bookId:", bookId);
-  //   const fetchBook = async () => {
-  //     console.log("📌 getBookById 호출 - bookId:", bookId);
-  //     try {
-  //       const bookData = await getBookById(Number(bookId)); // API 호출
-  //       setBook(bookData);
-  //       setIsLiked(bookData.liked);
-  //       setLikeCount(bookData.likeCount);
+  useEffect(() => {
+    const fetchBook = async () => {
+      try {
+        // const bookData = await getBookById(Number(bookId)); // API 호출
+        // setBook(bookData);
+        setIsLiked(book.liked);
+        setLikeCount(book.likeCount);
 
-  //       const myInfo = await getUserInfo();
-  //       if (myInfo.userNickname === bookData.authorNickname) setIsMyBook(true);
-  //     } catch (error) {
-  //       console.error("책 데이터를 불러오는 중 오류 발생, 목데이터로 대체:", error);
-  //       setBook(mockBookData);
-  //     }
-  //   };
+        const myInfo = await getUserInfo();
+        if (myInfo.userNickname === book.authorNickname) setIsMyBook(true);
+      } catch (error) {
+        console.error("책 데이터를 불러오는 중 오류 발생", error);
+        //setBook(mockBookData);
+      }
+    };
 
-  //   fetchBook();
-  // }, [bookId]);
+    fetchBook();
+  }, [book]);
 
 
   const handleImageClick = () => {
@@ -198,7 +196,7 @@ export default function TopSection({ book }: { book: BookFull }) {
         <h1 className="text-2xl font-bold text-center mb-4 mt-6">{book.title}</h1>
 
         <div className="flex flex-wrap justify-center gap-2 mb-4">
-          {book.tags.map((tag) => (
+          {book.tags && book.tags.length > 0 && book.tags.map((tag) => (
             <span key={tag} className="px-3 py-1 bg-white/20 text-white rounded-full text-sm">
               {tag}
             </span>
