@@ -14,6 +14,10 @@ export default function CreateChallengePage() {
   const [challengeData, setChallengeData] = useState<Partial<CreateChallenge>>({});
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const router = useRouter();
+  const getKSTDate = (date: Date) => {
+    return new Date(date.getTime() + (9 * 60 * 60 * 1000)); // UTC → KST 변환
+  };
+  
 
   const handleSubmit = async (data: CreateChallenge) => {
     try {
@@ -25,8 +29,8 @@ export default function CreateChallengePage() {
         title: data.title,
         description: data.description,
         tags: data.tags,
-        startDate: data.startDate.toISOString(),
-        endDate: data.endDate.toISOString(),
+        startDate: getKSTDate(data.startDate).toISOString(),
+        endDate: getKSTDate(data.endDate).toISOString(),
         image: data.image ?? undefined, // 이미지가 있을 경우 포함
       };
 
