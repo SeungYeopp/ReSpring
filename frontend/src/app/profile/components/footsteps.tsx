@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { getAllEvents, Event } from '@/lib/api/event';
-import EditEvent from '@/components/custom/EditEvent';
-import AddEvent from '@/components/custom/AddEvent';
+import React, { useState, useEffect } from "react";
+import { getAllEvents, Event } from "@/lib/api/event";
+import EditEvent from "@/components/custom/EditEvent";
+import AddEvent from "@/components/custom/AddEvent";
+import { getCategoryIcon } from "@/components/custom/EventCategories";
 
 const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
   const [footstepsData, setFootstepsData] = useState<Event[]>([]);
@@ -16,8 +17,8 @@ const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
 
   const fetchEvents = async () => {
     try {
-      const events = await getAllEvents();
-      const formattedEvents = events.map(event => ({
+      const events = await getAllEvents(userNickname);
+      const formattedEvents = events.map((event) => ({
         id: event.id,
         eventName: event.eventName,
         occurredAt: event.occurredAt,
@@ -44,7 +45,8 @@ const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
   const animationDuration = 2; // Adjust this value to control circle animation duration
 
   // Calculate the total duration for the line animation
-  const lineAnimationDuration = (footstepsData.length - 1) * 0.5 + animationDuration;
+  const lineAnimationDuration =
+    (footstepsData.length - 1) * 0.5 + animationDuration;
 
   return (
     <div className="relative pl-6">
@@ -58,6 +60,8 @@ const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
         />
         {footstepsData.map((item, index) => {
           const delay = `${index * 0.5}s`;
+          const IconComponent = getCategoryIcon(item.category);
+
           return (
             <div
               key={item.id}
@@ -67,22 +71,31 @@ const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
               }}
               onClick={() => handleEventClick(item)}
             >
+              {/* Category Icon Circle */}
               <div
-                className={`w-12 h-12 rounded-full border-4 border-white ${
-                  index === 0 ? 'bg-[#a46500]' : 'bg-[#dfeaa5]'
+                className={`w-12 h-12 rounded-full border-4 border-white flex items-center justify-center ${
+                  index === 0 ? "bg-[#a46500]" : "bg-[#dfeaa5]"
                 }`}
                 style={{
                   animation: `circleExpand ${animationDuration}s ease-out forwards ${delay}`,
                 }}
-              ></div>
+              >
+                <IconComponent size={24} className="text-white" />
+              </div>
+
+              {/* Event Info */}
               <div
                 className="flex flex-col ml-8 opacity-0"
                 style={{
-                  animation: `fadeInText ${animationDuration}s ease-out forwards ${parseFloat(delay) + 0.5}s`,
+                  animation: `fadeInText ${animationDuration}s ease-out forwards ${
+                    parseFloat(delay) + 0.5
+                  }s`,
                 }}
               >
                 <div className="text-lg font-bold">{item.eventName}</div>
-                <div className="text-sm text-gray-500">{new Date(item.occurredAt).toLocaleDateString()}</div>
+                <div className="text-sm text-gray-500">
+                  {new Date(item.occurredAt).toLocaleDateString()}
+                </div>
               </div>
             </div>
           );
