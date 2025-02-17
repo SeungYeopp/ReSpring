@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatDistanceToNowStrict } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { Comment, Post, UserInfo } from "@/lib/api";
-import { getPostsByUserId, getCommentsIWrote, getSessionInfo } from "@/lib/api/";
+import { getPostsByUserId, getCommentsIWrote } from "@/lib/api/";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/custom/TabGreen";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -17,14 +17,11 @@ export default function CommunityPosts({ userNickname }: { userNickname: string 
   const [postsToShow, setPostsToShow] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
-  const [userInfo, setUserInfo] = useState<UserInfo>();
 
   const fetchPosts = async () => {
     try {
       setIsLoading(true);
-      const userInfo = await getSessionInfo();
-      setUserInfo(userInfo);
-      const allPosts = await getPostsByUserId(userInfo.userNickname);
+      const allPosts = await getPostsByUserId(userNickname);
       setPosts(allPosts);
       setIsLoading(false);
     } catch (error) {
@@ -42,7 +39,7 @@ export default function CommunityPosts({ userNickname }: { userNickname: string 
   useEffect(() => {
     fetchPosts();
     fetchComments();
-  }, []);
+  }, [userNickname]);
 
   const loadMorePosts = () => {
     setPostsToShow((prev) => prev + 5);
@@ -139,7 +136,7 @@ function CommentList({ comments }: { comments: Comment[] }) {
           const isPost = !!comment.postId;
           const link = isPost ? `/today/${comment.postId}` : `/yesterday/newbook/${comment.bookId}`;
           const title = isPost ? comment.postTitle : comment.bookTitle;
-          
+
           return (
             <Link key={comment.id} href={link} passHref>
               <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer mt-3"> 

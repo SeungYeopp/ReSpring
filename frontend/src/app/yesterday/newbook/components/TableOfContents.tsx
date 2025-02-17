@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { getBookById, BookFull } from "@/lib/api/book" // API 함수와 타입 가져오기
 
-export default function TableOfContents({ bookId }: { bookId: string }) {
+export default function TableOfContents({ book }: { book: BookFull }) {
   const [chapters, setChapters] = useState<{ title: string; id: number }[]>([])
 
   // 목데이터 설정
@@ -15,9 +15,6 @@ export default function TableOfContents({ bookId }: { bookId: string }) {
   useEffect(() => {
     const fetchChapters = async () => {
       try {
-        const userId = localStorage.getItem("userId") || "" // 임시로 userId 가져오기
-        const book: BookFull = await getBookById(Number(bookId))
-        
         // content에서 챕터 추출
         const contentChapters = Object.entries(book.content).map(([title], index) => ({
           id: index + 1,
@@ -32,7 +29,7 @@ export default function TableOfContents({ bookId }: { bookId: string }) {
     }
 
     fetchChapters()
-  }, [bookId])
+  }, [book])
 
   return (
     <div className="space-y-2">
