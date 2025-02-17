@@ -3,6 +3,7 @@ const nextConfig = {
   reactStrictMode: false,
   images: {
     domains: ["respring-s3-bucket.s3.ap-northeast-2.amazonaws.com"],
+    unoptimized: true,
   },
   async redirects() {
     return [
