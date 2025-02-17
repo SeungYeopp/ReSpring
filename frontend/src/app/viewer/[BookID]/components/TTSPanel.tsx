@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react"; // useState, useRef, useEffect를 import합니다.
 import { useViewerSettings } from "../context/ViewerSettingsContext";
-// PanelContext를 통해 전역 패널 상태에 접근
+// PanelContext를 통해 전역 패널 상태에 접근합니다.
+// 기존에는 registerPanel, unregisterPanel를 사용했으나, 이제는 openPanel과 closePanel, currentOpenPanel을 사용합니다.
 import { usePanelContext } from "../context/usePanelContext";
 import { useBookData } from "../hooks/useBookData";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,8 @@ interface TTSPanelProps {
 
 /*
   TTSPanel 컴포넌트는 책의 내용을 음성으로 읽어주는 기능을 제공합니다.
-  패널이 열릴 때마다 전역 PanelContext에 등록하여, 페이지 이동 등의 이벤트를 차단할 수 있도록 합니다.
+  패널이 열릴 때마다 전역 PanelContext에 자신의 고유 ID("tts")를 등록하여,
+  페이지 이동 등의 이벤트를 차단하고, 한 번에 하나의 패널만 열리도록 합니다.
 */
 export function TTSPanel({ bookId }: TTSPanelProps) {
   const { theme } = useViewerSettings();
@@ -27,8 +29,8 @@ export function TTSPanel({ bookId }: TTSPanelProps) {
   const [rate, setRate] = useState(1.0);
   const [pitch, setPitch] = useState("김민순");
 
-  // PanelContext의 registerPanel과 unregisterPanel 사용
-  const { registerPanel, unregisterPanel } = usePanelContext();
+  // PanelContext에서 현재 열린 패널의 ID와, 패널을 열기(openPanel) 및 닫기(closePanel) 위한 함수를 가져옵니다.
+  const { currentOpenPanel, openPanel, closePanel } = usePanelContext();
 
   // SpeechSynthesisUtterance 참조
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -71,16 +73,31 @@ export function TTSPanel({ bookId }: TTSPanelProps) {
     setIsPlaying(false);
   };
 
-  // 패널 토글 함수: 열릴 때 전역 상태에 등록, 닫힐 때 해제
+  /*
+    useEffect: 전역 패널 상태(currentOpenPanel)를 감시합니다.
+    만약 현재 TTSPanel이 열려있는데, 전역 상태가 "tts"가 아니라면 자동으로 로컬 패널(isOpen)을 닫습니다.
+  */
+  useEffect(() => {
+    if (isOpen && currentOpenPanel !== "tts") {
+      setIsOpen(false);
+    }
+  }, [currentOpenPanel, isOpen]);
+
+  /*
+    패널 토글 함수:
+    - 사용자가 버튼을 클릭하면 호출됩니다.
+    - 패널이 열릴 때 자신의 고유 ID "tts"를 전역 상태에 등록하고,
+      패널이 닫힐 때 전역 상태를 해제합니다.
+  */
   const togglePanel = () => {
-    setIsOpen((prev) => {
+    setIsOpen((prev: boolean) => {
       const newState = !prev;
       if (newState) {
-        // 패널이 열리면 전역 상태에 등록
-        registerPanel();
+        // 패널이 열리면 자신의 ID "tts"를 전역 상태에 등록합니다.
+        openPanel("tts");
       } else {
-        // 패널이 닫히면 전역 상태에서 해제
-        unregisterPanel();
+        // 패널이 닫히면 전역 상태를 해제합니다.
+        closePanel();
       }
       return newState;
     });

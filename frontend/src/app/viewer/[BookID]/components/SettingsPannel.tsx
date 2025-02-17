@@ -1,9 +1,9 @@
 "use client";
 
 // React 훅들을 import합니다.
-import { useState } from "react"; // useState를 추가하여 오류 해결
-import { usePanelContext } from "../context/usePanelContext"; // 전역 패널 상태 사용
-import { useViewerSettings } from "../context/ViewerSettingsContext";
+import { useState, useEffect } from "react"; // useState와 useEffect를 import합니다.
+import { usePanelContext } from "../context/usePanelContext"; // 전역 패널 상태에 접근하기 위한 커스텀 훅을 가져옵니다.
+import { useViewerSettings } from "../context/ViewerSettingsContext"; // 뷰어 설정 관련 상태와 함수를 가져옵니다.
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,12 +11,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 /*
   SettingsPanel 컴포넌트는 뷰어 설정 관련 컨텍스트(ViewerSettingsContext)와
   패널 전역 상태(PanelContext)를 함께 사용합니다.
-  패널의 열림 여부는 로컬 상태와 전역 상태를 함께 관리하여,
-  패널 열림 시 전역에서 페이지 이동 이벤트를 무시할 수 있도록 합니다.
+  
+  이 컴포넌트는 패널의 열림 여부를 로컬 상태와 전역 상태(currentOpenPanel)를 함께 관리하여,
+  패널 열림 시 전역에서 페이지 이동 이벤트를 무시하고, 
+  한 번에 하나의 패널만 열리도록 합니다.
+  
+  여기서는 자신의 고유 ID "settings"를 전역 패널 상태에 등록하여 관리합니다.
 */
 export function SettingsPanel() {
-  // PanelContext에서 registerPanel과 unregisterPanel 함수를 가져옵니다.
-  const { registerPanel, unregisterPanel } = usePanelContext();
+  // PanelContext에서 현재 열린 패널의 ID와, 패널을 열거나 닫기 위한 함수를 가져옵니다.
+  const { currentOpenPanel, openPanel, closePanel } = usePanelContext();
 
   // ViewerSettingsContext에서 설정 관련 상태와 함수를 가져옵니다.
   const {
@@ -37,22 +41,40 @@ export function SettingsPanel() {
   // 로컬 상태: 패널의 열림 여부(애니메이션 및 렌더링 제어용)
   const [isOpen, setIsOpen] = useState(false);
 
-  // 패널 토글 함수: 패널이 열릴 때 registerPanel, 닫힐 때 unregisterPanel를 호출합니다.
+  /*
+    useEffect: 전역 패널 상태(currentOpenPanel)를 감시합니다.
+    만약 현재 이 SettingsPanel이 열려있는데(currentOpenPanel가 "settings"여야 함),
+    다른 패널이 열리면 자동으로 자신의 로컬 상태를 닫아(즉, isOpen을 false로 설정) 패널을 숨깁니다.
+  */
+  useEffect(() => {
+    if (isOpen && currentOpenPanel !== "settings") {
+      setIsOpen(false);
+    }
+  }, [currentOpenPanel, isOpen]);
+
+  /*
+    패널 토글 함수: 사용자가 버튼을 클릭하면 호출됩니다.
+    - 만약 패널을 열면, 자신의 고유 ID "settings"를 전역 패널 상태에 등록합니다.
+    - 만약 패널을 닫으면, 전역 패널 상태를 해제합니다.
+  */
   const togglePanel = () => {
-    setIsOpen((prev: boolean) => { // prev 매개변수의 타입을 boolean으로 명시하여 any 오류 해결
+    setIsOpen((prev: boolean) => {
       const newState = !prev;
       if (newState) {
-        // 패널이 열리면 전역 상태에 등록
-        registerPanel();
+        // 패널이 열리면 자신의 ID "settings"를 전역 패널 상태에 등록합니다.
+        openPanel("settings");
       } else {
-        // 패널이 닫히면 전역 상태에서 해제
-        unregisterPanel();
+        // 패널이 닫히면 전역 패널 상태를 해제합니다.
+        closePanel();
       }
       return newState;
     });
   };
 
-  // 테마에 따른 CSS 클래스 결정 함수
+  /*
+    테마에 따른 CSS 클래스 결정 함수:
+    현재 설정된 테마에 따라 배경, 글자 색상, 테두리 색상을 결정합니다.
+  */
   const getThemeClasses = () => {
     switch (theme) {
       case "basic":
@@ -64,7 +86,11 @@ export function SettingsPanel() {
     }
   };
 
-  // 버튼 활성화/비활성화 클래스 결정 함수
+  /*
+    버튼 활성화/비활성화 클래스 결정 함수:
+    현재 값과 기대하는 값이 일치하면 활성화 스타일을 적용하고,
+    그렇지 않으면 기본 스타일을 적용합니다.
+  */
   const getButtonClasses = (currentValue: string, expectedValue: string) => {
     const baseClasses = "px-3 py-1 rounded border";
     const activeClasses = theme === "basic" ? "bg-gray-300 text-black" : "bg-gray-600 text-white";

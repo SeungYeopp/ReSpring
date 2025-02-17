@@ -1,39 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useViewerSettings } from "../context/ViewerSettingsContext";
-// PanelContext를 통해 전역 패널 상태에 접근
+// 전역 PanelContext를 통해 현재 열려 있는 패널의 ID와 openPanel, closePanel 함수를 가져옵니다.
 import { usePanelContext } from "../context/usePanelContext";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
 
 /*
   CommentsPanel 컴포넌트는 댓글 기능을 제공하는 패널입니다.
-  이 컴포넌트는 패널의 열림 여부를 로컬 상태(isOpen)로 제어하지만,
-  패널이 열릴 때마다 전역 PanelContext에도 등록(registerPanel)하여
-  페이지 이동 등의 이벤트를 막을 수 있도록 합니다.
+  이 컴포넌트는 패널의 열림 여부를 로컬 상태(isOpen)로 제어하며,
+  패널이 열릴 때 전역 PanelContext에 자신의 고유 ID("comments")를 등록하여,
+  페이지 이동 등의 이벤트를 막고, 동시에 한 번에 하나의 패널만 열리도록 합니다.
 */
 export function CommentsPanel() {
   const { theme } = useViewerSettings();
-  // 로컬 상태: 패널 열림 여부 (애니메이션, 렌더링 제어용)
+  // 로컬 상태: 패널 열림 여부 (애니메이션 및 렌더링 제어용)
   const [isOpen, setIsOpen] = useState(false);
   // 댓글 목록과 새로운 댓글 입력 상태
   const [comments, setComments] = useState<string[]>([]);
   const [newComment, setNewComment] = useState("");
 
-  // 전역 PanelContext에서 registerPanel과 unregisterPanel 함수를 가져옵니다.
-  const { registerPanel, unregisterPanel } = usePanelContext();
+  // 전역 PanelContext에서 현재 열려 있는 패널의 ID와, 패널을 열거나 닫을 수 있는 함수를 가져옵니다.
+  const { currentOpenPanel, openPanel, closePanel } = usePanelContext();
 
-  // 패널 열림/닫힘 토글 함수
+  // 효과: 전역 패널 상태를 감시하여, 만약 현재 열려 있는 패널의 ID가 "comments"가 아니라면 자동으로 로컬 패널을 닫습니다.
+  useEffect(() => {
+    if (isOpen && currentOpenPanel !== "comments") {
+      setIsOpen(false);
+    }
+  }, [currentOpenPanel, isOpen]);
+
+  // 패널 토글 함수: 패널을 열거나 닫을 때 전역 상태를 업데이트합니다.
   const togglePanel = () => {
-    setIsOpen((prev) => {
+    setIsOpen((prev: boolean) => {
       const newState = !prev;
       if (newState) {
-        // 패널이 열리면 전역 상태에 등록
-        registerPanel();
+        // 패널이 열리면 자신의 ID "comments"를 전역 상태에 등록합니다.
+        openPanel("comments");
       } else {
-        // 패널이 닫히면 전역 상태에서 해제
-        unregisterPanel();
+        // 패널이 닫히면 전역 상태를 해제합니다.
+        closePanel();
       }
       return newState;
     });

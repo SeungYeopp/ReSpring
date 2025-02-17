@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
+// PanelContext에서 현재 열린 패널 ID와, 패널을 열고 닫기 위한 함수를 가져옵니다.
 import { usePanelContext } from "../context/usePanelContext";
+
 // 챕터 정보 인터페이스
 interface Chapter {
   title: string;
@@ -30,18 +32,28 @@ export function TableOfContents({ bookId, imageUrls }: { bookId: string; imageUr
   const { bookContent } = useBookData(bookId);
   const { chapters, pages } = useDynamicPages(bookContent!, imageUrls);
   
-  // 로컬 상태: 패널이 열렸는지 여부 (애니메이션 및 렌더링 제어용)
+  // 로컬 상태: 패널의 열림 여부(애니메이션 및 렌더링 제어용)
   const [isOpen, setIsOpen] = useState(false);
   const [searchType, setSearchType] = useState("chapter");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentListPage, setCurrentListPage] = useState(1);
 
-  // PanelContext의 register/unregister 함수를 가져옵니다.
-  const { registerPanel, unregisterPanel } = usePanelContext();
+  // PanelContext에서 현재 열린 패널의 ID와, 패널을 열기(openPanel) 및 닫기(closePanel) 위한 함수를 가져옵니다.
+  const { currentOpenPanel, openPanel, closePanel } = usePanelContext();
 
+  // 효과: imageUrls가 변경될 때 콘솔에 출력합니다.
   useEffect(() => {
     console.log(imageUrls);
   }, [imageUrls]);
+
+  // 효과: 전역 패널 상태(currentOpenPanel)를 감시하여,
+  // 만약 이 TableOfContents 패널이 열려있는데(currentOpenPanel가 "toc"여야 함),
+  // 다른 패널이 열리면 자동으로 로컬 패널을 닫습니다.
+  useEffect(() => {
+    if (isOpen && currentOpenPanel !== "toc") {
+      setIsOpen(false);
+    }
+  }, [currentOpenPanel, isOpen]);
 
   // 검색어에 따른 챕터 필터링
   const filteredChapters = useMemo(
@@ -58,23 +70,33 @@ export function TableOfContents({ bookId, imageUrls }: { bookId: string; imageUr
     [pages, searchTerm]
   );
 
-  // 패널 토글 함수: 열릴 때 registerPanel, 닫힐 때 unregisterPanel 호출
+  /*
+    패널 토글 함수:
+    - 사용자가 버튼을 클릭하면 호출됩니다.
+    - 만약 패널을 열면, 자신의 고유 ID "toc"를 전역 상태에 등록합니다.
+    - 만약 패널을 닫으면, 전역 상태를 해제하고 강조 효과도 초기화합니다.
+  */
   const togglePanel = () => {
-    setIsOpen((prev) => {
+    setIsOpen((prev: boolean) => {
       const newState = !prev;
       if (newState) {
-        // 패널이 열릴 때 전역 패널 카운트 등록
-        registerPanel();
+        // 패널이 열리면 자신의 ID "toc"를 전역 상태에 등록합니다.
+        openPanel("toc");
       } else {
-        // 패널이 닫힐 때 전역 패널 카운트 해제 및 강조 효과 초기화
-        unregisterPanel();
+        // 패널이 닫히면 전역 상태를 해제하고 강조 효과를 초기화합니다.
+        closePanel();
         setHighlightKeyword(null);
       }
       return newState;
     });
   };
 
-  // 페이지 이동 함수: 현재 페이지와의 차이를 계산해 setCurrentPage에 전달
+  /*
+    페이지 이동 함수:
+    - 목표 페이지와 현재 페이지의 차이를 계산하여 setCurrentPage에 전달합니다.
+    - 또한, 검색어(keyword)가 있으면 강조 효과를 설정합니다.
+    - 마지막으로 패널을 닫으며 전역 패널 상태를 해제합니다.
+  */
   const goToPage = (targetPage: number, keyword?: string) => {
     const difference = targetPage - currentPage;
     setCurrentPage(difference);
@@ -83,11 +105,12 @@ export function TableOfContents({ bookId, imageUrls }: { bookId: string; imageUr
     } else {
       setHighlightKeyword(null);
     }
-    // 패널을 닫으면서 전역 패널 상태 해제
+    // 패널을 닫으면서 전역 패널 상태를 해제합니다.
     setIsOpen(false);
-    unregisterPanel();
+    closePanel();
   };
 
+  // 전체 검색 결과 개수에 따른 페이지 수 계산
   const totalItems = searchType === "chapter" ? filteredChapters.length : contentMatches.length;
   const totalListPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const startIndex = (currentListPage - 1) * ITEMS_PER_PAGE;
@@ -95,11 +118,13 @@ export function TableOfContents({ bookId, imageUrls }: { bookId: string; imageUr
   const paginatedItems =
     searchType === "chapter" ? filteredChapters.slice(startIndex, endIndex) : contentMatches.slice(startIndex, endIndex);
 
+  // 페이지 네비게이션 핸들러
   const handleListPageChange = (newPage: number) => {
     setCurrentListPage(newPage);
   };
 
-  // 검색어 하이라이트 처리 함수
+  // 검색어 하이라이트 처리 함수:
+  // 검색어가 포함된 부분을 <mark> 태그로 감싸서 강조 표시합니다.
   const highlightSearchTerm = (text: string) => {
     if (!searchTerm) return text;
     const parts = text.split(new RegExp(`(${searchTerm})`, "gi"));
@@ -114,7 +139,8 @@ export function TableOfContents({ bookId, imageUrls }: { bookId: string; imageUr
     );
   };
 
-  // 내용 미리보기 생성 함수 (검색어 주변 텍스트)
+  // 내용 미리보기 생성 함수:
+  // 검색어 주변의 텍스트를 잘라내어 미리보기 텍스트를 생성합니다.
   const getContentPreview = (text: string, maxLength = 100) => {
     const lowerSearchTerm = searchTerm.toLowerCase();
     const index = text.toLowerCase().indexOf(lowerSearchTerm);
@@ -137,7 +163,7 @@ export function TableOfContents({ bookId, imageUrls }: { bookId: string; imageUr
       {/* 오버레이: 클릭 시 패널 닫힘 */}
       {isOpen && <div className="fixed inset-0 bg-black/40 transition-opacity" onClick={togglePanel} />}
 
-      {/* 목차 및 검색 패널 */}
+      {/* 목차 및 검색 패널 영역 */}
       <div
         className={`fixed top-0 right-0 h-full w-[70%] p-4 transition-transform duration-300 ease-in-out border-2 rounded-l-lg overflow-y-auto
           ${isOpen ? "translate-x-0" : "translate-x-full"}
@@ -186,7 +212,8 @@ export function TableOfContents({ bookId, imageUrls }: { bookId: string; imageUr
                 highlightSearchTerm((item as Chapter).title)
               ) : (
                 <>
-                  <strong>📌 {(item as ContentMatch).page + 1}페이지:</strong> {highlightSearchTerm(getContentPreview((item as ContentMatch).text))}
+                  <strong>📌 {(item as ContentMatch).page + 1}페이지:</strong>{" "}
+                  {highlightSearchTerm(getContentPreview((item as ContentMatch).text))}
                 </>
               )}
             </li>
