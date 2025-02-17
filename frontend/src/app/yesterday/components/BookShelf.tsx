@@ -3,12 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { getAllBooksByUserId, Book } from "@/lib/api/book";
+import Link from "next/link";
 
 interface BookShelfProps {
   userNickname: string;
+  isMine: boolean;
 }
 
-const BookShelf: React.FC<BookShelfProps> = ({ userNickname }) => {
+const BookShelf: React.FC<BookShelfProps> = ({ userNickname, isMine }) => {
   const [books, setBooks] = useState<Book[]>([]);
   const [booksPerShelf, setBooksPerShelf] = useState(4);
   const [bookWidth, setBookWidth] = useState(160);
@@ -54,57 +56,71 @@ const BookShelf: React.FC<BookShelfProps> = ({ userNickname }) => {
 
   return (
     <div ref={containerRef} className="flex flex-col items-center w-full p-4">
-      {shelves.map((shelf, index) => (
-        <div key={index} className="flex flex-col items-center mb-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.2 }}
-            className="flex justify-center gap-6 w-full"
-          >
-            {shelf.map((book) => (
-              <motion.div
-                key={book.id}
-                className="group relative rounded-lg overflow-hidden shadow-lg"
-                style={{
-                  width: `${bookWidth}px`,
-                  height: `${(bookWidth / 160) * 240}px`,
-                }}
-                whileHover={{ scale: 1.05 }}
-              >
-                <div className="relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
-                  <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
-                    <img
-                      src={book.coverImage || "/placeholder_bookcover.jpg"}
-                      alt={`Book ${book.title}`}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  </div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white text-sm p-4 [transform:rotateY(180deg)] [backface-visibility:hidden] rounded-lg">
-                    <p className="text-lg font-semibold">{book.title}</p>
-                    <p className="text-xs opacity-80">{new Date(book.createdAt).toLocaleDateString()}</p>
-                    <div className="mt-3 flex space-x-3">
-                      <a
-                        href={`/viewer/${book.id}`}
-                        className="px-3 py-1 bg-blue-500 text-white rounded-md flex items-center gap-1 text-xs hover:bg-blue-600"
-                      >
-                        읽기
-                      </a>
-                      <a
-                        href="#"
-                        className="px-3 py-1 bg-green-500 text-white rounded-md flex items-center gap-1 text-xs hover:bg-green-600"
-                      >
-                        편집
-                      </a>
+      {books.length === 0 ? (
+        <div className="flex flex-col items-center text-gray-500 mt-10">
+          <p className="text-lg">아직 작성된 봄날의 서가 없습니다.</p>
+          {isMine && (
+            <Link
+              href="/yesterday/create-book"
+              className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md text-sm hover:bg-green-600"
+            >
+              작성하러 가기
+            </Link>
+          )}
+        </div>
+      ) : (
+        shelves.map((shelf, index) => (
+          <div key={index} className="flex flex-col items-center mb-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.2 }}
+              className="flex justify-center gap-6 w-full"
+            >
+              {shelf.map((book) => (
+                <motion.div
+                  key={book.id}
+                  className="group relative rounded-lg overflow-hidden shadow-lg"
+                  style={{
+                    width: `${bookWidth}px`,
+                    height: `${(bookWidth / 160) * 240}px`,
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <div className="relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
+                    <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
+                      <img
+                        src={book.coverImage || "/placeholder_bookcover.jpg"}
+                        alt={`Book ${book.title}`}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    </div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white text-sm p-4 [transform:rotateY(180deg)] [backface-visibility:hidden] rounded-lg">
+                      <p className="text-lg font-semibold">{book.title}</p>
+                      <p className="text-xs opacity-80">{new Date(book.createdAt).toLocaleDateString()}</p>
+                      <div className="mt-3 flex space-x-3">
+                        <a
+                          href={`/viewer/${book.id}`}
+                          className="px-3 py-1 bg-blue-500 text-white rounded-md flex items-center gap-1 text-xs hover:bg-blue-600"
+                        >
+                          읽기
+                        </a>
+                        <a
+                          href="#"
+                          className="px-3 py-1 bg-green-500 text-white rounded-md flex items-center gap-1 text-xs hover:bg-green-600"
+                        >
+                          편집
+                        </a>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-          <img src="/shelf.png" alt="Bookshelf" width={1909} height={152} />
-        </div>
-      ))}
+                </motion.div>
+              ))}
+            </motion.div>
+            <img src="/shelf.png" alt="Bookshelf" width={1909} height={152} />
+          </div>
+        ))
+      )}
     </div>
   );
 };

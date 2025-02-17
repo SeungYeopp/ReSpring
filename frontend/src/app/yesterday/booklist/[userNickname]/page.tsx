@@ -11,7 +11,7 @@ import { getSessionInfo, UserInfo } from "@/lib/api/user";
 export default function BookList() {
   const [myNickname, setMyNickname] = useState<string | null>(null);
   const [mySession, setMySession] = useState<UserInfo | null>(null);
-  const { userNickname: userNickname } = useParams();
+  const { userNickname } = useParams();
   const targetNickname = userNickname && !Array.isArray(userNickname) ? decodeURIComponent(userNickname) : myNickname;
   const searchParams = useSearchParams();
   const tab = searchParams?.get("tab") || "books";
@@ -24,7 +24,7 @@ export default function BookList() {
         const session = await getSessionInfo();
         setMySession(session);
       } catch (error) {
-        console.error("Failed to fetch user nickname:", error);
+        console.error("Failed to fetch user session:", error);
       }
     };
 
@@ -49,6 +49,8 @@ export default function BookList() {
     );
   }
 
+  const isMine = myNickname === targetNickname;
+
   return (
     <div className="relative flex flex-col items-center w-full p-4">
       <button
@@ -61,15 +63,15 @@ export default function BookList() {
       <Tabs defaultValue={tab}>
         <TabsList className="flex justify-center items-center mb-4 -mt-3 space-x-4">
           <TabsTrigger value="books">봄날의 서재</TabsTrigger>
-          {myNickname === targetNickname && <TabsTrigger value="stories">나의 글조각</TabsTrigger>}
+          {isMine && <TabsTrigger value="stories">나의 글조각</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="books">
-          <BookShelf userNickname={targetNickname} />
+          <BookShelf userNickname={targetNickname} isMine={isMine} />
         </TabsContent>
 
         <TabsContent value="stories">
-          <StoryShelf userNickname={targetNickname} />
+          {isMine && <StoryShelf userNickname={targetNickname} />}
         </TabsContent>
       </Tabs>
     </div>
