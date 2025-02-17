@@ -5,31 +5,36 @@ export interface Challenge {
   id: number;
   title: string;
   description: string;
-  image: string;
-  registerDate: string; // ISO 날짜 형식 ("YYYY-MM-DDTHH:mm:ss")
+  image: string;             // 기존 필드 그대로 사용
+  registerDate: string;      // ISO 날짜 형식 ("YYYY-MM-DDTHH:mm:ss")
   likes: number;
   views: number;
   participantCount: number;
-  status: "UPCOMING" | "ONGOING" | "ENDED"; // 📌 상태값 업데이트
+  status: "UPCOMING" | "ONGOING" | "ENDED"; // 상태값 업데이트
 }
 
-// 📌 2. 챌린지 상세 정보
-export interface ChallengeDetail extends Challenge {
-  startDate: string; // 시작일 ("YYYY-MM-DDTHH:mm:ss")
-  endDate: string; // 종료일 ("YYYY-MM-DDTHH:mm:ss")
-  tags: Tag[]; // 태그 목록
-  isSuccessToday: boolean; // 오늘 성공 여부
-  longestStreak: number; // 최장 연속 성공 기록
-  currentStreak: number; // 현재 연속 성공 기록
-  successRate: number; // 성공률
-  participantCount: number; // ✅ 참가자 수 (API 응답에 포함)
-  likes: number; // ✅ 좋아요 수 (API 응답에 포함)
-  views: number; // ✅ 조회수 (API 응답에 포함)
-  imageUrl: string; // ✅ API로부터 오는 이미지 URL
-  ownerId?: string; // ✅ 챌린지 소유자 ID (API 응답에 포함)
-  records?: { [key: string]: "SUCCESS" | "FAIL" }; // 날짜별 성공/실패 기록 (선택적)
-  isParticipating?: boolean; // 현재 사용자의 참여 여부 (선택적)
+// 예시: Tag 타입 (필요에 따라 수정)
+export interface Tag {
+  id: number;
+  name: string;
 }
+
+// 📌 2. 챌린지 상세 정보 (확장된 필드 포함)
+export interface ChallengeDetail extends Challenge {
+  startDate: string;         // 시작일 ("YYYY-MM-DDTHH:mm:ss")
+  endDate: string;           // 종료일 ("YYYY-MM-DDTHH:mm:ss")
+  tags: Tag[];               // 태그 목록 (Tag[] 타입)
+  successToday: boolean;     // 오늘 성공 여부 (응답 예시: successToday)
+  longestStreak: number;     // 최장 연속 성공 기록
+  currentStreak: number;     // 현재 연속 성공 기록
+  successRate: number;       // 성공률
+  ownerId?: string;          // 챌린지 소유자 ID (옵션)
+  records?: { [key: string]: "SUCCESS" | "FAIL" }; // 날짜별 성공/실패 기록 (옵션)
+  isParticipating: boolean;  // 현재 사용자의 참여 여부 (응답 예시: Isparticipating → isParticipating)
+  isLike: boolean;           // 사용자가 좋아요를 눌렀는지 여부 (응답 예시: Islike → isLike)
+  imageUrl: string; // ✅ API로부터 오는 이미지 URL
+}
+
 
 // 📌 3. 내가 참여한 챌린지 목록
 export interface ParticipatedChallenge {

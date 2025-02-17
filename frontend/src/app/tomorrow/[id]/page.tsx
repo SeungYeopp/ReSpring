@@ -13,12 +13,18 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import type { ChallengeDetail } from "@/app/tomorrow/types/challenge"
 import { format, parseISO } from "date-fns"
 import { ko } from "date-fns/locale"
-import { getChallengeDetail, toggleChallengeLike } from "@/lib/api"
+import { getChallengeDetail, toggleChallengeLike, getSessionInfo } from "@/lib/api"
+import LoadingScreen from "@/components/custom/LoadingScreen"
 
 export default function ChallengePage({ params }: { params: { id: number } }) {
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null)
   const router = useRouter()
   const [isLiked, setIsLiked] = useState(false);
+
+  // 현재 로그인한 유저의 ID를 저장하는 state (추가)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // 수정하기 버튼의 좋아요 토글 핸들러
   const handleLikeClick = async () => {
     try {
       const success = await toggleChallengeLike(challenge!.id);
@@ -29,6 +35,19 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
       console.error("Error toggling like:", error);
     }
   };
+
+  // 세션 정보를 통해 현재 유저의 ID를 가져와서 저장 (추가)
+  useEffect(() => {
+    async function fetchSession() {
+      try {
+        const sessionInfo = await getSessionInfo();
+        setCurrentUserId(sessionInfo.userId);
+      } catch (error) {
+        console.error("세션 정보 불러오기 실패:", error);
+      }
+    }
+    fetchSession();
+  }, []);
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -44,7 +63,7 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
   }, [params.id, isLiked]);
 
   if (!challenge) {
-    return <div>Loading...</div> // Todo: 로딩스크린으로 바꾸자
+    return LoadingScreen
   }
 
   return (
@@ -80,23 +99,26 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="secondary"
-                            size="icon"
-                            className="bg-white/80 hover:bg-white text-gray-800"
-                            onClick={() => router.push(`/tomorrow/edit/${challenge.id}`)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>수정하기</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    {/* 현재 유저가 챌린지 소유자일 경우에만 수정하기 버튼을 표시 */}
+                    {challenge.ownerId === currentUserId && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="secondary"
+                              size="icon"
+                              className="bg-white/80 hover:bg-white text-gray-800"
+                              onClick={() => router.push(`/tomorrow/edit/${challenge.id}`)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>수정하기</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </div>
                   <div className="flex justify-between items-end">
                     <div className="flex flex-col">
@@ -154,4 +176,3 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
     </main>
   )
 }
-

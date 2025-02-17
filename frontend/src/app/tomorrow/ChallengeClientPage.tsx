@@ -16,6 +16,7 @@ import { carouselMessages } from "@/lib/constants"
 import { SkeletonCarousel } from "@/components/custom/SkeletonCarousel"
 import { Separator } from "@/components/ui/separator"
 import BubbleMenuTomorrow from "./components/BubbleMenuTomorrow"
+import { getSessionInfo } from "@/lib/api" // getSessionInfo 함수 import
 
 interface ChallengeClientPageProps {
   serverChallenges: Challenge[]
@@ -29,6 +30,19 @@ export default function ChallengeClientPage({ serverChallenges }: ChallengeClien
   const [followedChallenges, setFollowedChallenges] = useState<SubscribedUserChallenge[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
+
+  // 세션 정보를 통해 userId를 가져오기 위한 useEffect 추가
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const sessionInfo = await getSessionInfo();
+        setUserId(sessionInfo.userId);
+      } catch (error) {
+        console.error("세션 정보 로드 중 오류 발생:", error);
+      }
+    };
+    fetchSession();
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
