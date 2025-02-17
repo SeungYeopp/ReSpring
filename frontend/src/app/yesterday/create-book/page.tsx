@@ -42,8 +42,7 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
         <DialogHeader>
           <DialogTitle>{story.title}</DialogTitle>
           <DialogDescription>
-            Created: {new Date(story.createdAt).toLocaleDateString()}
-            {story.updatedAt && ` | Updated: ${new Date(story.updatedAt).toLocaleDateString()}`}
+            {new Date(story.occurredAt).toLocaleDateString()}
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4">
@@ -58,8 +57,8 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
                         <NextImage
                           src={image}
                           alt={image}
-                          width={200}
-                          height={200}
+                          width={100}
+                          height={100}
                           objectFit="cover"
                           className="rounded-md"
                         />
@@ -97,7 +96,7 @@ export default function CreateBook() {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null)
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false)
 
-  const [title, setTitle] = useState<string>("제목")
+  const [title, setTitle] = useState<string>("")
 
   const router = useRouter()
 
@@ -160,20 +159,11 @@ export default function CreateBook() {
     )
   }
 
-  const removeDotsFromTitles = (compiledBook: CompiledBook): CompiledBook => {
-    // 각 챕터의 제목에서 마침표를 제거한 새 제목을 할당
-    compiledBook.chapters.forEach(chapter => {
-        chapter.chapterTitle = chapter.chapterTitle.replace(/\./g, ""); // 제목에서 모든 마침표 제거
-    });
-
-    return compiledBook;
-};
-
   const handleSubmit = async () => {
     setIsFinalizingBook(true)
     try {
       const convertedContent = compiledBook?.chapters.reduce((acc, chapter) => {
-        acc[chapter.chapterTitle] = chapter.content;
+        acc[chapter.chapterTitle] = String(chapter.content);
         return acc;
       }, {} as Content);
     
@@ -193,20 +183,60 @@ export default function CreateBook() {
   }
 
   const convertStoriesToContent = (stories: Story[]): Content => {
-    return stories.reduce((acc, story) => {
-        acc[story.title] = story.content;
-        return acc;
-    }, {} as Content);
+      return stories.reduce((acc, story) => {
+          acc[story.title] = String(story.content); // 문자열 변환 추가
+          return acc;
+      }, {} as Content);
   };
 
-  const convertToCompiledBook = (title: string, content: Content): CompiledBook => {
-    const chapters: Chapter[] = Object.entries(content["content"]).map(([chapterTitle, chapterContent]) => ({
-        chapterTitle,
-        content: chapterContent
-    }));
+  // const normalizeContentFormat = (rawContent: any): Content => {
+  //     // 이미 올바른 형태일 경우 그대로 반환
+  //     if (typeof rawContent === "object" && !Array.isArray(rawContent)) {
+  //         return rawContent;
+  //     }
 
-    return { title, chapters };
-};
+  //     // 만약 `content`가 배열이면 이를 객체 형태로 변환
+  //     if (Array.isArray(rawContent["content"])) {
+  //         const normalizedContent: Content = { content: {} };
+
+  //         rawContent["content"].forEach((item: any) => {
+  //             const [key, value] = Object.entries(item)[0]; // 첫 번째 키-값 쌍 가져오기
+  //             normalizedContent["content"][key] = value; // 객체 형태로 변환
+  //         });
+
+  //         return normalizedContent;
+  //     }
+
+  //     // 기본적으로 기존 데이터 반환
+  //     return rawContent;
+  // };
+
+  const normalizeContentFormat = (rawContent: any): Content => {
+    if (Array.isArray(rawContent["content"])) {
+      return {
+        content: rawContent["content"].reduce((acc, item: any) => {
+          const [key, value] = Object.entries(item)[0]; // 첫 번째 키-값 가져오기
+          acc[key] = String(value); // 문자열로 변환
+          return acc;
+        }, {} as Record<string, string>),
+      };
+    }
+
+    return rawContent; // 기존 구조 유지
+  };
+
+
+  const convertToCompiledBook = (title: string, content: Content): CompiledBook => {
+      // content 포맷 정규화 (배열이면 객체로 변환)
+      const normalizedContent = normalizeContentFormat(content);
+
+      const chapters: Chapter[] = Object.entries(normalizedContent["content"]).map(([chapterTitle, chapterContent]) => ({
+          chapterTitle,
+          content: String(chapterContent) // 문자열 변환
+      }));
+
+      return { title, chapters };
+  };
 
 
   const handleMakeAIContent = async () => {
@@ -295,7 +325,7 @@ const handleRemoveChapter = (index: number) => {
   return (
     <TooltipProvider>
     <div className="flex flex-col min-h-screen bg-gray-100">
-      <div className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden my-8">
+      <div className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden my-1">
         <div className="flex items-center justify-between p-4 text-white">
           <Button variant="ghost" onClick={onClickBackButton} className="text-white bg-brand hover:bg-brand-dark shadow-lg">
             {/* <ChevronLeft className="mr-2 h-4 w-4" /> */}
@@ -316,7 +346,7 @@ const handleRemoveChapter = (index: number) => {
             <TooltipTrigger asChild>
               <button
                 onClick={() => setOpen((prev) => !prev)} // 클릭 시 토글
-                className="focus:outline-none w-6 h-6 flex items-center justify-center"
+                className="focus:outline-none w-6 h-6 flex items-center justify-center ml-1"
               >
                 <HelpCircle className="w-5 h-5 text-gray-500 hover:text-brand cursor-pointer" />
               </button>
@@ -381,9 +411,9 @@ const handleRemoveChapter = (index: number) => {
           {step === 1 && (
             <div className="mt-0 pt-0">
               {/* 안내 문구 */}
-              <p className="text-center text-sm font-semibold text-gray-700 mb-4">
-              📖 봄날의 서는 내가 작성한 글 조각들로 만들어져요. ✨   <br/>
-              하나 이상의 글 조각을 선택해 멋진 이야기를 시작해보세요!
+              <p className="text-center text-sm font-semibold text-gray-700 mb-6">
+              📖 봄날의 서는 내가 작성한 글 조각들로 만들어져요 ✨   <br/>
+              글 조각을 선택해 멋진 이야기를 시작해보세요!
               </p>
 
               {/* 카드 리스트 */}
@@ -391,37 +421,60 @@ const handleRemoveChapter = (index: number) => {
                 {stories.map((story) => (
                   <Card
                     key={story.id}
-                    className={`p-4 rounded-lg cursor-pointer transition-all ${
+                    className={`p-4 flex items-center space-x-4 rounded-lg cursor-pointer transition-all ${
                       selectedStoryIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-200"
                     }`}
                     onClick={() => toggleStorySelection(story)}
                   >
-                    <div className="flex flex-col items-center">
-                      <div className="w-32 h-32 relative mb-4">
+                    {/* 왼쪽: 이미지 */}
+                    <div className="w-16 h-16 relative flex-shrink-0">
+                      {story.images.length > 0 ? (
                         <NextImage
-                          src={story.images[0]}
-                          alt={story.images[0]}
+                          src={story.images[0]} // 첫 번째 이미지를 썸네일로 사용
+                          alt={story.title}
                           layout="fill"
                           objectFit="cover"
                           className="rounded-lg"
                         />
-                      </div>
-                      <h3 className="text-lg font-bold text-center mb-2">{story.title}</h3>
-                      <p className="text-sm text-gray-600 line-clamp-2 text-center">{story.content}</p>
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+                          No Image
+                        </div>
+                      )}
                     </div>
-                    <Button
-                      className="mt-4 w-full"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleStoryClick(story);
-                      }}
-                    >
-                      자세히 보기
-                    </Button>
+
+                    {/* 오른쪽: 제목 + 내용 */}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-left mb-1">{story.title}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2 text-left">{story.content}</p>
+
+                      {/* 자세히 보기 버튼 */}
+                      <Button
+                        className="mt-2 w-full"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStoryClick(story);
+                        }}
+                      >
+                        자세히 보기
+                      </Button>
+                    </div>
                   </Card>
                 ))}
               </div>
+
+              {/* 글 조각 쓰러 가는 버튼 (반응형) */}
+              <div className="mt-6 text-center">
+                <Button
+                  className="w-full text-gray-600 text-sm" variant="ghost"
+                  onClick={() => router.push("/yesterday/write-note")}
+                >
+                  🌿 마음에 드는 글 조각이 없나요? 직접 써보세요!
+                </Button>
+              </div>
+
+
             </div>
           )}
 
@@ -430,11 +483,19 @@ const handleRemoveChapter = (index: number) => {
             <div className="w-full max-w-2xl mx-auto">
               <Carousel className="w-full">
                 <CarouselContent>
-                  {pages.map((page, index) => (
+                  {/* {pages.map((page, index) => (
                     <CarouselItem key={index} className="p-4 text-center">
                       <p className="text-sm leading-relaxed whitespace-pre-line">{page}</p>
                     </CarouselItem>
+                  ))} */}
+                  {pages.map((page, index) => (
+                    <CarouselItem key={index} className="p-4 text-center">
+                      <p className="text-sm leading-relaxed whitespace-pre-line">
+                        {typeof page === "object" ? JSON.stringify(page, null, 2) : page}
+                      </p>
+                    </CarouselItem>
                   ))}
+
                 </CarouselContent>
                 <CarouselPrevious />
                 <CarouselNext />
@@ -450,7 +511,17 @@ const handleRemoveChapter = (index: number) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">태그 입력</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">태그</label>
+
+                {/* 입력 필드 */}
+                <Input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  className="w-full p-2 border rounded-md mb-2"
+                  placeholder="입력 후 Enter"
+                />
                 
                 {/* 태그 리스트 */}
                 <div className="flex flex-wrap gap-2 mb-2">
@@ -468,15 +539,7 @@ const handleRemoveChapter = (index: number) => {
                   ))}
                 </div>
 
-                {/* 입력 필드 */}
-                <Input
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleTagKeyDown}
-                  className="w-full p-2 border rounded-md"
-                  placeholder="태그 입력 후 Enter"
-                />
+
               </div>
 
 
@@ -540,13 +603,16 @@ const handleRemoveChapter = (index: number) => {
                     onClick={() => handleSelectImage(image)}
                   >
                     <div className="aspect-[2/3] relative">
-                      <NextImage
-                        src={image}
-                        alt={image}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-lg"
-                      />
+                      {image && (
+                        <NextImage
+                          src={image}
+                          alt="책 이미지"
+                          width={200}
+                          height={200}
+                          style={{ objectFit: "cover" }}
+                          priority
+                        />
+                      )}
                     </div>
                   </Card>
                 ))}

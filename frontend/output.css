@@ -2190,7 +2190,7 @@ video {
 
 .border-brand-light {
   --tw-border-opacity: 1;
-  border-color: rgb(150 178 60 / var(--tw-border-opacity, 1));
+  border-color: rgb(150 178 60 / var(--tw-border-opacity, 0.8));
 }
 
 .border-destructive {
