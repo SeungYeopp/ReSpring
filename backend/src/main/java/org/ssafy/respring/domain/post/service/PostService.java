@@ -10,6 +10,9 @@ import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.ImageType;
+import org.ssafy.respring.domain.notification.service.NotificationService;
+import org.ssafy.respring.domain.notification.vo.NotificationType;
+import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
 import org.ssafy.respring.domain.post.dto.request.PostUpdateRequestDto;
 import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
@@ -32,6 +35,7 @@ public class PostService {
     private final ImageService imageService;
     private final UserRepository userRepository;
     private final CommentLikesRepository commentLikesRepository;
+    private final NotificationService notificationService;
 
     /**
      * 📝 포스트 생성
@@ -203,6 +207,16 @@ public class PostService {
 
         boolean isLiked = post.toggleLike(userId);
         post.setLikes((long) post.getLikedUsers().size());
+        // ✅ "좋아요"가 새로 눌린 경우 + "본인 글이 아닐 때" 알림 발송
+        if (isLiked && !post.getUser().getId().equals(userId)) {
+            notificationService.sendNotification(
+                    post.getUser().getId(),    // 알림을 받을 유저(게시글 작성자)
+                    NotificationType.LIKE,
+                    TargetType.POST,
+                    postId,
+                    "회원님의 게시글에 새로운 좋아요가 있습니다!"
+            );
+        }
         return isLiked;
     }
 
@@ -229,7 +243,7 @@ public class PostService {
                         comment.getId(),
                         comment.getContent(),
                         comment.getUser().getUserNickname(),
-                        imageService.generatePresignedUrl(comment.getUser().getProfileImage()),
+                        comment.getUser().getProfileImage(),
                         comment.getCreatedAt(),
                         comment.getUpdatedAt(),
                         comment.getParent() != null ? comment.getParent().getId() : null,
@@ -244,7 +258,7 @@ public class PostService {
                 post.getContent(),
                 post.getCategory(),
                 post.getUser().getUserNickname(),
-                imageService.generatePresignedUrl(post.getUser().getProfileImage()),
+                post.getUser().getProfileImage(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getLikes(),

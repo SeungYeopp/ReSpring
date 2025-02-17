@@ -24,6 +24,7 @@ export default function WriteStoryPage() {
   const [eventId, setEventId] = useState<number>();
   const [loading, setLoading] = useState<boolean>(false);
   const [story, setStory] = useState<{ title: string; content: string } | null>(null);
+  const [images, setImages] = useState<File[]>([]);
 
   const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
 
@@ -83,13 +84,13 @@ export default function WriteStoryPage() {
       const deleteImageIds: number[] = [];
 
       if (storyId) {
-        await updateStory(storyId, title, content, eventId!, deleteImageIds, []);
+        await updateStory(storyId, title, content, eventId!, deleteImageIds, images);
         router.push(`/yesterday/booklist/${userId}?tab=stories`);
       } else {
         if (stage === "select") {
           setStage("editor");
         } else {
-          const newStoryId = await makeStory(title, content, selected!, []);
+          const newStoryId = await makeStory(title, content, selected!, images);
           router.push(`/stories/${newStoryId}`);
         }
       }
@@ -140,6 +141,8 @@ export default function WriteStoryPage() {
           content={content}
           onTitleChange={setTitle}
           onContentChange={setContent}
+          images={images}
+          onImagesChange={setImages}
         />
       )}
     </div>
