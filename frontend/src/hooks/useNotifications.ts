@@ -11,12 +11,16 @@ import type { Notification } from "@/app/notifications/types/notifications";
  * @param {string} sseUrl SSE 연결을 위한 API URL
  * @returns {object} notifications: 수신된 알림 배열, clearNotifications: 알림 초기화 함수
  */
-const useNotifications = (sseUrl: string) => {
+const useNotifications = (sseUrl?: string) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
+    if(!sseUrl){
+      console.warn("⚠️ sseUrl이 없습니다. SSE 연결을 시도하지 않습니다.");
+      return;
+    }
     let isCancelled = false;
 
     const checkSessionAndConnect = async () => {

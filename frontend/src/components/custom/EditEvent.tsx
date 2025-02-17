@@ -39,7 +39,6 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
 
     try {
       await updateEvent(event.id, {
-        userId,
         eventName,
         occurredAt: new Date(date),
         category,
@@ -65,7 +64,7 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
     if (!event) return;
 
     try {
-      await deleteEvent(event.id, userId);
+      await deleteEvent(event.id);
       setSuccessMessage("✅ 흔적이 지워졌습니다!");
       setTimeout(() => {
         setSuccessMessage(null);
