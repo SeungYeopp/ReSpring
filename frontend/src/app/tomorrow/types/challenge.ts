@@ -70,12 +70,18 @@ export interface ChallengeUpdateRequest {
   image?: File; // 📌 이미지 수정 가능
 }
 
-// 📌 6. 챌린지 참여자 정보
+// // 📌 6. 챌린지 참여자 정보
+// export interface ChallengeParticipant {
+//   challengeId: number; // 📌 챌린지 ID 추가
+//   participantCount: number;
+//   participantIds: Participant[];
+// }
 export interface ChallengeParticipant {
-  challengeId: number; // 📌 챌린지 ID 추가
+  challengeId: number; // 챌린지 ID
   participantCount: number;
-  participantIds: Participant[];
+  participantInfos: Participant[];
 }
+
 
 // 📌 7. 챌린지 정렬 옵션 타입
 export type SortOption = "LATEST" | "POPULAR" | "MOST_PARTICIPATED";
