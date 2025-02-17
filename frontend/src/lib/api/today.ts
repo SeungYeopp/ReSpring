@@ -295,7 +295,7 @@ export async function likeComment(commentId : number): Promise<boolean>{
   try{
     const response = await axiosAPI.post(`/comments/${commentId}/like`);
 
-    return response.data;
+    return response.data; // true 면 좋아요, false는 좋아요 취소.
   }catch(error : any){
     throw new Error(error);
   }
