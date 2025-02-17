@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { getAllBooksByUserId, Book } from "@/lib/api/book";
+import { getAllBooksByUserNickname, Book } from "@/lib/api/book";
 import Link from "next/link";
 
 interface BookShelfProps {
@@ -19,7 +19,7 @@ const BookShelf: React.FC<BookShelfProps> = ({ userNickname, isMine }) => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const fetchedBooks = await getAllBooksByUserId(userNickname);
+        const fetchedBooks = await getAllBooksByUserNickname(userNickname);
         const formattedBooks = fetchedBooks.map((book: any) => ({
           ...book,
           createdAt: book.createdAt instanceof Date ? book.createdAt.toISOString() : book.createdAt,
