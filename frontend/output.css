@@ -2409,7 +2409,7 @@ video {
 }
 
 .bg-brand {
-  --tw-bg-opacity: 1;
+  --tw-bg-opacity: 0.9;
   background-color: rgb(150 178 60 / var(--tw-bg-opacity, 1));
 }
 
