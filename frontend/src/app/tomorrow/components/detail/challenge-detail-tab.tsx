@@ -25,7 +25,7 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
   // isParticipating: 사용자가 챌린지에 참여 중인지 여부
   const [isParticipating, setIsParticipating] = useState(false);
   // isTodayCompleted: 오늘의 도전 완료 여부
-  const [isTodayCompleted, setIsTodayCompleted] = useState(false)
+  const [isTodayCompleted, setIsTodayCompleted] = useState(challenge.successToday);
   // theme: UI 테마 (light/dark 등)
   const [theme, setTheme] = useState<Theme>("light")
   // currentUserId: 현재 로그인한 사용자의 ID (세션 정보에서 가져옴)
