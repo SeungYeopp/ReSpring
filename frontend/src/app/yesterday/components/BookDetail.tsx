@@ -5,7 +5,7 @@ import { ArrowLeft, MessageSquare, Heart, BookIcon, Eye, Check } from "lucide-re
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import type { BookFull } from "@/lib/api"
-import { getBookById, likeOrUnlikeBook } from "@/lib/api"
+import { getBookById, getUserInfo, likeOrUnlikeBook } from "@/lib/api"
 import { useAuth } from "@/hooks/useAuth"
 import { useRouter } from "next/navigation"
 
@@ -18,16 +18,19 @@ export default function BookDetail({ bookId }: BookDetailProps) {
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [likeCount, setLikeCount] = useState<number>(240)
   const [book, setBook] = useState<BookFull>()
+  const [userNickname, setUserNickname] = useState<string>("");
+  const [count, setCount] = useState<number>(0);
 
-  const { userNickname: userId, userNickname } = useAuth(true)
+  //const { userNickname: userId, userNickname } = useAuth(true)
   const router = useRouter()
 
   useEffect(() => {
-    if (!userId) return
+    //if (!userId) return
 
     const getBook = async () => {
       try {
         const result = await getBookById(parseInt(bookId, 10))
+        setCount(count + 1);
         setBook(result)
         setLikeCount(result.likeCount)
 
@@ -40,12 +43,16 @@ export default function BookDetail({ bookId }: BookDetailProps) {
           setIsLiked(true)
           await likeOrUnlikeBook(parseInt(bookId, 10))
         }
+
+        const userInfo = await getUserInfo();
+
+        setUserNickname(userInfo.userNickname);
       } catch (error) {
         console.error(error)
       }
     }
     getBook()
-  }, [userId])
+  }, [])
 
   const handleLike = async () => {
     try {
@@ -94,7 +101,7 @@ export default function BookDetail({ bookId }: BookDetailProps) {
       <div className="flex-1 overflow-y-auto">
         {/* Book Title and Date */}
         <div className="text-center px-4 pt-8">
-          <h1 className="text-xl font-bold mb-2">{book?.title}</h1>
+          <h1 className="text-xl font-bold mb-2">{book?.title} + {count}</h1>
           <p className="text-gray-500 text-sm">{book?.createdAt?.toLocaleDateString()}</p>
         </div>
 

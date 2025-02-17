@@ -8,8 +8,9 @@ import Comments from "./Comments"
 import { TableOfContentsSkeleton } from "./Skeletons/TableOfContentsSkeleton"
 import { RecommendationsSkeleton } from "./Skeletons/RecommendationsSkeleton"
 import { CommentsSkeleton } from "./Skeletons/CommentsSkeleton"
+import {BookFull} from "@/lib/api"
 
-export default function BottomSection({ bookId }: { bookId: string }) {
+export default function BottomSection({ book }: { book: BookFull }) {
   const [activeTab, setActiveTab] = useState("toc")
 
   return (
@@ -39,21 +40,21 @@ export default function BottomSection({ bookId }: { bookId: string }) {
         {/* 목차 탭 */}
         <TabsContent value="toc" className="p-4">
           <Suspense fallback={<TableOfContentsSkeleton />}>
-            <TableOfContents bookId={bookId} />
+            <TableOfContents book={book} />
           </Suspense>
         </TabsContent>
 
         {/* 추천 탭 */}
         <TabsContent value="recommendations" className="p-4">
           <Suspense fallback={<RecommendationsSkeleton />}>
-            <Recommendations bookId={bookId} />
+            <Recommendations bookId={book.id.toString()} />
           </Suspense>
         </TabsContent>
 
         {/* 댓글 탭 */}
         <TabsContent value="comments" className="p-4">
           <Suspense fallback={<CommentsSkeleton />}>
-            <Comments bookId={parseInt(bookId, 10)} />
+            <Comments bookId={book.id} />
           </Suspense>
         </TabsContent>
       </Tabs>
