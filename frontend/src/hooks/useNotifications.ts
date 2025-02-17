@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import axiosAPI from "@/lib/api/axios";
+
 import type { Notification } from "@/app/notifications/types/notifications";
 
 /**
@@ -27,7 +28,7 @@ const useNotifications = (sseUrl?: string) => {
       try {
         console.log("리스폰스 응답 :");
 
-        const response = await axios.get("/user/me", { withCredentials: true });
+        const response = await axiosAPI.get("/user/me", { withCredentials: true });
         console.log(response.data);
         if (response.status === 200) {
           console.log("✅ 세션 확인됨, SSE 연결 시작...");
