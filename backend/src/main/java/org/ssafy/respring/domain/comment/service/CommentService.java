@@ -295,6 +295,17 @@ public class CommentService {
                     .comment(comment)
                     .build();
             commentLikesRepository.save(newLike);
+
+            UUID commentOwnerId = comment.getUser().getId();
+            if (!commentOwnerId.equals(userId)) {
+                notificationService.sendNotification(
+                        commentOwnerId,                // 알림 받을 사람 (댓글 작성자)
+                        NotificationType.LIKE,         // 알림 유형: 좋아요
+                        TargetType.COMMENT,            // 대상 유형: 댓글
+                        commentId,                     // 타겟 ID(댓글 ID)
+                        user.getUserNickname() + "님이 당신의 댓글을 좋아합니다!"
+                );
+            }
             return true; // 좋아요 등록
         }
     }
