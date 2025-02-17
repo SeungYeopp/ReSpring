@@ -98,6 +98,11 @@ function PostList({ posts }: { posts: Post[] }) {
     return <p className="text-center text-gray-500 mt-4">작성한 글이 없습니다.</p>;
   }
 
+  const CATEGORY_MAP: Record<string, string> = {
+    INFORMATION_SHARING: "정보 공유",
+    QUESTION_DISCUSSION: "고민/질문",
+  };
+
   return (
     <div className="space-y-3">
       {posts.map((post) => (
@@ -112,7 +117,7 @@ function PostList({ posts }: { posts: Post[] }) {
                   </p>
                 </div>
                 <div className="flex flex-col ml-4 items-end text-right">
-                  <Badge variant="outline" className="text-xs px-2 py-1 mb-4">{post.category}</Badge>
+                  <Badge variant="outline" className="text-xs px-2 py-1 mb-4">{CATEGORY_MAP[post.category]}</Badge>
                   <p className="text-xs text-muted-foreground mt-1">
                     {formatDistanceToNowStrict(new Date(post.updatedAt), { addSuffix: true, locale: ko })}
                   </p>
