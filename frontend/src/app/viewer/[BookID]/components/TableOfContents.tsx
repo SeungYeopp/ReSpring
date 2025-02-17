@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { usePanelContext } from "../context/usePanelContext";
+
 interface TableOfContentsProps {
   pages: { body: string[] }[];
   chapters?: { title: string; page: number }[];
