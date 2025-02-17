@@ -11,10 +11,10 @@ interface Event {
 }
 
 interface StoryShelfProps {
-  userId: string;
+  userNickname: string;
 }
 
-const StoryShelf: React.FC<StoryShelfProps> = ({ userId }) => {
+const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
   const [stories, setStories] = useState<Story[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [storiesPerShelf, setStoriesPerShelf] = useState(4);
@@ -37,7 +37,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userId }) => {
       try {
         const [fetchedStories, fetchedEvents] = await Promise.all([
           getAllStories(),
-          getAllEvents(userId)
+          getAllEvents(userNickname)
         ]);
 
         setStories(
@@ -51,7 +51,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userId }) => {
     };
 
     fetchStoriesAndEvents();
-  }, [userId]);
+  }, [userNickname]);
 
   useEffect(() => {
     const updateLayout = () => {

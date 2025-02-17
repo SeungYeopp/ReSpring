@@ -117,7 +117,7 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
           isViewerPage || isChatPage || isTestOnboardingPage || isMainPage || !isAuthenticated
             ? "pt-0 pb-0 md:py-0" // 특정 페이지에서는 패딩 제거하여 전체 화면 사용
             : "pt-14 pb-16 md:py-4" // 기본 페이지에서는 상하 패딩 적용
-        } ${isTestOnboardingPage || !isAuthenticated ? "" : "md:ml-64"}`} // 온보딩 테스트 페이지에서는 좌측 마진 제거, 그 외는 사이드바 공간 적용
+        } ${isTestOnboardingPage || !isAuthenticated || isMainPage ? "" : "md:ml-64"}`} // 온보딩 테스트 페이지에서는 좌측 마진 제거, 그 외는 사이드바 공간 적용
       >
         {children} {/* 자식 컴포넌트 렌더링 */}
       </main>

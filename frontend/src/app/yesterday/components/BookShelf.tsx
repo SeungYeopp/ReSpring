@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import { getAllBooksByUserId, Book } from "@/lib/api/book";
 
 interface BookShelfProps {
-  userId: string;
+  userNickname: string;
 }
 
-const BookShelf: React.FC<BookShelfProps> = ({ userId: userNickname }) => {
+const BookShelf: React.FC<BookShelfProps> = ({ userNickname }) => {
   const [books, setBooks] = useState<Book[]>([]);
   const [booksPerShelf, setBooksPerShelf] = useState(4);
   const [bookWidth, setBookWidth] = useState(160);
