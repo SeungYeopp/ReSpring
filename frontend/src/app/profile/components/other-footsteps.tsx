@@ -1,15 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getAllEvents, Event } from "@/lib/api/event";
-import EditEvent from "@/components/custom/EditEvent";
-import AddEvent from "@/components/custom/AddEvent";
+import { getTimelineEvents, Event } from "@/lib/api/event";
 import { getCategoryIcon } from "@/components/custom/EventCategories";
 
-const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
+const OtherFootsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
   const [footstepsData, setFootstepsData] = useState<Event[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -17,7 +13,7 @@ const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
 
   const fetchEvents = async () => {
     try {
-      const events = await getAllEvents();
+      const events = await getTimelineEvents(userNickname);
       const formattedEvents = events.map((event) => ({
         id: event.id,
         eventName: event.eventName,
@@ -29,16 +25,6 @@ const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
     } catch (error) {
       console.error("Failed to fetch events:", error);
     }
-  };
-
-  const handleEventClick = (event: Event) => {
-    setSelectedEvent(event);
-    setIsEditModalOpen(true);
-  };
-
-  const handleEventUpdated = async () => {
-    await fetchEvents();
-    setIsEditModalOpen(false);
   };
 
   const circleSize = 48;
@@ -65,11 +51,10 @@ const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
           return (
             <div
               key={item.id}
-              className="flex items-start mb-8 relative opacity-0 cursor-pointer"
+              className="flex items-start mb-8 relative opacity-0"
               style={{
                 animation: `fadeInAndExpand ${animationDuration}s ease-out forwards ${delay}`,
               }}
-              onClick={() => handleEventClick(item)}
             >
               {/* Category Icon Circle */}
               <div
@@ -101,18 +86,6 @@ const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
           );
         })}
       </div>
-
-      {isEditModalOpen && selectedEvent && (
-        <EditEvent
-          event={selectedEvent}
-          userId={userNickname}
-          onClose={() => setIsEditModalOpen(false)}
-          onEventUpdated={handleEventUpdated}
-          onEventDeleted={handleEventUpdated}
-        />
-      )}
-
-      <AddEvent onEventAdded={fetchEvents} />
 
       <style jsx global>{`
         @keyframes circleExpand {
@@ -157,4 +130,4 @@ const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
   );
 };
 
-export default Footsteps;
+export default OtherFootsteps;
