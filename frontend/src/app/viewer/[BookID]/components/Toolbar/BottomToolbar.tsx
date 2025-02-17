@@ -1,6 +1,8 @@
 "use client";
 
+import React, { useMemo } from "react";
 import { usePageContext } from "../../context/PageContext";
+import { useDynamicPages } from "../../hooks/useDynamicPages";
 import { useViewerSettings } from "../../context/ViewerSettingsContext";
 import { TableOfContents } from "../TableOfContents";
 import { CommentsPanel } from "../CommentsPanel";
@@ -9,14 +11,16 @@ import { usePageControls } from "../../hooks/usePageControls";
 // 전역 패널 상태를 확인하기 위해 PanelContext를 import합니다.
 import { usePanelContext } from "../../context/usePanelContext";
 
+import { Content } from "@/lib/api";
+
 interface BottomToolbarProps {
-  bookId: string; // bookId를 props로 받음
+  bookId: string; // ✅ bookId를 props로 받음
+  content: Content;
   imageUrls: string[];
 }
 
-export function BottomToolbar({ bookId, imageUrls }: BottomToolbarProps) {
+export function BottomToolbar({ bookId, content, imageUrls }: BottomToolbarProps) {
   const { isToolbarVisible } = usePageControls();
-  if (!isToolbarVisible) return null; // 툴바 숨김 상태면 안보이게!
 
   const { currentPage, totalPages } = usePageContext();
   const { theme } = useViewerSettings();
@@ -29,6 +33,24 @@ export function BottomToolbar({ bookId, imageUrls }: BottomToolbarProps) {
     gray: "bg-gray-800 text-white",
     dark: "bg-black text-white",
   };
+
+  const { pages, chapters } = useDynamicPages(content, imageUrls);
+  const { fontFamily, fontSize, lineHeight, letterSpacing } = useViewerSettings();
+
+  /** ✅ 현재 페이지에서 가장 가까운 챕터 찾기 */
+  const currentChapter = useMemo(() => {
+    if (!chapters.length) return "📖 목차 없음"; // 챕터가 없을 경우 기본값
+
+    let foundChapter = chapters[0].title; // 기본값은 첫 번째 챕터
+    for (const chap of chapters) {
+      if (chap.page > currentPage) break; // 현재 페이지보다 큰 챕터가 나오면 이전 챕터를 유지
+      foundChapter = chap.title;
+    }
+    return foundChapter;
+  }, [currentPage, chapters]);
+
+    // ✅ `isToolbarVisible` 체크
+    if (!isToolbarVisible) return <></>;
 
   return (
     <>
@@ -50,7 +72,7 @@ export function BottomToolbar({ bookId, imageUrls }: BottomToolbarProps) {
         <div className="flex-1 flex justify-end gap-2">
           {/* CommentsPanel 및 TableOfContents 역시 자체적으로 전역 패널 상태를 관리합니다. */}
           <CommentsPanel />
-          <TableOfContents bookId={bookId} imageUrls={imageUrls} />
+          <TableOfContents pages={pages} chapters={chapters} />
         </div>
       </div>
     </>
