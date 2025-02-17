@@ -34,7 +34,6 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
   const handlePost = async () => {
     try {
       await makeEvent({
-        userId,
         eventName,
         occurredAt: date ?? new Date(),
         category,

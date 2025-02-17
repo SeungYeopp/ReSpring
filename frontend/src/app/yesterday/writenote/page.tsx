@@ -31,7 +31,7 @@ export default function WriteStoryPage() {
 
   const fetchEvents = async () => {
     try {
-      const fetchedEvents = await getAllEvents(userId);
+      const fetchedEvents = await getAllEvents();
       const formattedEvents = fetchedEvents.map((event) => ({
         id: event.id,
         eventName: event.eventName,
