@@ -50,7 +50,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_BASE_URL: "https://i12a307.p.ssafy.io"
+        NEXT_PUBLIC_API_BASE_URL: "https://i12a307.p.ssafy.io/api"
     networks:
       - project-network
     depends_on:
