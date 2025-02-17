@@ -37,9 +37,11 @@ export function Reader({ content, imageUrls }: ReaderProps) {
     <div className="relative w-full max-w-5xl mx-auto h-full min-h-screen overflow-hidden flex flex-col items-start justify-start">
       
       {/* ✅ 현재 페이지의 챕터 제목 표시 */}
-      <div className="w-full text-center text-xl font-bold px-0 p-3 bg-gray-100 text-black dark:bg-gray-800 dark:text-white border-b border-gray-300 dark:border-gray-700 mb-4">
-        📖 {currentChapter}
-      </div>
+      {currentChapter !== "📖 목차 없음" && (
+        <div className="w-full text-center text-xl font-bold px-0 p-3 bg-gray-100 text-black dark:bg-gray-800 dark:text-white border-b border-gray-300 dark:border-gray-700 mb-4">
+          📖 {currentChapter}
+        </div>
+      )}
 
 
       {/* ✅ 이미지가 포함된 페이지 처리 */}
