@@ -173,6 +173,8 @@ public class ChallengeService {
         double successRate = 0.0;
 
         Optional<Records> records = Optional.empty();
+        boolean isParticipating = false;
+        boolean isLiked = false;
 
         // 🔹 User 엔티티 조회
         if (userId != null) {
@@ -186,6 +188,10 @@ public class ChallengeService {
             longestStreak = records.map(Records::getLongestStreak).orElse(0);
             currentStreak = records.map(Records::getCurrentStreak).orElse(0);
             successRate = (totalDays > 0) ? ((double) successCount / totalDays) * 100 : 0.0;
+            isParticipating = userChallengeRepository.existsByUserAndChallenge(user, challenge);
+
+            // (2) isLiked 판단
+            isLiked = isLikedChallenge(userId, challengeId);
 
         }
 
@@ -215,6 +221,8 @@ public class ChallengeService {
           .ownerNickname(owner.getUserNickname()) // ✅ 챌린지 OwnerId 추가
           .ownerProfileImage(owner.getProfileImage())
           .records(records.orElse(null))
+          .isParticipating(isParticipating)
+          .isLiked(isLiked)
           .build();
     }
 
