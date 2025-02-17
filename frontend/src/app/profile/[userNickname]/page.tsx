@@ -12,6 +12,7 @@ import Link from "next/link";
 import { logout } from "@/lib/api";
 import { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
 import BadgeModal from "../components/badge";
+import OtherFootsteps from "../components/other-footsteps";
 
 export default function ProfilePage() {
   const handleLogout = async () => {
@@ -141,12 +142,12 @@ export default function ProfilePage() {
           <StatSummary userNickname={targetNickname} challengeCount={challenges.length} />
 
           <div className="flex justify-center items-start text-sm">
-            <div className="flex gap-x-2">
+            <div className="flex gap-x-4">
               <button onClick={() => openBadgeModal("badge1")}>
                 <img src="/badge1.png" alt="새로 가입" className="h-[48px]" />
               </button>
               <button onClick={() => openBadgeModal("badge2")}>
-                <img src="/badge2.png" alt="프로필 작성" className="h-[48px]" />
+                <img src="/badge2.png" alt="첫 방문" className="h-[48px]" />
               </button>
             </div>
           </div>
@@ -186,7 +187,13 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex flex-col md:flex-[1.3] justify-start items-center">
-          <TabBar userNickname={targetNickname} challenges={challenges} />
+          {myNickname && myNickname === decodeURIComponent(targetNickname) ? (
+            <TabBar userNickname={targetNickname} challenges={challenges} />
+          ) : (
+            <div className="mt-8 w-[80%]">
+              <OtherFootsteps userNickname={targetNickname}/>
+            </div>
+          )}
         </div>
       </div>
 
