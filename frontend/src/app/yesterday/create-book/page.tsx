@@ -288,7 +288,7 @@ export default function CreateBook() {
         <div className="flex items-center justify-between p-4 text-white">
           <Button variant="ghost" onClick={onClickBackButton} className="text-white bg-brand hover:bg-brand-dark shadow-lg">
             <ChevronLeft className="mr-2 h-4 w-4" />
-            이전
+            {step === 1 ? "취소" : step === 4 ? "이전" : step === 2 ? "이전" : "이전"}
           </Button>
           <span className="text-xl font-bold text-black">
             {step === 1
@@ -313,7 +313,7 @@ export default function CreateBook() {
             disabled={step === 4 && !compiledBook}
             className="bg-brand-light hover:bg-brand-dark text-white shadow-lg"
           >
-            {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : step === 2 ? "수정" : "다음"}
+            {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : step === 2 ? "다음" : "다음"}
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
@@ -337,42 +337,51 @@ export default function CreateBook() {
             </div>
           )}
           {step === 1 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {stories.map((story) => (
-                <Card
-                  key={story.id}
-                  className={`p-4 rounded-lg cursor-pointer transition-all ${
-                    selectedStorieIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-200"
-                  }`}
-                  onClick={() => toggleStorySelection(story)}
-                >
-                  <div className="flex flex-col items-center">
-                    <div className="w-32 h-32 relative mb-4">
-                      <NextImage
-                        src={story.images[0]}
-                        alt={story.images[0]}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-lg"
-                      />
-                    </div>
-                    <h3 className="text-lg font-bold text-center mb-2">{story.title}</h3>
-                    <p className="text-sm text-gray-600 line-clamp-2 text-center">{story.content}</p>
-                  </div>
-                  <Button
-                    className="mt-4 w-full"
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleStoryClick(story)
-                    }}
+            <div>
+              {/* 안내 문구 */}
+              <h2 className="text-center text-lg font-semibold text-gray-700 mb-4">
+                하나 이상의 글 조각을 선택할 수 있습니다!
+              </h2>
+
+              {/* 카드 리스트 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {stories.map((story) => (
+                  <Card
+                    key={story.id}
+                    className={`p-4 rounded-lg cursor-pointer transition-all ${
+                      selectedStorieIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-200"
+                    }`}
+                    onClick={() => toggleStorySelection(story)}
                   >
-                    자세히 보기
-                  </Button>
-                </Card>
-              ))}
+                    <div className="flex flex-col items-center">
+                      <div className="w-32 h-32 relative mb-4">
+                        <NextImage
+                          src={story.images[0]}
+                          alt={story.images[0]}
+                          layout="fill"
+                          objectFit="cover"
+                          className="rounded-lg"
+                        />
+                      </div>
+                      <h3 className="text-lg font-bold text-center mb-2">{story.title}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2 text-center">{story.content}</p>
+                    </div>
+                    <Button
+                      className="mt-4 w-full"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStoryClick(story);
+                      }}
+                    >
+                      자세히 보기
+                    </Button>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
+
 
           {step === 2 && compiledBook && (
             <div className="w-full max-w-2xl mx-auto">
