@@ -10,72 +10,83 @@ interface Chapter {
   page: number;
 }
 
+interface PageContent {
+  title: string;
+  body: string[];
+}
+
 export function useDynamicPages(bookContent: Content, imageUrls: string[]) {
   const { fontSize, lineHeight, letterSpacing } = useViewerSettings();
   const { setTotalPages } = usePageContext();
-  const [pages, setPages] = useState<string[]>([]);
+  const [pages, setPages] = useState<PageContent[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!bookContent || Object.keys(bookContent).length === 0) return;
 
-    
     const viewportHeight = containerRef.current?.clientHeight || window.innerHeight;
     const lineHeightPx = fontSize * lineHeight;
     const maxLinesPerPage = Math.floor(viewportHeight / lineHeightPx);
-    //console.log(`📌 한 페이지당 최대 줄 수: ${maxLinesPerPage}`);
-
     const wordsPerLine = Math.floor(50 / (fontSize + letterSpacing));
     const maxWordsPerPage = wordsPerLine * maxLinesPerPage;
-    //console.log(`📌 한 페이지당 최대 단어 수: ${maxWordsPerPage}`);
 
-    const finalPages: string[] = [];
+    const finalPages: PageContent[] = [];
     const finalChapters: Chapter[] = [];
-    let currentPage = "";
+    let currentPage: PageContent | null = null;
     let wordCount = 0;
     let pageCount = 0;
 
-    if(imageUrls)
+    if (imageUrls.length > 0) {
       imageUrls.forEach((url) => {
-        finalPages.push(`<img src="${url}" alt="봄날의 서 이미지" style="max-width: 100%; max-height: 100%; object-fit: contain;">`)
+        finalPages.push({
+          title: "",
+          body: [
+            `<img
+              key={url}
+              src={url}
+              alt="봄날의 서 이미지"
+              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+            />`,
+          ],
+        });
         pageCount++;
-      })
-    
-    // if(imageUrls)
-    //   imageUrls!.forEach((url, idx) => {
-    //     console.log("idx", idx)
-    //     finalPages.push("");
-    //     pageCount++;
-    //   })
+      });
+    }
 
     Object.entries(bookContent).forEach(([chapterTitle, content]) => {
       if (currentPage) {
         finalPages.push(currentPage);
         pageCount++;
-        currentPage = "";
+        currentPage = null;
       }
 
       finalChapters.push({ title: chapterTitle, page: pageCount });
 
-      // 챕터 제목 추가
-      currentPage += `📖 ${chapterTitle}`;
-      wordCount = currentPage.split(" ").length; // 단어 수 업데이트
+      // ✅ 제목과 본문을 분리하여 저장
+      currentPage = { title: chapterTitle, body: [] };
+      wordCount = 0;
 
-      // 챕터 본문 내용 처리
       const words = content.split(" ");
-      words.forEach((word) => {
+      let paragraph: string[] = [];
+
+      words.forEach((word, index) => {
         if (wordCount + 1 <= maxWordsPerPage) {
-          currentPage += " " + word;
+          paragraph.push(word);
           wordCount += 1;
         } else {
-          // 페이지가 꽉 차면 새로운 페이지로 넘어감
-          finalPages.push(currentPage);
-          currentPage = word;
+          currentPage!.body.push(paragraph.join(" "));
+          paragraph = [word];
           wordCount = 1;
+          finalPages.push(currentPage!);
+          currentPage = { title: chapterTitle, body: [] };
           pageCount++;
         }
       });
+
+      if (paragraph.length > 0) {
+        currentPage!.body.push(paragraph.join(" "));
+      }
     });
 
     if (currentPage) {
@@ -86,9 +97,7 @@ export function useDynamicPages(bookContent: Content, imageUrls: string[]) {
     setPages(finalPages);
     setChapters(finalChapters);
     setTotalPages(pageCount);
-    console.log("finalChapters", finalChapters)
   }, [bookContent, imageUrls, fontSize, lineHeight, letterSpacing, setTotalPages]);
 
-  
   return { pages, chapters, containerRef };
 }
