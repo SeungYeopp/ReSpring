@@ -288,7 +288,7 @@ export default function CreateBook() {
         <div className="flex items-center justify-between p-4 text-white">
           <Button variant="ghost" onClick={onClickBackButton} className="text-white bg-brand hover:bg-brand-dark shadow-lg">
             <ChevronLeft className="mr-2 h-4 w-4" />
-            이전
+            {step === 1 ? "취소" : step === 4 ? "이전" : step === 2 ? "이전" : "이전"}
           </Button>
           <span className="text-xl font-bold text-black">
             {step === 1
@@ -313,7 +313,7 @@ export default function CreateBook() {
             disabled={step === 4 && !compiledBook}
             className="bg-brand-light hover:bg-brand-dark text-white shadow-lg"
           >
-            {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : step === 2 ? "수정" : "다음"}
+            {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : step === 2 ? "다음" : "다음"}
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
