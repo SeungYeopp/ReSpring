@@ -337,42 +337,51 @@ export default function CreateBook() {
             </div>
           )}
           {step === 1 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {stories.map((story) => (
-                <Card
-                  key={story.id}
-                  className={`p-4 rounded-lg cursor-pointer transition-all ${
-                    selectedStorieIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-200"
-                  }`}
-                  onClick={() => toggleStorySelection(story)}
-                >
-                  <div className="flex flex-col items-center">
-                    <div className="w-32 h-32 relative mb-4">
-                      <NextImage
-                        src={story.images[0]}
-                        alt={story.images[0]}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-lg"
-                      />
-                    </div>
-                    <h3 className="text-lg font-bold text-center mb-2">{story.title}</h3>
-                    <p className="text-sm text-gray-600 line-clamp-2 text-center">{story.content}</p>
-                  </div>
-                  <Button
-                    className="mt-4 w-full"
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleStoryClick(story)
-                    }}
+            <div>
+              {/* 안내 문구 */}
+              <h2 className="text-center text-lg font-semibold text-gray-700 mb-4">
+                하나 이상의 글 조각을 선택할 수 있습니다!
+              </h2>
+
+              {/* 카드 리스트 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {stories.map((story) => (
+                  <Card
+                    key={story.id}
+                    className={`p-4 rounded-lg cursor-pointer transition-all ${
+                      selectedStorieIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-200"
+                    }`}
+                    onClick={() => toggleStorySelection(story)}
                   >
-                    자세히 보기
-                  </Button>
-                </Card>
-              ))}
+                    <div className="flex flex-col items-center">
+                      <div className="w-32 h-32 relative mb-4">
+                        <NextImage
+                          src={story.images[0]}
+                          alt={story.images[0]}
+                          layout="fill"
+                          objectFit="cover"
+                          className="rounded-lg"
+                        />
+                      </div>
+                      <h3 className="text-lg font-bold text-center mb-2">{story.title}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2 text-center">{story.content}</p>
+                    </div>
+                    <Button
+                      className="mt-4 w-full"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStoryClick(story);
+                      }}
+                    >
+                      자세히 보기
+                    </Button>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
+
 
           {step === 2 && compiledBook && (
             <div className="w-full max-w-2xl mx-auto">
