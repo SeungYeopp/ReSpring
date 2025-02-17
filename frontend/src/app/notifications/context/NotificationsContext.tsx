@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import useNotifications from "@/hooks/useNotifications";
 import type { Notification } from "@/app/notifications/types/notifications";
+import axiosAPI from "@/lib/api/axios";
 
 interface NotificationsContextType {
   notifications: Notification[];
@@ -17,21 +18,14 @@ export const NotificationsProvider = ({ children }: { children: React.ReactNode 
 
   // (예시) 사용자 세션 정보 가져오기
   useEffect(() => {
-    const USER_SESSION_URL = "http://localhost:8080/user/me"; // 실제 서버에 맞게 수정
     const fetchUserSession = async () => {
       try {
-        const response = await fetch(USER_SESSION_URL, {
-          credentials: "include",
-        });
-        if (!response.ok) {
-          throw new Error("세션 정보를 불러오는 데 실패했습니다.");
-        }
-        const data = await response.json();
-        // 백엔드에서 userId가 문자열 형태로 온다고 가정
-        setCurrentUserId(data.userId);
+        const response = await axiosAPI.get("/user/me");
+        console.log("✅ 사용자 세션 데이터:", response.data);
+        
+        setCurrentUserId(response.data.userId);
       } catch (error) {
         console.error("❌ 사용자 정보를 가져오는 데 실패:", error);
-        // 로그인 실패 시 로직 추가 가능
         setCurrentUserId(null);
       }
     };
@@ -44,7 +38,7 @@ export const NotificationsProvider = ({ children }: { children: React.ReactNode 
    * - null이면 아직 사용자 정보가 없으므로 구독 X
    */
   const sseUrl = currentUserId
-    ? `http://localhost:8080/notifications/subscribe/${currentUserId}`
+    ? `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/notifications/subscribe/${currentUserId}`
     : undefined;
 
   // useNotifications 훅 사용 (url이 없으면 SSE 연결하지 않음)
