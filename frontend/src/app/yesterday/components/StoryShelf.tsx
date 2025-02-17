@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { getAllStories, deleteStory } from "@/lib/api/story";
 import { getAllEvents } from "@/lib/api/event";
 import { Story } from "@/lib/api/story";
 import Link from "next/link";
+import { CirclePlus } from "lucide-react";
 
 interface Event {
   id: number;
@@ -38,10 +40,13 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
       try {
         const [fetchedStories, fetchedEvents] = await Promise.all([
           getAllStories(),
-          getAllEvents()
+          getAllEvents(),
         ]);
 
-        setStories(fetchedStories);
+        setStories([
+          { id: -1, title: "", content: "", eventId: -1, createdAt: new Date(), updatedAt: new Date(), occurredAt: new Date(), images: [] },
+          ...fetchedStories
+        ]);
         setEvents(fetchedEvents);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -78,35 +83,45 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
 
   return (
     <div ref={containerRef} className="flex flex-col items-center w-full p-4">
-      {stories.length === 0 ? (
-        <div className="flex flex-col items-center text-gray-500 mt-10">
-          <p className="text-lg">아직 작성된 이야기가 없습니다.</p>
-          <Link
-            href="/yesterday/writenote"
-            className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md text-sm hover:bg-green-600"
-          >
-            작성하러 가기
-          </Link>
-        </div>
-      ) : (
-        shelves.map((shelf, index) => (
-          <div key={index} className="flex flex-col items-center mb-6">
-            <div className="flex justify-center gap-6 w-full">
-              {shelf.map((story) => (
-                <div
+      {shelves.map((shelf, index) => (
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: index * 0.2 }}
+          className="flex flex-col items-center mb-6"
+        >
+          <div className="flex justify-center gap-6 w-full">
+            {shelf.map((story) =>
+              story.id === -1 ? (
+                <motion.div key="add-new-story" whileHover={{ scale: 1.05 }}>
+                  <Link
+                    href="/yesterday/writenote"
+                    className="group relative flex items-center justify-center bg-black text-white transition duration-300 hover:bg-gray-700 rounded-lg"
+                    style={{
+                      width: `${storyWidth}px`,
+                      height: `${(storyWidth / 160) * 240}px`,
+                    }}
+                  >
+                    <CirclePlus size={50} strokeWidth={1.5} />
+                  </Link>
+                </motion.div>
+              ) : (
+                <motion.div
                   key={story.id}
                   className="group relative"
                   style={{
                     width: `${storyWidth}px`,
                     height: `${(storyWidth / 160) * 240}px`,
                   }}
+                  whileHover={{ scale: 1.05 }}
                 >
                   <div className="relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
                     <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
                       <img
                         src={"/placeholder_storycover.png"}
                         alt={`Story ${story.title}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover rounded-lg"
                       />
                       <div className="absolute inset-0 flex flex-col justify-start p-2">
                         <div className="overflow-hidden whitespace-nowrap relative w-full">
@@ -150,14 +165,14 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-            <img src="/shelf.png" alt="Bookshelf" width={1909} height={152} />
+                </motion.div>
+              )
+            )}
           </div>
-        ))
-      )}
-
+          <img src="/shelf.png" alt="Bookshelf" width={1909} height={152} />
+        </motion.div>
+      ))}
+      
       <style jsx>{`
         @keyframes marquee {
           0% { transform: translateX(100%); }

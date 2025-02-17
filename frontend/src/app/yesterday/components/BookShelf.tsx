@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { getAllBooksByUserNickname, Book } from "@/lib/api/book";
 import Link from "next/link";
+import { CirclePlus } from "lucide-react";
 
 interface BookShelfProps {
   userNickname: string;
@@ -50,23 +51,32 @@ const BookShelf: React.FC<BookShelfProps> = ({ userNickname, isMine }) => {
   }, [books]);
 
   const shelves = [];
-  for (let i = 0; i < books.length; i += booksPerShelf) {
-    shelves.push(books.slice(i, i + booksPerShelf));
+  const addNewBook = {
+    id: "add-new-book",
+    title: "새 책 추가",
+    coverImage: "/placeholder_bookcover.jpg", // Use a placeholder or black image
+    createdAt: new Date().toISOString(),
+    likeCount: 0,
+    viewCount: 0,
+    likedUsers: [],
+    liked: false,
+    authorNickname: "",
+    authorProfileImage: "",
+    tags: [],
+    updatedAt: new Date().toISOString(),
+  };
+
+  const allBooks = isMine ? [addNewBook, ...books] : books;
+
+  for (let i = 0; i < allBooks.length; i += booksPerShelf) {
+    shelves.push(allBooks.slice(i, i + booksPerShelf));
   }
 
   return (
     <div ref={containerRef} className="flex flex-col items-center w-full p-4">
-      {books.length === 0 ? (
+      {allBooks.length === 0 ? (
         <div className="flex flex-col items-center text-gray-500 mt-10">
           <p className="text-lg">아직 작성된 봄날의 서가 없습니다.</p>
-          {isMine && (
-            <Link
-              href="/yesterday/create-book"
-              className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md text-sm hover:bg-green-600"
-            >
-              작성하러 가기
-            </Link>
-          )}
         </div>
       ) : (
         shelves.map((shelf, index) => (
@@ -85,35 +95,44 @@ const BookShelf: React.FC<BookShelfProps> = ({ userNickname, isMine }) => {
                     width: `${bookWidth}px`,
                     height: `${(bookWidth / 160) * 240}px`,
                   }}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: book.id !== "add-new-book" ? 1.05 : 1 }}
                 >
-                  <div className="relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
-                    <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
-                      <img
-                        src={book.coverImage || "/placeholder_bookcover.jpg"}
-                        alt={`Book ${book.title}`}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    </div>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white text-sm p-4 [transform:rotateY(180deg)] [backface-visibility:hidden] rounded-lg">
-                      <p className="text-lg font-semibold">{book.title}</p>
-                      <p className="text-xs opacity-80">{new Date(book.createdAt).toLocaleDateString()}</p>
-                      <div className="mt-3 flex space-x-3">
-                        <a
-                          href={`/viewer/${book.id}`}
-                          className="px-3 py-1 bg-blue-500 text-white rounded-md flex items-center gap-1 text-xs hover:bg-blue-600"
-                        >
-                          읽기
-                        </a>
-                        <a
-                          href="#"
-                          className="px-3 py-1 bg-green-500 text-white rounded-md flex items-center gap-1 text-xs hover:bg-green-600"
-                        >
-                          편집
-                        </a>
+                  {book.id === "add-new-book" ? (
+                    <Link
+                      href="/yesterday/create-book"
+                      className="flex justify-center items-center w-full h-full bg-black rounded-lg group-hover:bg-gray-700 transition-all duration-200"
+                    >
+                      <CirclePlus size={50} strokeWidth={1.5} color="#ffffff" />
+                    </Link>
+                  ) : (
+                    <div className="relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
+                      <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
+                        <img
+                          src={book.coverImage || "/placeholder_bookcover.jpg"}
+                          alt={`Book ${book.title}`}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      </div>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white text-sm p-4 [transform:rotateY(180deg)] [backface-visibility:hidden] rounded-lg">
+                        <p className="text-lg font-semibold">{book.title}</p>
+                        <p className="text-xs opacity-80">{new Date(book.createdAt).toLocaleDateString()}</p>
+                        <div className="mt-3 flex space-x-3">
+                          <a
+                            href={`/viewer/${book.id}`}
+                            className="px-3 py-1 bg-blue-500 text-white rounded-md flex items-center gap-1 text-xs hover:bg-blue-600"
+                          >
+                            읽기
+                          </a>
+                          <a
+                            href="#"
+                            className="px-3 py-1 bg-green-500 text-white rounded-md flex items-center gap-1 text-xs hover:bg-green-600"
+                          >
+                            편집
+                          </a>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </motion.div>
               ))}
             </motion.div>
