@@ -7,6 +7,7 @@ import { notFound, useRouter } from "next/navigation";
 import { ArrowLeft, MessageSquare, Heart, ChevronDown, Edit } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import { useAuthWithUser } from "@/lib/hooks/tempUseAuthWithUser";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -135,17 +136,19 @@ export default function TodayDetailPage({ params }: { params: { id: string } }) 
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex gap-2 flex-1">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={post.ownerProfileImage} />
-                <AvatarFallback>{post.ownerNickname}</AvatarFallback>
-              </Avatar>
-              <div>
-                <h2 className="text-base font-semibold">{post.ownerNickname}</h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600">{timeAgo}</span>
-                  <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full">정보 공유</span>
+              <Link href={`/profile/${post.ownerNickname}`} className="flex items-center gap-2">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={post.ownerProfileImage} />
+                  <AvatarFallback>{post.ownerNickname}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h2 className="text-base font-semibold">{post.ownerNickname}</h2>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-600">{timeAgo}</span>
+                    <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full">정보 공유</span>
+                  </div>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
 
