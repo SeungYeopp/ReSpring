@@ -22,7 +22,7 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
 
   // 페이지별 네비게이션 표시 여부 결정
   const isViewerPage = pathname.startsWith("/viewer"); // "/viewer" 경로로 시작하는 페이지 (뷰어 페이지에서는 네비게이션 숨김)
-  const isBookDetailPage = pathname.startsWith("/yesterday/newbook"); // 특정 페이지 여부
+  const isBookDetailPage = pathname.startsWith("/yesterday/book"); // 특정 페이지 여부
   /**
    * 정규표현식 설명:
    * ^         : 문자열의 시작 ("/"로 시작해야 함)

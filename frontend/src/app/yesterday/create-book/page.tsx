@@ -174,7 +174,7 @@ export default function CreateBook() {
         bookCoverImg!,
       )
       setGeneratedCompiledBookId(result)
-      router.push(`/yesterday/newbook/${result}`)
+      router.push(`/yesterday/book/${result}`)
     } catch (error: any) {
       console.error(error)
     } finally {
