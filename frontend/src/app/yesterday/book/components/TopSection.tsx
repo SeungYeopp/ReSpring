@@ -144,7 +144,7 @@ export default function TopSection({ book }: { book: BookFull }) {
           </Button>
           <Button variant="ghost" size="icon" asChild className="text-white hover:text-white/80">
             <Link href="/">
-              <Home className="w-6 h-6" />
+              <Home className="!w-6 !h-6" />
             </Link>
           </Button>
         </div>
@@ -152,7 +152,7 @@ export default function TopSection({ book }: { book: BookFull }) {
           <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="text-white hover:text-white/80">
-              <MoreVertical className="w-6 h-6" />
+              <MoreVertical className="!w-6 !h-6" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
