@@ -104,9 +104,9 @@ export function SignUpForm({ onPrevious }: { onPrevious: () => void }) {
   return (
     <div className="space-y-6 md:space-y-8 max-w-2xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-[#000000] text-center">
-          봄날의 화원에 오신 것을 환영합니다!
-        </h2>
+        <p className="text-xl md:text-2xl lg:text-3xl font-semibold text-[#000000] text-center">
+          '다시, 봄 (Re:Spring)'과 함께해요!
+        </p>
         <p className="text-sm md:text-base text-[#7b7878] text-center mt-2">
           당신만의 계정을 만들어 봄날의 여정을 시작하세요.
         </p>
@@ -176,8 +176,8 @@ export function SignUpForm({ onPrevious }: { onPrevious: () => void }) {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <Label htmlFor="confirmPassword" className="text-[#000000]">비밀번호 확인</Label>
           <div className="relative">
-            <CheckCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#7b7878]" size={18} />
-            <Input
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#7b7878]" size={18} />
+          <Input
               id="confirmPassword"
               type="password"
               value={confirmPassword}
