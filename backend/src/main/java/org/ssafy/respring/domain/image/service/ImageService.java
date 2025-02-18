@@ -49,8 +49,8 @@ public class ImageService {
 
     private final S3Client s3Client;
 
-    private static final long MAX_FILE_SIZE = 500000; // 5MB
-    private static final long MAX_TOTAL_FILE_SIZE = 1000000; //10MB
+    private static final long MAX_FILE_SIZE = 5000000; // 5MB
+    private static final long MAX_TOTAL_FILE_SIZE = 10000000; //10MB
 
 
     public void validateFileSize(MultipartFile file) {
