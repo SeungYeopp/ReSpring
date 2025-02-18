@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Video, Settings, ArrowLeft, Send, Users,MessageSquarePlus,  Eye, EyeOff } from "lucide-react"
+import { Sprout, Video, Settings, ArrowLeft, Send, Users,MessageSquarePlus,  Eye, EyeOff } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
@@ -22,6 +22,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { motion } from "framer-motion"
+
 
 const SERVER_URL = "http://localhost:8080/chat";
 const USER_SESSION_URL = "http://localhost:8080/user/me";
@@ -39,6 +41,7 @@ const Chat1 = () => {
   const [isOpenChat, setIsOpenChat] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [roomName, setRoomName] = useState("");
+
 
   /* ✅ WebRTC 상태 */
   const [socket, setSocket] = useState(null);
@@ -692,336 +695,434 @@ const startPrivateChat = (selectedUserId) => {
   };
 
   // --------------------------------------------------------------------------------------------------------------------------------------------------------
-  const [activeScreen, setActiveScreen] = useState("rooms")
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [fontSize, setFontSize] = useState("medium")
-  const [letterSpacing, setLetterSpacing] = useState("normal")
-  const [fontFamily, setFontFamily] = useState("sans")
-  const [isVideoPopoverOpen, setIsVideoPopoverOpen] = useState(false)
-  const [showOpenChats, setShowOpenChats] = useState(true)
-  const [isNewChatOpen, setIsNewChatOpen] = useState(false)
-  const [newChatUserId, setNewChatUserId] = useState("")
-
-  const messagesEndRef = useRef(null)
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages]) //Fixed: Removed messagesEndRef as a dependency
-
-  const handleStartPrivateChat = () => {
-    if (newChatUserId.trim()) {
-      startPrivateChat(newChatUserId)
-      setNewChatUserId("")
-      setIsNewChatOpen(false)
-    }
-  }
-
-  const fontSizes = {
-    small: "text-sm",
-    medium: "text-base",
-    large: "text-lg",
-  }
-
-  const letterSpacings = {
-    tight: "tracking-tight",
-    normal: "tracking-normal",
-    wide: "tracking-wide",
-  }
-
-  const fontFamilies = {
-    sans: "font-sans",
-    serif: "font-serif",
-    mono: "font-mono",
-  }
-
-  const filteredRooms = showOpenChats ? myRooms : myRooms.filter((room) => !room.isOpenChat)
-
-  const renderRoomList = () => (
-    <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]}`}>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}>Chat Rooms</CardTitle>
-          <Button
-            onClick={() => setIsNewChatOpen(true)}
-            variant="outline"
-            size="sm"
-            className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-          >
-            New Chat
-          </Button>
-        </div>
-        <div className="flex items-center space-x-2 mt-2">
-          <Switch checked={showOpenChats} onCheckedChange={setShowOpenChats} id="open-chat-mode" />
-          <label htmlFor="open-chat-mode" className="text-sm font-medium">
-            {showOpenChats ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-            {showOpenChats ? "오픈채팅 보기" : "오픈채팅 숨기기"}
-          </label>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 p-0">
-        <ScrollArea className="h-[calc(100vh-12rem)]">
-          <div className="space-y-2 p-4">
-            {filteredRooms.map((room) => (
-              <div
-                key={room.roomId}
-                className={`flex items-center space-x-4 p-3 rounded-lg cursor-pointer transition-colors
-                  ${currentRoom?.roomId === room.roomId ? "bg-secondary" : "hover:bg-secondary/50"}
-                  ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-                onClick={() => {
-                  handleRoomClick(room)
-                  setActiveScreen("chat")
-                }}
-              >
-                <Avatar>
-                  <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`} />
-                  <AvatarFallback>{room.name[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{room.name}</p>
-                  {room.isOpenChat && (
-                    <div className="flex items-center text-xs text-gray-500">
-                      <Users className="w-3 h-3 mr-1" />
-                      <span>{room.userCount || 0}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
-  )
-
-  const renderEmptyChatScreen = () => (
-    <div className="flex flex-col items-center justify-center h-full">
-      <MessageSquarePlus className="h-12 w-12 text-gray-400 mb-4" />
-      <h3 className="text-lg font-medium text-gray-900 mb-2">시작하기</h3>
-      <p className="text-sm text-gray-500 mb-4">채팅방을 선택하거나 새로운 채팅을 시작하세요.</p>
-      <Button
-        onClick={() => setIsNewChatOpen(true)}
-        variant="outline"
-        className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-      >
-        New Chat
-      </Button>
-    </div>
-  )
-
-  const renderVideoPopover = () => (
-    <Card className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-      <CardContent className="bg-background p-6 rounded-lg max-w-2xl w-full">
-        <div className="flex justify-between items-center mb-4">
-          <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}>Video Chat</CardTitle>
-          <Button variant="ghost" size="icon" onClick={() => setIsVideoPopoverOpen(false)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="relative aspect-video">
-            <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover rounded-lg" />
-            <p
-              className={`absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-            >
-              You
-            </p>
-          </div>
-          <div className="relative aspect-video">
-            <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover rounded-lg" />
-            <p
-              className={`absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-            >
-              Remote
-            </p>
-          </div>
-        </div>
-        <div className="mt-4 flex justify-center">
-          <Button
-            onClick={toggleVideoStreaming}
-            variant={isStreaming ? "destructive" : "default"}
-            className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-          >
-            {isStreaming ? "End Video Chat" : "Start Video Chat"}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  )
-
-  const renderChatScreen = () => (
-    <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]}`}>
-      <CardHeader className="flex flex-row items-center justify-between py-2">
-        <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="icon" onClick={() => setActiveScreen("rooms")} className="md:hidden">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <Avatar>
-            <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${currentRoom?.name}`} />
-            <AvatarFallback>{currentRoom?.name?.[0]}</AvatarFallback>
-          </Avatar>
-          <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}>
-            {currentRoom ? currentRoom.name : "Select a room"}
-          </CardTitle>
-        </div>
-        <div className="flex items-center space-x-2">
-          {currentRoom && !isOpenChat && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsVideoPopoverOpen(true)}
-              className={isStreaming ? "text-red-500 hover:text-red-600" : ""}
-            >
-              <Video className="h-4 w-4" />
-            </Button>
-          )}
-          {!isOpenChat && currentRoom && isActive && (
-            <Popover open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-56">
-                <div className="space-y-2">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      leaveRoom()
-                      setActiveScreen("rooms")
-                      setIsSettingsOpen(false)
-                    }}
-                  >
-                    Leave Room
-                  </Button>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Font Size</p>
-                    <Select value={fontSize} onValueChange={setFontSize}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="small">Small</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="large">Large</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Letter Spacing</p>
-                    <Select value={letterSpacing} onValueChange={setLetterSpacing}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="tight">Tight</SelectItem>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="wide">Wide</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Font Family</p>
-                    <Select value={fontFamily} onValueChange={setFontFamily}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sans">Sans-serif</SelectItem>
-                        <SelectItem value="serif">Serif</SelectItem>
-                        <SelectItem value="mono">Monospace</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-          )}
-        </div>
-      </CardHeader>
-      {currentRoom ? (
-        <>
-          <CardContent className="flex-1 p-0">
-            <ScrollArea className="h-[calc(100vh-12rem)]">
-              <div className="space-y-4 p-4">
-                {messages.map((msg, index) => (
-                  <div key={index} className={`flex ${msg.sender === currentUserId ? "justify-end" : "justify-start"}`}>
-                    <div
-                      className={`max-w-[75%] px-4 py-2 rounded-lg
-                    ${msg.sender === currentUserId ? "bg-primary text-primary-foreground" : "bg-muted"}
-                    ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-                    >
-                      {msg.content}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div ref={messagesEndRef} />
-            </ScrollArea>
-          </CardContent>
-          <div className="p-4 border-t">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                sendMessage()
-              }}
-              className="flex items-center space-x-2"
-            >
-              <Input
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="메시지를 입력하세요..."
-                className={`flex-1 ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-              />
-              <Button type="submit" size="icon" disabled={!currentRoom || !isActive}>
-                <Send className="h-4 w-4" />
-              </Button>
-            </form>
-          </div>
-        </>
-      ) : (
-        renderEmptyChatScreen()
-      )}
-    </Card>
-  )
-
-  return (
-    <div className="h-[calc(100vh-theme(spacing.16))] w-full">
-      <div className="h-full overflow-hidden md:grid md:grid-cols-[300px_1fr] md:gap-4">
-        <div className={`h-full ${activeScreen === "chat" ? "hidden md:block" : ""}`}>{renderRoomList()}</div>
-        <div className={`h-full ${activeScreen === "rooms" ? "hidden md:block" : ""}`}>{renderChatScreen()}</div>
-        {isVideoPopoverOpen && renderVideoPopover()}
-      </div>
-      <Dialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Start a New Chat</DialogTitle>
-            <DialogDescription>Enter the user ID of the person you want to chat with.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Input
-                id="userId"
-                placeholder="Enter user ID"
-                value={newChatUserId}
-                onChange={(e) => setNewChatUserId(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNewChatOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleStartPrivateChat}>Start Chat</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
-}
-
-export default Chat1;
+   // 초기 상태 변경: 기본 폰트를 "binggraetaom" 등 원하는 키로 설정합니다.
+   const [activeScreen, setActiveScreen] = useState("rooms");
+   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+   const [fontSize, setFontSize] = useState("medium");
+   const [letterSpacing, setLetterSpacing] = useState("normal");
+   const [fontFamily, setFontFamily] = useState("binggraetaom");
+   const [isVideoPopoverOpen, setIsVideoPopoverOpen] = useState(false);
+   const [showOpenChats, setShowOpenChats] = useState(true);
+   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
+   const [newChatUserId, setNewChatUserId] = useState("");
+ 
+   // 글꼴 매핑을 Tailwind 설정의 fontFamily 키와 클래스 이름으로 변경합니다.
+   const fontFamilies = {
+     godob: "font-godob",
+     godom: "font-godom",
+     godomaum: "font-godomaum",
+     nunugothic: "font-nunugothic",
+     samlipbasic: "font-samlipbasic",
+     samlipoutline: "font-samlipoutline",
+     ongle: "font-ongle",
+     binggraetaom: "font-binggraetaom",
+     binggraetaombold: "font-binggraetaombold",
+     mapobackpacking: "font-mapobackpacking",
+     goodneighborsbold: "font-goodneighborsbold",
+     goodneighborsregular: "font-goodneighborsregular",
+     laundrygothicbold: "font-laundrygothicbold",
+     laundrygothicregular: "font-laundrygothicregular",
+     handon300: "font-handon300",
+     handon600: "font-handon600",
+   };
+ 
+   const extractOtherUserName = (roomName, myNickname) => {
+     if (roomName.startsWith("Private Chat: ")) {
+       const namesPart = roomName.replace("Private Chat: ", "");
+       const names = namesPart.split(" & ");
+       return names.find((name) => name.trim() !== myNickname) || "알 수 없음";
+     }
+     return roomName;
+   };
+ 
+   const messagesEndRef = useRef(null);
+ 
+   const scrollToBottom = () => {
+     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+   };
+ 
+   useEffect(() => {
+     scrollToBottom();
+   }, [messages]); // useEffect dependency 수정
+ 
+   const handleStartPrivateChat = () => {
+     if (newChatUserId.trim()) {
+       startPrivateChat(newChatUserId);
+       setNewChatUserId("");
+       setIsNewChatOpen(false);
+     }
+   };
+ 
+   const fontSizes = {
+     small: "text-sm",
+     medium: "text-base",
+     large: "text-lg",
+   };
+ 
+   const letterSpacings = {
+     tight: "tracking-tight",
+     normal: "tracking-normal",
+     wide: "tracking-wide",
+   };
+ 
+   const filteredRooms = showOpenChats ? myRooms : myRooms.filter((room) => !room.isOpenChat);
+ 
+   const renderRoomList = () => (
+     <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]} border-none bg-white/50 backdrop-blur-sm shadow-lg`}>
+       <CardHeader>
+         <div className="flex justify-between items-center">
+           <div className="flex items-center gap-2">
+             <Sprout className="text-[#96b23c] w-5 h-5" />
+             <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
+               Chat Rooms
+             </CardTitle>
+           </div>
+           <Button
+             onClick={() => setIsNewChatOpen(true)}
+             variant="outline"
+             size="sm"
+             className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4] transition-all duration-300 hover:scale-105`}
+           >
+             New Chat
+           </Button>
+         </div>
+         <div className="flex items-center space-x-2 mt-2">
+           <Switch
+             checked={showOpenChats}
+             onCheckedChange={setShowOpenChats}
+             id="open-chat-mode"
+             className="data-[state=checked]:bg-[#96b23c]"
+           />
+           <label htmlFor="open-chat-mode" className="text-sm font-medium text-gray-700">
+             {showOpenChats ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+             {showOpenChats ? "오픈채팅 보기" : "오픈채팅 숨기기"}
+           </label>
+         </div>
+       </CardHeader>
+       <CardContent className="flex-1 p-0">
+         <ScrollArea className="h-[calc(100vh-12rem)]">
+           <div className="space-y-2 p-4">
+             {filteredRooms.map((room) => (
+               <motion.div
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 key={room.roomId}
+                 className={`flex items-center space-x-4 p-3 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105
+                   ${currentRoom?.roomId === room.roomId ? "bg-[#96b23c] text-white" : "hover:bg-[#e6f3d4]"}
+                   ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+                 onClick={() => {
+                   handleRoomClick(room);
+                   setActiveScreen("chat");
+                 }}
+               >
+                 <Avatar className="border-2 border-white shadow-sm">
+                   <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`} />
+                   <AvatarFallback>{room.name[0]}</AvatarFallback>
+                 </Avatar>
+                 <div className="flex-1 min-w-0">
+                   <p
+                     className={`text-sm font-medium truncate ${
+                       currentRoom?.roomId === room.roomId ? "text-white" : "text-gray-900"
+                     }`}
+                   >
+                     {room.isOpenChat ? room.name : extractOtherUserName(room.name, userNickname)}
+                   </p>
+                   {room.isOpenChat && (
+                     <div
+                       className={`flex items-center text-xs ${
+                         currentRoom?.roomId === room.roomId ? "text-white/80" : "text-gray-500"
+                       }`}
+                     >
+                       <Users className="w-3 h-3 mr-1" />
+                       <span>{room.userCount || 0}</span>
+                     </div>
+                   )}
+                 </div>
+               </motion.div>
+             ))}
+           </div>
+         </ScrollArea>
+       </CardContent>
+     </Card>
+   );
+ 
+   const renderEmptyChatScreen = () => (
+     <div className="flex flex-col items-center justify-center h-full">
+       <motion.div
+         initial={{ opacity: 0, y: 20 }}
+         animate={{ opacity: 1, y: 0 }}
+         transition={{ duration: 0.8 }}
+         className="text-center"
+       >
+         <Sprout className="text-[#96b23c] w-12 h-12 mx-auto mb-4" />
+         <h3 className="text-xl font-bold text-gray-900 mb-2">시작하기</h3>
+         <p className="text-sm text-gray-700 mb-6">채팅방을 선택하거나 새로운 채팅을 시작하세요.</p>
+         <Button
+           onClick={() => setIsNewChatOpen(true)}
+           variant="outline"
+           className="px-6 py-2 text-sm rounded-full border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4] transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg font-semibold"
+         >
+           New Chat
+         </Button>
+       </motion.div>
+     </div>
+   );
+ 
+   const renderVideoPopover = () => (
+     <Card className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+       <CardContent className="bg-white/95 p-6 rounded-2xl max-w-2xl w-full shadow-lg border-none">
+         <div className="flex justify-between items-center mb-4">
+           <div className="flex items-center gap-2">
+             <Video className="text-[#96b23c] w-5 h-5" />
+             <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
+               Video Chat
+             </CardTitle>
+           </div>
+           <Button
+             variant="ghost"
+             size="icon"
+             onClick={() => setIsVideoPopoverOpen(false)}
+             className="hover:bg-[#e6f3d4] text-[#96b23c]"
+           >
+             <ArrowLeft className="h-4 w-4" />
+           </Button>
+         </div>
+         <div className="grid grid-cols-2 gap-4">
+           <div className="relative aspect-video rounded-lg overflow-hidden shadow-lg">
+             <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+             <p className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-sm">You</p>
+           </div>
+           <div className="relative aspect-video rounded-lg overflow-hidden shadow-lg">
+             <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
+             <p className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-sm">Remote</p>
+           </div>
+         </div>
+         <div className="mt-6 flex justify-center">
+           <Button
+             onClick={toggleVideoStreaming}
+             variant={isStreaming ? "destructive" : "default"}
+             className={`${
+               isStreaming ? "bg-red-500 hover:bg-red-600" : "bg-[#96b23c] hover:bg-[#7a9431]"
+             } text-white transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg`}
+           >
+             {isStreaming ? "End Video Chat" : "Start Video Chat"}
+           </Button>
+         </div>
+       </CardContent>
+     </Card>
+   );
+ 
+   const renderChatScreen = () => (
+     <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]} border-none pb-10 mb-5 bg-white/50 backdrop-blur-sm shadow-lg`}>
+       <CardHeader className="flex flex-row items-center justify-between py-2 border-b border-gray-100">
+         <div className="flex items-center space-x-3">
+           <Button
+             variant="ghost"
+             size="icon"
+             onClick={() => setActiveScreen("rooms")}
+             className="md:hidden hover:bg-[#e6f3d4] text-[#96b23c]"
+           >
+             <ArrowLeft className="h-4 w-4" />
+           </Button>
+           <Avatar className="border-2 border-white shadow-sm">
+             <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${currentRoom?.name}`} />
+             <AvatarFallback>{currentRoom?.name?.[0]}</AvatarFallback>
+           </Avatar>
+           <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
+             {currentRoom
+               ? currentRoom.isOpenChat
+                 ? currentRoom.name
+                 : extractOtherUserName(currentRoom.name, userNickname)
+               : "Select a room"}
+           </CardTitle>
+         </div>
+         <div className="flex items-center space-x-2">
+           {currentRoom && !isOpenChat && (
+             <Button
+               variant="ghost"
+               size="icon"
+               onClick={() => setIsVideoPopoverOpen(true)}
+               className={`hover:bg-[#e6f3d4] ${isStreaming ? "text-red-500" : "text-[#96b23c]"}`}
+             >
+               <Video className="h-4 w-4" />
+             </Button>
+           )}
+           {!isOpenChat && currentRoom && isActive && (
+             <Popover open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+               <PopoverTrigger asChild>
+                 <Button variant="ghost" size="icon" className="hover:bg-[#e6f3d4] text-[#96b23c]">
+                   <Settings className="h-4 w-4" />
+                 </Button>
+               </PopoverTrigger>
+               <PopoverContent className="w-56 border-none bg-white/95 backdrop-blur-sm shadow-lg">
+                 <div className="space-y-2">
+                   <p className="text-sm font-medium text-gray-900">글씨체</p>
+                   <Select value={fontFamily} onValueChange={setFontFamily}>
+                     <SelectTrigger className="border-[#96b23c] text-gray-700">
+                       <SelectValue />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="godob">고도 B</SelectItem>
+                       <SelectItem value="godom">고도 M</SelectItem>
+                       <SelectItem value="godomaum">고도 마음체</SelectItem>
+                       <SelectItem value="nunugothic">누누 기본 고딕체</SelectItem>
+                       <SelectItem value="samlipbasic">삼립호빵 베이직</SelectItem>
+                       <SelectItem value="samlipoutline">삼립호빵 아웃라인</SelectItem>
+                       <SelectItem value="ongle">온글잎 박다현체</SelectItem>
+                       <SelectItem value="binggraetaom">빙그레 타옴</SelectItem>
+                       <SelectItem value="binggraetaombold">빙그레 타옴 볼드</SelectItem>
+                       <SelectItem value="mapobackpacking">마포 백패킹</SelectItem>
+                       <SelectItem value="goodneighborsbold">굿네이버스 좋은이웃체 (볼드)</SelectItem>
+                       <SelectItem value="goodneighborsregular">굿네이버스 좋은이웃체 (레귤러)</SelectItem>
+                       <SelectItem value="laundrygothicbold">런드리고딕 볼드</SelectItem>
+                       <SelectItem value="laundrygothicregular">런드리고딕 레귤러</SelectItem>
+                       <SelectItem value="handon300">한돈 삼겹살체 (300g)</SelectItem>
+                       <SelectItem value="handon600">한돈 삼겹살체 (600g)</SelectItem>
+                     </SelectContent>
+                   </Select>
+                   <div className="space-y-1">
+                     <p className="text-sm font-medium text-gray-900">글자 크기</p>
+                     <Select value={fontSize} onValueChange={setFontSize}>
+                       <SelectTrigger className="border-[#96b23c] text-gray-700">
+                         <SelectValue />
+                       </SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="small">작게</SelectItem>
+                         <SelectItem value="medium">보통</SelectItem>
+                         <SelectItem value="large">크게</SelectItem>
+                       </SelectContent>
+                     </Select>
+                   </div>
+                   <div className="space-y-1">
+                     <p className="text-sm font-medium text-gray-900">자간</p>
+                     <Select value={letterSpacing} onValueChange={setLetterSpacing}>
+                       <SelectTrigger className="border-[#96b23c] text-gray-700">
+                         <SelectValue />
+                       </SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="tight">좁게</SelectItem>
+                         <SelectItem value="normal">보통</SelectItem>
+                         <SelectItem value="wide">넓게</SelectItem>
+                       </SelectContent>
+                     </Select>
+                   </div>
+                   <div className="space-y-1">
+                     <Button
+                       variant="ghost"
+                       className="w-full justify-start bg-red-600 hover:bg-[#ff4141] text-white"
+                       onClick={() => {
+                         leaveRoom();
+                         setActiveScreen("rooms");
+                         setIsSettingsOpen(false);
+                       }}
+                     >
+                       채팅 나가기
+                     </Button>
+                   </div>
+                 </div>
+               </PopoverContent>
+             </Popover>
+           )}
+         </div>
+       </CardHeader>
+       {currentRoom ? (
+         <>
+           <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
+             <ScrollArea className="flex-1">
+               <div className="flex flex-col space-y-4 p-4">
+                 {messages.map((msg, index) => (
+                   <motion.div
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     key={index}
+                     className={`flex ${msg.sender === currentUserId ? "justify-end" : "justify-start"}`}
+                   >
+                     <div
+                       className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm
+                         ${msg.sender === currentUserId ? "bg-[#96b23c] text-white" : "bg-white text-gray-900"}
+                         ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+                     >
+                       {msg.content}
+                     </div>
+                   </motion.div>
+                 ))}
+                 <div ref={messagesEndRef} />
+               </div>
+             </ScrollArea>
+           </CardContent>
+           <div className="p-4 pb-0 border-t border-gray-100 mt-auto">
+             <form
+               onSubmit={(e) => {
+                 e.preventDefault();
+                 sendMessage();
+               }}
+               className="flex items-center space-x-2"
+             >
+               <Input
+                 value={message}
+                 onChange={(e) => setMessage(e.target.value)}
+                 placeholder="메시지를 입력하세요..."
+                 className={`flex-1 border-[#96b23c] focus-visible:ring-[#96b23c] ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+               />
+               <Button
+                 type="submit"
+                 size="icon"
+                 disabled={!currentRoom || !isActive}
+                 className="bg-[#96b23c] hover:bg-[#7a9431] text-white transition-all duration-300 hover:scale-105"
+               >
+                 <Send className="h-4 w-4" />
+               </Button>
+             </form>
+           </div>
+         </>
+       ) : (
+         renderEmptyChatScreen()
+       )}
+     </Card>
+   );
+ 
+   return (
+     <div className="h-screen w-full bg-gradient-to-b from-[#e6f3d4] to-[#fce8e8] overflow-hidden">
+       <div className="h-full overflow-hidden md:grid md:grid-cols-[300px_1fr] md:gap-4 p-4 pb-0">
+         <div className={`h-full ${activeScreen === "chat" ? "hidden md:block" : ""}`}>{renderRoomList()}</div>
+         <div className={`h-full ${activeScreen === "rooms" ? "hidden md:block" : ""}`}>{renderChatScreen()}</div>
+         {isVideoPopoverOpen && renderVideoPopover()}
+       </div>
+       <Dialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen}>
+         <DialogContent className="bg-white/95 backdrop-blur-sm border-none shadow-lg">
+           <DialogHeader>
+             <DialogTitle className="text-gray-900">새 채팅 시작하기</DialogTitle>
+             <DialogDescription className="text-gray-700">
+               이야기를 나누고 싶은 상대방의 User ID를 입력하세요.
+             </DialogDescription>
+           </DialogHeader>
+           <div className="grid gap-4 py-4">
+             <div className="grid gap-2">
+               <Input
+                 id="userId"
+                 placeholder="Enter user ID"
+                 value={newChatUserId}
+                 onChange={(e) => setNewChatUserId(e.target.value)}
+                 className="border-[#96b23c] focus-visible:ring-[#96b23c]"
+               />
+             </div>
+           </div>
+           <DialogFooter>
+             <Button
+               variant="outline"
+               onClick={() => setIsNewChatOpen(false)}
+               className="border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4]"
+             >
+               Cancel
+             </Button>
+             <Button onClick={handleStartPrivateChat} className="bg-[#96b23c] hover:bg-[#7a9431] text-white">
+               Start Chat
+             </Button>
+           </DialogFooter>
+         </DialogContent>
+       </Dialog>
+     </div>
+   );
+ };
+ 
+ export default Chat1;
