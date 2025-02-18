@@ -19,7 +19,7 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
   const [category, setCategory] = useState<string>("");
   const [display, setDisplay] = useState<boolean>(true);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState<boolean>(false); // New state for confirmation modal
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState<boolean>(false);
 
   useEffect(() => {
     if (event) {
@@ -45,7 +45,7 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
         display,
       });
 
-      setSuccessMessage("✅ 흔적이 성공적으로 고쳐졌습니다!");
+      setSuccessMessage("✅ 발자취가 성공적으로 고쳐졌습니다!");
       setTimeout(() => {
         setSuccessMessage(null);
         onEventUpdated();
@@ -53,7 +53,7 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
       }, 2000);
     } catch (error) {
       console.error("Failed to update event:", error);
-      setSuccessMessage("❌ 흔적 고치기에 실패했습니다.");
+      setSuccessMessage("❌ 발자취 고치기에 실패했습니다.");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
@@ -65,7 +65,7 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
 
     try {
       await deleteEvent(event.id);
-      setSuccessMessage("✅ 흔적이 지워졌습니다!");
+      setSuccessMessage("✅ 발자취가 지워졌습니다!");
       setTimeout(() => {
         setSuccessMessage(null);
         onEventDeleted();
@@ -73,7 +73,7 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
       }, 2000);
     } catch (error) {
       console.error("Failed to delete event:", error);
-      setSuccessMessage("❌ 흔적 지우기에 실패했습니다.");
+      setSuccessMessage("❌ 발자취 지우기에 실패했습니다.");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
@@ -88,16 +88,16 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
   };
 
   const handleDeleteConfirmation = () => {
-    setIsConfirmingDelete(true); // Show confirmation modal
+    setIsConfirmingDelete(true);
   };
 
   const handleCancelDelete = () => {
-    setIsConfirmingDelete(false); // Hide confirmation modal
+    setIsConfirmingDelete(false);
   };
 
   const handleConfirmDelete = () => {
-    setIsConfirmingDelete(false); // Hide confirmation modal
-    handleDelete(); // Proceed with deletion
+    setIsConfirmingDelete(false);
+    handleDelete();
   };
 
   if (!event) return null;
@@ -105,22 +105,23 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
   return (
     <>
       <div className="modal-overlay" onClick={handleOverlayClick}>
-        {successMessage === null && !isConfirmingDelete && (
+        {!successMessage && !isConfirmingDelete && (
           <div className="modal-content">
-            <div className="modal-header font-bold">흔적 고치기</div>
+            <div className="modal-header font-bold text-lg">발자취 고치기</div>
             <div>
               <label className="font-bold">제목</label>
               <input
                 value={eventName}
                 onChange={(e) => setEventName(e.target.value)}
                 placeholder="예: 첫 직장 입사, 대학 졸업"
+                className="input"
               />
 
               <label className="font-bold">날짜</label>
-              <input type="date" value={date} onChange={handleDateChange} />
+              <input type="date" value={date} onChange={handleDateChange} className="input" />
 
               <label className="font-bold">카테고리</label>
-              <select value={category} onChange={(event) => setCategory(event.target.value)}>
+              <select value={category} onChange={(event) => setCategory(event.target.value)} className="input">
                 <option value="" disabled>
                   카테고리 선택
                 </option>
@@ -131,36 +132,27 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
                 ))}
               </select>
 
-              <div className="modal-footer">
-                <div className="checkbox-container">
-                  <label className="font-bold mr-2">발자취에 표시</label>
-                  <input
-                    type="checkbox"
-                    checked={display}
-                    onChange={(e) => setDisplay(e.target.checked)}
-                  />
-                </div>
-
-                <div className="button-container">
-                  <Button onClick={onClose}>취소</Button>
-                  <Button onClick={handleUpdate}>고치기</Button>
-                  <Button onClick={handleDeleteConfirmation} className="delete-button">
-                    지우기
-                  </Button>
-                </div>
+              {/* 공개 체크박스 - 개별 줄 배치 */}
+              <div className="flex items-center space-x-2 my-4">
+                <input
+                  type="checkbox"
+                  checked={display}
+                  onChange={(e) => setDisplay(e.target.checked)}
+                  className="w-4 h-4"
+                />
+                <label className="font-bold">공개</label>
               </div>
-            </div>
-          </div>
-        )}
 
-        {isConfirmingDelete && (
-          <div className="confirmation-modal">
-            <div className="modal-content">
-              <div className="modal-header">정말로 이 흔적을 지우시겠습니까?</div>
-              <div className="button-container">
-                <Button onClick={handleCancelDelete}>취소</Button>
-                <Button onClick={handleConfirmDelete} className="delete-button">
-                  지우기
+              {/* 버튼 배치 */}
+              <div className="flex justify-between mt-4 space-x-2">
+                <Button onClick={onClose} className="bg-gray-100 hover:bg-gray-400 text-black flex items-center px-4 py-2 rounded-md">
+                  ❌ 취소
+                </Button>
+                <Button onClick={handleUpdate} className="bg-lightgreen-100 hover:bg-lightgreen-100 text-black flex items-center px-4 py-2 rounded-md">
+                  ✏️ 수정
+                </Button>
+                <Button onClick={handleDeleteConfirmation} className="bg-red-100 hover:bg-red-100 text-black flex items-center px-4 py-2 rounded-md">
+                  🗑️ 삭제
                 </Button>
               </div>
             </div>
@@ -168,23 +160,8 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
         )}
       </div>
 
-      {successMessage && (
-        <div className="message-overlay">
-          <div className="message-content">
-            {successMessage.includes("✅") ? (
-              <span className="icon success">✅</span>
-            ) : (
-              <span className="icon error">❌</span>
-            )}
-            <p className="message-text">{successMessage.replace("✅ ", "").replace("❌ ", "")}</p>
-          </div>
-        </div>
-      )}
-
       <style jsx>{`
-        .modal-overlay,
-        .message-overlay,
-        .confirmation-modal {
+        .modal-overlay {
           position: fixed;
           top: 0;
           left: 0;
@@ -214,27 +191,7 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
           margin-bottom: 15px;
         }
 
-        .modal-footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 20px;
-        }
-
-        .checkbox-container {
-          display: flex;
-          align-items: center;
-        }
-
-        .button-container {
-          display: flex;
-          gap: 10px;
-          justify-content: center;
-          align-items: center;
-        }
-
-        input,
-        select {
+        .input {
           padding: 10px;
           margin-bottom: 10px;
           width: 100%;
@@ -243,9 +200,11 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
           border: 1px solid #ccc;
         }
 
-        .delete-button {
-          background-color: red;
-          color: white;
+        .button-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 20px;
         }
 
         .message-content {
@@ -260,24 +219,6 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
           box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
           animation: fadeInOut 2s ease-in-out;
           text-align: center;
-        }
-
-        .icon {
-          font-size: 50px;
-          margin-bottom: 8px;
-        }
-
-        .message-text {
-          font-size: 16px;
-          color: black;
-          font-weight: bold;
-        }
-
-        @keyframes fadeInOut {
-          0% { opacity: 0; transform: translateY(-10px); }
-          10% { opacity: 1; transform: translateY(0); }
-          90% { opacity: 1; }
-          100% { opacity: 0; transform: translateY(-10px); }
         }
       `}</style>
     </>

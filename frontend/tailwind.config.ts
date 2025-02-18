@@ -86,7 +86,8 @@ export default {
         },
         lightgreen: {
           50: 'rgba(180, 200, 120, 0.15)', 
-          100: 'rgb(150, 178, 60)', // Tailwind `bg-green-100`과 같은 색
+          100: 'rgba(180, 200, 120, 0.46)', 
+          300: 'rgb(150, 178, 60)'
         },
         tag: {
           purple: "#E9DEF7",

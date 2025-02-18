@@ -18,7 +18,6 @@ interface AddEventProps {
 }
 
 const AddEvent = ({ onEventAdded }: AddEventProps) => {
-  const [userId, setUserId] = useState<string>("beb9ebc2-9d32-4039-8679-5d44393b7252");
   const [eventName, setEventName] = useState<string>("");
   const [date, setDate] = useState<Date | undefined>();
   const [category, setCategory] = useState<string>("");
@@ -43,13 +42,13 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
       setIsModalOpen(false);
       onEventAdded();
 
-      setSuccessMessage("✅ 흔적을 성공적으로 남기셨습니다!");
+      setSuccessMessage("✅ 소중한 기억이 남겨졌습니다!");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
     } catch (error) {
       console.error(error);
-      setSuccessMessage("❌ 흔적을 남기는데 실패했습니다.");
+      setSuccessMessage("❌ 추억을 남기지 못했어요.");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
@@ -68,18 +67,24 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
       {isModalOpen && (
         <div className="modal-overlay" onClick={handleOverlayClick}>
           <div className="modal-content">
-            <div className="modal-header font-bold">흔적 남기기</div>
+            <div className="modal-header font-bold text-lg">그 순간을 남겨보세요.</div>
+            <p className="text-gray-500 text-center text-sm mb-4">
+              소중한 기억을 남길 준비가 되셨나요?
+            </p>
             <div>
               <label className="font-bold">제목</label>
               <input
                 value={eventName}
                 onChange={(event) => setEventName(event.target.value)}
                 placeholder="예: 첫 직장 입사, 대학 졸업"
+                className="input"
               />
+
               <label className="font-bold">날짜</label>
-              <input type="date" onChange={handleDateChange} />
+              <input type="date" onChange={handleDateChange} className="input" />
+
               <label className="font-bold">카테고리</label>
-              <select value={category} onChange={(event) => setCategory(event.target.value)}>
+              <select value={category} onChange={(event) => setCategory(event.target.value)} className="input">
                 <option value="" disabled>
                   카테고리 선택
                 </option>
@@ -90,27 +95,41 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
                 ))}
               </select>
 
-              <div className="modal-footer">
-                <div className="checkbox-container">
-                  <label className="font-bold mr-2">발자취에 표시</label>
-                  <input
-                    type="checkbox"
-                    checked={display}
-                    onChange={(event) => setDisplay(event.target.checked)}
-                  />
-                </div>
+              {/* 공개 체크박스 - 개별 줄 배치 */}
+              <div className="flex items-center space-x-2 my-4">
+                <input
+                  type="checkbox"
+                  checked={display}
+                  onChange={(event) => setDisplay(event.target.checked)}
+                  className="w-4 h-4"
+                />
+                <label className="font-bold">발자취를 남길까요?</label>
+              </div>
 
-                <div className="button-container">
-                  <Button onClick={() => setIsModalOpen(false)}>취소</Button>
-                  <Button onClick={handlePost}>남기기</Button>
-                </div>
+              {/* 버튼 배치 */}
+              <div className="flex justify-between mt-4 space-x-2">
+                <Button onClick={() => setIsModalOpen(false)} className="bg-gray-100 hover:bg-gray-400 text-black flex items-center px-4 py-2 rounded-md">
+                  ❎ 그냥 둘래요
+                </Button>
+                <Button onClick={handlePost} className="bg-lightgreen-100 hover:bg-lightgreen-100 text-black flex items-center px-4 py-2 rounded-md">
+                  🌱 추억 남기기
+                </Button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      <Button onClick={() => setIsModalOpen(true)}>+ 새로운 흔적 남기기</Button>
+      {/* 새로운 발자취 남기는 버튼 */}
+      <div className="mt-6 text-center">
+        <Button
+          className="w-full text-gray-700 font-semibold text-sm bg-gray-100 hover:bg-gray-200" 
+          variant="ghost"
+          onClick={() => setIsModalOpen(true)}
+        >
+          🌿 새로운 추억을 남겨볼까요?
+        </Button>
+      </div>
 
       {successMessage && (
         <div className="message-overlay">
@@ -153,31 +172,12 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
 
         .modal-header {
           text-align: center;
-          font-size: 24px;
+          font-size: 22px;
           font-weight: bold;
-          margin-bottom: 15px;
+          margin-bottom: 8px;
         }
 
-        .modal-footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 20px;
-        }
-
-        .checkbox-container {
-          display: flex;
-          align-items: center;
-        }
-
-        .button-container {
-          display: flex;
-          gap: 10px;
-        }
-
-        /* Input Fields */
-        input,
-        select {
+        .input {
           padding: 10px;
           margin-bottom: 10px;
           width: 100%;
@@ -186,7 +186,13 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
           border: 1px solid #ccc;
         }
 
-        /* Success / Error Message */
+        .button-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 20px;
+        }
+
         .message-content {
           background-color: white;
           width: 200px;
@@ -210,12 +216,6 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
           font-size: 16px;
           color: black;
           font-weight: bold;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-20px); }
-          to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeInOut {
