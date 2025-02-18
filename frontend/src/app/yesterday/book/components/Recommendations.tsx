@@ -185,7 +185,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
               >
                 <CardContent className="p-0 space-y-2">
                   <AspectRatio ratio={156 / 234}>
-                    <Link href={`/books/${book.id}`}>
+                    <Link href={`/yesterday/book/${book.id}`}>
                       <Image
                         src={book.coverImage || getRandomImage()}
                         alt={book.title}
@@ -222,7 +222,7 @@ export default function Recommendations({ bookId }: { bookId: string }) {
               >
                 <CardContent className="p-0 space-y-2">
                   <AspectRatio ratio={156 / 234}>
-                    <Link href={`/books/${book.id}`}>
+                    <Link href={`/yesterday/book/${book.id}`}>
                       <Image
                         src={book.coverImage || getRandomImage()}
                         alt={book.title}
