@@ -42,6 +42,9 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
   const isMainPage = pathname.startsWith("/main");
   // 메인인 페이지인지 확인하여 네비게이션 숨김 처리
 
+  const isCreateBookPage = pathname.startsWith("/yesterday/create-book");
+  // 메인인 페이지인지 확인하여 네비게이션 숨김 처리
+
   const { isAuthenticated } = useAuth(true);
   // 사용자 인증 상태 확인 (false는 인증 실패 시 자동 리다이렉트 방지)
 
@@ -114,7 +117,7 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
       {/* 메인 콘텐츠 영역 렌더링 */}
       <main
         className={`${
-          isViewerPage || isChatPage || isTestOnboardingPage || isMainPage || !isAuthenticated
+          isViewerPage || isChatPage || isTestOnboardingPage || isMainPage || !isAuthenticated || isCreateBookPage
             ? "pt-0 pb-0 md:py-0" // 특정 페이지에서는 패딩 제거하여 전체 화면 사용
             : "pt-14 pb-16 md:py-4" // 기본 페이지에서는 상하 패딩 적용
         } ${isTestOnboardingPage || !isAuthenticated || isMainPage ? "" : "md:ml-64"}`} // 온보딩 테스트 페이지에서는 좌측 마진 제거, 그 외는 사이드바 공간 적용
