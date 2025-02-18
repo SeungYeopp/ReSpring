@@ -1,48 +1,54 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { signup } from "@/lib/api"
-import { User, Mail, Lock, ImageIcon, ArrowRight, CheckCircle } from 'lucide-react'
-import {useRouter} from 'next/navigation'
+import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { signup } from "@/lib/api";
+import { User, Mail, Lock, ImageIcon, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function SignUpForm({ onPrevious }: { onPrevious: () => void }) {
-  const [username, setUsername] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [image, setImage] = useState<File | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState({
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
-  })
+  });
 
   const router = useRouter();
 
+  // 에러 발생 시 포커스를 이동할 input 필드 ref
+  const usernameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
-    validateForm()
-  }, [username, email, password, confirmPassword])
+    validateForm();
+  }, [username, email, password, confirmPassword]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    const file = files[0]
-    setImage(file)
+    const file = files[0];
+    setImage(file);
 
-    const reader = new FileReader()
+    const reader = new FileReader();
     reader.onloadend = () => {
-      setPreview(reader.result as string)
-    }
-    reader.readAsDataURL(file)
-  }
+      setPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const validateForm = () => {
     const errors = {
@@ -50,56 +56,75 @@ export function SignUpForm({ onPrevious }: { onPrevious: () => void }) {
       email: "",
       password: "",
       confirmPassword: "",
+    };
+
+    if (username.length < 2 && username.length > 0) {
+      errors.username = "사용자 이름은 2자 이상이어야 합니다.";
     }
 
-    if (username.length < 2) {
-      errors.username = "사용자 이름은 2자 이상이어야 합니다."
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email) && email.length > 0) {
+      errors.email = "올바른 이메일 형식이 아닙니다.";
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      errors.email = "올바른 이메일 형식이 아닙니다."
+    if (password.length < 8 && password.length > 0) {
+      errors.password = "비밀번호는 8자 이상이어야 합니다.";
     }
 
-    if (password.length < 8) {
-      errors.password = "비밀번호는 8자 이상이어야 합니다."
+    if (password !== confirmPassword && confirmPassword.length > 0) {
+      errors.confirmPassword = "비밀번호가 일치하지 않습니다.";
     }
 
-    if (password !== confirmPassword) {
-      errors.confirmPassword = "비밀번호가 일치하지 않습니다."
-    }
-
-    setFieldErrors(errors)
-  }
+    setFieldErrors(errors);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
+    setFieldErrors({ username: "", email: "", password: "", confirmPassword: "" });
 
-    if (!username || !email || !password || !confirmPassword || !image) {
-      setError("모든 항목을 입력해주세요.")
-      return
+    if (!username || !email || !password || !confirmPassword) {
+      setError("모든 항목을 입력해주세요.");
+      return;
     }
 
-    if (Object.values(fieldErrors).some(error => error !== "")) {
-      setError("입력 정보를 다시 확인해주세요.")
-      return
+    if (Object.values(fieldErrors).some((error) => error !== "")) {
+      setError("입력 정보를 다시 확인해주세요.");
+      return;
     }
 
     try {
-      const signUpResult = await signup(username, email, password, "", image)
+      const signUpResult = await signup(username, email, password, "", image || undefined);
       if (!signUpResult) {
-        setError("회원가입에 실패했습니다. 다시 시도해주세요.")
+        setError("회원가입에 실패했습니다. 다시 시도해주세요.");
       } else {
-        alert("회원가입이 완료되었습니다!")
-        // window.location.href = "/main" // Redirect to main page
-        router.replace('/auth');
+        alert("회원가입이 완료되었습니다!");
+        router.replace("/auth");
       }
-    } catch (error) {
-      setError("회원가입 중 오류가 발생했습니다. 다시 시도해주세요.")
-      console.error(error)
+    } catch (error: any) {
+      if (error.message) {
+        if (error.message.includes("DUPLICATE_EMAIL")) {
+          setError("중복되는 이메일이에요. 다른 이메일을 입력해주세요.");
+          setTimeout(() => {
+            emailRef.current?.focus(); 
+          }, 100);
+        
+        }
+        else if (error.message.includes("DUPLICATE_USERNICKNAME")) {
+          setError("중복되는 사용자 이름이에요. 다른 사용자 이름을 입력해주세요.");
+          setTimeout(() => {
+            usernameRef.current?.focus();
+          }, 100);
+        }
+        else {
+          setError(error.message); 
+        }
+      } else {
+        setError("회원가입 중 오류가 발생했습니다. 다시 시도해주세요.");
+      }
     }
-  }
+  };
+
 
   return (
     <div className="space-y-6 md:space-y-8 max-w-2xl mx-auto">
@@ -198,7 +223,6 @@ export function SignUpForm({ onPrevious }: { onPrevious: () => void }) {
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              required
               className="pl-10 border-[#dfeaa5] focus:ring-[#96b23c]"
             />
           </div>
