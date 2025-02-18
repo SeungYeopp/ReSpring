@@ -38,9 +38,11 @@ export const makeEvent = async (eventPostData : EventPostDto) : Promise<number>=
     try{
         const response = await axiosAPI.post(`/events`, eventPostData)
         return response.data; // 새로 만들어진 이벤트의 ID가 반환된다.
-    } catch(error){
-        console.error('에러 발생 : ', error)
-        throw new Error("makeEvent의 에러 발생");
+    } catch(error:any){
+
+        const errcode = error.response.data.message || '이벤트 생성 중 알 수 없는 에러가 발생했습니다.';
+        alert(errcode);
+        return Promise.reject(errcode)
     }
 }
 

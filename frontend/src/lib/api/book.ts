@@ -155,8 +155,11 @@ export const makeBook = async (
         console.log(response.data)
         return response.data;
     }catch(error : any){
-        console.error('makeBook 에러 발생!', error);
-        throw new Error(error.response?.data?.message ||'makeBook 에러 발생!');
+
+        const errorMessage =error.response?.data?.message ||'makeBook 에러 발생!';
+        
+        alert(errorMessage);
+        return Promise.reject(errorMessage);
     }
 }
 

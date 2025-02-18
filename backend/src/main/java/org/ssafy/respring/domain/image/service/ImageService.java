@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.ssafy.respring.Exception.ImageSizeUploadException;
 import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.repository.ImageRepository;
 import org.ssafy.respring.domain.image.vo.Image;
@@ -54,14 +55,14 @@ public class ImageService {
 
     public void validateFileSize(MultipartFile file) {
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("파일 크기는 5MB를 초과할 수 없어요.");
+            throw new ImageSizeUploadException("파일 크기는 5MB를 초과할 수 없어요.");
         }
     }
 
     public void validateTotalFileSize(List<MultipartFile> files) {
         long totalSize = files.stream().mapToLong(MultipartFile::getSize).sum();
         if (totalSize > MAX_TOTAL_FILE_SIZE) {
-            throw new IllegalArgumentException("전체 파일 크기의 합은 20MB를 초과할 수 없어요.");
+            throw new ImageSizeUploadException("전체 파일 크기의 합은 20MB를 초과할 수 없어요.");
         }
     }
 

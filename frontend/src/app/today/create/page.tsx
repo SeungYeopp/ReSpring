@@ -77,9 +77,8 @@ export default function WritePage() {
 
       // 성공하면 커뮤니티 메인 페이지로 이동
       router.push("/today");
-    } catch (error) {
-      console.error("게시글 작성 실패:", error);
-      alert("게시글 작성에 실패했습니다.");
+    } catch (error:any) {
+      
     } finally {
       setIsSubmitting(false);
     }

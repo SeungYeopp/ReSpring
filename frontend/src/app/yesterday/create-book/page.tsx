@@ -427,8 +427,9 @@ const handleRemoveChapter = (index: number) => {
                     onClick={() => toggleStorySelection(story)}
                   >
                     {/* 왼쪽: 이미지 */}
-                    <div className="w-16 h-16 relative flex-shrink-0">
-                      {story.images.length > 0 ? (
+                    {/* 이미지 블록이 있을 때만 렌더링 */}
+                    {story.images.length > 0 && (
+                      <div className="w-16 h-16 relative flex-shrink-0">
                         <NextImage
                           src={story.images[0]} // 첫 번째 이미지를 썸네일로 사용
                           alt={story.title}
@@ -436,12 +437,8 @@ const handleRemoveChapter = (index: number) => {
                           objectFit="cover"
                           className="rounded-lg"
                         />
-                      ) : (
-                        <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
-                          No Image
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
 
                     {/* 오른쪽: 제목 + 내용 */}
                     <div className="flex-1">
@@ -546,27 +543,30 @@ const handleRemoveChapter = (index: number) => {
               <Accordion type="multiple" className="w-full space-y-2">
                 {compiledBook?.chapters.map((chapter, index) => (
                   <AccordionItem key={index} value={`item-${index}`} className="border-none bg-white rounded-lg shadow">
-                    <AccordionTrigger className="px-4 py-2 hover:no-underline hover:bg-gray-50">
-                      <div className="flex items-center space-x-2 w-full">
-                        <span className="text-brand-dark">{index + 1}.</span>
-                        <Input
-                          value={chapter.chapterTitle}
-                          onChange={(e) => handleChapterTitleChange(index, e.target.value)}
-                          className="flex-grow font-semibold"
-                          placeholder="챕터 제목"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                      <button
-                          onClick={(e) => {
-                            e.stopPropagation(); // 클릭 시 Accordion이 열리지 않도록 방지
-                            handleRemoveChapter(index);
-                          }}
-                          className="text-gray-500 hover:text-red-500"
-                        >
-                          <X className="w-5 h-5" />
-                      </button>
-                    </AccordionTrigger>
+              <AccordionTrigger>
+                <div className="flex items-center justify-between px-4 py-2 hover:no-underline hover:bg-gray-50 w-full">
+                  <div className="flex items-center space-x-2 flex-grow">
+                    <span className="text-brand-dark">{index + 1}.</span>
+                    <Input
+                      value={chapter.chapterTitle}
+                      onChange={(e) => handleChapterTitleChange(index, e.target.value)}
+                      className="flex-grow font-semibold"
+                      placeholder="챕터 제목"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation(); // 클릭 시 Accordion이 열리지 않도록 방지
+                      handleRemoveChapter(index);
+                    }}
+                    className="text-gray-500 hover:text-red-500 cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+
                     <AccordionContent className="px-4 pb-4">
                       <Textarea
                         value={chapter.content}

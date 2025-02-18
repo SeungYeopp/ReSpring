@@ -72,10 +72,11 @@ export const makeStory = async (
             headers: { 'Content-Type': 'multipart/form-data' }
         });
 
-        return response.data; // 생성된 스토리의 ID 반환
-    } catch (error) {
-        console.error('makeStory 에러 발생', error);
-        throw new Error('makeStory 에러 발생');
+        return response.data; 
+    } catch (error:any) {
+        const errorMessage = error.response.data.message || '스토리 생성 중 알 수 없는 에러가 발생했습니다.';
+        alert(errorMessage); 
+        return Promise.reject(errorMessage);
     }
 };
 

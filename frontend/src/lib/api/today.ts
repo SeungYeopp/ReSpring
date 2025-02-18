@@ -139,9 +139,9 @@ export async function createPost(
     );
 
     return response.data;
-  } catch (error) {
-    console.error("Error creating post:", error);
-    throw new Error("게시글 생성에 실패했습니다.");
+  } catch (error:any) {
+    alert(error.response.data.message || "게시물 생성 중 에러가 발생했습니다.");
+    return Promise.reject(error.response.data.message);
   }
 }
 
