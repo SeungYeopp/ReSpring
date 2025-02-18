@@ -46,9 +46,9 @@ public class PostController {
             @RequestPart("postDto") @Valid PostRequestDto requestDto,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
             HttpSession session) throws IOException {
-
-        imageService.validateTotalFileSize(images);
-
+        if (images != null && !images.isEmpty()) {
+            imageService.validateTotalFileSize(images);
+        }
         UUID userId = requireLogin(session);
         Long postId = postService.createPostWithImages(requestDto, images, userId);
         return ResponseEntity.ok(postId);
