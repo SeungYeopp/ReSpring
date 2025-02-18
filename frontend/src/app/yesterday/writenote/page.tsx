@@ -128,9 +128,15 @@ export default function WriteStoryPage() {
         <h1 className="text-2xl font-bold text-center flex-1">
           {stage === "select" ? "글조각 쓰기" : selectedEventName}
         </h1>
-        <Button onClick={handleNext} disabled={loading}>
+        <Button
+          onClick={handleNext}
+          disabled={loading}
+          className={`bg-brand text-white border border-brand rounded-md py-2 px-4 transition-all duration-300 ease-in-out
+            ${loading ? 'cursor-not-allowed opacity-50' : 'hover:bg-brand-dark hover:border-brand-dark focus:ring-2 focus:ring-brand-light focus:outline-none'}`}
+        >
           {stage === "select" ? "다음" : "저장"}
         </Button>
+
       </div>
 
       {stage === "select" ? (
