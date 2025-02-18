@@ -143,10 +143,10 @@ export default function ProfilePage() {
             {/* 획득한 배지 (우측 정렬) */}
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 flex flex-col items-end">
               {/* 획득한 배지 텍스트 */}
-              <span className="text-xs text-gray-400 mb-1">획득한 뱃지</span>
+              <span className="text-xs text-gray-400 mb-1 mr-3">획득한 뱃지</span>
               
               {/* 뱃지 아이콘 */}
-              <div className="flex">
+              <div className="flex mr-3">
                 {[
                   { id: "flame", icon: <Flame className="w-4 h-4 text-red-500" /> },
                   { id: "bookCheck", icon: <BookCheck className="w-4 h-4 text-green-500" /> },
