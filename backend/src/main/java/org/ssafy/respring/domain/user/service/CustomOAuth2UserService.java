@@ -46,12 +46,25 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             session.setAttribute("userNickname", savedUser.getUserNickname());
             session.setAttribute("userProfileImage", savedUser.getProfileImage());
 
+
+            System.out.println("OAuth 로그인 성공 - 사용자 ID: " + newUser.getId());
+            System.out.println("세션 저장된 userId: " + session.getAttribute("userId"));
+            System.out.println("세션 저장된 userNickname: " + session.getAttribute("userNickname"));
+
+
             return savedUser;
         });
 
         session.setAttribute("userId", user.getId());
         session.setAttribute("userNickname", user.getUserNickname());
         session.setAttribute("userProfileImage", user.getProfileImage());
+
+        System.out.println("OAuth 로그인 성공 - 사용자 ID: " + user.getId());
+        System.out.println("세션 저장된 userId: " + session.getAttribute("userId"));
+        System.out.println("세션 저장된 userNickname: " + session.getAttribute("userNickname"));
+
+
+
 
         return oauth2User;
     }
