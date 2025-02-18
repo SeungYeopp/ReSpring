@@ -73,7 +73,6 @@ export default function PopularBooks() {
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4 text-spring-forest">봄날의 서들</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {books.map((book, index) => (
           <div key={book.id} ref={index === books.length - 1 ? lastBookElementRef : null}>

@@ -26,10 +26,10 @@ export function BookCard({ book }: BookCardProps) {
       <div className="relative w-[128px] flex-shrink-0">
         <Image src={book.coverImage || placeholderImage} alt={book.title} fill className="object-cover" />
       </div>
-      <div className="flex-grow p-4 flex flex-col justify-between overflow-hidden">
-        <div>
+      <div className="flex-grow p-4 flex flex-col overflow-hidden">
+        <div className="flex-grow flex flex-col h-2/3">
           <h3 className="text-lg font-semibold mb-2 line-clamp-2">{book.title}</h3>
-          <div className="flex flex-wrap gap-1 mb-2 overflow-hidden max-h-12">
+          <div className="flex flex-wrap gap-1 overflow-hidden">
             {book.tags.slice(0, 3).map((tag, index) => (
               <div
                 key={index}
@@ -40,7 +40,7 @@ export function BookCard({ book }: BookCardProps) {
             ))}
           </div>
         </div>
-        <div className="mt-auto">
+        <div className="h-1/3 flex flex-col justify-end">
           <div className="flex items-center mb-2">
             <Avatar className="h-6 w-6 flex-shrink-0">
               <AvatarImage src={book.authorProfileImage} alt={book.authorNickname} />
