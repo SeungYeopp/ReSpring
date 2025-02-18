@@ -139,7 +139,7 @@ function CommentList({ comments }: { comments: Comment[] }) {
       ) : (
         comments.map((comment) => {
           const isPost = !!comment.postId;
-          const link = isPost ? `/today/${comment.postId}` : `/yesterday/newbook/${comment.bookId}`;
+          const link = isPost ? `/today/${comment.postId}` : `/yesterday/book/${comment.bookId}`;
           const title = isPost ? comment.postTitle : comment.bookTitle;
 
           return (

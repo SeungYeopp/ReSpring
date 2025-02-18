@@ -109,7 +109,7 @@ function BookCarousel({ books }: BookCarouselProps) {
   }, [scrollToNext]);
 
   const handleOnClickBook = (bookId : number) => {
-    router.push(`/yesterday/newbook/${bookId}`)
+    router.push(`/yesterday/book/${bookId}`)
   }
 
   return (
