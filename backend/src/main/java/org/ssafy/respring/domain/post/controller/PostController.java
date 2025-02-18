@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
 import org.ssafy.respring.domain.post.dto.request.PostUpdateRequestDto;
 import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class PostController {
 
     private final PostService postService;
+    private final ImageService imageService;
 
     private UUID getUserIdFromSession(HttpSession session) {
         return (UUID) session.getAttribute("userId"); // 로그인 안 했으면 null 반환
@@ -44,6 +46,9 @@ public class PostController {
             @RequestPart("postDto") @Valid PostRequestDto requestDto,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
             HttpSession session) throws IOException {
+
+        imageService.validateTotalFileSize(images);
+
         UUID userId = requireLogin(session);
         Long postId = postService.createPostWithImages(requestDto, images, userId);
         return ResponseEntity.ok(postId);

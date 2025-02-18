@@ -52,13 +52,13 @@ public class ImageService {
     private static final long MAX_TOTAL_FILE_SIZE = 20 * 1024 * 1024;
 
 
-    private void validateFileSize(MultipartFile file) {
+    public void validateFileSize(MultipartFile file) {
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new IllegalArgumentException("파일 크기는 5MB를 초과할 수 없어요.");
         }
     }
 
-    private void validateTotalFileSize(List<MultipartFile> files) {
+    public void validateTotalFileSize(List<MultipartFile> files) {
         long totalSize = files.stream().mapToLong(MultipartFile::getSize).sum();
         if (totalSize > MAX_TOTAL_FILE_SIZE) {
             throw new IllegalArgumentException("전체 파일 크기의 합은 20MB를 초과할 수 없어요.");
