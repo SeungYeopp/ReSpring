@@ -33,7 +33,7 @@ export function NavigationItem({
   onClick,
 }: NavigationItemProps) {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  const isActive = pathname === href || pathname.startsWith(`${href}/`);
   const Icon = IconMap[iconName as keyof typeof IconMap];
 
   if (!Icon) {
@@ -48,19 +48,19 @@ export function NavigationItem({
       className={cn(
         "flex items-center transition-colors",
         isBottomNav
-          ? "flex-col justify-center gap-1 px-2 py-1" // 바텀 네비 스타일
+          ? "flex-col justify-center gap-1 px py" // 바텀 네비 스타일
           : isTopNav
           ? "gap-2 px-3 py-2" // 상단 네비 스타일
           : "gap-3 p-3", // 기본(사이드바) 스타일
 
         // 바텀 네비 활성 스타일
-        isActive && isBottomNav && "bg-gray-50/80 border-b-2 border-brand",
+        isActive && isBottomNav && "bg-gray-100 border-brand-dark",
 
         // 사이드바 활성 스타일
         isActive && !isBottomNav && !isTopNav && "bg-gray-100 border-l-4 border-brand-dark",
 
         // 기본 텍스트 색상 및 로고 스타일
-        isLogo ? "text-brand-dark font-bold text-lg" : "text-brand",
+        isLogo ? "text-brand-dark font-bold text-lg" : "text-brand-dark",
 
         isBottomNav && "relative w-16 h-14",
 
