@@ -174,7 +174,7 @@ export default function CreateBook() {
         bookCoverImg!,
       )
       setGeneratedCompiledBookId(result)
-      router.push(`/yesterday/newbook/${result}`)
+      router.push(`/yesterday/book/${result}`)
     } catch (error: any) {
       console.error(error)
     } finally {
@@ -465,16 +465,16 @@ const handleRemoveChapter = (index: number) => {
               </div>
 
               {/* 글 조각 쓰러 가는 버튼 (반응형) */}
-              <div className="mt-6 text-center">
+              <div className="mt-6 text-center mb-16">
                 <Button
-                  className="w-full text-gray-600 text-sm" variant="ghost"
+                  className="w-full text-sm bg-lightgreen-50 text-gray-600 border border-lightgreen-200 rounded-md py-2 px-4 transition-all duration-300 ease-in-out
+                    hover:bg-lightgreen-100 hover:border-lightgreen-300 focus:ring-2 focus:ring-lightgreen-500 focus:outline-none"
+                  variant="ghost"
                   onClick={() => router.push("/yesterday/writenote")}
                 >
                   🌿 마음에 드는 글 조각이 없나요? 직접 써보세요!
                 </Button>
               </div>
-
-
             </div>
           )}
 

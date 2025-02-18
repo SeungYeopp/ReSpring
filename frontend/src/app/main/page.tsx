@@ -112,7 +112,7 @@ const Home = () => {
     try {
       const success = await logout()
       if (success) {
-        router.push("/login") // Redirect to login page after logout
+        router.push("/a") // 바로 auth로 가면 사이드바가 안 사라져서 일부러 엉뚱한 곳 우선 접근
       } else {
         alert("로그아웃 실패! 다시 시도해주세요.")
       }

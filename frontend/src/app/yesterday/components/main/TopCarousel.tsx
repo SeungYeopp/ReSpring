@@ -55,11 +55,11 @@ export default function TopCarousel() {
   return (
     <Tabs defaultValue="weekly" onValueChange={(value) => setActiveTab(value)} className="w-full">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="weekly" className="flex items-center justify-center">
+        <TabsTrigger value="weekly" className="flex items-center justify-center font-laundrygothicbold">
           <BookOpen className="mr-2 h-4 w-4" />
           주간의 서
         </TabsTrigger>
-        <TabsTrigger value="latest" className="flex items-center justify-center">
+        <TabsTrigger value="latest" className="flex items-center justify-center font-laundrygothicbold">
           <Clock className="mr-2 h-4 w-4" />
           구독
         </TabsTrigger>
@@ -109,7 +109,7 @@ function BookCarousel({ books }: BookCarouselProps) {
   }, [scrollToNext]);
 
   const handleOnClickBook = (bookId : number) => {
-    router.push(`/yesterday/newbook/${bookId}`)
+    router.push(`/yesterday/book/${bookId}`)
   }
 
   return (
@@ -124,7 +124,7 @@ function BookCarousel({ books }: BookCarouselProps) {
                   <img
                     src={book.coverImage}
                     alt={book.coverImage}
-                    className="w-full h-full object-cover rounded-lg shadow-md cursor-pointer"
+                    className="w-full h-[180px] object-cover rounded-lg shadow-md cursor-pointer"
                     onClick={() => handleOnClickBook(book.id)}
 
                   />

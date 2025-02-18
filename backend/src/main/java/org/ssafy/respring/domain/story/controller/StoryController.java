@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
 import org.ssafy.respring.domain.story.dto.request.StoryRequestDto;
 import org.ssafy.respring.domain.story.dto.request.StoryUpdateRequestDto;
@@ -27,13 +28,15 @@ import java.util.UUID;
 @Tag(name = "Stories API", description = "글 조각 관련 API")
 public class StoryController {
     private final StoryService storyService;
-
+    private final ImageService imageService;
     @PostMapping(consumes = {"multipart/form-data"})
     @Operation(summary = "글 조각 생성", description = "새로운 글 조각을 생성합니다.")
     public ResponseEntity<Long> createStory(
             @RequestPart("storyDto") @Valid StoryRequestDto requestDto,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,HttpSession session
     ) throws IOException {
+
+        imageService.validateTotalFileSize(images);
         UUID userId = (UUID) session.getAttribute("userId");
         return ResponseEntity.ok(storyService.createStory(requestDto, images,userId));
     }

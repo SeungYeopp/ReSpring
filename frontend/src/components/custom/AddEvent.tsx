@@ -72,7 +72,7 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
               소중한 기억을 남길 준비가 되셨나요?
             </p>
             <div>
-              <label className="font-bold">제목</label>
+              <label className="font-semibold block mb-2">제목</label>
               <input
                 value={eventName}
                 onChange={(event) => setEventName(event.target.value)}
@@ -132,14 +132,12 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
       </div>
 
       {successMessage && (
-        <div className="message-overlay">
-          <div className="message-content">
-            {successMessage.includes("✅") ? (
-              <span className="icon success">✅</span>
-            ) : (
-              <span className="icon error">❌</span>
-            )}
-            <p className="message-text w-[80%]">{successMessage.replace("✅ ", "").replace("❌ ", "")}</p>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-xs w-full flex flex-col items-center justify-center text-center animate-fadeInOut">
+            <span className={`text-4xl ${successMessage.includes("✅") ? "text-green-500" : "text-red-500"}`}>
+              {successMessage.includes("✅") ? "✅" : "❌"}
+            </span>
+            <p className="font-bold mt-2">{successMessage.replace("✅ ", "").replace("❌ ", "")}</p>
           </div>
         </div>
       )}

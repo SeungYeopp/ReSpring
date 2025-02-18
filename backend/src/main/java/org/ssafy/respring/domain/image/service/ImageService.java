@@ -48,17 +48,17 @@ public class ImageService {
 
     private final S3Client s3Client;
 
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-    private static final long MAX_TOTAL_FILE_SIZE = 20 * 1024 * 1024;
+    private static final long MAX_FILE_SIZE = 500000; // 5MB
+    private static final long MAX_TOTAL_FILE_SIZE = 1000000; //10MB
 
 
-    private void validateFileSize(MultipartFile file) {
+    public void validateFileSize(MultipartFile file) {
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new IllegalArgumentException("파일 크기는 5MB를 초과할 수 없어요.");
         }
     }
 
-    private void validateTotalFileSize(List<MultipartFile> files) {
+    public void validateTotalFileSize(List<MultipartFile> files) {
         long totalSize = files.stream().mapToLong(MultipartFile::getSize).sum();
         if (totalSize > MAX_TOTAL_FILE_SIZE) {
             throw new IllegalArgumentException("전체 파일 크기의 합은 20MB를 초과할 수 없어요.");
@@ -127,6 +127,8 @@ public class ImageService {
 
     // DB에 저장 (이미지 업로드 후 객체 Key 저장)
     public String saveImageToDatabase(MultipartFile file, String folder, ImageType imageType, Long entityId) {
+        validateFileSize(file);
+
         String s3Key = uploadImageToS3(file, folder);
 
         Image image = Image.builder()
@@ -141,6 +143,10 @@ public class ImageService {
     }
 
     public List<String> saveImages(List<MultipartFile> files, ImageType imageType, Long entityId) {
+
+        for(MultipartFile file : files) {
+            validateFileSize(file);
+        }
 
         validateTotalFileSize(files);
 

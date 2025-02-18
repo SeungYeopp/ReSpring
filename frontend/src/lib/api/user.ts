@@ -12,31 +12,46 @@ export interface UserInfo{
     profileImageUrl: string
 }
 
-export const signup = async (userNickname : string, email : string, password : string, provider : string, image : File) : Promise<boolean>=> {
-    try{
-        const formData = new FormData;
+export const signup = async (
+    userNickname: string,
+    email: string,
+    password: string,
+    provider: string,
+    image?: File // 이미지 선택이 필수가 아니므로 `?` 추가
+): Promise<boolean> => {
+    try {
+        const formData = new FormData();
 
-        formData.append('signUpRequestDto', JSON.stringify({
+        // JSON 데이터를 Blob 형태로 변환하여 추가
+        const jsonBlob = new Blob([JSON.stringify({
             userNickname,
             email,
             password,
             provider
-          }));
-        formData.append('image', image);
-        const response = await axiosAPI.post('/user/signup', formData, {headers : {'Content-Type': 'multipart/form-data'}});
+        })], { type: "application/json" });
 
-        if(response.status === 200 || response.status === 201 || response.status === 204)
+        formData.append("signUpRequestDto", jsonBlob);
+
+        // 이미지가 선택된 경우에만 추가
+        if (image && image instanceof File) {
+            formData.append("image", image);
+        }
+
+        const response = await axiosAPI.post("/user/signup", formData, {
+            headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        if (response.status === 200 || response.status === 201 || response.status === 204) {
             return true;
-        else{
+        } else {
             console.error("signup 함수 에러 발생");
             return false;
         }
-            
-    }catch(error : any){
+
+    } catch (error: any) {
         throw new Error(error.response?.data?.message || "signup 함수 에러 발생");
     }
-}
-
+};
 // 사용자 로그인 함수
 // 입력 : email(string), password(string)
 // 출력 : 로그인 성공 여부 (true/false)

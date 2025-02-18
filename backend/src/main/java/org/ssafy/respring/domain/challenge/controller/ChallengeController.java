@@ -14,6 +14,7 @@ import org.ssafy.respring.domain.challenge.dto.response.*;
 import org.ssafy.respring.domain.challenge.service.ChallengeService;
 import org.ssafy.respring.domain.challenge.vo.ChallengeSortType;
 import org.ssafy.respring.domain.challenge.vo.ChallengeStatus;
+import org.ssafy.respring.domain.image.service.ImageService;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChallengeController {
     private final ChallengeService challengeService;
+    private final ImageService imageService;
 
     private UUID getUserIdFromSession(HttpSession session) {
         return (UUID) session.getAttribute("userId"); // 로그인 안 했으면 null 반환
@@ -49,6 +51,8 @@ public class ChallengeController {
             @RequestPart(value = "image", required = false) MultipartFile image, // ✅ 이미지 파일(Optional)
             HttpSession session
     ) throws IOException {
+
+        imageService.validateFileSize(image);
         UUID userId = requireLogin(session);
         ChallengeResponseDto response = challengeService.createChallenge(challengeDto, image, userId);
         return ResponseEntity.ok(response);

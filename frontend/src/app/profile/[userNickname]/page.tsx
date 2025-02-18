@@ -21,6 +21,9 @@ export default function ProfilePage() {
   const [isSubscribedState, setIsSubscribedState] = useState(false);
   const [challenges, setChallenges] = useState<ParticipatedChallenge[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const isMine = myNickname === decodeURIComponent(targetNickname);
 
   const handleBack = () => {
     router.back();
@@ -120,7 +123,7 @@ export default function ProfilePage() {
 
         {/* 도전, 활동, 발자취 */}
         <div className="lg:col-span-2 flex flex-col items-center mt-0 w-full">
-          <TabBar userNickname={targetNickname} challenges={challenges} />
+          <TabBar userNickname={targetNickname} challenges={challenges} isMine={isMine} />
         </div>
       </div>
 
@@ -166,7 +169,7 @@ export default function ProfilePage() {
 
         {/* 도전, 활동, 발자취 - 왼쪽 정렬 */}
         <div className="w-full flex flex-col items-start pl-4">
-          <TabBar userNickname={targetNickname} challenges={challenges} />
+          <TabBar userNickname={targetNickname} challenges={challenges} isMine={isMine} />
         </div>
 
 
