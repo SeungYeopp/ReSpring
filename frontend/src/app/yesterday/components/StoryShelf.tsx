@@ -1,12 +1,16 @@
-'use client';
+"use client";
 
+import type React from "react";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { getAllStories, deleteStory } from "@/lib/api/story";
 import { getAllEvents } from "@/lib/api/event";
-import { Story } from "@/lib/api/story";
+import type { Story } from "@/lib/api/story";
 import Link from "next/link";
-import { CirclePlus } from "lucide-react";
+import { Plus, Edit, Trash2, Clock, Tag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Event {
   id: number;
@@ -20,8 +24,8 @@ interface StoryShelfProps {
 const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
   const [stories, setStories] = useState<Story[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
-  const [storiesPerShelf, setStoriesPerShelf] = useState(4);
-  const [storyWidth, setStoryWidth] = useState(160);
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const handleDelete = async (storyId: number) => {
@@ -38,15 +42,8 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
   useEffect(() => {
     const fetchStoriesAndEvents = async () => {
       try {
-        const [fetchedStories, fetchedEvents] = await Promise.all([
-          getAllStories(),
-          getAllEvents(),
-        ]);
-
-        setStories([
-          { id: -1, title: "", content: "", eventId: -1, createdAt: new Date(), updatedAt: new Date(), occurredAt: new Date(), images: [] },
-          ...fetchedStories
-        ]);
+        const [fetchedStories, fetchedEvents] = await Promise.all([getAllStories(), getAllEvents()]);
+        setStories(fetchedStories);
         setEvents(fetchedEvents);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -54,131 +51,132 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
     };
 
     fetchStoriesAndEvents();
-  }, [userNickname]);
-
-  useEffect(() => {
-    const updateLayout = () => {
-      if (containerRef.current) {
-        const containerWidth = containerRef.current.offsetWidth;
-        let storiesToShow = containerWidth < 500 ? 2 : containerWidth < 800 ? 3 : 4;
-        setStoriesPerShelf(storiesToShow);
-        setStoryWidth(((containerWidth - 32) * 0.7) / storiesToShow);
-      }
-    };
-
-    updateLayout();
-    window.addEventListener("resize", updateLayout);
-    return () => window.removeEventListener("resize", updateLayout);
-  }, [stories]);
+  }, []);
 
   const getEventName = (eventId: number) => {
     const event = events.find((e) => e.id === eventId);
     return event ? event.eventName : "Unknown Event";
   };
 
-  const shelves = [];
-  for (let i = 0; i < stories.length; i += storiesPerShelf) {
-    shelves.push(stories.slice(i, i + storiesPerShelf));
-  }
-
   return (
-    <div ref={containerRef} className="flex flex-col items-center w-full p-4">
-      {shelves.map((shelf, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.2 }}
-          className="flex flex-col items-center mb-6"
-        >
-          <div className="flex justify-center gap-6 w-full">
-            {shelf.map((story) =>
-              story.id === -1 ? (
-                <motion.div key="add-new-story" whileHover={{ scale: 1.05 }}>
-                  <Link
-                    href="/yesterday/writenote"
-                    className="group relative flex items-center justify-center bg-black text-white transition duration-300 hover:bg-gray-700 rounded-lg"
-                    style={{
-                      width: `${storyWidth}px`,
-                      height: `${(storyWidth / 160) * 240}px`,
-                    }}
-                  >
-                    <CirclePlus size={50} strokeWidth={1.5} />
-                  </Link>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key={story.id}
-                  className="group relative"
-                  style={{
-                    width: `${storyWidth}px`,
-                    height: `${(storyWidth / 160) * 240}px`,
-                  }}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div className="relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
-                    <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
-                      <img
-                        src={"/placeholder_storycover.png"}
-                        alt={`Story ${story.title}`}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                      <div className="absolute inset-0 flex flex-col justify-start p-2">
-                        <div className="overflow-hidden whitespace-nowrap relative w-full">
-                          <span
-                            className="inline-block text-lg font-bold text-center ml-2 w-full py-1"
-                            style={{
-                              whiteSpace: "nowrap",
-                              display: "inline-block",
-                              animation: story.title.length > 10 ? "marquee 5s linear infinite" : "none",
-                            }}
-                          >
-                            {story.title}
-                          </span>
-                        </div>
-
-                        <p className="text-xs text-center ml-4 mt-2 line-clamp-6 px-2">
-                          {story.content}
-                        </p>
-                      </div>
+    <div className="min-h-screen">
+      <div ref={containerRef} className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Link href="/yesterday/writenote">
+              <Card className="h-[150px] group hover:shadow-lg transition-al duration-300 
+                              bg-gradient-to-br from-gray-100 to-white dark:from-gray-800 dark:to-gray-700 
+                              border border-gray-200/50 dark:border-gray-700/50">
+                <CardContent className="h-full flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                      <Plus className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white text-sm p-2 [transform:rotateY(180deg)] [backface-visibility:hidden]">
-                      <p>흔적: {getEventName(story.eventId)}</p>
-                      <p className="mt-1">작성일: {new Date(story.createdAt).toLocaleDateString()}</p>
-                      <div className="mt-2 flex space-x-2">
-                        <a
-                          href={`/yesterday/writenote?storyId=${story.id}`}
-                          className="px-3 py-1 bg-green-500 text-white rounded-md text-xs hover:bg-green-600"
-                        >
-                          편집
-                        </a>
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleDelete(story.id);
-                          }}
-                          className="px-3 py-1 bg-red-500 text-white rounded-md text-xs hover:bg-red-600"
-                        >
-                          삭제
-                        </a>
-                      </div>
-                    </div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">새로운 글 작성하기</p>
                   </div>
-                </motion.div>
-              )
-            )}
-          </div>
-          <img src="/shelf.png" alt="Bookshelf" width={1909} height={152} />
-        </motion.div>
-      ))}
-      
-      <style jsx>{`
-        @keyframes marquee {
-          0% { transform: translateX(100%); }
-          100% { transform: translateX(-150%); }
-        }
-      `}</style>
+                </CardContent>
+              </Card>
+            </Link>
+          </motion.div>
+
+          {stories.map((story, index) => (
+            <motion.div
+              key={story.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Card
+                className="h-[320px] group hover:shadow-lg transition-all duration-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50"
+                onClick={() => {
+                  setSelectedStory(story);
+                  setIsDialogOpen(true);
+                }}
+              >
+                <CardContent className="p-0">
+                  {/* 🔹 썸네일 이미지 추가 */}
+                  <img
+                    src={story.images.length > 0 ? story.images[0] : "/placeholder_storycover.png"}
+                    alt={story.title}
+                    className="w-full h-40 object-cover rounded-t-lg"
+                  />
+                </CardContent>
+                <CardHeader className="p-4">
+                  <h3 className="font-semibold text-lg line-clamp-1">{story.title}</h3>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <Tag className="w-3 h-3" />
+                    <span>{getEventName(story.eventId)}</span>
+                    {/* 🔹 발생 날짜 추가 */}
+                    <span> · {new Date(story.occurredAt).toLocaleDateString()}</span>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                    {story.content}
+                  </p>
+                </CardContent>
+
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          {selectedStory && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selectedStory.title}</DialogTitle>
+                <DialogDescription className="flex items-center gap-2 text-sm">
+                  <Tag className="w-3 h-3" />
+                  {getEventName(selectedStory.eventId)}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-4 space-y-4">
+                {/* 🔹 대표 이미지 추가 */}
+                <img
+                  src={selectedStory.images.length > 0 ? selectedStory.images[0] : "/placeholder_storycover.png"}
+                  alt={selectedStory.title}
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+
+                <p className="text-sm text-gray-600 dark:text-gray-300">{selectedStory.content}</p>
+                <div className="flex items-center justify-between pt-4">
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <Clock className="w-3 h-3" />
+                    <span>{new Date(selectedStory.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/yesterday/writenote?storyId=${selectedStory.id}`}>
+                        <Edit className="w-4 h-4 mr-1" />
+                        편집
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        setIsDialogOpen(false);
+                        handleDelete(selectedStory.id);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      삭제
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
