@@ -157,8 +157,7 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
                         <ChallengeDetailTab challenge={challenge} />
                       </TabsContent>
                       <TabsContent value="chat" className="mt-0 h-[60vh] overflow-hidden">
-                        <ChallengeChatTab />
-                      </TabsContent>
+                      <ChallengeChatTab chatRoomId={challenge.chatRoomId} />                      </TabsContent>
                     </div>
                   </Tabs>
                 </div>
@@ -168,8 +167,7 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
               </CardContent>
             </Card>
             <div className="hidden lg:flex lg:flex-col w-[45%] mt-6 lg:mt-0 rounded-lg shadow-md border bg-white h-[calc(100vh-150px)] max-h-[80vh] overflow-hidden">
-              <ChallengeChatTab />
-            </div>
+            <ChallengeChatTab chatRoomId={challenge.chatRoomId} />            </div>
           </div>
         </div>
       </div>
