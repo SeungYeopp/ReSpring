@@ -458,7 +458,7 @@ const getProfileImageForRoom = (room) => {
   return foundUser?.profileImage || `https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`;
 };
 
-
+// 챌린지 상세에 있는 roomId랑 비교해서 같은 방 컨텐츠를 렌더링 하는 방식으로 하자. 디자인도 여기 있는 거 그대로 쓰고.
   const fetchMessagesAndConnect = async (roomId, roomName, openChat) => {
     // ✅ 기존 WebSocket 구독이 있으면 해제 (중복 구독 방지)
     if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
