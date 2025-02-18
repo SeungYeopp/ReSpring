@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSessionInfo } from "@/lib/api/user";
-
+import LoadingScreen from "@/components/custom/LoadingScreen";
 export default function ProfileRedirectPage() {
   const router = useRouter();
   const [myNickname, setMyNickname] = useState<string | null>(null);
@@ -22,5 +22,6 @@ export default function ProfileRedirectPage() {
     fetchUserInfo();
   }, [router]);
 
-  return <p>Redirecting...</p>;
+  return <LoadingScreen />;
+  // return <p>Redirecting...</p>;
 }

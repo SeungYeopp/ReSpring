@@ -4,6 +4,7 @@ import lombok.*;
 import org.ssafy.respring.domain.tag.vo.Tag;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -28,7 +29,7 @@ public class ChallengeDetailResponseDto {
     private double successRate;
     private String ownerNickname;
     private String ownerProfileImage;
-    private Object records;
+    private Map<String, String> records;
 
     // ====== 새로 추가할 필드 ====== //
     private boolean isParticipating;  // 사용자가 이 챌린지에 참가 중인지 여부

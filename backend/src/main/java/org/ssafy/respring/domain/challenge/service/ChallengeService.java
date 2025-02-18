@@ -55,6 +55,7 @@ public class ChallengeService {
     private final ChatService chatService;
     private final ImageService imageService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RecordsService recordsService;
 
     private final ChatRoomUserRepository chatRoomUserRepository;
     private final NotificationService notificationService;
@@ -158,7 +159,7 @@ public class ChallengeService {
     @Transactional
     public ChallengeDetailResponseDto getChallengeDetail(Long challengeId, UUID userId) {
         Challenge challenge = challengeRepository.findById(challengeId)
-          .orElseThrow(() -> new IllegalArgumentException("챌린지를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("챌린지를 찾을 수 없습니다."));
 
         LocalDate startDate = challenge.getStartDate().toLocalDate();
         LocalDate endDate = challenge.getEndDate().toLocalDate();
@@ -166,33 +167,46 @@ public class ChallengeService {
         // 🔹 챌린지 소유자 정보 가져오기
         User owner = challenge.getOwner();
 
-        int successCount =0;
+        int successCount = 0;
         int totalDays = (int) (endDate.toEpochDay() - startDate.toEpochDay() + 1);
         int longestStreak = 0;
         int currentStreak = 0;
         double successRate = 0.0;
-
-        Optional<Records> records = Optional.empty();
         boolean isParticipating = false;
         boolean isLiked = false;
+
+        // ✅ 날짜별 성공/실패 기록 가져오기
+        Map<String, String> records = recordsService.getChallengeRecords(userId, challengeId);
+
+        // ✅ records를 분석하여 성공 횟수, 연속 성공 기록 계산
+        if (!records.isEmpty()) {
+            successCount = (int) records.values().stream().filter(result -> "SUCCESS".equals(result)).count();
+
+            // ✅ 연속 성공 기록 계산 (longestStreak, currentStreak)
+            int currentStreakCounter = 0;
+            int maxStreakCounter = 0;
+
+            for (String result : records.values()) {
+                if ("SUCCESS".equals(result)) {
+                    currentStreakCounter++;
+                    maxStreakCounter = Math.max(maxStreakCounter, currentStreakCounter);
+                } else {
+                    currentStreakCounter = 0;
+                }
+            }
+
+            longestStreak = maxStreakCounter;
+            currentStreak = currentStreakCounter;
+            successRate = (totalDays > 0) ? ((double) successCount / totalDays) * 100 : 0.0;
+        }
 
         // 🔹 User 엔티티 조회
         if (userId != null) {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
-            records = recordsRepository.findByUserAndChallengeAndStartDateAndEndDate(user, challenge, startDate, endDate);
-
-            successCount = records.map(Records::getSuccessCount).orElse(0);
-            totalDays = records.map(Records::getTotalDays).orElse(totalDays);
-            longestStreak = records.map(Records::getLongestStreak).orElse(0);
-            currentStreak = records.map(Records::getCurrentStreak).orElse(0);
-            successRate = (totalDays > 0) ? ((double) successCount / totalDays) * 100 : 0.0;
             isParticipating = userChallengeRepository.existsByUserAndChallenge(user, challenge);
-
-            // (2) isLiked 판단
             isLiked = isLikedChallenge(userId, challengeId);
-
         }
 
         // ✅ 조회수 증가 (JPA Lock 사용)
@@ -204,27 +218,28 @@ public class ChallengeService {
         String imageUrl = imageService.getSingleImageByEntity(ImageType.CHALLENGE, challenge.getId());
 
         return ChallengeDetailResponseDto.builder()
-          .id(challenge.getId())
-          .title(challenge.getTitle())
-          .description(challenge.getDescription())
-          .imageUrl(imageUrl)
-          .startDate(challenge.getStartDate())
-          .endDate(challenge.getEndDate())
-          .tags(new HashSet<>(tags)) // ✅ 중복 제거된 태그 리스트 반환
-          .participantCount(challenge.getParticipantCount())
-          .likes(challenge.getLikes())
-          .views(challenge.getViews())
-          .isSuccessToday(successCount > 0)
-          .longestStreak(longestStreak) // ✅ 연속 성공 기록
-          .currentStreak(currentStreak) // ✅ 현재 연속 성공 기록
-          .successRate(successRate) // ✅ 성공률
-          .ownerNickname(owner.getUserNickname()) // ✅ 챌린지 OwnerId 추가
-          .ownerProfileImage(owner.getProfileImage())
-          .records(records.orElse(null))
-          .isParticipating(isParticipating)
-          .isLiked(isLiked)
-          .build();
+                .id(challenge.getId())
+                .title(challenge.getTitle())
+                .description(challenge.getDescription())
+                .imageUrl(imageUrl)
+                .startDate(challenge.getStartDate())
+                .endDate(challenge.getEndDate())
+                .tags(new HashSet<>(tags)) // ✅ 중복 제거된 태그 리스트 반환
+                .participantCount(challenge.getParticipantCount())
+                .likes(challenge.getLikes())
+                .views(challenge.getViews())
+                .isSuccessToday(successCount > 0)
+                .longestStreak(longestStreak) // ✅ 연속 성공 기록
+                .currentStreak(currentStreak) // ✅ 현재 연속 성공 기록
+                .successRate(successRate) // ✅ 성공률
+                .ownerNickname(owner.getUserNickname()) // ✅ 챌린지 OwnerId 추가
+                .ownerProfileImage(owner.getProfileImage())
+                .records(records) // ✅ 날짜별 성공/실패 기록 전달
+                .isParticipating(isParticipating)
+                .isLiked(isLiked)
+                .build();
     }
+
 
 
     // 챌린지 참가 (N:M 관계 추가)

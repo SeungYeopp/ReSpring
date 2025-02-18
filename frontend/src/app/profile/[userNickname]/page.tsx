@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, MessageSquare, UserPlus, UserMinus } from "lucide-react";
+import { ArrowLeft, MessageSquare, UserPlus, UserMinus, Award, Flame, BookCheck, Footprints } from 'lucide-react';
 import StatSummary from "../components/stat-summary";
 import TabBar from "../components/tabbar";
 import { isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
@@ -84,10 +84,10 @@ export default function ProfilePage() {
     const fetchUserInfo = async () => {
       try {
         const userInfo = await getUserInfoByNickname(decodeURI(targetNickname));
-        setProfilePic(userInfo.profileImageUrl || "/placeholder_profilepic.png"); // Fallback image
+        setProfilePic(userInfo.profileImageUrl || "/placeholder_profilepic.png");
       } catch (err) {
         console.error("Error fetching user info:", err);
-        setProfilePic("/placeholder_profilepic.png"); // Use default image if there's an error
+        setProfilePic("/placeholder_profilepic.png");
       } finally {
         setLoading(false);
       }
@@ -96,47 +96,80 @@ export default function ProfilePage() {
     fetchUserInfo();
   }, [targetNickname]);
 
-  return (
-    <main className="relative -mt-4">
-      <button onClick={handleBack} className="absolute top-6 left-6 p-2 text-xl text-gray-600 hover:text-gray-800 z-0">
-        <ArrowLeft />
-      </button>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-gray-500">로딩 중...</p>
+      </div>
+    );
+  }
 
-      <div className="top-0 left-0 w-full h-[120px] md:h-[200px] z-0">
-        <img src="/placeholder_profilebanner.jpg" alt="Top Banner" className="w-full h-full object-cover" />
+  return (
+    <main className="min-h-screen bg-gray-50/50">
+      <div className="relative h-[120px] ">
+        <button 
+          onClick={handleBack} 
+          className="absolute top-6 left-6 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white/100 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 text-gray-700" />
+        </button>
+        
+        <div className="absolute -bottom-20 left-1/2 -translate-x-1/2">
+          <div className="relative">
+            <div className="w-40 h-40 rounded-full border-4 border-white bg-white shadow-xl">
+              <img 
+                src={profilePic || "/placeholder_profilepic.png"} 
+                alt="User Profile" 
+                className="w-full h-full rounded-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="relative flex flex-col md:flex-row gap-4 pt-4 z-10">
-        <div className="flex flex-col md:flex-[0.7] gap-4">
-          <div className="flex justify-center items-center h-auto -mt-20 md:-mt-24">
-            <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded-full bg-white flex justify-center items-center overflow-hidden drop-shadow-xl">
-              <img src={profilePic || "/placeholder_profilepic.png"} alt="User Profile" className="w-[120px] md:w-[150px] h-[120px] md:h-[150px] rounded-full object-cover" />
+      <div className="container max-w-6xl mx-auto px-4 pt-24">
+        <div className="relative flex flex-col items-center space-y-6">
+          {/* 닉네임 중앙 정렬 & 배지 우측 정렬 */}
+          <div className="w-full relative flex justify-center">
+            <h1 className="text-3xl font-bold text-gray-900">
+              {decodeURIComponent(targetNickname)}
+            </h1>
+            
+            {/* 획득한 배지 (우측 정렬) */}
+            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 flex flex-col items-end">
+              {/* 획득한 배지 텍스트 */}
+              <span className="text-xs text-gray-400 mb-1 mr-3">획득한 뱃지</span>
+              
+              {/* 뱃지 아이콘 */}
+              <div className="flex mr-3">
+                {[
+                  { id: "flame", icon: <Flame className="w-4 h-4 text-red-500" /> },
+                  { id: "bookCheck", icon: <BookCheck className="w-4 h-4 text-green-500" /> },
+                  { id: "footprints", icon: <Footprints className="w-4 h-4 text-blue-500" /> },
+                ].map((badge) => (
+                  <button
+                    key={badge.id}
+                    onClick={() => openBadgeModal(badge.id)}
+                    className="group relative p-1 transition-all hover:scale-110"
+                  >
+                    {badge.icon}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-center items-center pt-2 text-3xl">
-            <b>{decodeURIComponent(targetNickname)}</b>
-          </div>
+
+          {/* 모달 표시 */}
+          {selectedBadge && <BadgeModal badge={selectedBadge} onClose={closeBadgeModal} />}
 
           <StatSummary userNickname={targetNickname} challengeCount={challenges.length} />
 
-          <div className="flex justify-center items-start text-sm">
-            <div className="flex gap-x-8">
-              <button onClick={() => openBadgeModal("badge1")}> <img src="/badge1.png" alt="새로 가입" className="h-[48px]" /> </button>
-              <button onClick={() => openBadgeModal("badge2")}> <img src="/badge2.png" alt="첫 방문" className="h-[48px]" /> </button>
-              <button onClick={() => openBadgeModal("badge3")}> <img src="/badge3.png" alt="첫 편찬" className="h-[48px]" /> </button>
-              <button onClick={() => openBadgeModal("badge4")}> <img src="/badge4.png" alt="첫 도전" className="h-[48px]" /> </button>
-            </div>
-          </div>
-          {selectedBadge && <BadgeModal badge={selectedBadge} onClose={closeBadgeModal} />}
-
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
           {myNickname !== decodeURIComponent(targetNickname) && (
-            <div className="flex gap-2">  
-              {/* Subscribe/Unsubscribe Button */}
+            <div className="flex gap-3">
               <button
                 onClick={handleSubscribeUnsubscribe}
-                className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md ${
+                className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md shadow-lg ${
                   isSubscribedState ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"
                 }`}
               >
@@ -151,27 +184,18 @@ export default function ProfilePage() {
                 )}
               </button>
 
-              {/* Chat Button */}
               <button
-                onClick={() => {}}  // Add a function to handle chat
-                className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600"
+                onClick={() => {}}
+                className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 shadow-lg"
               >
                 <MessageSquare className="w-4 h-4 mr-2" /> 채팅하기
               </button>
             </div>
           )}
-          </div>
         </div>
 
-        <div className="flex flex-col md:flex-[1.3] justify-start items-center">
+        <div className="mt-12">
           <TabBar userNickname={targetNickname} challenges={challenges} isMine={isMine} />
-          {/* {myNickname === decodeURIComponent(targetNickname) ? (
-            <TabBar userNickname={targetNickname} challenges={challenges} />
-          ) : (
-            <div className="mt-8 w-[80%]">
-              <OtherFootsteps userNickname={targetNickname} />
-            </div>
-          )} */}
         </div>
       </div>
     </main>
