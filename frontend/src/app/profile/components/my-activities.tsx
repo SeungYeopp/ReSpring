@@ -108,7 +108,7 @@ function PostList({ posts }: { posts: Post[] }) {
       {posts.map((post) => (
         <Link key={post.id} href={`/today/${post.id}`} passHref>
           <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
-            <CardContent className="p-4">
+            <CardContent className="p-4 mb-2">
               <div className="flex justify-between items-center">
                 <div className="flex-1 text-left">
                   <h3 className="text-sm font-semibold truncate text-gray-800">{post.title}</h3>

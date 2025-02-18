@@ -13,15 +13,12 @@ import {
 import type { SortOption } from "@/app/tomorrow/types/challenge";
 import axiosAPI from "./axios";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 /**
  * 📌 1. 챌린지 목록 조회 (정렬 가능)
  */
-export const fetchChallenges = async (
-  sort: SortOption = "LATEST"
-): Promise<Challenge[]> => {
+export const fetchChallenges = async (sort: SortOption = "LATEST"): Promise<Challenge[]> => {
   try {
     const response = await axiosAPI.get(`${BASE_URL}/challenges?sort=${sort}`);
     return response.data;
@@ -34,13 +31,9 @@ export const fetchChallenges = async (
 /**
  * 📌 2. 챌린지 상세 조회
  */
-export const getChallengeDetail = async (
-  challengeId: number
-): Promise<ChallengeDetail> => {
+export const getChallengeDetail = async (challengeId: number): Promise<ChallengeDetail> => {
   try {
-    const response = await axiosAPI.get(
-      `${BASE_URL}/challenges/${challengeId}`
-    );
+    const response = await axiosAPI.get(`${BASE_URL}/challenges/${challengeId}`);
     return response.data; // 새 필드들이 포함된 응답 데이터를 그대로 반환
   } catch (error) {
     console.error("챌린지 상세 조회 실패:", error);
@@ -48,17 +41,12 @@ export const getChallengeDetail = async (
   }
 };
 
-
 /**
  * 📌 3. 챌린지 상태별 조회 (UPCOMING, ONGOING, COMPLETED)
  */
-export const fetchChallengesByStatus = async (
-  status: "UPCOMING" | "ONGOING" | "COMPLETED"
-): Promise<Challenge[]> => {
+export const fetchChallengesByStatus = async (status: "UPCOMING" | "ONGOING" | "COMPLETED"): Promise<Challenge[]> => {
   try {
-    const response = await axiosAPI.get(
-      `${BASE_URL}/challenges/status?status=${status}`
-    );
+    const response = await axiosAPI.get(`${BASE_URL}/challenges/status?status=${status}`);
     return response.data;
   } catch (error) {
     console.error(`챌린지 상태별 조회(${status}) 실패:`, error);
@@ -69,9 +57,7 @@ export const fetchChallengesByStatus = async (
 /**
  * 📌 4. 내가 참여한 챌린지 조회
  */
-export const fetchParticipatedChallenges = async (): Promise<
-  ParticipatedChallenge[]
-> => {
+export const fetchParticipatedChallenges = async (): Promise<ParticipatedChallenge[]> => {
   try {
     const response = await axiosAPI.get(`${BASE_URL}/challenges/participated`);
     return response.data;
@@ -110,9 +96,7 @@ export const leaveChallenge = async (challengeId: number): Promise<boolean> => {
 /**
  * 📌 7. 좋아요 토글
  */
-export const toggleChallengeLike = async (
-  challengeId: number
-): Promise<boolean> => {
+export const toggleChallengeLike = async (challengeId: number): Promise<boolean> => {
   try {
     await axiosAPI.post(`${BASE_URL}/challenges/${challengeId}/like`);
     return true;
@@ -125,13 +109,9 @@ export const toggleChallengeLike = async (
 /**
  * 📌 8. 챌린지 검색
  */
-export const searchChallenges = async (
-  keyword: string
-): Promise<Challenge[]> => {
+export const searchChallenges = async (keyword: string): Promise<Challenge[]> => {
   try {
-    const response = await axiosAPI.get(
-      `${BASE_URL}/challenges/search?keyword=${keyword}`
-    );
+    const response = await axiosAPI.get(`${BASE_URL}/challenges/search?keyword=${keyword}`);
     return response.data;
   } catch (error) {
     console.error("챌린지 검색 실패:", error);
@@ -142,15 +122,10 @@ export const searchChallenges = async (
 /**
  * 📌 9. 챌린지 생성
  */
-export const createChallenge = async (
-  challengeData: ChallengeCreateRequest
-): Promise<ChallengeDetail> => {
+export const createChallenge = async (challengeData: ChallengeCreateRequest): Promise<ChallengeDetail> => {
   try {
     const formData = new FormData();
-    formData.append(
-      "challengeDto",
-      new Blob([JSON.stringify(challengeData)], { type: "application/json" })
-    );
+    formData.append("challengeDto", new Blob([JSON.stringify(challengeData)], { type: "application/json" }));
     if (challengeData.image) formData.append("image", challengeData.image);
 
     const response = await axiosAPI.post(`${BASE_URL}/challenges`, formData, {
@@ -167,36 +142,31 @@ export const createChallenge = async (
 /**
  * 📌 10. 챌린지 수정
  */
-export const updateChallenge = async (
-  challengeId: number,
-  updateData: ChallengeUpdateRequest
-): Promise<ChallengeDetail> => {
+export const updateChallenge = async (challengeId: number, updateData: ChallengeUpdateRequest): Promise<any> => {
   try {
     const formData = new FormData();
-    formData.append(
-      "updateDto",
-      new Blob([JSON.stringify(updateData)], { type: "application/json" })
-    );
-    if (updateData.image) formData.append("image", updateData.image);
+    // updateData에서 image 프로퍼티를 분리
+    const { image, ...dto } = updateData;
+    // updateDto를 JSON Blob으로 변환하여 추가
+    formData.append("updateDto", new Blob([JSON.stringify(dto)], { type: "application/json" }));
+    // 이미지 파일이 있다면 별도로 추가
+    if (image) formData.append("image", image);
 
-    const response = await axiosAPI.patch(
-      `${BASE_URL}/challenges/${challengeId}`,
-      formData
-    );
+    const response = await axiosAPI.patch(`${BASE_URL}/challenges/${challengeId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("챌린지 수정 실패:", error);
     throw new Error("챌린지 수정 실패");
   }
 };
-
 /**
  * 📌 11. 챌린지 성공 여부 기록
  */
-export const recordChallengeSuccess = async (
-  challengeId: number,
-  isSuccess: boolean
-): Promise<boolean> => {
+export const recordChallengeSuccess = async (challengeId: number, isSuccess: boolean): Promise<boolean> => {
   try {
     await axiosAPI.post(`${BASE_URL}/records/${challengeId}?isSuccess=${isSuccess}`, {
       isSuccess,
@@ -211,13 +181,9 @@ export const recordChallengeSuccess = async (
 /**
  * 📌 12. 챌린지 참여자 조회
  */
-export const fetchChallengeParticipants = async (
-  challengeId: number
-): Promise<ChallengeParticipant> => {
+export const fetchChallengeParticipants = async (challengeId: number): Promise<ChallengeParticipant> => {
   try {
-    const response = await axiosAPI.get(
-      `${BASE_URL}/challenges/${challengeId}/participants`
-    );
+    const response = await axiosAPI.get(`${BASE_URL}/challenges/${challengeId}/participants`);
     return response.data;
   } catch (error) {
     console.error("챌린지 참여자 조회 실패:", error);
@@ -228,13 +194,9 @@ export const fetchChallengeParticipants = async (
 /**
  * 📌 13. 구독한 사용자의 챌린지 목록 조회
  */
-export const fetchSubscribedUserChallenges = async (): Promise<
-  SubscribedUserChallenge[]
-> => {
+export const fetchSubscribedUserChallenges = async (): Promise<SubscribedUserChallenge[]> => {
   try {
-    const response = await axiosAPI.get(
-      `${BASE_URL}/subscriptions/me/challenges`
-    );
+    const response = await axiosAPI.get(`${BASE_URL}/subscriptions/me/challenges`);
     return response.data;
   } catch (error) {
     console.error("구독한 사용자의 챌린지 조회 실패:", error);

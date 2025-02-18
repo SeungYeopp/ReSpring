@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
+import { Flame } from "lucide-react";
 import React from "react";
 
 interface ChallengeListProps {
@@ -17,6 +18,7 @@ const Challenges: React.FC<ChallengeListProps> = ({ challenges }) => {
         <Link key={challenge.id} href={`/tomorrow/${challenge.id}`} passHref>
           <div className="bg-white rounded-2xl overflow-hidden w-full shadow-sm hover:shadow-md transition-shadow duration-300 mb-4 cursor-pointer">
             <div className="flex p-4">
+              {/* 도전 이미지 */}
               <div className="w-[80px] xs:w-[100px] sm:w-[120px] mr-4">
                 <div className="relative w-full aspect-square">
                   <img 
@@ -26,14 +28,18 @@ const Challenges: React.FC<ChallengeListProps> = ({ challenges }) => {
                   />
                 </div>
               </div>
+
+              {/* 도전 제목 & 태그 */}
               <div className="flex-1 flex flex-col justify-center">
-                <h3 className="text-lg sm:text-xl font-bold mb-1">{challenge.title}</h3>
+                <h3 className="text-lg md:text-base lg:text-sm font-bold mb-1">
+                  {challenge.title}
+                </h3>
                 {challenge.tags && challenge.tags.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {challenge.tags.map((tag) => (
                       <span 
                         key={tag.id} 
-                        className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600"
+                        className="px-2 py-1 bg-gray-100 rounded-full text-xs md:text-[11px] lg:text-[10px] text-gray-600"
                       >
                         {tag.name}
                       </span>
@@ -41,10 +47,17 @@ const Challenges: React.FC<ChallengeListProps> = ({ challenges }) => {
                   </div>
                 )}
               </div>
+
+              {/* 연속 달성 카운트 */}
               <div className="w-[80px] xs:w-[100px] sm:w-[120px] flex flex-col items-center justify-center">
-                <p className="font-bold text-4xl">{challenge.currentStreak}</p>
-                <p className="text-sm text-gray-500">연속 달성</p>
+                <p className="font-bold text-4xl md:text-3xl lg:text-2xl flex items-center gap-1">
+                  <Flame className="w-5 h-5 text-red-500" />  {challenge.currentStreak}
+                </p>
+                <p className="text-sm md:text-xs lg:text-[11px] text-gray-500 flex items-center gap-1">
+                  연속 달성
+                </p>
               </div>
+
             </div>
           </div>
         </Link>

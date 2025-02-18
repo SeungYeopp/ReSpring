@@ -65,7 +65,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
       <div ref={containerRef} className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <Link href="/yesterday/writenote">
-            <Card className="h-[150px] group hover:shadow-lg transition-all duration-300 
+            <Card className="h-[280px] group hover:shadow-lg transition-all duration-300 
                             bg-gradient-to-br from-gray-100 to-white dark:from-gray-800 dark:to-gray-700 
                             border border-gray-200/50 dark:border-gray-700/50">
               <CardContent className="h-full flex items-center justify-center">
@@ -82,7 +82,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
           {stories.map((story, index) => (
             <Card
               key={story.id}
-              className="h-[320px] group hover:shadow-lg transition-all duration-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50"
+              className="h-[280px] group hover:shadow-lg transition-all duration-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50"
               onClick={() => {
                 setSelectedStory(story);
                 setIsDialogOpen(true);
@@ -110,12 +110,21 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
               </CardContent>
               <CardHeader className="p-4">
                 <h3 className="font-semibold text-lg line-clamp-1">{story.title}</h3>
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                
+
+
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1 mb-2">
                   <Tag className="w-3 h-3" />
                   <span>{getEventName(story.eventId)}</span>
                   <span> · {new Date(story.occurredAt).toLocaleDateString()}</span>
                 </div>
+                  {/* 미리보기 추가 */}
+                  <p className="text-xs text-gray-400 dark:text-gray-100 line-clamp-1 mt-3 pt-3">
+                    {story.content ? story.content : "미리보기 없음"}
+                  </p>
               </CardHeader>
+
+
             </Card>
           ))}
         </div>
