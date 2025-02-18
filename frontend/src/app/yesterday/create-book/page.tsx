@@ -468,7 +468,7 @@ const handleRemoveChapter = (index: number) => {
               <div className="mt-6 text-center">
                 <Button
                   className="w-full text-gray-600 text-sm" variant="ghost"
-                  onClick={() => router.push("/yesterday/write-note")}
+                  onClick={() => router.push("/yesterday/writenote")}
                 >
                   🌿 마음에 드는 글 조각이 없나요? 직접 써보세요!
                 </Button>
