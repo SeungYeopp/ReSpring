@@ -16,6 +16,7 @@ import org.ssafy.respring.domain.book.dto.response.BookAutocompleteResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookDetailResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
 import org.ssafy.respring.domain.book.service.BookService;
+import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.user.service.UserService;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ public class BookController {
 
 	private final BookService bookService;
 	private final UserService userService;
+	private final ImageService imageService;
 
 	private UUID getUserIdFromSession(HttpSession session) {
 		return (UUID) session.getAttribute("userId"); // 로그인 안 했으면 null 반환
@@ -51,6 +53,9 @@ public class BookController {
 			@RequestPart("requestDto") BookRequestDto requestDto,
 			@RequestPart(value = "coverImg", required = false) MultipartFile coverImg,
 			HttpSession session) {
+
+		imageService.validateFileSize(coverImg);
+
 		UUID userId = requireLogin(session);
 		Long bookId = bookService.createBook(requestDto, coverImg, userId);
 		return ResponseEntity.ok(bookId);
