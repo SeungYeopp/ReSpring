@@ -105,19 +105,19 @@ public class BookService {
 
         bookRepository.save(book);
 
-		// ✅ Elasticsearch 색인 수행
+		// Elasticsearch 색인 수행
 		indexBookData(book);
 
 
-		// ✅ MongoDB 키 변환 적용 ('.' → '_DOT_')
+		// MongoDB 키 변환 적용 ('.' → '_DOT_')
 		LinkedHashMap<String, String> sanitizedContent = escapeDots(requestDto.getContent());
 
 		BookContent bookContent = new BookContent();
 		bookContent.setBookId(book.getId());
-		bookContent.setContent(sanitizedContent); // ✅ 변환된 키 적용
+		bookContent.setContent(sanitizedContent); // 변환된 키 적용
 		bookContentRepository.save(bookContent);
 
-		// ✅ 새 책이 추가되었으므로 캐시 삭제
+		// 새 책이 추가되었으므로 캐시 삭제
 		clearTrendingBooksCache();
 
         return book.getId();
@@ -127,41 +127,41 @@ public class BookService {
 	public void updateBook(BookUpdateRequestDto requestDto, MultipartFile coverImage, UUID userId) {
 		boolean isUpdated = false; // 변경 여부 추적
 
-		// 1️⃣ 기존 책 조회 및 권한 검증
+		//  기존 책 조회 및 권한 검증
 		Book book = getBookById(requestDto.getBookId(), userId);
 
 		// 요청된 Story, user 유효성 검증 단계 추가
 		validateUserStories(requestDto.getStoryIds(), userId);
 		validateOwner(getBookById(requestDto.getBookId()).getAuthor().getId(), userId);
 
-		// 2️⃣ 커버 이미지 처리
+		// 커버 이미지 처리
 		String coverImageUrl = coverImage != null ? imageService.saveImage(coverImage,ImageType.BOOK,book.getId()) : book.getCoverImage();
 
-		// 3️⃣ 제목(title) 업데이트
+		// 3⃣제목(title) 업데이트
 		isUpdated |= Optional.ofNullable(requestDto.getTitle())
 				.filter(title -> !title.equals(book.getTitle()))
 				.map(title -> { book.setTitle(title); return true; })
 				.orElse(false);
 
-		// 4️⃣ 커버 이미지(coverImage) 업데이트
+		//  커버 이미지(coverImage) 업데이트
 		isUpdated |= Optional.ofNullable(coverImageUrl)
 				.filter(image -> !image.equals(book.getCoverImage()))
 				.map(image -> { book.setCoverImage(image); return true; })
 				.orElse(false);
 
-		// 5️⃣ 태그(tags) 업데이트
+		// 태그(tags) 업데이트
 		isUpdated |= Optional.ofNullable(requestDto.getTags())
 				.filter(tags -> !tags.equals(book.getTags()))
 				.map(tags -> { book.setTags(tags); return true; })
 				.orElse(false);
 
-		// 6️⃣ Story ID 리스트 업데이트
+		// Story ID 리스트 업데이트
 		isUpdated |= Optional.ofNullable(requestDto.getStoryIds())
 				.filter(storyIds -> !storyIds.equals(book.getStoryIds()))
 				.map(storyIds -> { book.setStoryIds(storyIds); return true; })
 				.orElse(false);
 
-		// ✅ 7️⃣ 본문(content) 업데이트
+		// 본문(content) 업데이트
 		if (requestDto.getContent() != null) {
 			BookContent bookContent = bookContentRepository.findByBookId(requestDto.getBookId());
 			if (bookContent == null) {
@@ -177,12 +177,12 @@ public class BookService {
 			}
 		}
 
-		// ✅ 8️⃣ 변경 사항이 있으면 updatedAt 갱신 후 저장
+		// 변경 사항이 있으면 updatedAt 갱신 후 저장
 		if (isUpdated) {
 			book.setUpdatedAt(LocalDateTime.now());
 			bookRepository.save(book);
 
-			// ✅ Elasticsearch 색인 업데이트 (검색 최적화를 위해)
+			// Elasticsearch 색인 업데이트 (검색 최적화를 위해)
 			indexBookData(book);
 		}
 	}
@@ -195,10 +195,10 @@ public class BookService {
 		bookRepository.deleteById(bookId);
 		bookContentRepository.deleteByBookId(bookId);
 
-		// ✅ Elasticsearch 색인 삭제
+		// Elasticsearch 색인 삭제
 		deleteBookFromIndex(bookId, "book_title");
 
-		// ✅ 책이 삭제되었으므로 캐시 삭제
+		// 책이 삭제되었으므로 캐시 삭제
 		clearTrendingBooksCache();
 	}
 
@@ -220,13 +220,13 @@ public class BookService {
 
 		String authorProfileImage = imageService.generatePresignedUrl(book.getAuthor().getProfileImage());
 
-		// ✅ 댓글 조회
+		// 댓글 조회
 		List<CommentDto> comments = commentService.getCommentsByBookId(bookId);
 
 		return BookDetailResponseDto.toResponseDto(
 				book,
 				authorProfileImage,
-				bookContent,  // ✅ 순서 수정: contentJson
+				bookContent,  // 순서 수정: contentJson
 				isLiked,
 				likeCount,
 		  		likedUsers,
@@ -280,7 +280,7 @@ public class BookService {
 				.orElse(new LinkedHashMap<>()); // ✅ 빈 LinkedHashMap 반환
 	}
 
-	// ✅ MongoDB 저장 시 '.' → '_DOT_' 변환
+	// MongoDB 저장 시 '.' → '_DOT_' 변환
 	private LinkedHashMap<String, String> escapeDots(Map<String, String> content) {
 		LinkedHashMap<String, String> sanitizedContent = new LinkedHashMap<>();
 		for (Map.Entry<String, String> entry : content.entrySet()) {
@@ -291,7 +291,7 @@ public class BookService {
 	}
 
 
-	// ✅ MongoDB 조회 후 '_DOT_' → '.' 복구
+	// MongoDB 조회 후 '_DOT_' → '.' 복구
 	private LinkedHashMap<String, String> restoreDots(Map<String, String> content) {
 		LinkedHashMap<String, String> restoredContent = new LinkedHashMap<>();
 		for (Map.Entry<String, String> entry : content.entrySet()) {
@@ -339,23 +339,23 @@ public class BookService {
 	// 무한스크롤 적용
 	@Transactional(readOnly = true)
 	public List<BookResponseDto> getAllBooksSortedByTrends(UUID userId, Long lastLikes, Long lastViews, LocalDateTime lastCreatedAt, Long lastBookId, int size) {
-		// ✅ Redis 캐싱 키 생성 (페이지 단위 캐싱)
+		// Redis 캐싱 키 생성 (페이지 단위 캐싱)
 		String cacheKey = String.format("trending_books:%d:%d:%s:%d", lastLikes, lastViews, lastCreatedAt, size);
 
-		// ✅ 캐시에서 조회
+		// 캐시에서 조회
 		List<BookResponseDto> cachedResult = (List<BookResponseDto>) redisTemplate.opsForValue().get(cacheKey);
 		if (cachedResult != null) {
-			System.out.println("✅ 캐시에서 불러옴: " + cacheKey);
+//			System.out.println(" 캐시에서 불러옴: " + cacheKey);
 			return cachedResult;
 		}
 
-		// ✅ 캐시에 없으면 DB 조회
+		// 캐시에 없으면 DB 조회
 		List<BookResponseDto> result = bookRepository.getAllBooksSortedByTrends(lastLikes, lastViews, lastCreatedAt, lastBookId, size)
 				.stream()
 				.map(book -> mapToBookResponseDto(book, userId))
 				.collect(Collectors.toList());
 
-		// ✅ Redis에 저장 (TTL 5분 설정)
+		// Redis에 저장 (TTL 5분 설정)
 		redisTemplate.opsForValue().set(cacheKey, result, 5, TimeUnit.MINUTES);
 
 		return result;
@@ -409,10 +409,10 @@ public class BookService {
 			Map<String, Object> bookData = new HashMap<>();
 			bookData.put("id", book.getId());
 
-			// ✅ title을 그냥 문자열(String)로 저장
+			// title을 그냥 문자열(String)로 저장
 			bookData.put("title", book.getTitle());
 
-			// ✅ 수정된 데이터 확인
+			// 수정된 데이터 확인
 			System.out.println("📌 수정된 색인 요청 데이터: " + bookData);
 
 			IndexRequest<Map<String, Object>> request = IndexRequest.of(i -> i
@@ -421,7 +421,7 @@ public class BookService {
 					.document(bookData));
 
 			esClient.index(request);
-			System.out.println("✅ Elasticsearch 색인 성공: " + book.getTitle());
+			System.out.println("Elasticsearch 색인 성공: " + book.getTitle());
 		} catch (IOException e) {
 			throw new RuntimeException("Elasticsearch 색인 오류", e);
 		}
@@ -433,15 +433,15 @@ public class BookService {
 				.index(BOOK_INDEX)
 				.query(q -> q
 						.bool(b -> b
-								.should(s1 -> s1.matchPhrasePrefix(mpp -> mpp // ✅ 입력한 prefix로 시작하는 제목 검색
+								.should(s1 -> s1.matchPhrasePrefix(mpp -> mpp // 입력한 prefix로 시작하는 제목 검색
 										.field("title.autocomplete")
 										.query(prefix)))
-								.should(s2 -> s2.match(m -> m // ✅ 입력한 prefix가 제목 내 포함된 경우도 검색
+								.should(s2 -> s2.match(m -> m // 입력한 prefix가 제목 내 포함된 경우도 검색
 										.field("title.autocomplete")
 										.query(prefix)))
 						)
 				)
-				.size(10) // ✅ 자동완성 결과 개수 제한
+				.size(10) // 자동완성 결과 개수 제한
 		);
 
 		SearchResponse<Map> searchResponse = esClient.search(searchRequest, Map.class);
@@ -460,7 +460,7 @@ public class BookService {
 	}
 
 	public void clearTrendingBooksCache() {
-		// ✅ "trending_books:"로 시작하는 모든 캐시 삭제
+		//  "trending_books:"로 시작하는 모든 캐시 삭제
 		Set<String> keys = redisTemplate.keys("trending_books:*");
 		if (keys != null) {
 			redisTemplate.delete(keys);
@@ -469,7 +469,7 @@ public class BookService {
 	}
 
 
-	// ✅ 책 제목 검색 기능 (Elasticsearch)
+	// 책 제목 검색 기능 (Elasticsearch)
 	@Transactional
 	public List<BookResponseDto> searchByBookTitle(String keyword, UUID userId) throws IOException {
 		SearchRequest searchRequest = getSearchRequest("book_title", keyword);
@@ -482,15 +482,15 @@ public class BookService {
 					try {
 						System.out.println("✅ 검색 결과: " + hit.source());
 
-						// ✅ Elasticsearch에서 변환
+						// Elasticsearch에서 변환
 						BookResponseDto bookDto = objectMapper.convertValue(hit.source(), BookResponseDto.class);
 
-						// ✅ Elasticsearch 결과에 ID가 없을 경우 _id 필드에서 가져오기
+						// Elasticsearch 결과에 ID가 없을 경우 _id 필드에서 가져오기
 						if (bookDto.getId() == null) {
 							bookDto.setId(Long.parseLong(hit.id()));
 						}
 
-						// ✅ Elasticsearch에서 누락된 데이터 보완
+						// Elasticsearch에서 누락된 데이터 보완
 						return enrichBookResponseWithDB(bookDto, userId);
 					} catch (Exception e) {
 						System.err.println("❌ 검색 변환 오류: " + e.getMessage());
@@ -503,15 +503,15 @@ public class BookService {
 		return books;
 	}
 
-	// ✅ Elasticsearch에서 가져온 데이터에 DB 데이터 추가
+	// Elasticsearch에서 가져온 데이터에 DB 데이터 추가
 	private BookResponseDto enrichBookResponseWithDB(BookResponseDto bookDto, UUID userId) {
-		// ✅ DB에서 책 정보 조회
+		// DB에서 책 정보 조회
 		Optional<Book> optionalBook = bookRepository.findById(bookDto.getId());
 
 		if (optionalBook.isPresent()) {
 			Book book = optionalBook.get();
 
-			// ✅ Elasticsearch에서 빠진 데이터 보완
+			// Elasticsearch에서 빠진 데이터 보완
 			bookDto.setAuthorNickname(book.getAuthor().getUserNickname());
 			bookDto.setAuthorProfileImage(imageService.generatePresignedUrl(book.getAuthor().getProfileImage()));
 			bookDto.setCoverImage(imageService.generatePresignedUrl(book.getCoverImage()));
@@ -521,7 +521,7 @@ public class BookService {
 			System.err.println("❌ DB에서 책 ID " + bookDto.getId() + "를 찾을 수 없음.");
 		}
 
-		// ✅ Redis에서 좋아요 & 조회수 정보 보완
+		//   Redis에서 좋아요 & 조회수 정보 보완
 		return enrichBookResponse(bookDto, userId);
 	}
 
@@ -533,7 +533,7 @@ public class BookService {
 		book.setLikeCount(likeCount);
 		book.setViewCount(viewCount);
 		book.setLikedUsers(likedUsers);
-		book.setLiked(isBookLiked(book.getId(), userId)); // ✅ 사용자의 좋아요 여부 확인
+		book.setLiked(isBookLiked(book.getId(), userId)); //   사용자의 좋아요 여부 확인
 
 		System.out.println(book);
 
@@ -542,10 +542,10 @@ public class BookService {
 
 	private SearchRequest getSearchRequest(String indexName, String keyword) {
 		return SearchRequest.of(s -> s
-				.index(indexName)  // ✅ "book_title" 인덱스에서 검색 수행
+				.index(indexName)  //   "book_title" 인덱스에서 검색 수행
 				.query(q -> q
 						.match(m -> m
-								.field("title")  // ✅ title 필드에서 검색
+								.field("title")  //   title 필드에서 검색
 								.query(keyword)
 						)
 				)
@@ -578,13 +578,13 @@ public class BookService {
 			bookLikesRepository.save(newLike);
 			bookLikesRedisService.addLike(bookId, userId);
 
-			// ✅ 자서전 작성자에게 알림 전송
+			//   자서전 작성자에게 알림 전송
 			UUID authorId = book.getAuthor().getId();
 
-			// ✅ 본인이 작성한 자서전에 좋아요를 누르면 알림을 보내지 않음
+			//   본인이 작성한 자서전에 좋아요를 누르면 알림을 보내지 않음
 			if (!authorId.equals(userId)) {
 				notificationService.sendNotification(
-						authorId, // ✅ 알림 받는 사람 (자서전 작성자)
+						authorId, //   알림 받는 사람 (자서전 작성자)
 						NotificationType.LIKE,
 						TargetType.BOOK,
 						bookId,
@@ -592,7 +592,7 @@ public class BookService {
 				);
 			}
 
-			// ✅ 캐시 삭제 후 최신 데이터 반영
+			//   캐시 삭제 후 최신 데이터 반영
 			clearTrendingBooksCache();
 
 			return true; // 좋아요 추가됨
@@ -600,7 +600,7 @@ public class BookService {
 	}
 
 	/**
-	 * ✅ Book 엔티티를 BookResponseDto로 변환하는 공통 메서드
+	 *   Book 엔티티를 BookResponseDto로 변환하는 공통 메서드
 	 */
 	private BookResponseDto mapToBookResponseDto(Book book, UUID userId) {
 		// MongoDB에서 책 본문 조회
@@ -660,8 +660,8 @@ public class BookService {
 
 	private List<String> getImagesFromStories(List<Long> storyIds) {
 		return storyIds.stream()
-				.map(storyId -> imageService.getSingleImageByEntity(ImageType.STORY, storyId)) // ✅ 각 storyId에 대한 이미지 리스트 반환
-				.filter(Objects::nonNull) // ✅ Null 값 제거
+				.map(storyId -> imageService.getSingleImageByEntity(ImageType.STORY, storyId)) //   각 storyId에 대한 이미지 리스트 반환
+				.filter(Objects::nonNull) //   Null 값 제거
 				.collect(Collectors.toList());
 	}
 
