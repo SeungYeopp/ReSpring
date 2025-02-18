@@ -158,9 +158,9 @@ export const createChallenge = async (
     });
 
     return response.data;
-  } catch (error) {
-    console.error("챌린지 생성 실패:", error);
-    throw new Error("챌린지 생성 실패");
+  } catch (error: any) {
+    alert(error.response?.data?.message || "챌린지 생성 실패");
+    return Promise.reject(error.response?.data?.message || "챌린지 생성 실패");
   }
 };
 
