@@ -63,7 +63,7 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
   }, [params.id, isLiked]);
 
   if (!challenge) {
-    return LoadingScreen
+    return <LoadingScreen />
   }
 
   return (
