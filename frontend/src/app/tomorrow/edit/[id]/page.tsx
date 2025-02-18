@@ -3,57 +3,25 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { EditChallengeForm } from "../../components/update/edit-challenge-form";
 import { ChallengePreview } from "../../components/update/challnege-preview";
-import type { ChallengeDetail } from "../../types/challenge";
+import type { ChallengeDetail, ChallengeUpdateRequest } from "../../types/challenge";
 import { useMediaQuery } from "../../hooks/use-media-query";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
+import { getChallengeDetail, updateChallenge } from "@/lib/api/tomorrow";
+import LoadingScreen from "@/components/custom/LoadingScreen";
+import { getUserInfo } from "@/lib/api/user"; // 유저 정보를 가져오는 함수
 
-async function fetchChallenge(id: string): Promise<ChallengeDetail> {
-  const response = await fetch(`/challenges/${id}`);
-  if (!response.ok) {
-    throw new Error("챌린지 정보를 불러오지 못했습니다.");
-  }
-  return response.json();
-}
-
-async function updateChallenge(
-  id: string,
-  data: Partial<ChallengeDetail>,
-  imageFile?: File
-): Promise<ChallengeDetail> {
-  // multipart/form-data 요청을 위한 FormData 생성
-  const formData = new FormData();
-  // API 명세에 따라 수정 가능한 필드는 description과 endDate입니다.
-  const updateDto = {
-    description: data.description,
-    endDate: data.endDate,
-  };
-  // updateDto를 JSON Blob으로 추가합니다.
-  formData.append(
-    "updateDto",
-    new Blob([JSON.stringify(updateDto)], { type: "application/json" })
-  );
-  // imageFile이 존재한다면 FormData에 추가합니다.
-  if (imageFile) {
-    formData.append("image", imageFile);
-  }
-
-  const response = await fetch(`/challenges/${id}`, {
-    method: "PATCH",
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error("챌린지 수정에 실패했습니다.");
-  }
-  return response.json();
-}
-
+/**
+ * 챌린지 수정 페이지 컴포넌트
+ * 챌린지 정보 수정 폼과 미리보기를 제공합니다.
+ */
 export default function EditChallengePage() {
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null);
   const [updatedData, setUpdatedData] = useState<Partial<ChallengeDetail>>({});
+
   const isTablet = useMediaQuery("(min-width: 768px)");
   const isDesktop = useMediaQuery("(min-width: 1024px)");
+
   const params = useParams();
   const router = useRouter();
   const { id } = params;
@@ -61,7 +29,7 @@ export default function EditChallengePage() {
   useEffect(() => {
     const fetchChallengeData = async () => {
       try {
-        const challengeData = await fetchChallenge(id as string);
+        const challengeData = await getChallengeDetail(Number(id));
         setChallenge(challengeData);
       } catch (error) {
         console.error("Failed to fetch challenge details:", error);
@@ -69,7 +37,7 @@ export default function EditChallengePage() {
       }
     };
 
-    if (typeof id === "string") {
+    if (id) {
       fetchChallengeData();
     }
   }, [id]);
@@ -78,11 +46,17 @@ export default function EditChallengePage() {
     async (data: Partial<ChallengeDetail>, imageFile?: File) => {
       if (challenge) {
         try {
-          const updatedChallenge = await updateChallenge(
-            challenge.id.toString(),
-            data,
-            imageFile
-          );
+          // getUserInfo()를 통해 유저 정보를 받아서 userInfo.userId 사용
+          const userInfo = await getUserInfo();
+
+          const updateData: ChallengeUpdateRequest = {
+            description: data.description,
+            endDate: data.endDate,
+            image: imageFile,
+            ownerId: userInfo.userId, // 필수 필드 추가
+          };
+
+          const updatedChallenge = await updateChallenge(challenge.id, updateData);
           setChallenge(updatedChallenge);
           alert("챌린지가 성공적으로 수정되었습니다!");
           router.push(`/tomorrow/${challenge.id}`);
@@ -99,8 +73,16 @@ export default function EditChallengePage() {
     router.back();
   }, [router]);
 
+  /**
+   * 수정 가능한 필드만 변경 사항 반영
+   */
   const handleChange = useCallback((newData: Partial<ChallengeDetail>) => {
-    setUpdatedData((prevData) => ({ ...prevData, ...newData }));
+    setUpdatedData((prevData) => ({
+      ...prevData,
+      description: newData.description ?? prevData.description,
+      endDate: newData.endDate ?? prevData.endDate,
+      image: newData.image ?? prevData.image,
+    }));
   }, []);
 
   const previewData = useMemo(() => {
@@ -108,7 +90,7 @@ export default function EditChallengePage() {
   }, [challenge, updatedData]);
 
   if (!challenge) {
-    return <div className="flex justify-center items-center h-screen">로딩 중...</div>;
+    return <LoadingScreen />;
   }
 
   return (
@@ -116,31 +98,17 @@ export default function EditChallengePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="w-full lg:w-1/2">
-            <EditChallengeForm
-              challenge={challenge}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-              onChange={handleChange}
-            />
+            <EditChallengeForm challenge={challenge} onSubmit={handleSubmit} onCancel={handleCancel} onChange={handleChange} />
           </div>
           {previewData && (
-            <motion.div
-              className="w-full lg:w-1/2 mt-8 lg:mt-0"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
+            <motion.div className="w-full lg:w-1/2 mt-8 lg:mt-0" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
               <ChallengePreview
                 title={previewData.title}
                 description={previewData.description}
                 tags={previewData.tags.map((tag) => tag.name)}
                 startDate={new Date(previewData.startDate)}
-                endDate={
-                  typeof previewData.endDate === "string"
-                    ? new Date(previewData.endDate)
-                    : previewData.endDate
-                }
-                preview={typeof previewData.image === "string" ? previewData.image : ""}
+                endDate={typeof previewData.endDate === "string" ? new Date(previewData.endDate) : previewData.endDate}
+                preview={typeof previewData.image === "string" ? previewData.image : challenge.image}
               />
             </motion.div>
           )}
@@ -149,4 +117,3 @@ export default function EditChallengePage() {
     </main>
   );
 }
-
