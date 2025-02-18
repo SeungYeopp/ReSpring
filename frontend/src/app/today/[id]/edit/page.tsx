@@ -21,18 +21,16 @@ import { getMyPost, getPostDetail, updatePost } from "@/lib/api";
 
 import type React from "react"; // Added import for React
 
-const MAX_IMAGES = 6;
+const MAX_IMAGES = 10;
 
 export default function EditPostPage({ params }: { params: { id: string } }) {
   const router = useRouter();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [images, setImages] = useState<(File | null)[]>(
-    Array(MAX_IMAGES).fill(null)
-  );
-  const [previews, setPreviews] = useState<string[]>(
-    Array(MAX_IMAGES).fill(null)
-  );
+  const [images, setImages] = useState<File[]>([]);
+
+  const [previews, setPreviews] = useState<string[]>([]);
+
   const [deleteImageIds, setDeleteImageIds] = useState<String[]>([]);
 
   const [formData, setFormData] = useState({
@@ -60,14 +58,9 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
           category: fetchedPost.category,
         });
 
-        if (fetchedPost.images.length > 0) {
-          const newPreviews = Array(MAX_IMAGES).fill(null);
-          fetchedPost.images.forEach((img, index) => {
-            if (index < MAX_IMAGES) {
-              newPreviews[index] = img;
-            }
-          });
-          setPreviews(newPreviews);
+        // ✅ `null` 체크 후 `previews` 업데이트
+        if (fetchedPost.images && fetchedPost.images.length > 0) {
+          setPreviews(fetchedPost.images.slice(0, MAX_IMAGES));
         }
       } catch (error) {
         alert("게시글을 불러오는 중 오류가 발생했습니다.");
@@ -109,7 +102,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
 
     // ✅ S3 Key 추출 (URL에서 이미지 경로만 가져오기)
     const urlParts = imageToRemove.split("/");
-    let s3Key = urlParts.slice(-2).join("/"); // 예: "posts/xxxx-xxxx-xxxx.png?X-Amz-Algorithm=..."
+    let s3Key = urlParts.slice(-2).join("/"); // 예: "posts/xxxx-xxxx-xxxx.png?..."
 
     // ✅ Presigned URL의 파라미터 제거
     if (s3Key.includes("?")) {
@@ -117,24 +110,10 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     }
 
     console.log("🗑 삭제 요청할 S3 Key:", s3Key);
+    setDeleteImageIds((prev) => [...prev, s3Key]); // ✅ Presigned URL 제거 후 저장
 
-    if (s3Key) {
-      setDeleteImageIds((prev) => [...prev, s3Key]); // ✅ Presigned URL 제거 후 저장
-    } else {
-      console.warn("🚨 올바른 S3 Key를 찾지 못함:", imageToRemove);
-    }
-
-    setImages((prev) => {
-      const newImages = [...prev];
-      newImages[index] = null;
-      return newImages;
-    });
-
-    setPreviews((prev) => {
-      const newPreviews = [...prev];
-      newPreviews[index] = "";
-      return newPreviews;
-    });
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -167,6 +146,20 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAddImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (previews.length + images.filter(Boolean).length >= MAX_IMAGES) {
+      alert(`이미지는 최대 ${MAX_IMAGES}장까지 업로드할 수 있습니다.`);
+      return;
+    }
+
+    const file = files[0];
+    setImages([...images, file]);
+    setPreviews([...previews, URL.createObjectURL(file)]);
   };
 
   return (
@@ -202,7 +195,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="INFORMATION_SHARING">정보 공유</SelectItem>
-              <SelectItem value="CAREER">고민/질문</SelectItem>
+              <SelectItem value="QUESTION_DISCUSSION">고민/질문</SelectItem>
             </SelectContent>
           </Select>
 
@@ -224,39 +217,41 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
             className="min-h-[300px] border-[#618264]"
           />
 
+          {/* ✅ 이미지 개수만큼만 표시되도록 변경 */}
           <div className="grid grid-cols-3 gap-2">
-            {previews.map((preview, index) => (
-              <div key={index} className="relative aspect-square">
-                {preview ? (
-                  <>
-                    {/* 이미지 변경해야 함 */}
-                    <Image
-                      src={preview}
-                      alt={`이미지 ${index + 1}`}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
-                    >
-                      <X size={16} />
-                    </button>
-                  </>
-                ) : (
-                  <label className="flex items-center justify-center w-full h-full border-2 border-dashed border-gray-300 rounded-lg cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageChange(e, index)}
-                      className="hidden"
-                    />
-                    <Plus size={24} className="text-gray-400" />
-                  </label>
-                )}
-              </div>
-            ))}
+            {previews.map((preview, index) =>
+              preview ? (
+                <div key={index} className="relative w-24 h-24">
+                  <Image
+                    src={preview}
+                    alt={`이미지 ${index + 1}`}
+                    fill
+                    className="object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : null
+            )}
+
+            {/* ✅ 추가 버튼이 마지막 칸에 유지됨 */}
+            {previews.length < MAX_IMAGES && (
+              <label className="cursor-pointer w-24 h-24 border-2 border-dashed border-[#618264] rounded-lg flex flex-col items-center justify-center gap-2 text-[#618264] hover:bg-[#618264]/10">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAddImage}
+                  className="hidden"
+                />
+                <Plus size={24} />
+                <span className="text-sm">추가</span>
+              </label>
+            )}
           </div>
         </form>
       </div>
