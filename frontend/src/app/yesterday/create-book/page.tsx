@@ -326,7 +326,7 @@ const handleRemoveChapter = (index: number) => {
     <TooltipProvider>
     <div className="flex flex-col min-h-screen bg-gray-100">
       <div className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden my-1">
-        <div className="flex items-center justify-between p-4 text-white">
+        <div className="flex items-center justify-between p-4 mt-12 text-white">
           <Button variant="ghost" onClick={onClickBackButton} className="text-white bg-brand hover:bg-brand-dark shadow-lg">
             {/* <ChevronLeft className="mr-2 h-4 w-4" /> */}
             {step === 1 ? "취소" : step === 4 ? "이전" : step === 2 ? "이전" : "이전"}
