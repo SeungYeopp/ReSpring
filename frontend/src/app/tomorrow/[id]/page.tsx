@@ -15,6 +15,7 @@ import { format, parseISO } from "date-fns"
 import { ko } from "date-fns/locale"
 import { getChallengeDetail, toggleChallengeLike, getSessionInfo } from "@/lib/api"
 import LoadingScreen from "@/components/custom/LoadingScreen"
+import { getUserInfo, type UserInfo } from "@/lib/api";
 
 export default function ChallengePage({ params }: { params: { id: number } }) {
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null)
@@ -23,6 +24,8 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
 
   // 현재 로그인한 유저의 ID를 저장하는 state (추가)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserNickname, setCurrentUserNickname] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   // 수정하기 버튼의 좋아요 토글 핸들러
   const handleLikeClick = async () => {
@@ -36,18 +39,34 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
     }
   };
 
-  // 세션 정보를 통해 현재 유저의 ID를 가져와서 저장 (추가)
+
   useEffect(() => {
-    async function fetchSession() {
+    const fetchUserInfo = async () => {
       try {
-        const sessionInfo = await getSessionInfo();
-        setCurrentUserId(sessionInfo.userId);
+        const info = await getUserInfo();
+        setUserInfo(info);
       } catch (error) {
-        console.error("세션 정보 불러오기 실패:", error);
+        console.error("사용자 정보 불러오기 실패:", error);
       }
-    }
-    fetchSession();
+    };
+  
+    fetchUserInfo();
   }, []);
+  
+
+  // // 세션 정보를 통해 현재 유저의 ID를 가져와서 저장 (추가)
+  // useEffect(() => {
+  //   async function fetchSession() {
+  //     try {
+  //       const sessionInfo = await getSessionInfo();
+  //       setCurrentUserId(sessionInfo.userId);
+  //     } catch (error) {
+  //       console.error("세션 정보 불러오기 실패:", error);
+  //     }
+  //   }
+  //   fetchSession();
+  // }, []);
+
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -89,8 +108,8 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
                             variant="secondary"
                             size="icon"
                             className="bg-white/80 hover:bg-white text-gray-800"
-                            onClick={() => window.history.back()}
-                          >
+                            onClick={() => router.push(`/tomorrow`)}
+                            >
                             <ArrowLeft className="w-4 h-4" />
                           </Button>
                         </TooltipTrigger>
@@ -100,7 +119,7 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
                       </Tooltip>
                     </TooltipProvider>
                     {/* 현재 유저가 챌린지 소유자일 경우에만 수정하기 버튼을 표시 */}
-                    {challenge.ownerId === currentUserId && (
+                    {userInfo?.userNickname === challenge.ownerNickname && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -157,8 +176,7 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
                         <ChallengeDetailTab challenge={challenge} />
                       </TabsContent>
                       <TabsContent value="chat" className="mt-0 h-[60vh] overflow-hidden">
-                        <ChallengeChatTab />
-                      </TabsContent>
+                      <ChallengeChatTab chatRoomId={challenge.chatRoomId} />                      </TabsContent>
                     </div>
                   </Tabs>
                 </div>
@@ -168,8 +186,7 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
               </CardContent>
             </Card>
             <div className="hidden lg:flex lg:flex-col w-[45%] mt-6 lg:mt-0 rounded-lg shadow-md border bg-white h-[calc(100vh-150px)] max-h-[80vh] overflow-hidden">
-              <ChallengeChatTab />
-            </div>
+            <ChallengeChatTab chatRoomId={challenge.chatRoomId} />            </div>
           </div>
         </div>
       </div>

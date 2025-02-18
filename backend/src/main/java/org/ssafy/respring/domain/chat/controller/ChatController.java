@@ -62,28 +62,34 @@ public class ChatController {
                 response
         );
 
-        // ✅ 사용자 목록 조회
-        List<User> roomUsers = chatService.getRoomById(messageRequest.getRoomId()).getUsers();
-        for (User user : roomUsers) {
-            if (!user.getId().equals(messageRequest.getUserId())) {  // ✅ 발신자는 제외
-                boolean isUserInRoom = chatService.isUserCurrentlyInRoom(messageRequest.getRoomId(), user.getId());
+        // ChatRoom 엔티티를 먼저 가져옴
+        ChatRoom chatRoom = chatService.getRoomById(messageRequest.getRoomId());
 
-                // ✅ 사용자가 현재 방에 없으면 알림 전송
-                if (!isUserInRoom) {
-                    System.out.println("🔔 새로운 메시지 알림 전송: " + user.getId());
+        if(!chatRoom.isOpenChat()){
+            // ✅ 사용자 목록 조회
+            List<User> roomUsers = chatService.getRoomById(messageRequest.getRoomId()).getUsers();
+            for (User user : roomUsers) {
+                if (!user.getId().equals(messageRequest.getUserId())) {  // ✅ 발신자는 제외
+                    boolean isUserInRoom = chatService.isUserCurrentlyInRoom(messageRequest.getRoomId(), user.getId());
 
-                    notificationService.sendNotification(
-                            user.getId(),                 // 알림을 받을 사용자 UUID
-                            messageRequest.getUserId(),   // 메시지를 보낸 사용자 UUID
-                            NotificationType.COMMENT,     // 알림 타입
-                            TargetType.CHAT,              // 대상 유형 (CHAT)
-                            messageRequest.getRoomId(),   // 채팅방 ID
-                            "새로운 채팅 메시지가 도착했습니다." // 알림 메시지
-                    );
-                } else {
-                    System.out.println("✅ 사용자가 현재 방에 있으므로 알림을 보내지 않음: " + user.getId());
+                    // ✅ 사용자가 현재 방에 없으면 알림 전송
+                    if (!isUserInRoom) {
+                        System.out.println("🔔 새로운 메시지 알림 전송: " + user.getId());
+
+                        notificationService.sendNotification(
+                                user.getId(),                 // 알림을 받을 사용자 UUID
+                                messageRequest.getUserId(),   // 메시지를 보낸 사용자 UUID
+                                NotificationType.COMMENT,     // 알림 타입
+                                TargetType.CHAT,              // 대상 유형 (CHAT)
+                                messageRequest.getRoomId(),   // 채팅방 ID
+                                "새로운 채팅 메시지가 도착했습니다." // 알림 메시지
+                        );
+                    } else {
+                        System.out.println("✅ 사용자가 현재 방에 있으므로 알림을 보내지 않음: " + user.getId());
+                    }
                 }
             }
+
         }
 
     }
