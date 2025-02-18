@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { getAllStories, deleteStory } from "@/lib/api/story";
 import { getAllEvents } from "@/lib/api/event";
 import type { Story } from "@/lib/api/story";
@@ -11,6 +11,7 @@ import { Plus, Edit, Trash2, Clock, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
 interface Event {
   id: number;
@@ -68,7 +69,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
             transition={{ duration: 0.3 }}
           >
             <Link href="/yesterday/writenote">
-              <Card className="h-[150px] group hover:shadow-lg transition-al duration-300 
+              <Card className="h-[150px] group hover:shadow-lg transition-all duration-300 
                               bg-gradient-to-br from-gray-100 to-white dark:from-gray-800 dark:to-gray-700 
                               border border-gray-200/50 dark:border-gray-700/50">
                 <CardContent className="h-full flex items-center justify-center">
@@ -98,35 +99,45 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
                 }}
               >
                 <CardContent className="p-0">
-                  {/* 🔹 썸네일 이미지 추가 */}
-                  <img
-                    src={story.images.length > 0 ? story.images[0] : "/placeholder_storycover.png"}
-                    alt={story.title}
-                    className="w-full h-40 object-cover rounded-t-lg"
-                  />
+                  {/* 🔹 ShadCN Carousel 적용 */}
+                  {story.images.length > 0 && (
+                    <Carousel className="relative w-full">
+                      <CarouselContent>
+                        {story.images.map((image, i) => (
+                          <CarouselItem key={i}>
+                            <img
+                              src={image}
+                              alt={`story-${story.id}-img-${i}`}
+                              className="w-full h-40 object-cover rounded-t-lg"
+                            />
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious />
+                      <CarouselNext />
+                    </Carousel>
+                  )}
                 </CardContent>
                 <CardHeader className="p-4">
                   <h3 className="font-semibold text-lg line-clamp-1">{story.title}</h3>
                   <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                     <Tag className="w-3 h-3" />
                     <span>{getEventName(story.eventId)}</span>
-                    {/* 🔹 발생 날짜 추가 */}
                     <span> · {new Date(story.occurredAt).toLocaleDateString()}</span>
                   </div>
                 </CardHeader>
-
                 <CardContent className="p-4">
                   <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
                     {story.content}
                   </p>
                 </CardContent>
-
               </Card>
             </motion.div>
           ))}
         </div>
       </div>
 
+      {/* 🔹 다이얼로그 내에서도 캐러셀 추가 */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           {selectedStory && (
@@ -139,39 +150,24 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
                 </DialogDescription>
               </DialogHeader>
               <div className="mt-4 space-y-4">
-                {/* 🔹 대표 이미지 추가 */}
-                <img
-                  src={selectedStory.images.length > 0 ? selectedStory.images[0] : "/placeholder_storycover.png"}
-                  alt={selectedStory.title}
-                  className="w-full h-48 object-cover rounded-lg"
-                />
-
+                {selectedStory.images.length > 0 && (
+                  <Carousel className="relative w-full">
+                    <CarouselContent>
+                      {selectedStory.images.map((image, i) => (
+                        <CarouselItem key={i}>
+                          <img
+                            src={image}
+                            alt={`story-detail-img-${i}`}
+                            className="w-full h-48 object-cover rounded-lg"
+                          />
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious />
+                    <CarouselNext />
+                  </Carousel>
+                )}
                 <p className="text-sm text-gray-600 dark:text-gray-300">{selectedStory.content}</p>
-                <div className="flex items-center justify-between pt-4">
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                    <Clock className="w-3 h-3" />
-                    <span>{new Date(selectedStory.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={`/yesterday/writenote?storyId=${selectedStory.id}`}>
-                        <Edit className="w-4 h-4 mr-1" />
-                        편집
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => {
-                        setIsDialogOpen(false);
-                        handleDelete(selectedStory.id);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      삭제
-                    </Button>
-                  </div>
-                </div>
               </div>
             </>
           )}
