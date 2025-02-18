@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, LogOut, UserPlus, UserMinus } from "lucide-react";
+import { ArrowLeft, MessageSquare, UserPlus, UserMinus } from "lucide-react";
 import StatSummary from "../components/stat-summary";
 import TabBar from "../components/tabbar";
 import { isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
@@ -115,7 +115,7 @@ export default function ProfilePage() {
       <div className="relative flex flex-col md:flex-row gap-4 pt-4 z-10">
         <div className="flex flex-col md:flex-[0.7] gap-4">
           <div className="flex justify-center items-center h-auto -mt-20 md:-mt-24">
-            <div className="w-[125px] h-[125px] md:w-[155px] md:h-[155px] rounded-full bg-white flex justify-center items-center overflow-hidden">
+            <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded-full bg-white flex justify-center items-center overflow-hidden drop-shadow-xl">
               <img src={profilePic || "/placeholder_profilepic.png"} alt="User Profile" className="w-[120px] md:w-[150px] h-[120px] md:h-[150px] rounded-full object-cover" />
             </div>
           </div>
@@ -127,34 +127,57 @@ export default function ProfilePage() {
           <StatSummary userNickname={targetNickname} challengeCount={challenges.length} />
 
           <div className="flex justify-center items-start text-sm">
-            <div className="flex gap-x-4">
+            <div className="flex gap-x-8">
               <button onClick={() => openBadgeModal("badge1")}> <img src="/badge1.png" alt="새로 가입" className="h-[48px]" /> </button>
               <button onClick={() => openBadgeModal("badge2")}> <img src="/badge2.png" alt="첫 방문" className="h-[48px]" /> </button>
+              <button onClick={() => openBadgeModal("badge3")}> <img src="/badge3.png" alt="첫 편찬" className="h-[48px]" /> </button>
+              <button onClick={() => openBadgeModal("badge4")}> <img src="/badge4.png" alt="첫 도전" className="h-[48px]" /> </button>
             </div>
           </div>
           {selectedBadge && <BadgeModal badge={selectedBadge} onClose={closeBadgeModal} />}
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
-            {myNickname === decodeURIComponent(targetNickname) ? (
-              <button onClick={handleLogout} className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700">
-                <LogOut className="w-4 h-4 mr-2" /> 로그아웃
+          {myNickname !== decodeURIComponent(targetNickname) && (
+            <div className="flex gap-2">  
+              {/* Subscribe/Unsubscribe Button */}
+              <button
+                onClick={handleSubscribeUnsubscribe}
+                className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md ${
+                  isSubscribedState ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"
+                }`}
+              >
+                {isSubscribedState ? (
+                  <>
+                    <UserMinus className="w-4 h-4 mr-2" /> 구독 취소하기
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4 mr-2" /> 구독하기
+                  </>
+                )}
               </button>
-            ) : (
-              <button onClick={handleSubscribeUnsubscribe} className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md ${isSubscribedState ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"}`}>
-                {isSubscribedState ? <><UserMinus className="w-4 h-4 mr-2" /> 구독 취소하기</> : <><UserPlus className="w-4 h-4 mr-2" /> 구독하기</>}
+
+              {/* Chat Button */}
+              <button
+                onClick={() => {}}  // Add a function to handle chat
+                className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" /> 채팅하기
               </button>
-            )}
+            </div>
+          )}
           </div>
         </div>
 
         <div className="flex flex-col md:flex-[1.3] justify-start items-center">
-          {myNickname === decodeURIComponent(targetNickname) ? (
+          <TabBar userNickname={targetNickname} challenges={challenges} />
+          {/* {myNickname === decodeURIComponent(targetNickname) ? (
             <TabBar userNickname={targetNickname} challenges={challenges} />
           ) : (
             <div className="mt-8 w-[80%]">
               <OtherFootsteps userNickname={targetNickname} />
             </div>
-          )}
+          )} */}
         </div>
       </div>
       {isModalOpen && <SubscribersModal onClose={() => setIsModalOpen(false)} />}
