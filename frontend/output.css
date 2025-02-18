@@ -52,6 +52,13 @@
   --tw-contain-style:  ;
 }
 
+:root {
+  --color-brand-light: rgba(180, 200, 120, 1); /* 연한 버전 */
+  --color-brand: rgba(150, 178, 60, 1); /* 기본 메인 색 */
+  --color-brand-dark: rgba(120, 140, 50, 1); /* 진한 버전 */
+}
+
+
 ::backdrop {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
@@ -3168,9 +3175,10 @@ video {
   color: rgb(17 24 39 / var(--tw-text-opacity, 1));
 }
 
-.text-green-100 {
+
+.text-green-50 {
   --tw-text-opacity: 1;
-  color: rgb(220 252 231 / var(--tw-text-opacity, 1));
+  color: rgb(150 178 60 / var(--tw-text-opacity, 1));
 }
 
 .text-green-300 {

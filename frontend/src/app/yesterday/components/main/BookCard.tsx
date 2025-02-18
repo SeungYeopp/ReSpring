@@ -13,7 +13,7 @@ export function BookCard({ book }: BookCardProps) {
   const router = useRouter()
 
   const handleClick = () => {
-    router.push(`/yesterday/newbook/${book.id}`)
+    router.push(`/yesterday/book/${book.id}`)
   }
 
   const placeholderImage = `/placeholder/bookcover/thumb (${Math.floor(Math.random() * 7) + 1}).webp`

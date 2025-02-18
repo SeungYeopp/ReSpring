@@ -84,6 +84,10 @@ export default {
           DEFAULT: "#96b23c",
           dark: "#638d3e",
         },
+        lightgreen: {
+          50: 'rgba(180, 200, 120, 0.15)', 
+          100: 'rgb(150, 178, 60)', // Tailwind `bg-green-100`과 같은 색
+        },
         tag: {
           purple: "#E9DEF7",
           darkpurple: "#785C96",
