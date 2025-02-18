@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { getAllBooksScrolled, type Book } from "@/lib/api"
 import { BookCard } from "./BookCard"
 
-const INITIAL_LOAD_SIZE = 10
-const LOAD_MORE_SIZE = 5
+const INITIAL_LOAD_SIZE = 3
+const LOAD_MORE_SIZE = 10
 
 export default function PopularBooks() {
   const [books, setBooks] = useState<Book[]>([])
@@ -14,32 +14,17 @@ export default function PopularBooks() {
   const [hasMore, setHasMore] = useState(true)
   const [lastBook, setLastBook] = useState<Book | null>(null)
 
-  const observer = useRef<IntersectionObserver | null>(null)
-  const lastBookElementRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (isLoading) return
-      if (observer.current) observer.current.disconnect()
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          fetchBooks()
-        }
-      })
-      if (node) observer.current.observe(node)
-    },
-    [isLoading, hasMore],
-  )
-
   const fetchBooks = useCallback(async () => {
     if (!hasMore) return
-
     setIsLoading(true)
+
     try {
       const newBooks = await getAllBooksScrolled(
         lastBook?.likeCount ?? 1987654321,
         lastBook?.viewCount ?? 1987654321,
         lastBook?.id ?? 1987654321,
         lastBook?.createdAt ?? null,
-        books.length === 0 ? INITIAL_LOAD_SIZE : LOAD_MORE_SIZE,
+        LOAD_MORE_SIZE,
       )
 
       if (newBooks.length === 0 || newBooks.length < LOAD_MORE_SIZE) {
@@ -61,11 +46,11 @@ export default function PopularBooks() {
     } finally {
       setIsLoading(false)
     }
-  }, [lastBook, books.length, hasMore])
+  }, [lastBook, hasMore])
 
   useEffect(() => {
     fetchBooks()
-  }, [fetchBooks])
+  }, [])
 
   if (error) {
     return <div className="mt-8 px-4 text-red-500">{error}</div>
@@ -74,14 +59,21 @@ export default function PopularBooks() {
   return (
     <div className="mt-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {books.map((book, index) => (
-          <div key={book.id} ref={index === books.length - 1 ? lastBookElementRef : null}>
-            <BookCard book={book} />
-          </div>
+        {books.map((book) => (
+          <BookCard key={book.id} book={book} />
         ))}
       </div>
-      {isLoading && <div className="text-center mt-4">책 정보를 불러오는 중입니다...</div>}
+      {hasMore && (
+        <div className="text-center mt-4">
+          <button
+            onClick={fetchBooks}
+            className="px-4 py-2 bg-white border-2 border-brand text-brand-dark font-laundrygothicregular rounded-full hover:bg-brand-light/50"
+            disabled={isLoading}
+          >
+            {isLoading ? "불러오는 중..." : "더 보기"}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
-
