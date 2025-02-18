@@ -22,7 +22,7 @@ const SelectableEntry = ({
     <div
       onClick={onClick}
       className={`w-full p-4 border rounded-md cursor-pointer transition flex items-center justify-between ${
-        isSelected ? "bg-green-500 text-white" : "bg-white hover:bg-gray-100"
+        isSelected ? "bg-brand text-white" : "bg-white hover:bg-gray-100"
       }`}
     >
       {/* 아이콘 추가 */}

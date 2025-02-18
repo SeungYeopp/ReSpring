@@ -18,7 +18,6 @@ interface AddEventProps {
 }
 
 const AddEvent = ({ onEventAdded }: AddEventProps) => {
-  const [userId, setUserId] = useState<string>("beb9ebc2-9d32-4039-8679-5d44393b7252");
   const [eventName, setEventName] = useState<string>("");
   const [date, setDate] = useState<Date | undefined>();
   const [category, setCategory] = useState<string>("");
@@ -66,23 +65,30 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
   return (
     <>
       {isModalOpen && (
-        <div className="modal-overlay" onClick={handleOverlayClick}>
-          <div className="modal-content">
-            <div className="modal-header font-bold">흔적 남기기</div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" onClick={handleOverlayClick}>
+          <div className="modal-content bg-white p-6 rounded-lg shadow-xl max-w-lg w-full animate-fadeIn">
+            <div className="text-center font-bold text-xl mb-4">흔적 남기기</div>
             <div>
-              <label className="font-bold">제목</label>
+              <label className="font-semibold block mb-2">제목</label>
               <input
                 value={eventName}
                 onChange={(event) => setEventName(event.target.value)}
                 placeholder="예: 첫 직장 입사, 대학 졸업"
+                className="w-full p-3 border rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-brand"
               />
-              <label className="font-bold">날짜</label>
-              <input type="date" onChange={handleDateChange} />
-              <label className="font-bold">카테고리</label>
-              <select value={category} onChange={(event) => setCategory(event.target.value)}>
-                <option value="" disabled>
-                  카테고리 선택
-                </option>
+              <label className="font-semibold block mb-2">날짜</label>
+              <input
+                type="date"
+                onChange={handleDateChange}
+                className="w-full p-3 border rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <label className="font-semibold block mb-2">카테고리</label>
+              <select
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+                className="w-full p-3 border rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-brand"
+              >
+                <option value="" disabled>카테고리 선택</option>
                 {EventCategories.map(({ eventName }) => (
                   <option key={eventName} value={eventName}>
                     {eventName}
@@ -90,19 +96,20 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
                 ))}
               </select>
 
-              <div className="modal-footer">
-                <div className="checkbox-container">
-                  <label className="font-bold mr-2">발자취에 표시</label>
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center">
+                  <label className="font-semibold mr-2">발자취에 표시</label>
                   <input
                     type="checkbox"
                     checked={display}
                     onChange={(event) => setDisplay(event.target.checked)}
+                    className="h-5 w-5"
                   />
                 </div>
 
-                <div className="button-container">
-                  <Button onClick={() => setIsModalOpen(false)}>취소</Button>
-                  <Button onClick={handlePost}>남기기</Button>
+                <div className="flex gap-4">
+                  <Button onClick={() => setIsModalOpen(false)} variant="secondary" className="bg-white text-brand border border-brand hover:bg-brand-light">취소</Button>
+                  <Button onClick={handlePost} className="bg-brand text-white hover:bg-brand-dark">남기기</Button>
                 </div>
               </div>
             </div>
@@ -110,109 +117,20 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
         </div>
       )}
 
-      <Button onClick={() => setIsModalOpen(true)}>+ 새로운 흔적 남기기</Button>
+      <Button onClick={() => setIsModalOpen(true)} className="mx-auto block mt-10 bg-brand text-white hover:bg-brand-dark">+ 새로운 흔적 남기기</Button>
 
       {successMessage && (
-        <div className="message-overlay">
-          <div className="message-content">
-            {successMessage.includes("✅") ? (
-              <span className="icon success">✅</span>
-            ) : (
-              <span className="icon error">❌</span>
-            )}
-            <p className="message-text w-[80%]">{successMessage.replace("✅ ", "").replace("❌ ", "")}</p>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-xs w-full flex flex-col items-center justify-center text-center animate-fadeInOut">
+            <span className={`text-4xl ${successMessage.includes("✅") ? "text-green-500" : "text-red-500"}`}>
+              {successMessage.includes("✅") ? "✅" : "❌"}
+            </span>
+            <p className="font-bold mt-2">{successMessage.replace("✅ ", "").replace("❌ ", "")}</p>
           </div>
         </div>
       )}
 
       <style jsx>{`
-        /* Modal Overlay */
-        .modal-overlay, .message-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
-        }
-
-        /* Modal Content */
-        .modal-content {
-          background-color: white;
-          padding: 20px;
-          border-radius: 8px;
-          width: 80%;
-          max-width: 500px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-          animation: fadeIn 0.3s ease;
-        }
-
-        .modal-header {
-          text-align: center;
-          font-size: 24px;
-          font-weight: bold;
-          margin-bottom: 15px;
-        }
-
-        .modal-footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 20px;
-        }
-
-        .checkbox-container {
-          display: flex;
-          align-items: center;
-        }
-
-        .button-container {
-          display: flex;
-          gap: 10px;
-        }
-
-        /* Input Fields */
-        input,
-        select {
-          padding: 10px;
-          margin-bottom: 10px;
-          width: 100%;
-          font-size: 16px;
-          border-radius: 5px;
-          border: 1px solid #ccc;
-        }
-
-        /* Success / Error Message */
-        .message-content {
-          background-color: white;
-          width: 200px;
-          height: 200px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          border-radius: 10px;
-          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-          animation: fadeInOut 2s ease-in-out;
-          text-align: center;
-        }
-
-        .icon {
-          font-size: 50px;
-          margin-bottom: 8px;
-        }
-
-        .message-text {
-          font-size: 16px;
-          color: black;
-          font-weight: bold;
-        }
-
-        /* Animations */
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-20px); }
           to { opacity: 1; transform: translateY(0); }
