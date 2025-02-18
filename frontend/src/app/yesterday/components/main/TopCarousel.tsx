@@ -124,7 +124,7 @@ function BookCarousel({ books }: BookCarouselProps) {
                   <img
                     src={book.coverImage}
                     alt={book.coverImage}
-                    className="w-full h-[200px] object-cover rounded-lg shadow-md cursor-pointer"
+                    className="w-full h-[180px] object-cover rounded-lg shadow-md cursor-pointer"
                     onClick={() => handleOnClickBook(book.id)}
 
                   />
