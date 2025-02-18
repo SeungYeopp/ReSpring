@@ -8,7 +8,6 @@ import TabBar from "../components/tabbar";
 import { isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
 import { fetchParticipatedChallenges, getUserInfoByNickname } from "@/lib/api";
 import SubscribersModal from "../components/subscribers";
-import { logout } from "@/lib/api";
 import { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
 import BadgeModal from "../components/badge";
 import OtherFootsteps from "../components/other-footsteps";
@@ -27,10 +26,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const handleLogout = async () => {
-    await logout();
-    window.location.href = "/main";
-  };
+  const isMine = myNickname === decodeURIComponent(targetNickname);
 
   const handleBack = () => {
     router.back();
@@ -170,7 +166,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex flex-col md:flex-[1.3] justify-start items-center">
-          <TabBar userNickname={targetNickname} challenges={challenges} />
+          <TabBar userNickname={targetNickname} challenges={challenges} isMine={isMine} />
           {/* {myNickname === decodeURIComponent(targetNickname) ? (
             <TabBar userNickname={targetNickname} challenges={challenges} />
           ) : (
