@@ -25,7 +25,7 @@ export function LoginForm() {
     try {
       const result = await login(email, password);
       if (result) {
-        alert("안녕하세요!");
+        //alert("안녕하세요!");
         window.location.href = "/main";
       } else {
         alert("로그인 실패");
