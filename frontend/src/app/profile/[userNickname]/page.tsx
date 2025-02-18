@@ -7,10 +7,8 @@ import StatSummary from "../components/stat-summary";
 import TabBar from "../components/tabbar";
 import { isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
 import { fetchParticipatedChallenges, getUserInfoByNickname } from "@/lib/api";
-import SubscribersModal from "../components/subscribers";
 import { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
 import BadgeModal from "../components/badge";
-import OtherFootsteps from "../components/other-footsteps";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function ProfilePage() {
@@ -176,7 +174,6 @@ export default function ProfilePage() {
           )} */}
         </div>
       </div>
-      {isModalOpen && <SubscribersModal onClose={() => setIsModalOpen(false)} />}
     </main>
   );
 }

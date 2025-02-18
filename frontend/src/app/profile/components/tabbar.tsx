@@ -6,6 +6,7 @@ import CommunityPosts from "./my-activities";
 import Challenges from "./challenges";
 import { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
 import OtherFootsteps from "./other-footsteps";
+import Subscribers from "./subscribers";
 
 interface TabBarProps {
   userNickname: string;
@@ -42,6 +43,12 @@ export const TabBar: React.FC<TabBarProps> = ({ userNickname, challenges, isMine
             >
               발자취
             </button>
+            <button
+              onClick={() => setSelectedTab("subscribers")}
+              className={`text-left ${selectedTab === "subscribers" ? "text-brand-light" : "text-gray-400"}`}
+            >
+              구독자
+            </button>
           </div>
         ) : 
         <div className="flex flex-row w-full justify-center md:justify-start space-x-6 md:text-2xl text-xl md:space-x-10 md:items-start text-center">
@@ -58,6 +65,7 @@ export const TabBar: React.FC<TabBarProps> = ({ userNickname, challenges, isMine
         {selectedTab === "challenges" && <Challenges challenges={challenges} />}
         {selectedTab === "my-activities" && <CommunityPosts userNickname={userNickname} />}
         {selectedTab === "footsteps" && <Footsteps userNickname={userNickname} />}
+        {selectedTab === "subscribers" && <Subscribers />}
         {selectedTab === "other-footsteps" && <OtherFootsteps userNickname={userNickname} />}
       </div>
     </div>
