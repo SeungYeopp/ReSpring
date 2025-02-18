@@ -19,12 +19,9 @@ import { Camera, FileText, Tags, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 
-// 주석 처리: import { getSessionInfo } from "@/lib/api/user"
-// 주석 처리: import type { SessionInfo } from "@/types/user"
-
 interface EditChallengeFormProps {
   challenge: ChallengeDetail;
-  onSubmit: (data: Partial<ChallengeDetail>) => Promise<void>;
+  onSubmit: (data: Partial<ChallengeDetail>, imageFile?: File) => Promise<void>;
   onCancel: () => void;
   onChange: (data: Partial<ChallengeDetail>) => void;
 }
@@ -32,36 +29,17 @@ interface EditChallengeFormProps {
 export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: EditChallengeFormProps) {
   const [description, setDescription] = useState(challenge.description);
   const [endDate, setEndDate] = useState<Date>(new Date(challenge.endDate));
-  const [image, setImage] = useState<File>();
+  // 실제 File 객체 저장 (제출 시 사용)
+  const [image, setImage] = useState<File | undefined>();
+  // 미리보기 URL (화면 표시 및 부모 onChange에 전달)
   const [preview, setPreview] = useState<string>(challenge.image || "");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const { toast } = useToast();
   const router = useRouter();
 
-  // 주석 처리: const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null)
-  // 주석 처리: const [isAuthorized, setIsAuthorized] = useState(false)
-
-  // 임시로 모든 사용자에게 권한 부여
+  // 임시: 모든 사용자에게 권한 부여
   const isAuthorized = true;
-
-  // 주석 처리된 useEffect
-  /*
-  useEffect(() => {
-    const fetchSessionInfo = async () => {
-      try {
-        const info = await getSessionInfo()
-        setSessionInfo(info)
-        setIsAuthorized(info.userId === challenge.ownerId)
-      } catch (error) {
-        console.error("세션 정보를 가져오는 데 실패했습니다:", error)
-        setIsAuthorized(false)
-      }
-    }
-
-    fetchSessionInfo()
-  }, [challenge.ownerId])
-  */
 
   const handleDescriptionChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -79,21 +57,23 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
     [onChange]
   );
 
+  // 이미지 변경 핸들러: File 객체와 미리보기 URL을 각각 업데이트
   const handleImageChange = useCallback(
     (file: File | null) => {
       if (file) {
-        setImage(file);
+        setImage(file); // 실제 파일 저장
         const reader = new FileReader();
         reader.onloadend = () => {
           const previewUrl = reader.result as string;
-          setPreview(previewUrl);
-          onChange({ image: previewUrl }); // File 대신 미리보기 URL(string) 전달
+          setPreview(previewUrl); // 미리보기 URL 저장
+          // onChange에는 미리보기 URL을 전달하여 부모의 previewData 유지
+          onChange({ image: previewUrl });
         };
         reader.readAsDataURL(file);
       } else {
         setImage(undefined);
         setPreview("");
-        onChange({ image: undefined });
+        onChange({ image: "" });
       }
     },
     [onChange]
@@ -103,7 +83,7 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
     (date: Date | undefined) => {
       if (date) {
         setEndDate(date);
-        onChange({ endDate: date.toISOString() }); // Date → ISO 문자열로 변환
+        onChange({ endDate: date.toISOString() });
         setErrors((prev) => ({ ...prev, endDate: "" }));
       } else {
         setErrors((prev) => ({ ...prev, endDate: "종료일을 선택해주세요." }));
@@ -138,6 +118,7 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
     return Object.keys(newErrors).length === 0;
   }, [description, endDate, preview]);
 
+  // 제출 핸들러: onSubmit에 미리보기 URL 대신 실제 File 객체를 두 번째 인자로 전달
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -154,11 +135,13 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
     try {
       const challengeData: Partial<ChallengeDetail> = {
         description,
-        endDate: endDate.toISOString(), // Date → 문자열 변환
-        image: preview, // File → 미리보기 URL(string)
+        endDate: endDate.toISOString(),
+        // 여기서 image는 미리보기 URL(문자열)을 포함 (기존 값 유지)
+        image: preview,
       };
 
-      await onSubmit(challengeData);
+      // onSubmit에 실제 File 객체도 함께 전달
+      await onSubmit(challengeData, image);
       router.push(`/tomorrow/${challenge.id}`);
       toast({
         title: "챌린지 수정 성공",
@@ -194,7 +177,7 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
           <div className="space-y-4">
             <div>
               <ImageUpload onImageChange={handleImageChange} preview={preview} />
-              {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image}</p>} {/* 이미지 에러 메시지 */}
+              {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image}</p>}
             </div>
 
             <div>
@@ -261,12 +244,10 @@ export function EditChallengeForm({ challenge, onSubmit, onCancel, onChange }: E
                   label="종료일 선택"
                   error={errors.endDate}
                   disabledDays={(date) => {
-                    // 시작일 다음 날 이전은 비활성화
                     const startDate = new Date(challenge.startDate);
                     const nextDay = new Date(startDate);
-                    nextDay.setDate(startDate.getDate() + 1); // 시작일의 다음 날로 설정
-
-                    return date < nextDay; // 시작일 다음 날 이전은 비활성화
+                    nextDay.setDate(startDate.getDate() + 1);
+                    return date < nextDay;
                   }}
                 />
 
