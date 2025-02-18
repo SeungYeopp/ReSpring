@@ -8,6 +8,8 @@ interface BadgeModalProps {
 const badgeDescriptions: Record<string, { name: string; description: string }> = {
   badge1: { name: "새로 가입", description: "처음으로 가입한 사용자에게 주어지는 배지입니다." },
   badge2: { name: "첫 방문", description: "처음으로 방문한 사용자에게 주어지는 배지입니다." },
+  badge3: { name: "첫 편찬", description: "처음으로 봄날의 서를 편찬한 사용자에게 주어지는 배지입니다." },
+  badge4: { name: "첫 도전", description: "처음으로 도전에 참여한 사용자에게 주어지는 배지입니다." },
 };
 
 export default function BadgeModal({ badge, onClose }: BadgeModalProps) {

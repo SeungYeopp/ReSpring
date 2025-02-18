@@ -61,11 +61,11 @@ export default function PopularBooks() {
     } finally {
       setIsLoading(false)
     }
-  }, [lastBook, books.length, hasMore]) // Added hasMore dependency
+  }, [lastBook, books.length, hasMore])
 
   useEffect(() => {
     fetchBooks()
-  }, [fetchBooks]) // Added fetchBooks dependency
+  }, [fetchBooks])
 
   if (error) {
     return <div className="mt-8 px-4 text-red-500">{error}</div>
@@ -73,8 +73,7 @@ export default function PopularBooks() {
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4 text-spring-forest">봄날의 서들</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {books.map((book, index) => (
           <div key={book.id} ref={index === books.length - 1 ? lastBookElementRef : null}>
             <BookCard book={book} />
@@ -82,7 +81,6 @@ export default function PopularBooks() {
         ))}
       </div>
       {isLoading && <div className="text-center mt-4">책 정보를 불러오는 중입니다...</div>}
-      {/* {!isLoading && !hasMore && <div className="text-center mt-4 text-gray-500">더 이상 표시할 책이 없습니다.</div>} */}
     </div>
   )
 }
