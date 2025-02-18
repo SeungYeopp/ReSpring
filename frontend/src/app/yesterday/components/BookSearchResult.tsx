@@ -28,7 +28,7 @@ export const BookSearchResult: React.FC<BookSearchResultProps> = ({ query }) => 
   const pathname = usePathname()
 
   const onClickBook = (bookId : number) => {
-    router.push(`/yesterday/newbook/${bookId}`)
+    router.push(`/yesterday/book/${bookId}`)
   }
 
   useEffect(() => {
