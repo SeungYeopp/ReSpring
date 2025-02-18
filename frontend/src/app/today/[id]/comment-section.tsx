@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useEffect, useState } from "react"
+import React, { useEffect, useState, useCallback, useMemo } from "react"
 import { formatDistanceToNowStrict } from "date-fns"
 import { ko } from "date-fns/locale"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -30,11 +28,13 @@ interface CommentWithReplies extends Comment {
   replies?: Comment[]
 }
 
-/** ✅ 랜덤 프로필 이미지 생성 함수 */
-const getRandomImage = () => {
-  const imageNumber = Math.floor(Math.random() * 9) + 1 // 1~9 숫자 랜덤 선택
-  return `/corgis/placeholder${imageNumber}.jpg` // public 폴더 내 이미지 경로
-}
+// Memoize Avatar component to prevent re-rendering
+const MemoizedAvatar = React.memo(({ comment }: { comment: Comment }) => (
+  <Avatar className="h-7 w-7 flex-shrink-0 cursor-pointer">
+    <AvatarImage src={comment.profileImg} alt={comment.userNickname} />
+    <AvatarFallback>{comment.userNickname}</AvatarFallback>
+  </Avatar>
+))
 
 export function CommentSection({ postId, userId }: CommentSectionProps) {
   const [comments, setComments] = useState<CommentWithReplies[]>([])
@@ -44,9 +44,9 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
   const { login } = useAuth()
   const [hasMore, setHasMore] = useState(true)
   const [commentCount, setCommentCount] = useState(0) // ✅ 내부 상태 관리
-  const [likedComments, setLikedComments] = useState<Set<number>>(new Set())
+  const [maxCharacterLimit] = useState(100) // Set the maximum character limit
 
-  const router = useRouter();
+  const router = useRouter()
 
   useEffect(() => {
     loadComments()
@@ -55,8 +55,23 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
 
   // ✅ 댓글 개수가 변경될 때 내부 상태 업데이트
   useEffect(() => {
-    setCommentCount(comments.length)
-  }, [comments.length])
+    const totalCommentCount = comments.reduce((count, comment) => {
+      count++;
+      if (comment.replies) {
+        count += comment.replies.length;
+      }
+      return count;
+    }, 0);
+  
+    setCommentCount(totalCommentCount);
+  }, [comments]);
+
+  // Handle input change
+  const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value.length <= maxCharacterLimit) {
+      setNewComment(e.target.value)
+    }
+  }
 
   async function loadComments() {
     if (isLoading || !hasMore) return
@@ -68,17 +83,14 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
       const commentsWithReplies = await Promise.all(
         newParentsComments.map(async (parentComment) => {
           const replies = parentComments.filter((comment) => comment.parentId === parentComment.id)
-          //const replies = await getChildrenComments(comment.id);
           return {
             ...parentComment,
             replies,
           }
         }),
       )
-      // console.log("commentsWithReplies", commentsWithReplies)
       setComments(commentsWithReplies)
       setHasMore(commentsWithReplies.length > 0)
-      setLikedComments(new Set()) // Reset liked comments state
     } catch (error) {
       console.error("댓글을 불러오는데 실패했습니다:", error)
     } finally {
@@ -93,9 +105,9 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
     setIsLoading(true)
     try {
       if (replyTo) {
-        const comment = await createNewCommunityChildComment(postId, newComment, replyTo.id)
+        await createNewCommunityChildComment(postId, newComment, replyTo.id)
       } else {
-        const comment = await createNewCommunityComment(postId, newComment)
+        await createNewCommunityComment(postId, newComment)
       }
       const parentComments = await getCommentsByPostId(postId)
       const newParentsComments = parentComments.filter((comment) => !comment.parentId)
@@ -128,19 +140,16 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
     const [isLiked, setIsLiked] = useState(false)
     const [likeCount, setLikeCount] = useState(comment.likeCount || 0)
 
+    // Check if the user has liked the comment when it is rendered
     useEffect(() => {
       async function checkLikeStatus() {
-        try {
-          const liked = await checkIfUserLikedComment(comment.id)
-          setIsLiked(liked)
-        } catch (error) {
-          console.error("Failed to check like status:", error)
-        }
+        const liked = await checkIfUserLikedComment(comment.id)
+        setIsLiked(liked)
       }
       checkLikeStatus()
-    }, [comment.id])
+    }, [comment.id, userId])
 
-    const handleLike = async () => {
+    const handleLike = useCallback(async () => {
       try {
         const liked = await likeComment(comment.id)
         setIsLiked(liked)
@@ -148,7 +157,7 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
       } catch (error) {
         console.error("Failed to like/unlike comment:", error)
       }
-    }
+    }, [comment.id])
 
     const handleOnClickProfile = () => {
       router.push(`/profile/${comment.userNickname}`)
@@ -158,10 +167,7 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
       <div
         className={`flex gap-3 ${isReply ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4' : ""}`}
       >
-        <Avatar className="h-7 w-7 flex-shrink-0 cursor-pointer" onClick={handleOnClickProfile}>
-          <AvatarImage src={comment.profileImg} alt={comment.userNickname} />
-          <AvatarFallback>{comment.userNickname}</AvatarFallback>
-        </Avatar>
+        <MemoizedAvatar comment={comment} />
         <div className="flex-1">
           <div className="flex items-baseline gap-1">
             <span className="text-sm font-semibold cursor-pointer" onClick={handleOnClickProfile}>{comment.userNickname}</span>
@@ -185,7 +191,10 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
                 답글달기
               </button>
             )}
-            <button onClick={handleLike} className={`hover:text-gray-700 ${isLiked ? "text-blue-500" : ""}`}>
+            <button
+              onClick={handleLike}
+              className={`hover:text-gray-700 ${isLiked ? "text-blue-500" : ""}`}
+            >
               좋아요 {likeCount > 0 && `(${likeCount})`}
             </button>
           </div>
@@ -194,6 +203,25 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
     )
   }
 
+  // Memoize the list of comments to avoid unnecessary re-renders
+  const memoizedComments = useMemo(() => {
+    return comments.map((comment) => (
+      <div key={comment.id} className="space-y-4">
+        <CommentItem comment={comment} />
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="space-y-4">
+            {comment.replies.map((reply) => (
+              <CommentItem key={reply.id} comment={reply} isReply />
+            ))}
+          </div>
+        )}
+      </div>
+    ))
+  }, [comments])
+
+  // Render the warning message when the character limit is reached
+  const isLimitReached = newComment.length === maxCharacterLimit
+
   return (
     <div className="relative">
       {/* 댓글 개수 표시 */}
@@ -201,19 +229,7 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
 
       {/* 댓글 목록 */}
       <div className="space-y-6">
-        {comments.map((comment) => (
-          <div key={comment.id} className="space-y-4">
-            <CommentItem comment={comment} />
-            {/* 대댓글 목록 */}
-            {comment.replies && comment.replies.length > 0 && (
-              <div className="space-y-4">
-                {comment.replies.map((reply) => (
-                  <CommentItem key={reply.id} comment={reply} isReply />
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+        {memoizedComments}
 
         {isLoading && (
           <div className="flex justify-center items-center py-4">
@@ -243,12 +259,18 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
                 </button>
               </div>
             )}
+
+            {/* Display the warning if the limit is reached */}
+            {isLimitReached && (
+              <div className="text-sm text-red-500 mb-2">최대 {maxCharacterLimit}자까지 입력 가능합니다.</div>
+            )}
+
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 placeholder="따뜻한 댓글을 입력해주세요 :)"
                 value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
+                onChange={handleCommentChange}
                 className="flex-1 bg-gray-100 rounded-full px-3 py-1.5 text-sm"
               />
               <Button
@@ -273,4 +295,3 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
     </div>
   )
 }
-

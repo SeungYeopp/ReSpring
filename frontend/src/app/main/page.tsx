@@ -112,7 +112,7 @@ const Home = () => {
     try {
       const success = await logout()
       if (success) {
-        router.push("/login") // Redirect to login page after logout
+        router.push("/auth") // Redirect to login page after logout
       } else {
         alert("로그아웃 실패! 다시 시도해주세요.")
       }
