@@ -7,8 +7,6 @@ import StatSummary from "../components/stat-summary";
 import TabBar from "../components/tabbar";
 import { isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
 import { fetchParticipatedChallenges, getUserInfoByNickname } from "@/lib/api";
-import SubscribersModal from "../components/subscribers";
-import { logout } from "@/lib/api";
 import { ParticipatedChallenge } from "@/app/tomorrow/types/challenge";
 import BadgeModal from "../components/badge";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,10 +24,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const handleLogout = async () => {
-    await logout();
-    window.location.href = "/main";
-  };
+  const isMine = myNickname === decodeURIComponent(targetNickname);
 
   const handleBack = () => {
     router.back();
