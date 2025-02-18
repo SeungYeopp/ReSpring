@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { getTimelineEvents, Event } from "@/lib/api/event";
 import { getCategoryIcon } from "@/components/custom/EventCategories";
+import { Scroll } from "lucide-react";
 
 const OtherFootsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
   const [footstepsData, setFootstepsData] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchEvents();
@@ -24,68 +26,76 @@ const OtherFootsteps: React.FC<{ userNickname: string }> = ({ userNickname }) =>
       setFootstepsData(formattedEvents);
     } catch (error) {
       console.error("Failed to fetch events:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const circleSize = 48;
   const animationDuration = 2; // Adjust this value to control circle animation duration
-
-  // Calculate the total duration for the line animation
-  const lineAnimationDuration =
-    (footstepsData.length - 1) * 0.5 + animationDuration;
+  const lineAnimationDuration = (footstepsData.length - 1) * 0.5 + animationDuration;
 
   return (
     <div className="relative pl-6">
-      <div className="relative">
-        <div
-          className="absolute ml-[23px] top-0 w-[2px] bg-[#a46500]"
-          style={{
-            height: `${footstepsData.length * (circleSize + 24)}px`,
-            animation: `lineExpand ${lineAnimationDuration}s ease-out forwards`,
-          }}
-        />
-        {footstepsData.map((item, index) => {
-          const delay = `${index * 0.5}s`;
-          const IconComponent = getCategoryIcon(item.category);
+      {loading ? (
+        <p className="text-center text-gray-500">Loading footsteps...</p>
+      ) : footstepsData.length === 0 ? (
+        <div className="flex flex-col items-center justify-center mt-8">
+          <Scroll size={128} strokeWidth={1} className="text-gray-400" />
+          <p className="text-center text-gray-400 text-lg mt-4">아직 남겨진 흔적이 없습니다.</p>
+        </div>
+      ) : (
+        <div className="relative">
+          <div
+            className="absolute ml-[23px] top-0 w-[2px] bg-[#a46500]"
+            style={{
+              height: `${footstepsData.length * (circleSize + 24)}px`,
+              animation: `lineExpand ${lineAnimationDuration}s ease-out forwards`,
+            }}
+          />
+          {footstepsData.map((item, index) => {
+            const delay = `${index * 0.5}s`;
+            const IconComponent = getCategoryIcon(item.category);
 
-          return (
-            <div
-              key={item.id}
-              className="flex items-start mb-8 relative opacity-0"
-              style={{
-                animation: `fadeInAndExpand ${animationDuration}s ease-out forwards ${delay}`,
-              }}
-            >
-              {/* Category Icon Circle */}
+            return (
               <div
-                className={`w-12 h-12 rounded-full border-4 border-white flex items-center justify-center ${
-                  index === 0 ? "bg-[#a46500]" : "bg-[#dfeaa5]"
-                }`}
+                key={item.id}
+                className="flex items-start mb-8 relative opacity-0"
                 style={{
-                  animation: `circleExpand ${animationDuration}s ease-out forwards ${delay}`,
+                  animation: `fadeInAndExpand ${animationDuration}s ease-out forwards ${delay}`,
                 }}
               >
-                <IconComponent size={24} className="text-white" />
-              </div>
+                {/* Category Icon Circle */}
+                <div
+                  className={`w-12 h-12 rounded-full border-4 border-white flex items-center justify-center ${
+                    index === 0 ? "bg-[#a46500]" : "bg-[#dfeaa5]"
+                  }`}
+                  style={{
+                    animation: `circleExpand ${animationDuration}s ease-out forwards ${delay}`,
+                  }}
+                >
+                  <IconComponent size={24} className="text-white" />
+                </div>
 
-              {/* Event Info */}
-              <div
-                className="flex flex-col ml-8 opacity-0"
-                style={{
-                  animation: `fadeInText ${animationDuration}s ease-out forwards ${
-                    parseFloat(delay) + 0.5
-                  }s`,
-                }}
-              >
-                <div className="text-lg font-bold">{item.eventName}</div>
-                <div className="text-sm text-gray-500">
-                  {new Date(item.occurredAt).toLocaleDateString()}
+                {/* Event Info */}
+                <div
+                  className="flex flex-col ml-8 opacity-0"
+                  style={{
+                    animation: `fadeInText ${animationDuration}s ease-out forwards ${
+                      parseFloat(delay) + 0.5
+                    }s`,
+                  }}
+                >
+                  <div className="text-lg font-bold">{item.eventName}</div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(item.occurredAt).toLocaleDateString()}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       <style jsx global>{`
         @keyframes circleExpand {

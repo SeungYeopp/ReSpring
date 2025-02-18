@@ -36,7 +36,7 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
    * - "/chat/settings" => 감지 안 됨 (X)
    * - "/chat/123/more" => 감지 안 됨 (X)
    */
-  const isChatPage = /^\/chat\/\w+$/.test(pathname);
+  const isChatPage = /^\/chat(\/\w+)?$/.test(pathname);
   const isTestOnboardingPage = pathname.startsWith("/test/onboarding"); // 온보딩 테스트 페이지 여부 (네비게이션 숨김)
 
   const isMainPage = pathname.startsWith("/main");
