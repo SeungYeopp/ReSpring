@@ -81,7 +81,7 @@ export default function ProfilePage() {
 
 
   return (
-    <main className="min-h-screen bg-gray-50/50">
+    <main className="min-h-screen bg-gray-50/50 md:-my-4">
       {/* 웹/태블릿 레이아웃 */}
       <div className="hidden lg:grid lg:grid-cols-[1fr_2fr] lg:gap-6 lg:px-6">
         {/* 프로필 섹션 */}
