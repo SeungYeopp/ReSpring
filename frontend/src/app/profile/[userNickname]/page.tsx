@@ -195,11 +195,9 @@ export default function ProfilePage() {
         </div>
 
         <div className="mt-12">
-          <TabBar userNickname={targetNickname} challenges={challenges} />
+          <TabBar userNickname={targetNickname} challenges={challenges} isMine={isMine} />
         </div>
       </div>
-
-      {isModalOpen && <SubscribersModal onClose={() => setIsModalOpen(false)} />}
     </main>
   );
 }
