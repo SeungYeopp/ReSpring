@@ -1,60 +1,57 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Camera, Plus, X } from "lucide-react";
+import { Camera, Plus, X, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "../components/ui/spinner";
 import { createPost, type CreatePostDto } from "@/lib/api/today";
-import { ArrowLeft } from "lucide-react";
 
-const MAX_IMAGES = 6; // 최대 이미지 개수
+const MAX_IMAGES = 10; // 최대 이미지 업로드 개수
 
 export default function WritePage() {
   const router = useRouter();
+
+  // 업로드 상태
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 이미지 파일과 미리보기 URL 배열 (여러 개니까 배열)
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  // 폼 상태 관리
+  // 폼 데이터 상태
   const [formData, setFormData] = useState<CreatePostDto>({
     title: "",
     content: "",
     category: "",
   });
 
-  // 특정 인덱스에 이미지 추가
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  // 이미지를 추가하는 함수
+  const handleAddImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const file = files[0]; // 단일 파일만 선택
-    const newImages = [...images];
-    const newPreviews = [...previews];
+    const file = files[0];
 
-    // 해당 인덱스에 이미지 추가
-    newImages[index] = file;
-    newPreviews[index] = URL.createObjectURL(file);
+    // 현재 이미지가 6개 이상이면 추가 안 되게 막기
+    if (images.length >= MAX_IMAGES) {
+      alert(`이미지는 최대 ${MAX_IMAGES}장까지 업로드할 수 있습니다.`);
+      return;
+    }
 
-    setImages(newImages);
-    setPreviews(newPreviews);
+    // 새 이미지와 미리보기 URL 추가
+    setImages((prev) => [...prev, file]);
+    setPreviews((prev) => [...prev, URL.createObjectURL(file)]);
   };
 
-  // 이미지 제거 함수
+  // 특정 이미지를 제거하는 함수
   const removeImage = (index: number) => {
-    const newImages = [...images];
-    const newPreviews = [...previews];
-
-    // 해당 인덱스의 이미지와 미리보기 제거
-    newImages[index] = undefined as any;
-    newPreviews[index] = undefined as any;
-
-    setImages(newImages);
-    setPreviews(newPreviews);
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   // 폼 제출 처리
@@ -69,13 +66,16 @@ export default function WritePage() {
     try {
       setIsSubmitting(true);
 
-      // 빈 값을 제외한 실제 이미지 파일들만 필터링
-      const validImages = images.filter((img) => img);
-      console.log("formData sent", formData);
-      // API 호출
+      // 이미지가 비어있으면 빈 배열, 있으면 파일들 그대로
+      const validImages = images.length > 0 ? images : [];
+
+      console.log("formData:", formData);
+      console.log("images:", validImages);
+
+      // 실제 서버로 전송
       await createPost(formData, validImages);
 
-      // 성공 시 목록 페이지로 이동
+      // 성공하면 커뮤니티 메인 페이지로 이동
       router.push("/today");
     } catch (error) {
       console.error("게시글 작성 실패:", error);
@@ -87,19 +87,19 @@ export default function WritePage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* 헤더 */}
+      {/* 상단 헤더 */}
+      <header className="top-0 left-0 right-0 flex items-center justify-between p-4 bg-background border-b z-10">
+        <Button variant="ghost" className="font-medium" onClick={() => router.back()}>
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-lg font-medium">새로운 글 작성</h1>
+        <Button disabled={isSubmitting} onClick={handleSubmit} className="bg-[#618264] hover:bg-[#618264]/90">
+          등록
+        </Button>
+      </header>
 
-      {/* 메인 컨텐츠 */}
-      <div className="px-4">
-        <header className="top-0 left-0 right-0 flex items-center justify-between p-4 bg-background border-b z-10">
-          <Button variant="ghost" className="font-medium" onClick={() => router.back()}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-lg font-medium">새로운 글 작성</h1>
-          <Button disabled={isSubmitting} onClick={handleSubmit} className="bg-[#618264] hover:bg-[#618264]/90">
-            등록
-          </Button>
-        </header>
+      {/* 글 작성 폼 */}
+      <div className="px-4 py-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 카테고리 선택 */}
           <Select value={formData.category} onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}>
@@ -123,30 +123,25 @@ export default function WritePage() {
             className="min-h-[300px] border-[#618264]"
           />
 
-          {/* 이미지 선택 그리드 */}
-          <div className="grid grid-cols-3 gap-2">
-            {Array.from({ length: MAX_IMAGES }).map((_, index) => (
-              <div key={index} className="relative aspect-square">
-                {previews[index] ? (
-                  // 이미지가 있는 경우
-                  <>
-                    <Image src={previews[index] || "/placeholder.svg"} alt={`이미지 ${index + 1}`} fill className="object-cover rounded-lg" />
-                    <button type="button" onClick={() => removeImage(index)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1">
-                      <X size={16} />
-                    </button>
-                  </>
-                ) : (
-                  // 이미지가 없는 경우
-                  <label className="cursor-pointer w-full h-full">
-                    <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, index)} className="hidden" />
-                    <div className="w-full h-full border-2 border-dashed border-[#618264] rounded-lg flex flex-col items-center justify-center gap-2 text-[#618264] hover:bg-[#618264]/10">
-                      <Plus size={24} />
-                      <span className="text-sm">이미지 추가</span>
-                    </div>
-                  </label>
-                )}
+          {/* 이미지 업로드 */}
+          <div className="flex flex-wrap gap-2">
+            {previews.map((preview, index) => (
+              <div key={index} className="relative w-24 h-24">
+                <Image src={preview} alt={`이미지 ${index + 1}`} fill className="object-cover rounded-lg" />
+                <button type="button" onClick={() => removeImage(index)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1">
+                  <X size={16} />
+                </button>
               </div>
             ))}
+
+            {/* 이미지 추가 버튼 (최대 6개까지만 보이도록) */}
+            {images.length < MAX_IMAGES && (
+              <label className="cursor-pointer w-24 h-24 border-2 border-dashed border-[#618264] rounded-lg flex flex-col items-center justify-center gap-2 text-[#618264] hover:bg-[#618264]/10">
+                <input type="file" accept="image/*" onChange={handleAddImage} className="hidden" />
+                <Plus size={24} />
+                <span className="text-sm">이미지 추가</span>
+              </label>
+            )}
           </div>
         </form>
       </div>
