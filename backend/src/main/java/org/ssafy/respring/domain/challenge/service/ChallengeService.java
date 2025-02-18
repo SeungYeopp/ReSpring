@@ -237,6 +237,7 @@ public class ChallengeService {
                 .records(records) // ✅ 날짜별 성공/실패 기록 전달
                 .isParticipating(isParticipating)
                 .isLiked(isLiked)
+                .chatRoomId(challenge.getChatRoomId())
                 .build();
     }
 
