@@ -5,6 +5,14 @@ import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
 import io from "socket.io-client";
 import * as mediasoupClient from "mediasoup-client";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Video, Settings, ArrowLeft, Send } from "lucide-react"
 
 const SERVER_URL = "http://localhost:8080/chat";
 const USER_SESSION_URL = "http://localhost:8080/user/me";
@@ -651,176 +659,259 @@ const Chat1 = () => {
     });
   };
 
-  return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          width: "900px",
-          height: "600px",
-          padding: "20px",
-          background: "#fff",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-          borderRadius: "10px",
-        }}
-      >
-        {/* Sidebar */}
-        <div
-          style={{
-            width: "30%",
-            borderRight: "1px solid #ddd",
-            paddingRight: "10px",
-          }}
-        >
-          <h3>My Chat Rooms</h3>
-          <ul>
-            {myRooms.map((room) => (
-              <li key={room.roomId} onClick={() => handleRoomClick(room)}>
-                {room.name}
-              </li>
-            ))}
-          </ul>
-          <button
-            onClick={startPrivateChat}
-            style={{
-              marginTop: "10px",
-              padding: "10px",
-              backgroundColor: "#28a745",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              borderRadius: "5px",
-            }}
-          >
-            Start Private Chat
-          </button>
-        </div>
+  // --------------------------------------------------------------------------------------------------------------------------------------------------------
+  const [activeScreen, setActiveScreen] = useState("rooms")
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [fontSize, setFontSize] = useState("medium")
+  const [letterSpacing, setLetterSpacing] = useState("normal")
+  const [fontFamily, setFontFamily] = useState("sans")
+  const [isVideoPopoverOpen, setIsVideoPopoverOpen] = useState(false)
 
-        {/* Chat Section */}
-        <div
-          style={{
-            width: "70%",
-            paddingLeft: "10px",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              paddingBottom: "10px",
-              borderBottom: "1px solid #ddd",
-            }}
-          >
-            <h3>
-              {currentRoom ? `Chat Room: ${currentRoom.name}` : "Select a room"}
-            </h3>
-            {!isOpenChat && currentRoom && isActive && (
-              <button
-                onClick={leaveRoom}
-                style={{
-                  padding: "7px 12px",
-                  backgroundColor: "#dc3545",
-                  color: "white",
-                  border: "none",
-                  cursor: "pointer",
-                  borderRadius: "5px",
+  const messagesEndRef = useRef(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages]) //Corrected dependency
+
+  const fontSizes = {
+    small: "text-sm",
+    medium: "text-base",
+    large: "text-lg",
+  }
+
+  const letterSpacings = {
+    tight: "tracking-tight",
+    normal: "tracking-normal",
+    wide: "tracking-wide",
+  }
+
+  const fontFamilies = {
+    sans: "font-sans",
+    serif: "font-serif",
+    mono: "font-mono",
+  }
+
+  const renderRoomList = () => (
+    <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]}`}>
+      <CardHeader>
+        <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}>Chat Rooms</CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1 p-0">
+        <ScrollArea className="h-[calc(100vh-12rem)]">
+          <div className="space-y-2 p-4">
+            {myRooms.map((room) => (
+              <Button
+                key={room.roomId}
+                variant={currentRoom?.roomId === room.roomId ? "secondary" : "ghost"}
+                className={`w-full justify-start ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+                onClick={() => {
+                  handleRoomClick(room)
+                  setActiveScreen("chat")
                 }}
               >
-                Leave Room
-              </button>
-            )}
-          </div>
-          <div
-            style={{
-              flexGrow: 1,
-              border: "1px solid #ddd",
-              padding: "12px",
-              overflowY: "auto",
-              height: "400px",
-              borderRadius: "5px",
-              backgroundColor: "#fafafa",
-            }}
-          >
-            {messages.map((msg, index) => (
-              <div key={index}>
-                <b>{msg.sender}:</b> {msg.content}
-              </div>
+                {room.name}
+              </Button>
             ))}
           </div>
-          {/* ✅ 채팅 입력 부분 복구 ✅ */}
-          <input
-            style={{
-              width: "100%",
-              padding: "10px",
-              border: "1px solid #ddd",
-              borderRadius: "5px",
-            }}
-            type="text"
-            placeholder="Type your message"
+        </ScrollArea>
+      </CardContent>
+      <div className="p-4 border-t">
+        <Button onClick={startPrivateChat} className={`w-full ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}>
+          Start Private Chat
+        </Button>
+      </div>
+    </Card>
+  )
+
+  const renderVideoPopover = () => (
+    <Card className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <CardContent className="bg-background p-6 rounded-lg max-w-2xl w-full">
+        <div className="flex justify-between items-center mb-4">
+          <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}>Video Chat</CardTitle>
+          <Button variant="ghost" size="icon" onClick={() => setIsVideoPopoverOpen(false)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="relative aspect-video">
+            <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover rounded-lg" />
+            <p
+              className={`absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+            >
+              You
+            </p>
+          </div>
+          <div className="relative aspect-video">
+            <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover rounded-lg" />
+            <p
+              className={`absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+            >
+              Remote
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 flex justify-center">
+          <Button
+            onClick={toggleVideoStreaming}
+            variant={isStreaming ? "destructive" : "default"}
+            className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+          >
+            {isStreaming ? "End Video Chat" : "Start Video Chat"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  const renderChatScreen = () => (
+    <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]}`}>
+      <CardHeader className="flex flex-row items-center justify-between py-2">
+        <div className="flex items-center space-x-3">
+          <Button variant="ghost" size="icon" onClick={() => setActiveScreen("rooms")}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <Avatar>
+            <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${currentRoom?.name}`} />
+            <AvatarFallback>{currentRoom?.name?.[0]}</AvatarFallback>
+          </Avatar>
+          <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}>
+            {currentRoom ? currentRoom.name : "Select a room"}
+          </CardTitle>
+        </div>
+        <div className="flex items-center space-x-2">
+          {currentRoom && !isOpenChat && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsVideoPopoverOpen(true)}
+              className={isStreaming ? "text-red-500 hover:text-red-600" : ""}
+            >
+              <Video className="h-4 w-4" />
+            </Button>
+          )}
+          {!isOpenChat && currentRoom && isActive && (
+            <Popover open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56">
+                <div className="space-y-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      leaveRoom()
+                      setActiveScreen("rooms")
+                      setIsSettingsOpen(false)
+                    }}
+                  >
+                    Leave Room
+                  </Button>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Font Size</p>
+                    <Select value={fontSize} onValueChange={setFontSize}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="small">Small</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="large">Large</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Letter Spacing</p>
+                    <Select value={letterSpacing} onValueChange={setLetterSpacing}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tight">Tight</SelectItem>
+                        <SelectItem value="normal">Normal</SelectItem>
+                        <SelectItem value="wide">Wide</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Font Family</p>
+                    <Select value={fontFamily} onValueChange={setFontFamily}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sans">Sans-serif</SelectItem>
+                        <SelectItem value="serif">Serif</SelectItem>
+                        <SelectItem value="mono">Monospace</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="flex-1 p-0">
+        <ScrollArea className="h-[calc(100vh-12rem)]">
+          <div className="space-y-4 p-4">
+          {messages.map((msg, index) => (
+  <div 
+    key={index} 
+    className={`flex flex-col ${msg.sender === currentUserId ? "items-end" : "items-start"}`}
+  >
+    <span className="text-sm text-muted-foreground mb-1">
+      {msg.sender === currentUserId ? "Me" : userNickname}
+    </span>
+    <div
+      className={`max-w-[75%] px-4 py-2 rounded-lg
+      ${msg.sender === currentUserId ? "bg-primary text-primary-foreground" : "bg-muted"}
+      ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+    >
+      {msg.content}
+    </div>
+  </div>
+))}
+          </div>
+          <div ref={messagesEndRef} />
+        </ScrollArea>
+      </CardContent>
+      <div className="p-4 border-t">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            sendMessage()
+          }}
+          className="flex items-center space-x-2"
+        >
+          <Input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            placeholder="메시지를 입력하세요..."
+            className={`flex-1 ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
           />
-          <button
-            onClick={sendMessage}
-            style={{
-              padding: "10px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              borderRadius: "5px",
-              marginTop: "5px",
-            }}
-            disabled={!currentRoom || !isActive}
-          >
-            Send Message
-          </button>
-        </div>
+          <Button type="submit" size="icon" disabled={!currentRoom || !isActive}>
+            <Send className="h-4 w-4" />
+          </Button>
+        </form>
       </div>
-      <div>
-        <h1>Chat with Video</h1>
+    </Card>
+  )
 
-        {currentRoom && !isOpenChat && (
-          <button
-            onClick={toggleVideoStreaming}
-            style={{
-              padding: "10px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              borderRadius: "5px",
-            }}
-          >
-            {isStreaming ? "📴 Stop Video" : "📡 Start/Watch Video"}
-          </button>
-        )}
-
-        <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-          <video
-            ref={localVideoRef}
-            autoPlay
-            playsInline
-            muted
-            width="320"
-            height="180"
-            style={{ border: "2px solid blue" }}
-          />
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            width="320"
-            height="180"
-            style={{ border: "2px solid red" }}
-          />
-        </div>
+  return (
+    <div className="h-[calc(100vh-theme(spacing.16))] w-full">
+      <div className="h-full overflow-hidden">
+        {activeScreen === "rooms" && renderRoomList()}
+        {activeScreen === "chat" && renderChatScreen()}
+        {isVideoPopoverOpen && renderVideoPopover()}
       </div>
     </div>
-  );
-};
-
+  )
+}
 export default Chat1;
