@@ -169,7 +169,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/yesterday/writenote?storyId=${selectedStory.id}`}>
+                      <Link href={`/yesterday/writenote?storyId=${selectedStory.id}&source=booklist`}>
                         <Edit className="w-4 h-4 mr-1" />
                         편집
                       </Link>

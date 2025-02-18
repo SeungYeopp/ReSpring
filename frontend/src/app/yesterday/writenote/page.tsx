@@ -30,6 +30,7 @@ export default function WriteStoryPage() {
   const [images, setImages] = useState<File[]>([]);
 
   const storyId = searchParams?.get("storyId") ? Number(searchParams.get("storyId")) : null;
+  const source = searchParams?.get("source");
 
   const fetchEvents = async () => {
     try {
@@ -42,6 +43,8 @@ export default function WriteStoryPage() {
         display: event.display,
       }));
       setEvents(formattedEvents);
+      console.log(source)
+      console.log(storyId)
     } catch (error) {
       console.error("Error fetching events:", error);
     }
@@ -88,7 +91,11 @@ export default function WriteStoryPage() {
 
       if (storyId) {
         await updateStory(storyId, title, content, eventId!, deleteImageIds, images);
-        router.push(`/yesterday/booklist/${userNickname}?tab=stories`);
+        if (source === "booklist") {
+          router.push(`/yesterday/booklist/${userNickname}?tab=stories`);
+        } else {
+          router.push("/yesterday/create-book");
+        }
       } else {
         if (stage === "select") {
           setStage("editor");
@@ -106,7 +113,11 @@ export default function WriteStoryPage() {
 
   const handleBack = () => {
     if (stage === "editor") {
-      router.push(`/yesterday/booklist/${userNickname}?tab=stories`);
+      if (source === "booklist") {
+        router.push(`/yesterday/booklist/${userNickname}?tab=stories`);
+      } else {
+        setStage("select");
+      }
     } else {
       router.back();
     }
@@ -130,9 +141,9 @@ export default function WriteStoryPage() {
         </h1>
         <Button
           onClick={handleNext}
-          disabled={loading}
+          disabled={loading || (stage === "select" && selected === null)}
           className={`bg-brand text-white border border-brand rounded-md py-2 px-4 transition-all duration-300 ease-in-out
-            ${loading ? 'cursor-not-allowed opacity-50' : 'hover:bg-brand-dark hover:border-brand-dark focus:ring-2 focus:ring-brand-light focus:outline-none'}`}
+            ${loading || (stage === "select" && selected === null) ? 'cursor-not-allowed opacity-50' : 'hover:bg-brand-dark hover:border-brand-dark focus:ring-2 focus:ring-brand-light focus:outline-none'}`}
         >
           {stage === "select" ? "다음" : "저장"}
         </Button>
