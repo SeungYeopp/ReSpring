@@ -40,7 +40,7 @@ const FinalStep: React.FC<FinalStepProps> = ({ onGoBack, onSignUp }) => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          축하합니다! 🎉
+          🎉 <p></p>당신의 봄날 여정이 시작되었습니다. 
         </motion.h2>
         <motion.p
           className="text-lg md:text-xl text-[#000000] mb-2"
@@ -48,7 +48,7 @@ const FinalStep: React.FC<FinalStepProps> = ({ onGoBack, onSignUp }) => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          당신의 봄날 여정이 시작되었습니다.
+          
         </motion.p>
         <motion.p
           className="text-[#7b7878] md:text-lg mb-6"

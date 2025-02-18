@@ -188,13 +188,13 @@ export const getTopThreeWeeklyBooks = async() : Promise<Book[]> => {
 // 특정 유저에 대한 봄날의 서 전체
 // 입력 : 유저 닉네임
 // 출력 : 봄날의 서 배열
-export const getAllBooksByUserId = async(nickname : string) : Promise<Book[]> => {
+export const getAllBooksByUserNickname = async(nickname : string) : Promise<Book[]> => {
     try{
         const response = await axiosAPI.get(`/books/user/${nickname}`);
         
         return response.data;
     }catch(error : any){
-        throw new Error(error.response?.data?.message || 'getAllBooksByUserId 함수 API 호출에서 오류가 발생했습니다.');
+        throw new Error(error.response?.data?.message || 'getAllBooksByUserNickname 함수 API 호출에서 오류가 발생했습니다.');
     }
 }
 

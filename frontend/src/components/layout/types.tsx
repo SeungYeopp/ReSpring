@@ -6,6 +6,7 @@ export type NavItem = {
   isAction?: boolean;
   isLogo?: boolean;
   isPopover?: boolean;
+  onClick?: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
 };
 
 // 네비게이션 섹션 타입 정의

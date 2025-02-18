@@ -22,7 +22,7 @@ const Challenges: React.FC<ChallengeListProps> = ({ challenges }) => {
                   <img 
                     src={challenge.image || "/placeholder_badge.svg"} 
                     alt={challenge.title} 
-                    className="rounded-xl object-cover" 
+                    className="absolute inset-0 w-full h-full object-cover rounded-xl" 
                   />
                 </div>
               </div>

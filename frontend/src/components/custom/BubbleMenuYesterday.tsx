@@ -1,40 +1,47 @@
 "use client";
 
 import * as React from "react";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/custom/BubblePopover"; 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { BookOpen, PenTool, Plus} from "lucide-react"; // 아이콘 사용
-import { useRouter } from "next/navigation";
+import { BookOpen, PenTool, ChevronUp } from 'lucide-react';
 
 export default function BubbleMenuYesterday() {
-  const router = useRouter();
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const buttonClass = "flex items-center justify-center gap-2 rounded-full w-36 px-4 py-2";
+
   return (
-    <div className="fixed bottom-20 right-6">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button className="h-14 w-14 rounded-full bg-brand text-white shadow-lg hover:bg-brand-dark">
-            <Plus className="h-6 w-6" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          align="end"
-          side="top"
-          className="flex flex-col space-y-2"
+    <div className="fixed bottom-20 right-6 flex flex-col space-y-2">
+      <Link href="/yesterday/writenote" passHref>
+        <Button
+          variant="default"
+          className={`${buttonClass} bg-brand text-white hover:bg-brand-dark`}
         >
-          <Button 
-          onClick={() => router.push("yesterday/writenote")}
-          variant="ghost" className="flex items-center gap-2 bg-white rounded-full border-2 border-brand-light">
-            <PenTool  className="h-5 w-5" />
-            글조각 쓰기
-          </Button>
-          <Button 
-          onClick={() => router.push("yesterday/create-book")}
-          variant="ghost" className="flex items-center gap-2 bg-white rounded-full border-2 border-brand-light">
-            <BookOpen className="h-5 w-5" />
-            봄날의 서 쓰기
-          </Button>
-        </PopoverContent>
-      </Popover>
+          <PenTool className="h-5 w-5" />
+          <span className="font-laundrygothicregular">글조각 쓰기</span>
+        </Button>
+      </Link>
+
+      <Link href="/yesterday/create-book" passHref>
+        <Button
+          variant="default"
+          className={`${buttonClass} bg-brand text-white hover:bg-brand-dark`}
+        >
+          <BookOpen className="h-5 w-5" />
+          <span className="font-laundrygothicregular">봄날의 서 쓰기</span>
+        </Button>
+      </Link>
+
+      <Button
+        variant="outline"
+        className={`${buttonClass} border-2 border-brand-light bg-white`}
+        onClick={scrollToTop}
+      >
+        <ChevronUp className="h-5 w-5" />
+        <span className="font-laundrygothicregular">맨 위로</span>
+      </Button>
     </div>
   );
 }

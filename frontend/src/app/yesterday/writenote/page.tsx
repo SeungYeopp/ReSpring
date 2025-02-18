@@ -9,15 +9,18 @@ import { makeStory } from "@/lib/api/story";
 import SelectEvent from "../components/SelectEvent";
 import StoryEditor from "../components/StoryEditor";
 import AddEvent from "@/components/custom/AddEvent";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function WriteStoryPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { userNickname } = useAuth(true);
+
   const [selected, setSelected] = useState<number | null>(null);
   const [selectedEventName, setSelectedEventName] = useState<string>("");
   const [events, setEvents] = useState<
     { id: number; eventName: string; occurredAt: string; category: string; display: boolean }[]
-  >([]); 
+  >([]);
   const [stage, setStage] = useState<"select" | "editor">("select");
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
@@ -25,8 +28,6 @@ export default function WriteStoryPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [story, setStory] = useState<{ title: string; content: string } | null>(null);
   const [images, setImages] = useState<File[]>([]);
-
-  const userId = "beb9ebc2-9d32-4039-8679-5d44393b7252";
 
   const storyId = searchParams?.get("storyId") ? Number(searchParams.get("storyId")) : null;
 
@@ -47,8 +48,10 @@ export default function WriteStoryPage() {
   };
 
   useEffect(() => {
-    fetchEvents();
-  }, [userId]);
+    if (userNickname) {
+      fetchEvents();
+    }
+  }, [userNickname]);
 
   useEffect(() => {
     if (storyId) {
@@ -85,7 +88,7 @@ export default function WriteStoryPage() {
 
       if (storyId) {
         await updateStory(storyId, title, content, eventId!, deleteImageIds, images);
-        router.push(`/yesterday/booklist/${userId}?tab=stories`);
+        router.push(`/yesterday/booklist/${userNickname}?tab=stories`);
       } else {
         if (stage === "select") {
           setStage("editor");
@@ -103,7 +106,7 @@ export default function WriteStoryPage() {
 
   const handleBack = () => {
     if (stage === "editor") {
-      router.push(`/yesterday/booklist/${userId}?tab=stories`);
+      router.push(`/yesterday/booklist/${userNickname}?tab=stories`);
     } else {
       router.back();
     }

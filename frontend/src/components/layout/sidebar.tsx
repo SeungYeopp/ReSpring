@@ -24,6 +24,7 @@ export function Sidebar() {
           <NavigationItem {...sidebarItems[6]} className="w-full justify-start flex-row gap-3" />
           <Divider thick />
           <NavigationItem {...sidebarItems[7]} className="w-full justify-start flex-row gap-3" />
+          <NavigationItem {...sidebarItems[8]} className="w-full justify-start flex-row gap-3" />
         </nav>
       </div>
     </aside>

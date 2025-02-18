@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import Image from "next/image"
 import Link from "next/link"
-import { getAllBooksByUserId, getLikedBooks, Book } from "@/lib/api/book" // API 함수 가져오기
+import { getAllBooksByUserNickname, getLikedBooks, Book } from "@/lib/api/book" // API 함수 가져오기
 import { getUserInfo } from "@/lib/api"
 
 export default function Recommendations({ bookId }: { bookId: string }) {
@@ -141,14 +141,14 @@ export default function Recommendations({ bookId }: { bookId: string }) {
     const fetchRecommendations = async () => {
       try {
         const myInfo = await getUserInfo();
-        const currentBook = await getAllBooksByUserId(myInfo.userNickname)
+        const currentBook = await getAllBooksByUserNickname(myInfo.userNickname)
         const currentBookDetails = currentBook.find(book => book.id === Number(bookId))
 
         if (currentBookDetails) {
           const authorNickname = currentBookDetails.authorNickname
 
           // 저자의 다른 자서전 가져오기
-          const authorBooksData = await getAllBooksByUserId(authorNickname)
+          const authorBooksData = await getAllBooksByUserNickname(authorNickname)
           setAuthorBooks(authorBooksData.filter(book => book.id !== Number(bookId)))
 
           // 구독 중인 작가의 자서전 가져오기

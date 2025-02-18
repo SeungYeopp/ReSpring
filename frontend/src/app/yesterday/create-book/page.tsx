@@ -13,7 +13,7 @@ import {
 } from "@/lib/api"
 import { getSessionInfo, Content } from "@/lib/api"
 import { useRouter } from "next/navigation"
-import { Plus, ChevronLeft, ChevronRight, Loader2, CheckCircle } from "lucide-react"
+import { Plus, ChevronLeft, ChevronRight, Loader2, CheckCircle, HelpCircle, X } from "lucide-react"
 import NextImage from "next/image"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@radix-ui/react-tooltip"
 
 interface StoryModalProps {
   story: Story | null
@@ -40,8 +42,7 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
         <DialogHeader>
           <DialogTitle>{story.title}</DialogTitle>
           <DialogDescription>
-            Created: {new Date(story.createdAt).toLocaleDateString()}
-            {story.updatedAt && ` | Updated: ${new Date(story.updatedAt).toLocaleDateString()}`}
+            {new Date(story.occurredAt).toLocaleDateString()}
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4">
@@ -56,8 +57,8 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
                         <NextImage
                           src={image}
                           alt={image}
-                          width={200}
-                          height={200}
+                          width={100}
+                          height={100}
                           objectFit="cover"
                           className="rounded-md"
                         />
@@ -78,7 +79,7 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
 
 export default function CreateBook() {
   const [stories, setStories] = useState<Story[]>([])
-  const [selectedStorieIds, setSelectedStorieIds] = useState<number[]>([])
+  const [selectedStoryIds, setselectedStoryIds] = useState<number[]>([])
   const [step, setStep] = useState(1)
   const [msg, setMsg] = useState<string>("...")
   const [bookTags, setBookTags] = useState<string[]>(["은퇴"])
@@ -95,7 +96,7 @@ export default function CreateBook() {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null)
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false)
 
-  const [title, setTitle] = useState<string>("제목")
+  const [title, setTitle] = useState<string>("")
 
   const router = useRouter()
 
@@ -153,45 +154,23 @@ export default function CreateBook() {
   }
 
   const toggleStorySelection = (story: Story) => {
-    setSelectedStorieIds((prev) =>
+    setselectedStoryIds((prev) =>
       prev.includes(story.id) ? prev.filter((id) => id !== story.id) : [...prev, story.id],
     )
   }
 
-  const removeDotsFromTitles = (compiledBook: CompiledBook): CompiledBook => {
-    // 각 챕터의 제목에서 마침표를 제거한 새 제목을 할당
-    compiledBook.chapters.forEach(chapter => {
-        chapter.chapterTitle = chapter.chapterTitle.replace(/\./g, ""); // 제목에서 모든 마침표 제거
-    });
-
-    return compiledBook;
-};
-
   const handleSubmit = async () => {
     setIsFinalizingBook(true)
     try {
-      //console.log(compiledBook?.chapters[0])
-      //const jsonifiedBookContent = JSON.stringify(compiledBook!.chapters)
-
-      // Chapter를 Content로 변환..
-      // export interface Chapter{
-      //   chapterTitle : string,
-      //   content : string
-      // }
-      
-      // interface Content {
-      //     [key: string]: string;
-      // }
-
       const convertedContent = compiledBook?.chapters.reduce((acc, chapter) => {
-        acc[chapter.chapterTitle] = chapter.content;
+        acc[chapter.chapterTitle] = String(chapter.content);
         return acc;
       }, {} as Content);
     
       const result : number= await makeBook(
         compiledBook!,
         bookTags,
-        selectedStorieIds,
+        selectedStoryIds,
         bookCoverImg!,
       )
       setGeneratedCompiledBookId(result)
@@ -204,26 +183,66 @@ export default function CreateBook() {
   }
 
   const convertStoriesToContent = (stories: Story[]): Content => {
-    return stories.reduce((acc, story) => {
-        acc[story.title] = story.content;
-        return acc;
-    }, {} as Content);
+      return stories.reduce((acc, story) => {
+          acc[story.title] = String(story.content); // 문자열 변환 추가
+          return acc;
+      }, {} as Content);
   };
 
-  const convertToCompiledBook = (title: string, content: Content): CompiledBook => {
-    const chapters: Chapter[] = Object.entries(content["content"]).map(([chapterTitle, chapterContent]) => ({
-        chapterTitle,
-        content: chapterContent
-    }));
+  // const normalizeContentFormat = (rawContent: any): Content => {
+  //     // 이미 올바른 형태일 경우 그대로 반환
+  //     if (typeof rawContent === "object" && !Array.isArray(rawContent)) {
+  //         return rawContent;
+  //     }
 
-    return { title, chapters };
-};
+  //     // 만약 `content`가 배열이면 이를 객체 형태로 변환
+  //     if (Array.isArray(rawContent["content"])) {
+  //         const normalizedContent: Content = { content: {} };
+
+  //         rawContent["content"].forEach((item: any) => {
+  //             const [key, value] = Object.entries(item)[0]; // 첫 번째 키-값 쌍 가져오기
+  //             normalizedContent["content"][key] = value; // 객체 형태로 변환
+  //         });
+
+  //         return normalizedContent;
+  //     }
+
+  //     // 기본적으로 기존 데이터 반환
+  //     return rawContent;
+  // };
+
+  const normalizeContentFormat = (rawContent: any): Content => {
+    if (Array.isArray(rawContent["content"])) {
+      return {
+        content: rawContent["content"].reduce((acc, item: any) => {
+          const [key, value] = Object.entries(item)[0]; // 첫 번째 키-값 가져오기
+          acc[key] = String(value); // 문자열로 변환
+          return acc;
+        }, {} as Record<string, string>),
+      };
+    }
+
+    return rawContent; // 기존 구조 유지
+  };
+
+
+  const convertToCompiledBook = (title: string, content: Content): CompiledBook => {
+      // content 포맷 정규화 (배열이면 객체로 변환)
+      const normalizedContent = normalizeContentFormat(content);
+
+      const chapters: Chapter[] = Object.entries(normalizedContent["content"]).map(([chapterTitle, chapterContent]) => ({
+          chapterTitle,
+          content: String(chapterContent) // 문자열 변환
+      }));
+
+      return { title, chapters };
+  };
 
 
   const handleMakeAIContent = async () => {
     setIsLoading(true)
     try {
-      const selectedStories = stories.filter((story) => selectedStorieIds.includes(story.id))
+      const selectedStories = stories.filter((story) => selectedStoryIds.includes(story.id))
 
       const convertedContent = convertStoriesToContent(selectedStories)
 
@@ -282,23 +301,73 @@ export default function CreateBook() {
     setIsStoryModalOpen(true)
   }
 
+  // 챕터 삭제 함수
+const handleRemoveChapter = (index: number) => {
+  setCompiledBook((prev) => ({
+    ...prev!,
+    chapters: prev!.chapters.filter((_, i) => i !== index),
+  }));
+};
+
+  const [open, setOpen] = useState(true);
+
+  // 처음 3초 후 자동으로 닫히도록 설정
+  useEffect(() => {
+    // step이 변경될 때마다 도움말을 3초 동안 자동으로 띄우고 이후 닫기
+    setOpen(true);
+    const timer = setTimeout(() => {
+      setOpen(false);
+    }, 3000);
+
+    return () => clearTimeout(timer); // step 변경 시 기존 타이머 정리
+  }, [step]);
+
   return (
+    <TooltipProvider>
     <div className="flex flex-col min-h-screen bg-gray-100">
-      <div className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden my-8">
+      <div className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden my-1">
         <div className="flex items-center justify-between p-4 text-white">
           <Button variant="ghost" onClick={onClickBackButton} className="text-white bg-brand hover:bg-brand-dark shadow-lg">
-            <ChevronLeft className="mr-2 h-4 w-4" />
+            {/* <ChevronLeft className="mr-2 h-4 w-4" /> */}
             {step === 1 ? "취소" : step === 4 ? "이전" : step === 2 ? "이전" : "이전"}
           </Button>
+          <div className="flex-1 flex justify-center items-center relative">
           <span className="text-xl font-bold text-black">
             {step === 1
               ? "글조각 선택하기"
               : step === 2
                 ? "미리 보기"
                 : step === 3
-                  ? "봄날의 서 수정하기"
-                  : "봄날의 서 표지 선택"}
+                  ? "수정하기"
+                  : "표지 선택"}
           </span>
+          {/* 도움말 아이콘 */}
+          <Tooltip open={open} onOpenChange={setOpen}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setOpen((prev) => !prev)} // 클릭 시 토글
+                className="focus:outline-none w-6 h-6 flex items-center justify-center ml-1"
+              >
+                <HelpCircle className="w-5 h-5 text-gray-500 hover:text-brand cursor-pointer" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom" // 기존 "right" -> "bottom"으로 변경
+              align="center" // 중앙 정렬 유지
+              className="bg-gray-800 text-white text-sm rounded-lg p-3 mt-2 shadow-lg max-w-xs w-64 z-50"
+            >
+              {step == 1
+                ? "🤖 AI 도우미가 선택한 글 조각들을 하나의 이야기로 자연스럽게 엮어드려요! 엮인 글은 언제든지 수정 가능하니 걱정하지 마세요😄"
+                : step == 2
+                ? "📖 AI 도우미가 엮은 이야기를 한눈에 미리 볼 수 있어요! 아직 수정할 수 있으니 편하게 살펴보세요 😊"
+                : step == 3
+                ? "✏️ 출간 전, 최종 수정하는 단계입니다! 📚 각 챕터 내용을 확인하고, 자신만의 스타일로 봄날의 서를 완성하세요."
+                : "🌸 선택한 표지로 봄날의 서가 꾸며집니다! 📕 완성된 이야기를 확인하고, 멋진 출간을 준비하세요."
+              }
+            </TooltipContent>
+
+          </Tooltip>
+          </div>
           <Button
             variant="secondary"
             onClick={() => {
@@ -310,12 +379,15 @@ export default function CreateBook() {
                 setStep(step + 1)
               }
             }}
-            disabled={step === 4 && !compiledBook}
-            className="bg-brand-light hover:bg-brand-dark text-white shadow-lg"
+            disabled={(step === 1 && selectedStoryIds.length === 0) || (step === 4 && !compiledBook)}
+            className={`bg-brand-light hover:bg-brand-dark text-white shadow-lg ${
+              step === 1 && selectedStoryIds.length === 0 ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : step === 2 ? "다음" : "다음"}
-            <ChevronRight className="ml-2 h-4 w-4" />
+            {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : "다음"}
+            {/* <ChevronRight className="ml-2 h-4 w-4" /> */}
           </Button>
+            
         </div>
         <div className="p-6 relative">
           {(isLoading || isFinalizingBook) && (
@@ -337,48 +409,72 @@ export default function CreateBook() {
             </div>
           )}
           {step === 1 && (
-            <div>
+            <div className="mt-0 pt-0">
               {/* 안내 문구 */}
-              <h2 className="text-center text-lg font-semibold text-gray-700 mb-4">
-                하나 이상의 글 조각을 선택할 수 있습니다!
-              </h2>
+              <p className="text-center text-sm font-semibold text-gray-700 mb-6">
+              📖 봄날의 서는 내가 작성한 글 조각들로 만들어져요 ✨   <br/>
+              글 조각을 선택해 멋진 이야기를 시작해보세요!
+              </p>
 
               {/* 카드 리스트 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {stories.map((story) => (
                   <Card
                     key={story.id}
-                    className={`p-4 rounded-lg cursor-pointer transition-all ${
-                      selectedStorieIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-200"
+                    className={`p-4 flex items-center space-x-4 rounded-lg cursor-pointer transition-all ${
+                      selectedStoryIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-200"
                     }`}
                     onClick={() => toggleStorySelection(story)}
                   >
-                    <div className="flex flex-col items-center">
-                      <div className="w-32 h-32 relative mb-4">
+                    {/* 왼쪽: 이미지 */}
+                    <div className="w-16 h-16 relative flex-shrink-0">
+                      {story.images.length > 0 ? (
                         <NextImage
-                          src={story.images[0]}
-                          alt={story.images[0]}
+                          src={story.images[0]} // 첫 번째 이미지를 썸네일로 사용
+                          alt={story.title}
                           layout="fill"
                           objectFit="cover"
                           className="rounded-lg"
                         />
-                      </div>
-                      <h3 className="text-lg font-bold text-center mb-2">{story.title}</h3>
-                      <p className="text-sm text-gray-600 line-clamp-2 text-center">{story.content}</p>
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+                          No Image
+                        </div>
+                      )}
                     </div>
-                    <Button
-                      className="mt-4 w-full"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleStoryClick(story);
-                      }}
-                    >
-                      자세히 보기
-                    </Button>
+
+                    {/* 오른쪽: 제목 + 내용 */}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-left mb-1">{story.title}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2 text-left">{story.content}</p>
+
+                      {/* 자세히 보기 버튼 */}
+                      <Button
+                        className="mt-2 w-full"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStoryClick(story);
+                        }}
+                      >
+                        자세히 보기
+                      </Button>
+                    </div>
                   </Card>
                 ))}
               </div>
+
+              {/* 글 조각 쓰러 가는 버튼 (반응형) */}
+              <div className="mt-6 text-center">
+                <Button
+                  className="w-full text-gray-600 text-sm" variant="ghost"
+                  onClick={() => router.push("/yesterday/writenote")}
+                >
+                  🌿 마음에 드는 글 조각이 없나요? 직접 써보세요!
+                </Button>
+              </div>
+
+
             </div>
           )}
 
@@ -387,11 +483,19 @@ export default function CreateBook() {
             <div className="w-full max-w-2xl mx-auto">
               <Carousel className="w-full">
                 <CarouselContent>
-                  {pages.map((page, index) => (
+                  {/* {pages.map((page, index) => (
                     <CarouselItem key={index} className="p-4 text-center">
                       <p className="text-sm leading-relaxed whitespace-pre-line">{page}</p>
                     </CarouselItem>
+                  ))} */}
+                  {pages.map((page, index) => (
+                    <CarouselItem key={index} className="p-4 text-center">
+                      <p className="text-sm leading-relaxed whitespace-pre-line">
+                        {typeof page === "object" ? JSON.stringify(page, null, 2) : page}
+                      </p>
+                    </CarouselItem>
                   ))}
+
                 </CarouselContent>
                 <CarouselPrevious />
                 <CarouselNext />
@@ -407,7 +511,17 @@ export default function CreateBook() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">태그 입력</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">태그</label>
+
+                {/* 입력 필드 */}
+                <Input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  className="w-full p-2 border rounded-md mb-2"
+                  placeholder="입력 후 Enter"
+                />
                 
                 {/* 태그 리스트 */}
                 <div className="flex flex-wrap gap-2 mb-2">
@@ -425,15 +539,7 @@ export default function CreateBook() {
                   ))}
                 </div>
 
-                {/* 입력 필드 */}
-                <Input
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleTagKeyDown}
-                  className="w-full p-2 border rounded-md"
-                  placeholder="태그 입력 후 Enter"
-                />
+
               </div>
 
 
@@ -451,6 +557,15 @@ export default function CreateBook() {
                           onClick={(e) => e.stopPropagation()}
                         />
                       </div>
+                      <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // 클릭 시 Accordion이 열리지 않도록 방지
+                            handleRemoveChapter(index);
+                          }}
+                          className="text-gray-500 hover:text-red-500"
+                        >
+                          <X className="w-5 h-5" />
+                      </button>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4">
                       <Textarea
@@ -488,13 +603,16 @@ export default function CreateBook() {
                     onClick={() => handleSelectImage(image)}
                   >
                     <div className="aspect-[2/3] relative">
-                      <NextImage
-                        src={image}
-                        alt={image}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-lg"
-                      />
+                      {image && (
+                        <NextImage
+                          src={image}
+                          alt="책 이미지"
+                          width={200}
+                          height={200}
+                          style={{ objectFit: "cover" }}
+                          priority
+                        />
+                      )}
                     </div>
                   </Card>
                 ))}
@@ -530,6 +648,7 @@ export default function CreateBook() {
       </div>
       <StoryModal story={selectedStory} isOpen={isStoryModalOpen} onClose={() => setIsStoryModalOpen(false)} />
     </div>
+    </TooltipProvider>
   )
 }
 
