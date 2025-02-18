@@ -108,8 +108,8 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
                             variant="secondary"
                             size="icon"
                             className="bg-white/80 hover:bg-white text-gray-800"
-                            onClick={() => window.history.back()}
-                          >
+                            onClick={() => router.push(`/tomorrow`)}
+                            >
                             <ArrowLeft className="w-4 h-4" />
                           </Button>
                         </TooltipTrigger>
