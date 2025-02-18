@@ -13,13 +13,6 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String,String>> runtimeExceptionHandler(RuntimeException e) {
-        Map<String,String> errorResponse = new HashMap<>();
-        errorResponse.put("error","RuntimeException");
-        errorResponse.put("message", e.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<Map<String, String>> duplicateEmailException(Exception ex) {
@@ -44,5 +37,16 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
+
+
+    //가장 마지막에 처리
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String,String>> runtimeExceptionHandler(RuntimeException e) {
+        Map<String,String> errorResponse = new HashMap<>();
+        errorResponse.put("error","RuntimeException");
+        errorResponse.put("message", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 }
 
