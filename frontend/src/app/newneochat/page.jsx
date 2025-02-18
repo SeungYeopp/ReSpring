@@ -12,7 +12,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Video, Settings, ArrowLeft, Send } from "lucide-react"
+import { Video, Settings, ArrowLeft, Send, Users,MessageSquarePlus,  Eye, EyeOff } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 const SERVER_URL = "http://localhost:8080/chat";
 const USER_SESSION_URL = "http://localhost:8080/user/me";
@@ -376,9 +385,12 @@ const Chat1 = () => {
     setIsProducing(false);
   };
 
-  const updateMyRooms = (message) => {
-    setMyRooms(JSON.parse(message.body));
-  };
+ const updateMyRooms = (message) => {
+  const rooms = JSON.parse(message.body);
+  console.log("현재 방 목록:", rooms); // ✅ 여기 추가
+  setMyRooms(rooms);
+};
+
 
   const fetchMessagesAndConnect = async (roomId, roomName, openChat) => {
     // ✅ 기존 WebSocket 구독이 있으면 해제 (중복 구독 방지)
@@ -437,27 +449,47 @@ const Chat1 = () => {
     subscriptionRef.current = sub;
   };
 
-  const startPrivateChat = () => {
-    const selectedUserId = prompt("Enter User ID to start a private chat:");
-    if (!selectedUserId) return;
+  // const startPrivateChat = () => {
+  //   const selectedUserId = prompt("Enter User ID to start a private chat:");
+  //   if (!selectedUserId) return;
 
-    stompClient.send(
-      "/app/chat.private",
-      {},
-      JSON.stringify({
-        user1: currentUserId,
-        user2: selectedUserId,
-      })
-    );
+  //   stompClient.send(
+  //     "/app/chat.private",
+  //     {},
+  //     JSON.stringify({
+  //       user1: currentUserId,
+  //       user2: selectedUserId,
+  //     })
+  //   );
 
-    stompClient.subscribe(`/topic/newRoom/${currentUserId}`, (message) => {
-      const privateRoom = JSON.parse(message.body);
-      fetchMessagesAndConnect(privateRoom.roomId, privateRoom.name, false);
+  //   stompClient.subscribe(`/topic/newRoom/${currentUserId}`, (message) => {
+  //     const privateRoom = JSON.parse(message.body);
+  //     fetchMessagesAndConnect(privateRoom.roomId, privateRoom.name, false);
 
-      // ✅ 1:1 채팅 생성 후 즉시 내 방 목록 새로고침
-      stompClient.send("/app/chat/myRooms/" + currentUserId, {}, {});
-    });
-  };
+  //     // ✅ 1:1 채팅 생성 후 즉시 내 방 목록 새로고침
+  //     stompClient.send("/app/chat/myRooms/" + currentUserId, {}, {});
+  //   });
+  // };
+// 기존의 prompt 방식 대신 모달 입력값을 사용하도록 수정
+const startPrivateChat = (selectedUserId) => {
+  if (!selectedUserId) return;
+  
+  stompClient.send(
+    "/app/chat.private",
+    {},
+    JSON.stringify({
+      user1: currentUserId,
+      user2: selectedUserId,
+    })
+  );
+  
+  stompClient.subscribe(`/topic/newRoom/${currentUserId}`, (message) => {
+    const privateRoom = JSON.parse(message.body);
+    fetchMessagesAndConnect(privateRoom.roomId, privateRoom.name, false);
+    // 1:1 채팅 생성 후 즉시 내 방 목록 새로고침
+    stompClient.send("/app/chat/myRooms/" + currentUserId, {}, {});
+  });
+};
 
   const leaveRoom = () => {
     if (isOpenChat || !currentRoom) return;
@@ -666,6 +698,9 @@ const Chat1 = () => {
   const [letterSpacing, setLetterSpacing] = useState("normal")
   const [fontFamily, setFontFamily] = useState("sans")
   const [isVideoPopoverOpen, setIsVideoPopoverOpen] = useState(false)
+  const [showOpenChats, setShowOpenChats] = useState(true)
+  const [isNewChatOpen, setIsNewChatOpen] = useState(false)
+  const [newChatUserId, setNewChatUserId] = useState("")
 
   const messagesEndRef = useRef(null)
 
@@ -675,7 +710,15 @@ const Chat1 = () => {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages]) //Corrected dependency
+  }, [messages]) //Fixed: Removed messagesEndRef as a dependency
+
+  const handleStartPrivateChat = () => {
+    if (newChatUserId.trim()) {
+      startPrivateChat(newChatUserId)
+      setNewChatUserId("")
+      setIsNewChatOpen(false)
+    }
+  }
 
   const fontSizes = {
     small: "text-sm",
@@ -695,36 +738,78 @@ const Chat1 = () => {
     mono: "font-mono",
   }
 
+  const filteredRooms = showOpenChats ? myRooms : myRooms.filter((room) => !room.isOpenChat)
+
   const renderRoomList = () => (
     <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]}`}>
       <CardHeader>
-        <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}>Chat Rooms</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}>Chat Rooms</CardTitle>
+          <Button
+            onClick={() => setIsNewChatOpen(true)}
+            variant="outline"
+            size="sm"
+            className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+          >
+            New Chat
+          </Button>
+        </div>
+        <div className="flex items-center space-x-2 mt-2">
+          <Switch checked={showOpenChats} onCheckedChange={setShowOpenChats} id="open-chat-mode" />
+          <label htmlFor="open-chat-mode" className="text-sm font-medium">
+            {showOpenChats ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            {showOpenChats ? "오픈채팅 보기" : "오픈채팅 숨기기"}
+          </label>
+        </div>
       </CardHeader>
       <CardContent className="flex-1 p-0">
         <ScrollArea className="h-[calc(100vh-12rem)]">
           <div className="space-y-2 p-4">
-            {myRooms.map((room) => (
-              <Button
+            {filteredRooms.map((room) => (
+              <div
                 key={room.roomId}
-                variant={currentRoom?.roomId === room.roomId ? "secondary" : "ghost"}
-                className={`w-full justify-start ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+                className={`flex items-center space-x-4 p-3 rounded-lg cursor-pointer transition-colors
+                  ${currentRoom?.roomId === room.roomId ? "bg-secondary" : "hover:bg-secondary/50"}
+                  ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
                 onClick={() => {
                   handleRoomClick(room)
                   setActiveScreen("chat")
                 }}
               >
-                {room.name}
-              </Button>
+                <Avatar>
+                  <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`} />
+                  <AvatarFallback>{room.name[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{room.name}</p>
+                  {room.isOpenChat && (
+                    <div className="flex items-center text-xs text-gray-500">
+                      <Users className="w-3 h-3 mr-1" />
+                      <span>{room.userCount || 0}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </ScrollArea>
       </CardContent>
-      <div className="p-4 border-t">
-        <Button onClick={startPrivateChat} className={`w-full ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}>
-          Start Private Chat
-        </Button>
-      </div>
     </Card>
+  )
+
+  const renderEmptyChatScreen = () => (
+    <div className="flex flex-col items-center justify-center h-full">
+      <MessageSquarePlus className="h-12 w-12 text-gray-400 mb-4" />
+      <h3 className="text-lg font-medium text-gray-900 mb-2">시작하기</h3>
+      <p className="text-sm text-gray-500 mb-4">채팅방을 선택하거나 새로운 채팅을 시작하세요.</p>
+      <Button
+        onClick={() => setIsNewChatOpen(true)}
+        variant="outline"
+        className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+      >
+        New Chat
+      </Button>
+    </div>
   )
 
   const renderVideoPopover = () => (
@@ -771,7 +856,7 @@ const Chat1 = () => {
     <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]}`}>
       <CardHeader className="flex flex-row items-center justify-between py-2">
         <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="icon" onClick={() => setActiveScreen("rooms")}>
+          <Button variant="ghost" size="icon" onClick={() => setActiveScreen("rooms")} className="md:hidden">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <Avatar>
@@ -858,60 +943,85 @@ const Chat1 = () => {
           )}
         </div>
       </CardHeader>
-      <CardContent className="flex-1 p-0">
-        <ScrollArea className="h-[calc(100vh-12rem)]">
-          <div className="space-y-4 p-4">
-          {messages.map((msg, index) => (
-  <div 
-    key={index} 
-    className={`flex flex-col ${msg.sender === currentUserId ? "items-end" : "items-start"}`}
-  >
-    <span className="text-sm text-muted-foreground mb-1">
-      {msg.sender === currentUserId ? "Me" : userNickname}
-    </span>
-    <div
-      className={`max-w-[75%] px-4 py-2 rounded-lg
-      ${msg.sender === currentUserId ? "bg-primary text-primary-foreground" : "bg-muted"}
-      ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-    >
-      {msg.content}
-    </div>
-  </div>
-))}
+      {currentRoom ? (
+        <>
+          <CardContent className="flex-1 p-0">
+            <ScrollArea className="h-[calc(100vh-12rem)]">
+              <div className="space-y-4 p-4">
+                {messages.map((msg, index) => (
+                  <div key={index} className={`flex ${msg.sender === currentUserId ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className={`max-w-[75%] px-4 py-2 rounded-lg
+                    ${msg.sender === currentUserId ? "bg-primary text-primary-foreground" : "bg-muted"}
+                    ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+                    >
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div ref={messagesEndRef} />
+            </ScrollArea>
+          </CardContent>
+          <div className="p-4 border-t">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                sendMessage()
+              }}
+              className="flex items-center space-x-2"
+            >
+              <Input
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="메시지를 입력하세요..."
+                className={`flex-1 ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+              />
+              <Button type="submit" size="icon" disabled={!currentRoom || !isActive}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
           </div>
-          <div ref={messagesEndRef} />
-        </ScrollArea>
-      </CardContent>
-      <div className="p-4 border-t">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            sendMessage()
-          }}
-          className="flex items-center space-x-2"
-        >
-          <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="메시지를 입력하세요..."
-            className={`flex-1 ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-          />
-          <Button type="submit" size="icon" disabled={!currentRoom || !isActive}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
-      </div>
+        </>
+      ) : (
+        renderEmptyChatScreen()
+      )}
     </Card>
   )
 
   return (
     <div className="h-[calc(100vh-theme(spacing.16))] w-full">
-      <div className="h-full overflow-hidden">
-        {activeScreen === "rooms" && renderRoomList()}
-        {activeScreen === "chat" && renderChatScreen()}
+      <div className="h-full overflow-hidden md:grid md:grid-cols-[300px_1fr] md:gap-4">
+        <div className={`h-full ${activeScreen === "chat" ? "hidden md:block" : ""}`}>{renderRoomList()}</div>
+        <div className={`h-full ${activeScreen === "rooms" ? "hidden md:block" : ""}`}>{renderChatScreen()}</div>
         {isVideoPopoverOpen && renderVideoPopover()}
       </div>
+      <Dialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Start a New Chat</DialogTitle>
+            <DialogDescription>Enter the user ID of the person you want to chat with.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Input
+                id="userId"
+                placeholder="Enter user ID"
+                value={newChatUserId}
+                onChange={(e) => setNewChatUserId(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsNewChatOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleStartPrivateChat}>Start Chat</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
+
 export default Chat1;
