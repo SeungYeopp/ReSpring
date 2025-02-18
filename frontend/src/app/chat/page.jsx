@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/dialog"
 import { motion } from "framer-motion"
 
-
 const SERVER_URL = "http://localhost:8080/chat";
 const USER_SESSION_URL = "http://localhost:8080/user/me";
 const SOCKET_SERVER_URL = "http://localhost:4000"; // ✅ WebRTC 서버
@@ -41,7 +40,45 @@ const Chat1 = () => {
   const [isOpenChat, setIsOpenChat] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [roomName, setRoomName] = useState("");
+  const [isNewChatOpen, setIsNewChatOpen] = useState(false);
 
+
+  // 모달열리면 요청할 것
+  const [subscribedUsers, setSubscribedUsers] = useState([]);
+  const fetchSubscribedUsers = async () => {
+    try {
+      // 서버가 요구하는 엔드포인트로 변경
+      const response = await fetch(
+        "http://localhost:8080/subscriptions/me/users",
+        { credentials: "include" }
+      );
+  
+      if (!response.ok) throw new Error("구독한 사용자 목록 불러오기 실패!");
+  
+      const data = await response.json();
+      // createdAt 필드를 Date 객체로 변환하는 처리 추가
+      const formattedData = data.map((subscriber) => ({
+        ...subscriber,
+        createdAt: new Date(subscriber.createdAt),
+      }));
+      setSubscribedUsers(formattedData);
+    } catch (error) {
+      console.error("❌ 구독 사용자 가져오는 중 오류 발생:", error);
+    }
+  };
+  
+  
+  // 모달이 열릴 때 fetch 실행되게!
+  useEffect(() => {
+    if (isNewChatOpen) {
+      fetchSubscribedUsers();
+    }
+  }, [isNewChatOpen]);
+
+  // 추가: 모달 외에도 컴포넌트가 마운트될 때 구독자 목록을 미리 로드
+  useEffect(() => {
+    fetchSubscribedUsers();
+  }, []);
 
   /* ✅ WebRTC 상태 */
   const [socket, setSocket] = useState(null);
@@ -55,6 +92,16 @@ const Chat1 = () => {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const [isStreaming, setIsStreaming] = useState(false);
+// 모달 관련 상태 추가
+const [searchQuery, setSearchQuery] = useState("");
+// 검색어에 따라 필터링된 사용자 목록 생성
+const filteredUsers = subscribedUsers.filter((user) => {
+  const query = searchQuery.toLowerCase();
+  return (
+    user.userNickname.toLowerCase().includes(query) ||
+    user.email.toLowerCase().includes(query)
+  );
+});
 
   /* ✅ 로그인 사용자 정보 */
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -395,6 +442,23 @@ const Chat1 = () => {
 };
 
 
+const getProfileImageForRoom = (room) => {
+  // 오픈채팅인 경우 Dicebear 이미지를 그대로 사용
+  if (room.isOpenChat) {
+    return `https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`;
+  }
+  
+  // 1:1 채팅인 경우, 상대방의 이름 추출 (ex: "Private Chat: A & B"에서 내 이름이 userNickname일 때 상대방 이름)
+  const otherName = extractOtherUserName(room.name, userNickname);
+  // 구독한 사용자 목록에서 일치하는 사용자 찾기
+  const foundUser = subscribedUsers.find(
+    (user) => user.userNickname === otherName
+  );
+  // 찾으면 프로필 이미지 URL 반환, 없으면 기본 Dicebear 이미지 반환
+  return foundUser?.profileImage || `https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`;
+};
+
+
   const fetchMessagesAndConnect = async (roomId, roomName, openChat) => {
     // ✅ 기존 WebSocket 구독이 있으면 해제 (중복 구독 방지)
     if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
@@ -703,7 +767,6 @@ const startPrivateChat = (selectedUserId) => {
    const [fontFamily, setFontFamily] = useState("binggraetaom");
    const [isVideoPopoverOpen, setIsVideoPopoverOpen] = useState(false);
    const [showOpenChats, setShowOpenChats] = useState(true);
-   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
    const [newChatUserId, setNewChatUserId] = useState("");
  
    // 글꼴 매핑을 Tailwind 설정의 fontFamily 키와 클래스 이름으로 변경합니다.
@@ -774,7 +837,7 @@ const startPrivateChat = (selectedUserId) => {
            <div className="flex items-center gap-2">
              <Sprout className="text-[#96b23c] w-5 h-5" />
              <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
-               Chat Rooms
+              채팅방 목록
              </CardTitle>
            </div>
            <Button
@@ -783,7 +846,7 @@ const startPrivateChat = (selectedUserId) => {
              size="sm"
              className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4] transition-all duration-300 hover:scale-105`}
            >
-             New Chat
+             새 채팅
            </Button>
          </div>
          <div className="flex items-center space-x-2 mt-2">
@@ -816,8 +879,8 @@ const startPrivateChat = (selectedUserId) => {
                  }}
                >
                  <Avatar className="border-2 border-white shadow-sm">
-                   <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`} />
-                   <AvatarFallback>{room.name[0]}</AvatarFallback>
+                 <AvatarImage src={getProfileImageForRoom(room)} />
+                 <AvatarFallback>{room.name[0]}</AvatarFallback>
                  </Avatar>
                  <div className="flex-1 min-w-0">
                    <p
@@ -862,7 +925,7 @@ const startPrivateChat = (selectedUserId) => {
            variant="outline"
            className="px-6 py-2 text-sm rounded-full border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4] transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg font-semibold"
          >
-           New Chat
+           새 채팅
          </Button>
        </motion.div>
      </div>
@@ -913,174 +976,182 @@ const startPrivateChat = (selectedUserId) => {
    );
  
    const renderChatScreen = () => (
-     <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]} border-none pb-10 mb-5 bg-white/50 backdrop-blur-sm shadow-lg`}>
-       <CardHeader className="flex flex-row items-center justify-between py-2 border-b border-gray-100">
-         <div className="flex items-center space-x-3">
-           <Button
-             variant="ghost"
-             size="icon"
-             onClick={() => setActiveScreen("rooms")}
-             className="md:hidden hover:bg-[#e6f3d4] text-[#96b23c]"
-           >
-             <ArrowLeft className="h-4 w-4" />
-           </Button>
-           <Avatar className="border-2 border-white shadow-sm">
-             <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${currentRoom?.name}`} />
-             <AvatarFallback>{currentRoom?.name?.[0]}</AvatarFallback>
-           </Avatar>
-           <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
-             {currentRoom
-               ? currentRoom.isOpenChat
-                 ? currentRoom.name
-                 : extractOtherUserName(currentRoom.name, userNickname)
-               : "Select a room"}
-           </CardTitle>
-         </div>
-         <div className="flex items-center space-x-2">
-           {currentRoom && !isOpenChat && (
-             <Button
-               variant="ghost"
-               size="icon"
-               onClick={() => setIsVideoPopoverOpen(true)}
-               className={`hover:bg-[#e6f3d4] ${isStreaming ? "text-red-500" : "text-[#96b23c]"}`}
-             >
-               <Video className="h-4 w-4" />
-             </Button>
-           )}
-           {!isOpenChat && currentRoom && isActive && (
-             <Popover open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-               <PopoverTrigger asChild>
-                 <Button variant="ghost" size="icon" className="hover:bg-[#e6f3d4] text-[#96b23c]">
-                   <Settings className="h-4 w-4" />
-                 </Button>
-               </PopoverTrigger>
-               <PopoverContent className="w-56 border-none bg-white/95 backdrop-blur-sm shadow-lg">
-                 <div className="space-y-2">
-                   <p className="text-sm font-medium text-gray-900">글씨체</p>
-                   <Select value={fontFamily} onValueChange={setFontFamily}>
-                     <SelectTrigger className="border-[#96b23c] text-gray-700">
-                       <SelectValue />
-                     </SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="godob">고도 B</SelectItem>
-                       <SelectItem value="godom">고도 M</SelectItem>
-                       <SelectItem value="godomaum">고도 마음체</SelectItem>
-                       <SelectItem value="nunugothic">누누 기본 고딕체</SelectItem>
-                       <SelectItem value="samlipbasic">삼립호빵 베이직</SelectItem>
-                       <SelectItem value="samlipoutline">삼립호빵 아웃라인</SelectItem>
-                       <SelectItem value="ongle">온글잎 박다현체</SelectItem>
-                       <SelectItem value="binggraetaom">빙그레 타옴</SelectItem>
-                       <SelectItem value="binggraetaombold">빙그레 타옴 볼드</SelectItem>
-                       <SelectItem value="mapobackpacking">마포 백패킹</SelectItem>
-                       <SelectItem value="goodneighborsbold">굿네이버스 좋은이웃체 (볼드)</SelectItem>
-                       <SelectItem value="goodneighborsregular">굿네이버스 좋은이웃체 (레귤러)</SelectItem>
-                       <SelectItem value="laundrygothicbold">런드리고딕 볼드</SelectItem>
-                       <SelectItem value="laundrygothicregular">런드리고딕 레귤러</SelectItem>
-                       <SelectItem value="handon300">한돈 삼겹살체 (300g)</SelectItem>
-                       <SelectItem value="handon600">한돈 삼겹살체 (600g)</SelectItem>
-                     </SelectContent>
-                   </Select>
-                   <div className="space-y-1">
-                     <p className="text-sm font-medium text-gray-900">글자 크기</p>
-                     <Select value={fontSize} onValueChange={setFontSize}>
-                       <SelectTrigger className="border-[#96b23c] text-gray-700">
-                         <SelectValue />
-                       </SelectTrigger>
-                       <SelectContent>
-                         <SelectItem value="small">작게</SelectItem>
-                         <SelectItem value="medium">보통</SelectItem>
-                         <SelectItem value="large">크게</SelectItem>
-                       </SelectContent>
-                     </Select>
-                   </div>
-                   <div className="space-y-1">
-                     <p className="text-sm font-medium text-gray-900">자간</p>
-                     <Select value={letterSpacing} onValueChange={setLetterSpacing}>
-                       <SelectTrigger className="border-[#96b23c] text-gray-700">
-                         <SelectValue />
-                       </SelectTrigger>
-                       <SelectContent>
-                         <SelectItem value="tight">좁게</SelectItem>
-                         <SelectItem value="normal">보통</SelectItem>
-                         <SelectItem value="wide">넓게</SelectItem>
-                       </SelectContent>
-                     </Select>
-                   </div>
-                   <div className="space-y-1">
-                     <Button
-                       variant="ghost"
-                       className="w-full justify-start bg-red-600 hover:bg-[#ff4141] text-white"
-                       onClick={() => {
-                         leaveRoom();
-                         setActiveScreen("rooms");
-                         setIsSettingsOpen(false);
-                       }}
-                     >
-                       채팅 나가기
-                     </Button>
-                   </div>
-                 </div>
-               </PopoverContent>
-             </Popover>
-           )}
-         </div>
-       </CardHeader>
-       {currentRoom ? (
-         <>
-           <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
-             <ScrollArea className="flex-1">
-               <div className="flex flex-col space-y-4 p-4">
-                 {messages.map((msg, index) => (
-                   <motion.div
-                     initial={{ opacity: 0, y: 20 }}
-                     animate={{ opacity: 1, y: 0 }}
-                     key={index}
-                     className={`flex ${msg.sender === currentUserId ? "justify-end" : "justify-start"}`}
-                   >
-                     <div
-                       className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm
-                         ${msg.sender === currentUserId ? "bg-[#96b23c] text-white" : "bg-white text-gray-900"}
-                         ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-                     >
-                       {msg.content}
-                     </div>
-                   </motion.div>
-                 ))}
-                 <div ref={messagesEndRef} />
-               </div>
-             </ScrollArea>
-           </CardContent>
-           <div className="p-4 pb-0 border-t border-gray-100 mt-auto">
-             <form
-               onSubmit={(e) => {
-                 e.preventDefault();
-                 sendMessage();
-               }}
-               className="flex items-center space-x-2"
-             >
-               <Input
-                 value={message}
-                 onChange={(e) => setMessage(e.target.value)}
-                 placeholder="메시지를 입력하세요..."
-                 className={`flex-1 border-[#96b23c] focus-visible:ring-[#96b23c] ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-               />
-               <Button
-                 type="submit"
-                 size="icon"
-                 disabled={!currentRoom || !isActive}
-                 className="bg-[#96b23c] hover:bg-[#7a9431] text-white transition-all duration-300 hover:scale-105"
-               >
-                 <Send className="h-4 w-4" />
-               </Button>
-             </form>
-           </div>
-         </>
-       ) : (
-         renderEmptyChatScreen()
-       )}
-     </Card>
-   );
- 
+    <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]} border-none pb-10 mb-5 bg-white/50 backdrop-blur-sm shadow-lg`}>
+      <CardHeader className="flex flex-row items-center justify-between py-2 border-b border-gray-100">
+      <div className="flex items-center space-x-3">
+  <Button
+    variant="ghost"
+    size="icon"
+    onClick={() => setActiveScreen("rooms")}
+    className="md:hidden hover:bg-[#e6f3d4] text-[#96b23c]"
+  >
+    <ArrowLeft className="h-4 w-4" />
+  </Button>
+  {/* currentRoom이 존재할 때만 Avatar 렌더링 */}
+  {currentRoom && (
+    <Avatar className="border-2 border-white shadow-sm">
+      <AvatarImage src={getProfileImageForRoom(currentRoom)} />
+      <AvatarFallback>
+        {currentRoom.isOpenChat
+          ? currentRoom.name?.[0]
+          : (extractOtherUserName(currentRoom.name, userNickname)?.charAt(0) || "U")}
+      </AvatarFallback>
+    </Avatar>
+  )}
+  <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
+    {currentRoom
+      ? currentRoom.isOpenChat
+        ? currentRoom.name
+        : extractOtherUserName(currentRoom.name, userNickname)
+      : ""}
+  </CardTitle>
+</div>
+
+        <div className="flex items-center space-x-2">
+          {currentRoom && !isOpenChat && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsVideoPopoverOpen(true)}
+              className={`hover:bg-[#e6f3d4] ${isStreaming ? "text-red-500" : "text-[#96b23c]"}`}
+            >
+              <Video className="h-4 w-4" />
+            </Button>
+          )}
+          {!isOpenChat && currentRoom && isActive && (
+            <Popover open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="hover:bg-[#e6f3d4] text-[#96b23c]">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 border-none bg-white/95 backdrop-blur-sm shadow-lg">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-900">글씨체</p>
+                  <Select value={fontFamily} onValueChange={setFontFamily}>
+                    <SelectTrigger className="border-[#96b23c] text-gray-700">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="godob">고도 B</SelectItem>
+                      <SelectItem value="godom">고도 M</SelectItem>
+                      <SelectItem value="godomaum">고도 마음체</SelectItem>
+                      <SelectItem value="nunugothic">누누 기본 고딕체</SelectItem>
+                      <SelectItem value="samlipbasic">삼립호빵 베이직</SelectItem>
+                      <SelectItem value="samlipoutline">삼립호빵 아웃라인</SelectItem>
+                      <SelectItem value="ongle">온글잎 박다현체</SelectItem>
+                      <SelectItem value="binggraetaom">빙그레 타옴</SelectItem>
+                      <SelectItem value="binggraetaombold">빙그레 타옴 볼드</SelectItem>
+                      <SelectItem value="mapobackpacking">마포 백패킹</SelectItem>
+                      <SelectItem value="goodneighborsbold">굿네이버스 좋은이웃체 (볼드)</SelectItem>
+                      <SelectItem value="goodneighborsregular">굿네이버스 좋은이웃체 (레귤러)</SelectItem>
+                      <SelectItem value="laundrygothicbold">런드리고딕 볼드</SelectItem>
+                      <SelectItem value="laundrygothicregular">런드리고딕 레귤러</SelectItem>
+                      <SelectItem value="handon300">한돈 삼겹살체 (300g)</SelectItem>
+                      <SelectItem value="handon600">한돈 삼겹살체 (600g)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-gray-900">글자 크기</p>
+                    <Select value={fontSize} onValueChange={setFontSize}>
+                      <SelectTrigger className="border-[#96b23c] text-gray-700">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="small">작게</SelectItem>
+                        <SelectItem value="medium">보통</SelectItem>
+                        <SelectItem value="large">크게</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-gray-900">자간</p>
+                    <Select value={letterSpacing} onValueChange={setLetterSpacing}>
+                      <SelectTrigger className="border-[#96b23c] text-gray-700">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tight">좁게</SelectItem>
+                        <SelectItem value="normal">보통</SelectItem>
+                        <SelectItem value="wide">넓게</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start bg-red-600 hover:bg-[#ff4141] text-white"
+                      onClick={() => {
+                        leaveRoom();
+                        setActiveScreen("rooms");
+                        setIsSettingsOpen(false);
+                      }}
+                    >
+                      채팅 나가기
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
+      </CardHeader>
+      {currentRoom ? (
+        <>
+          <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
+            <ScrollArea className="flex-1">
+              <div className="flex flex-col space-y-4 p-4">
+                {messages.map((msg, index) => (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    key={index}
+                    className={`flex ${msg.sender === currentUserId ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm
+                        ${msg.sender === currentUserId ? "bg-[#96b23c] text-white" : "bg-white text-gray-900"}
+                        ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+                    >
+                      {msg.content}
+                    </div>
+                  </motion.div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+          </CardContent>
+          <div className="p-4 pb-0 border-t border-gray-100 mt-auto">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                sendMessage();
+              }}
+              className="flex items-center space-x-2"
+            >
+              <Input
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="메시지를 입력하세요..."
+                className={`flex-1 border-[#96b23c] focus-visible:ring-[#96b23c] ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
+              />
+              <Button
+                type="submit"
+                size="icon"
+                disabled={!currentRoom || !isActive}
+                className="bg-[#96b23c] hover:bg-[#7a9431] text-white transition-all duration-300 hover:scale-105"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+          </div>
+        </>
+      ) : (
+        renderEmptyChatScreen()
+      )}
+    </Card>
+  );
+  
    return (
      <div className="h-screen w-full bg-gradient-to-b from-[#e6f3d4] to-[#fce8e8] overflow-hidden">
        <div className="h-full overflow-hidden md:grid md:grid-cols-[300px_1fr] md:gap-4 p-4 pb-0">
@@ -1089,38 +1160,64 @@ const startPrivateChat = (selectedUserId) => {
          {isVideoPopoverOpen && renderVideoPopover()}
        </div>
        <Dialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen}>
-         <DialogContent className="bg-white/95 backdrop-blur-sm border-none shadow-lg">
-           <DialogHeader>
-             <DialogTitle className="text-gray-900">새 채팅 시작하기</DialogTitle>
-             <DialogDescription className="text-gray-700">
-               이야기를 나누고 싶은 상대방의 User ID를 입력하세요.
-             </DialogDescription>
-           </DialogHeader>
-           <div className="grid gap-4 py-4">
-             <div className="grid gap-2">
-               <Input
-                 id="userId"
-                 placeholder="Enter user ID"
-                 value={newChatUserId}
-                 onChange={(e) => setNewChatUserId(e.target.value)}
-                 className="border-[#96b23c] focus-visible:ring-[#96b23c]"
-               />
-             </div>
-           </div>
-           <DialogFooter>
-             <Button
-               variant="outline"
-               onClick={() => setIsNewChatOpen(false)}
-               className="border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4]"
-             >
-               Cancel
-             </Button>
-             <Button onClick={handleStartPrivateChat} className="bg-[#96b23c] hover:bg-[#7a9431] text-white">
-               Start Chat
-             </Button>
-           </DialogFooter>
-         </DialogContent>
-       </Dialog>
+       <DialogContent className="bg-white/95 backdrop-blur-sm border-none shadow-lg">
+  <DialogHeader>
+    <DialogTitle className="text-gray-900">새 채팅 시작하기</DialogTitle>
+    <DialogDescription className="text-gray-700">
+      이야기를 나누고 싶은 사람을 선택하세요.
+    </DialogDescription>
+  </DialogHeader>
+
+  {/* 검색 입력 필드 추가 */}
+  <div className="px-4 pb-2">
+    <Input
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      placeholder="닉네임 또는 이메일 검색..."
+      className="border-[#96b23c] focus-visible:ring-[#96b23c]"
+    />
+  </div>
+
+  {/* ✅ 구독한 사용자 목록 표시 */}
+  <div className="grid gap-4 py-4 max-h-60 overflow-y-auto">
+    {filteredUsers.length > 0 ? (
+      filteredUsers.map((user) => (
+        <div
+          key={user.id}
+          onClick={() => {
+            startPrivateChat(user.id);
+            setIsNewChatOpen(false); // 선택 후 모달 닫기
+          }}
+          className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-[#e6f3d4] transition"
+        >
+          <Avatar className="w-10 h-10">
+            <AvatarImage src={user.profileImage} />
+            <AvatarFallback>{user.userNickname ? user.userNickname[0] : "U"}</AvatarFallback>
+          </Avatar>
+          <div className="ml-3">
+            <p className="text-sm font-medium">{user.userNickname}</p>
+            <p className="text-xs text-gray-500">{user.email}</p>
+          </div>
+        </div>
+      ))
+    ) : (
+      <p className="text-gray-500 text-sm">검색 결과가 없습니다.</p>
+    )}
+  </div>
+
+  <DialogFooter>
+    <Button
+      variant="outline"
+      onClick={() => setIsNewChatOpen(false)}
+      className="border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4]"
+    >
+      닫기
+    </Button>
+  </DialogFooter>
+</DialogContent>
+
+</Dialog>
+
      </div>
    );
  };
