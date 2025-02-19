@@ -670,9 +670,46 @@ const Chat1 = () => {
   //   });
   // };
   // 기존의 prompt 방식 대신 모달 입력값을 사용하도록 수정
-  const startPrivateChat = (selectedUserId) => {
-    if (!selectedUserId) return;
+  
+  
+  
+  
+  // 2월 19일 8시 기준 잘되는 코드드
+  // const startPrivateChat = (selectedUserId) => {
+  //   if (!selectedUserId) return;
 
+  //   stompClient.send(
+  //     "/app/chat.private",
+  //     {},
+  //     JSON.stringify({
+  //       user1: currentUserId,
+  //       user2: selectedUserId,
+  //     })
+  //   );
+
+  //   stompClient.subscribe(`/topic/newRoom/${currentUserId}`, (message) => {
+  //     const privateRoom = JSON.parse(message.body);
+  //     fetchMessagesAndConnect(privateRoom.roomId, privateRoom.name, false);
+  //     // 1:1 채팅 생성 후 즉시 내 방 목록 새로고침
+  //     stompClient.send("/app/chat/myRooms/" + currentUserId, {}, {});
+  //   });
+  // };
+
+// 채팅 시작 함수 (수정 후)
+// 로그인 정보(currentUserId)와 STOMP 연결 여부 모두 체크하도록 수정
+const startPrivateChat = (selectedUserId) => {
+  if (!selectedUserId) return;
+
+  // 로그인 사용자 ID가 아직 준비되지 않은 경우 재시도
+  if (!currentUserId) {
+    console.warn("로그인 사용자 정보가 아직 준비되지 않았습니다. 500ms 후 재시도합니다.");
+    setTimeout(() => startPrivateChat(selectedUserId), 500);
+    return;
+  }
+
+  // STOMP 연결이 완료되었는지 확인
+  if (stompClient && stompClient.connected) {
+    // 채팅 시작 메시지 전송
     stompClient.send(
       "/app/chat.private",
       {},
@@ -682,13 +719,35 @@ const Chat1 = () => {
       })
     );
 
+    // 새로운 채팅방 생성 후 구독 처리
     stompClient.subscribe(`/topic/newRoom/${currentUserId}`, (message) => {
       const privateRoom = JSON.parse(message.body);
       fetchMessagesAndConnect(privateRoom.roomId, privateRoom.name, false);
-      // 1:1 채팅 생성 후 즉시 내 방 목록 새로고침
+      // 채팅방 생성 후 방 목록 새로고침
       stompClient.send("/app/chat/myRooms/" + currentUserId, {}, {});
     });
-  };
+  } else {
+    // STOMP 연결이 아직 완료되지 않았을 경우 재시도
+    console.warn("STOMP 연결이 아직 완료되지 않았습니다. 500ms 후 재시도합니다.");
+    setTimeout(() => startPrivateChat(selectedUserId), 500);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const leaveRoom = () => {
     if (isOpenChat || !currentRoom) return;
