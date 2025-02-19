@@ -2,30 +2,22 @@ package org.ssafy.respring.domain.tag.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
-import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.ssafy.respring.domain.book.vo.Book;
-import org.ssafy.respring.domain.book.vo.QBook;
-//import org.ssafy.respring.domain.book.vo.QBookTag;
-import org.ssafy.respring.domain.book.vo.QBookLikes;
+import org.springframework.stereotype.Repository;
 import org.ssafy.respring.domain.challenge.vo.Challenge;
 import org.ssafy.respring.domain.challenge.vo.QChallenge;
 import org.ssafy.respring.domain.challenge.vo.QChallengeLikes;
-import org.ssafy.respring.domain.tag.vo.QChallengeTag;
-//import org.ssafy.respring.domain.user.vo.QUserChallenge;
-//import org.ssafy.respring.domain.user.vo.QBookLikes;
-import org.springframework.stereotype.Repository;
 import org.ssafy.respring.domain.challenge.vo.QUserChallenge;
+import org.ssafy.respring.domain.tag.vo.QChallengeTag;
 import org.ssafy.respring.domain.tag.vo.QTag;
 import org.ssafy.respring.domain.tag.vo.Tag;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository

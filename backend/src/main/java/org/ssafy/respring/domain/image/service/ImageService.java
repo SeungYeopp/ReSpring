@@ -1,13 +1,11 @@
 package org.ssafy.respring.domain.image.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.image.ImageResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.Exception.ImageSizeUploadException;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.repository.ImageRepository;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.image.vo.ImageType;

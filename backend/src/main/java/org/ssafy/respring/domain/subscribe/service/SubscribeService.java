@@ -11,6 +11,7 @@ import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.notification.service.NotificationService;
+import org.ssafy.respring.domain.notification.vo.NotificationType;
 import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.post.repository.PostRepository;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedBookResponseDto;
@@ -21,7 +22,6 @@ import org.ssafy.respring.domain.subscribe.repository.SubscribeRepository;
 import org.ssafy.respring.domain.subscribe.vo.Subscribe;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
-import org.ssafy.respring.domain.notification.vo.NotificationType;
 
 import java.util.List;
 import java.util.UUID;

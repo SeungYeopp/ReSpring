@@ -1,11 +1,8 @@
 package org.ssafy.respring.domain.notification.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.ssafy.respring.domain.notification.dto.NotificationDto;
 import org.ssafy.respring.domain.notification.dto.NotificationSubscriptionDto;
 import org.ssafy.respring.domain.notification.repository.NotificationRepository;

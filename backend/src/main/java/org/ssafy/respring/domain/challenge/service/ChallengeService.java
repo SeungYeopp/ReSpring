@@ -1,8 +1,8 @@
 package org.ssafy.respring.domain.challenge.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,15 +21,14 @@ import org.ssafy.respring.domain.chat.service.ChatService;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
 import org.ssafy.respring.domain.chat.vo.ChatRoomUser;
 import org.ssafy.respring.domain.image.service.ImageService;
-
-import org.ssafy.respring.domain.tag.repository.ChallengeTagRepository;
-import org.ssafy.respring.domain.tag.repository.TagRepository;
-import org.ssafy.respring.domain.tag.vo.ChallengeTag;
-import org.ssafy.respring.domain.tag.vo.Tag;
 import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.notification.service.NotificationService;
 import org.ssafy.respring.domain.notification.vo.NotificationType;
 import org.ssafy.respring.domain.notification.vo.TargetType;
+import org.ssafy.respring.domain.tag.repository.ChallengeTagRepository;
+import org.ssafy.respring.domain.tag.repository.TagRepository;
+import org.ssafy.respring.domain.tag.vo.ChallengeTag;
+import org.ssafy.respring.domain.tag.vo.Tag;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 

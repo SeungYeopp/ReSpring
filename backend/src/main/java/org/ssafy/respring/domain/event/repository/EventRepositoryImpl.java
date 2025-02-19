@@ -2,7 +2,6 @@ package org.ssafy.respring.domain.event.repository;
 
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.ssafy.respring.domain.event.vo.Event;

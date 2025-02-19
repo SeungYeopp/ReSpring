@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "event")

@@ -1,7 +1,7 @@
 package org.ssafy.respring.domain.tag.repository;
 
-import org.ssafy.respring.domain.tag.vo.ChallengeTag;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.ssafy.respring.domain.tag.vo.ChallengeTag;
 
 import java.util.List;
 

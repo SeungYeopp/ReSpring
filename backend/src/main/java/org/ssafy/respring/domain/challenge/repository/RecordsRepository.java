@@ -4,9 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
+import org.ssafy.respring.domain.challenge.vo.Challenge;
 import org.ssafy.respring.domain.challenge.vo.Records;
 import org.ssafy.respring.domain.user.vo.User;
-import org.ssafy.respring.domain.challenge.vo.Challenge;
 
 import java.time.LocalDate;
 import java.util.List;

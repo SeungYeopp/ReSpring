@@ -1,7 +1,7 @@
 package org.ssafy.respring.domain.book.repository.info;
 
-import org.ssafy.respring.domain.book.vo.BookViews;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.ssafy.respring.domain.book.vo.BookViews;
 
 import java.util.UUID;
 

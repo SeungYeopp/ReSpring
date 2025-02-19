@@ -1,23 +1,17 @@
 package org.ssafy.respring.domain.challenge.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.ssafy.respring.domain.challenge.repository.RecordsRepository;
 import org.ssafy.respring.domain.challenge.repository.ChallengeRepository;
-import org.ssafy.respring.domain.challenge.vo.Records;
+import org.ssafy.respring.domain.challenge.repository.RecordsRepository;
 import org.ssafy.respring.domain.challenge.vo.Challenge;
+import org.ssafy.respring.domain.challenge.vo.Records;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.LinkedHashMap;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor

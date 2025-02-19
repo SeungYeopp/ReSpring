@@ -1,22 +1,21 @@
 package org.ssafy.respring.domain.tag.service;
 
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.ssafy.respring.domain.challenge.dto.response.ChallengeListResponseDto;
-import org.ssafy.respring.domain.challenge.service.ChallengeService;
-import org.ssafy.respring.domain.image.service.ImageService;
-import org.ssafy.respring.domain.image.vo.ImageType;
-import org.ssafy.respring.domain.challenge.vo.Challenge;
-import org.ssafy.respring.domain.tag.repository.ChallengeTagRepository;
-import org.ssafy.respring.domain.tag.repository.TagRepository;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+import org.ssafy.respring.domain.challenge.dto.response.ChallengeListResponseDto;
+import org.ssafy.respring.domain.challenge.service.ChallengeService;
+import org.ssafy.respring.domain.challenge.vo.Challenge;
+import org.ssafy.respring.domain.image.service.ImageService;
+import org.ssafy.respring.domain.image.vo.ImageType;
+import org.ssafy.respring.domain.tag.repository.ChallengeTagRepository;
+import org.ssafy.respring.domain.tag.repository.TagRepository;
 import org.ssafy.respring.domain.tag.vo.ChallengeTag;
 import org.ssafy.respring.domain.tag.vo.Tag;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

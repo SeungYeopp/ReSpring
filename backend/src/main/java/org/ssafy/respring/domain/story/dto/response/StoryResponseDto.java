@@ -2,7 +2,6 @@ package org.ssafy.respring.domain.story.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 
 import java.time.LocalDateTime;
 import java.util.List;

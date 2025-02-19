@@ -4,7 +4,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.ssafy.respring.domain.comment.vo.Comment;
 import org.ssafy.respring.domain.comment.vo.QComment;
-import org.ssafy.respring.domain.post.vo.QPost;
 
 import java.util.List;
 

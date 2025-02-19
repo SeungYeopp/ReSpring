@@ -1,13 +1,11 @@
 package org.ssafy.respring.domain.post.repository;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 import org.ssafy.respring.domain.comment.vo.QComment;
-import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
 import org.ssafy.respring.domain.post.vo.Category;
 import org.ssafy.respring.domain.post.vo.Post;
 import org.ssafy.respring.domain.post.vo.QPost;

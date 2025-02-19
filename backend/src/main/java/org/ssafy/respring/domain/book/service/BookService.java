@@ -4,46 +4,31 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.springframework.context.annotation.Lazy;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.book.dto.request.BookRequestDto;
 import org.ssafy.respring.domain.book.dto.request.BookUpdateRequestDto;
 import org.ssafy.respring.domain.book.dto.response.BookAutocompleteResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookDetailResponseDto;
 import org.ssafy.respring.domain.book.dto.response.BookResponseDto;
-import org.ssafy.respring.domain.book.repository.info.BookLikesRepository;
 import org.ssafy.respring.domain.book.repository.BookRepository;
-import org.ssafy.respring.domain.book.repository.info.BookViewsRepository;
-
 import org.ssafy.respring.domain.book.repository.MongoBookContentRepository;
+import org.ssafy.respring.domain.book.repository.info.BookLikesRepository;
+import org.ssafy.respring.domain.book.repository.info.BookViewsRepository;
 import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.book.vo.BookContent;
 import org.ssafy.respring.domain.book.vo.BookLikes;
 import org.ssafy.respring.domain.book.vo.BookViews;
 import org.ssafy.respring.domain.comment.dto.response.CommentDto;
-import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.comment.repository.CommentLikesRepository;
 import org.ssafy.respring.domain.comment.service.CommentService;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
-import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.notification.service.NotificationService;
 import org.ssafy.respring.domain.notification.vo.NotificationType;
@@ -53,7 +38,10 @@ import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.service.UserService;
 import org.ssafy.respring.domain.user.vo.User;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service

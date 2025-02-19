@@ -1,7 +1,7 @@
 package org.ssafy.respring.domain.notification.dto;
 
-import lombok.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.ssafy.respring.domain.notification.vo.Notification;

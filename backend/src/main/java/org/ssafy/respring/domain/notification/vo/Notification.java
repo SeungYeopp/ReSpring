@@ -2,10 +2,9 @@ package org.ssafy.respring.domain.notification.vo;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.ssafy.respring.domain.notification.vo.NotificationType;
 import org.ssafy.respring.domain.user.vo.User;
+
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Getter

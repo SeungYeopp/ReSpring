@@ -1,7 +1,7 @@
 package org.ssafy.respring.domain.book.repository;
 
-import org.ssafy.respring.domain.book.vo.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.util.List;

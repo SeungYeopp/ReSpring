@@ -3,8 +3,6 @@ package org.ssafy.respring.domain.chat.dto.response;
 import lombok.*;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
 
-import java.util.UUID;
-
 @Getter
 @Setter
 @NoArgsConstructor

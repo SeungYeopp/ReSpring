@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.event.repository.EventRepository;
 import org.ssafy.respring.domain.event.vo.Event;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.story.dto.request.StoryRequestDto;

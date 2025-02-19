@@ -5,10 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.comment.dto.response.CommentDto;
-import org.ssafy.respring.domain.image.vo.ImageType;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Data
 @Builder

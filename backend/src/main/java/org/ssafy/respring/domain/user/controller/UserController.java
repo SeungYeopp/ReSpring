@@ -2,8 +2,6 @@ package org.ssafy.respring.domain.user.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.mail.AuthenticationFailedException;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,14 +10,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.image.service.ImageService;
-import org.ssafy.respring.domain.user.dto.request.LoginRequestDto;
 import org.ssafy.respring.domain.user.dto.request.SignUpRequestDto;
 import org.ssafy.respring.domain.user.dto.response.LoginResponseDto;
 import org.ssafy.respring.domain.user.service.AuthService;
 import org.ssafy.respring.domain.user.service.UserService;
 import org.ssafy.respring.domain.user.vo.User;
 
-import java.util.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/user")
