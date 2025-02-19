@@ -30,10 +30,12 @@ export const fetchChallenges = async (sort: SortOption = "LATEST"): Promise<Chal
 
 /**
  * 변환 함수: 서버의 'liked' 필드를 클라이언트의 'isLike'로 매핑
+ * 변환 함수: 서버의 'participating' 필드를 클라이언트의 'isParticipating'로 매핑
  */
 const transformChallengeDetail = (data: any): ChallengeDetail => ({
   ...data,
   isLike: data.liked,
+  isParticipating: data.participating,
 });
 
 /**
