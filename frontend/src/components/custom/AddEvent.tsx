@@ -42,7 +42,7 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
       setIsModalOpen(false);
       onEventAdded();
 
-      setSuccessMessage("🎉 소중한 기억이 남겨졌습니다!");
+      setSuccessMessage("✅ 🎉 소중한 기억이 남겨졌습니다!");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
