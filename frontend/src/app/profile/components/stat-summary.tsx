@@ -85,7 +85,7 @@ const StatSummary: React.FC<{ userNickname: string; challengeCount: number }> = 
             "나의 서재",
             bookCount !== null ? bookCount : "...",
             BookOpen,
-            `/yesterday/booklist/${userId}`
+            `/profile/booklist/${userId}`
           )}
         </motion.div>
         

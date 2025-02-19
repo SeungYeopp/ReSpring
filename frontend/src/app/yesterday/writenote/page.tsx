@@ -92,7 +92,7 @@ export default function WriteStoryPage() {
       if (storyId) {
         await updateStory(storyId, title, content, eventId!, deleteImageIds, images);
         if (source === "booklist") {
-          router.push(`/yesterday/booklist/${userNickname}?tab=stories`);
+          router.push(`/profile/booklist/${userNickname}?tab=stories`);
         } else {
           router.push("/yesterday/create-book");
         }
@@ -114,11 +114,14 @@ export default function WriteStoryPage() {
   const handleBack = () => {
     if (stage === "editor") {
       if (source === "booklist") {
-        router.push(`/yesterday/booklist/${userNickname}?tab=stories`);
+        router.push(`/profile/booklist/${userNickname}?tab=stories`);
       } else {
         setStage("select");
       }
     } else {
+      if (source === "booklist2") {
+        router.push(`/profile/booklist/${userNickname}?tab=stories`);
+      }
       router.back();
     }
   };
