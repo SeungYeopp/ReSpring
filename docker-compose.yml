@@ -26,6 +26,8 @@ services:
       - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
       - KAKAO_REDIRECT_URI=${KAKAO_REDIRECT_URI}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MEDIASOUP_SERVER=${MEDIASOUP_SERVER}
+      - MEDIASOUP_ANNOUNCED_IP=${MEDIASOUP_ANNOUNCED_IP}
     volumes:
       - ~/.gradle:/home/gradle/.gradle
     depends_on:
@@ -188,6 +190,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+
+  mediasoup-server:
+    build:
+      context: ./mediasoup-server
+    ports:
+      - "4000:4000"
+    environment:
+      - MEDIASOUP_ANNOUNCED_IP=${MEDIASOUP_ANNOUNCED_IP}
+    networks:
+      - project-network
 
 
 
