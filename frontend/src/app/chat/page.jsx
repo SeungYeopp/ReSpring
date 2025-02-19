@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
 import io from "socket.io-client";
