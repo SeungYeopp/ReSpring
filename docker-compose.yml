@@ -25,6 +25,7 @@ services:
       - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
       - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
       - KAKAO_REDIRECT_URI=${KAKAO_REDIRECT_URI}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     volumes:
       - ~/.gradle:/home/gradle/.gradle
     depends_on:
