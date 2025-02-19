@@ -808,7 +808,9 @@ const Chat1 = () => {
   const [letterSpacing, setLetterSpacing] = useState("normal");
   const [fontFamily, setFontFamily] = useState("binggraetaom");
   const [isVideoPopoverOpen, setIsVideoPopoverOpen] = useState(false);
-  const [showOpenChats, setShowOpenChats] = useState(true);
+  // const [showOpenChats, setShowOpenChats] = useState(true);
+  const [showOpenChats, setShowOpenChats] = useState(false);
+
   const [newChatUserId, setNewChatUserId] = useState("");
 
   // 글꼴 매핑을 Tailwind 설정의 fontFamily 키와 클래스 이름으로 변경합니다.
@@ -870,7 +872,8 @@ const Chat1 = () => {
     wide: "tracking-wide",
   };
 
-  const filteredRooms = showOpenChats ? myRooms : myRooms.filter((room) => !room.isOpenChat);
+  // const filteredRooms = showOpenChats ? myRooms : myRooms.filter((room) => !room.isOpenChat);
+  const filteredRooms = myRooms.filter((room) => !room.isOpenChat);
 
   const renderRoomList = () => (
     <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]} border-none bg-white/50 backdrop-blur-sm shadow-lg`}>
@@ -891,7 +894,7 @@ const Chat1 = () => {
             새 채팅
           </Button>
         </div>
-        <div className="flex items-center space-x-2 mt-2">
+        {/* <div className="flex items-center space-x-2 mt-2">
           <Switch
             checked={showOpenChats}
             onCheckedChange={setShowOpenChats}
@@ -902,7 +905,7 @@ const Chat1 = () => {
             {showOpenChats ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
             {showOpenChats ? "오픈채팅 보기" : "오픈채팅 숨기기"}
           </label>
-        </div>
+        </div> */}
       </CardHeader>
       <CardContent className="flex-1 p-0">
         <ScrollArea className="h-[calc(100vh-12rem)]">
