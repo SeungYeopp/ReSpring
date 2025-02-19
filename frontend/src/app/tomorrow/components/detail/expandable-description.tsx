@@ -34,7 +34,7 @@ export function ExpandableDescription({ description }: ExpandableDescriptionProp
 
   return (
     <div className="relative">
-      <p ref={descriptionRef} className={`text-gray-600 whitespace-pre-wrap break-words ${isExpanded ? "" : "line-clamp-1"}`}>
+      <p ref={descriptionRef} className={`text-gray-600 whitespace-pre-wrap break-words ${isExpanded ? "" : "line-clamp-2"}`}>
         {description}
       </p>
       <p ref={fullTextRef} className="absolute top-0 left-0 invisible whitespace-pre-wrap break-words" aria-hidden="true">

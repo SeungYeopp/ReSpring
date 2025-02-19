@@ -196,7 +196,7 @@ const Home = () => {
 
         {/* 서재 보기 */}
         {userNickname ? (
-          <Link href={`/yesterday/booklist/${userNickname}`} passHref className="block">
+          <Link href={`/profile/booklist/${userNickname}`} passHref className="block">
             <div className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full aspect-square flex flex-col items-start justify-between p-4 relative">
               <div className="absolute top-2 right-2">
                 <BookOpen className="text-gray-700 w-6 h-6" />

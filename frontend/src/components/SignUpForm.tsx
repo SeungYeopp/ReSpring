@@ -125,6 +125,10 @@ export function SignUpForm({ onPrevious }: { onPrevious: () => void }) {
     }
   };
 
+  const handleGoToLogin = () => {
+    router.replace('/auth');
+  }
+
 
   return (
     <div className="space-y-6 md:space-y-8 max-w-2xl mx-auto">
@@ -248,11 +252,11 @@ export function SignUpForm({ onPrevious }: { onPrevious: () => void }) {
           </Button>
           <Button
             type="button"
-            onClick={onPrevious}
+            onClick={handleGoToLogin}
             variant="outline"
             className="w-full md:w-1/2 text-[#638d3e] hover:text-[#96b23c] border-[#dfeaa5]"
           >
-            이전 단계로
+            로그인 화면으로 돌아가기
           </Button>
         </motion.div>
       </form>

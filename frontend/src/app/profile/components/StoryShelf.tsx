@@ -64,7 +64,7 @@ const StoryShelf: React.FC<StoryShelfProps> = ({ userNickname }) => {
     <div className="min-h-screen">
       <div ref={containerRef} className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <Link href="/yesterday/writenote">
+          <Link href="/yesterday/writenote?source=booklist2">
             <Card className="h-[280px] group hover:shadow-lg transition-all duration-300 
                             bg-gradient-to-br from-gray-100 to-white dark:from-gray-800 dark:to-gray-700 
                             border border-gray-200/50 dark:border-gray-700/50">

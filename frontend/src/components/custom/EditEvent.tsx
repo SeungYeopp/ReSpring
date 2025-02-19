@@ -45,7 +45,7 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
         display,
       });
 
-      setSuccessMessage("✅ 발자취가 성공적으로 고쳐졌습니다!");
+      setSuccessMessage("🎉 발자취가 성공적으로 고쳐졌어요!");
       setTimeout(() => {
         setSuccessMessage(null);
         onEventUpdated();
@@ -53,7 +53,7 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
       }, 2000);
     } catch (error) {
       console.error("Failed to update event:", error);
-      setSuccessMessage("❌ 발자취 고치기에 실패했습니다.");
+      setSuccessMessage("💔 발자취를 수정하지 못했어요.");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
@@ -65,7 +65,7 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
 
     try {
       await deleteEvent(event.id);
-      setSuccessMessage("✅ 발자취가 지워졌습니다!");
+      setSuccessMessage("🗑️ 발자취가 삭제되었습니다.");
       setTimeout(() => {
         setSuccessMessage(null);
         onEventDeleted();
@@ -73,7 +73,7 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
       }, 2000);
     } catch (error) {
       console.error("Failed to delete event:", error);
-      setSuccessMessage("❌ 발자취 지우기에 실패했습니다.");
+      setSuccessMessage("⚠️ 발자취를 삭제하지 못했어요.");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
@@ -107,9 +107,9 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
       <div className="modal-overlay" onClick={handleOverlayClick}>
         {!successMessage && !isConfirmingDelete && (
           <div className="modal-content">
-            <div className="modal-header font-bold text-lg">발자취 고치기</div>
+            <div className="modal-header font-bold text-lg">🛠️ 발자취 고치기</div>
             <div>
-              <label className="font-bold">제목</label>
+              <label className="font-bold text-gray-500">📌 제목</label>
               <input
                 value={eventName}
                 onChange={(e) => setEventName(e.target.value)}
@@ -117,10 +117,10 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
                 className="input"
               />
 
-              <label className="font-bold">날짜</label>
+              <label className="font-bold text-gray-500">📅 날짜</label>
               <input type="date" value={date} onChange={handleDateChange} className="input" />
 
-              <label className="font-bold">카테고리</label>
+              <label className="font-bold text-gray-500">📂 카테고리</label>
               <select value={category} onChange={(event) => setCategory(event.target.value)} className="input">
                 <option value="" disabled>
                   카테고리 선택
@@ -140,11 +140,11 @@ const EditEvent = ({ event, userId, onClose, onEventUpdated, onEventDeleted }: E
                   onChange={(e) => setDisplay(e.target.checked)}
                   className="w-4 h-4"
                 />
-                <label className="font-bold">공개</label>
+                <label className="font-bold text-gray-500">공개</label>
               </div>
 
               {/* 버튼 배치 */}
-              <div className="flex justify-between mt-4 space-x-2">
+              <div className="flex justify-end mt-4 space-x-2">
                 <Button onClick={onClose} className="bg-gray-100 hover:bg-gray-400 text-black flex items-center px-4 py-2 rounded-md">
                   ❌ 취소
                 </Button>

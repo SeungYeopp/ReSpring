@@ -4,6 +4,7 @@ import BottomSection from "./BottomSection"
 import TopSection from "./TopSection"
 import {BookFull, getBookById} from "@/lib/api"
 import { useEffect, useState } from "react"
+import LoadingScreen from "@/components/custom/LoadingScreen";
 
 export default function TopBottomSection({ bookId }: { bookId: number }) {
     const [bookData, setBookData] = useState<BookFull | undefined>();
@@ -33,7 +34,7 @@ export default function TopBottomSection({ bookId }: { bookId: number }) {
                         <TopSection book={bookData}/>
                         <BottomSection book={bookData}/>
                     </>
-                ) : (<div>LOADING...</div>)
+                ) : (<LoadingScreen/>)
             }
         </div>
     )

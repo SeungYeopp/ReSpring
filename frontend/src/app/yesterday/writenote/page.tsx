@@ -18,18 +18,35 @@ export default function WriteStoryPage() {
 
   const [selected, setSelected] = useState<number | null>(null);
   const [selectedEventName, setSelectedEventName] = useState<string>("");
+  // 새로 추가한 이미지 파일들
+  const [newImages, setNewImages] = useState<File[]>([]);
+  // 서버에 이미 있는 기존 이미지 URL들
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+  // 삭제 요청할 기존 이미지의 S3 Key(또는 ID) 목록
+  const [deleteImageIds, setDeleteImageIds] = useState<string[]>([]);
+
   const [events, setEvents] = useState<
-    { id: number; eventName: string; occurredAt: string; category: string; display: boolean }[]
+    {
+      id: number;
+      eventName: string;
+      occurredAt: string;
+      category: string;
+      display: boolean;
+    }[]
   >([]);
   const [stage, setStage] = useState<"select" | "editor">("select");
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [eventId, setEventId] = useState<number>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [story, setStory] = useState<{ title: string; content: string } | null>(null);
+  const [story, setStory] = useState<{ title: string; content: string } | null>(
+    null
+  );
   const [images, setImages] = useState<File[]>([]);
 
-  const storyId = searchParams?.get("storyId") ? Number(searchParams.get("storyId")) : null;
+  const storyId = searchParams?.get("storyId")
+    ? Number(searchParams.get("storyId"))
+    : null;
   const source = searchParams?.get("source");
 
   const fetchEvents = async () => {
@@ -43,8 +60,8 @@ export default function WriteStoryPage() {
         display: event.display,
       }));
       setEvents(formattedEvents);
-      console.log(source)
-      console.log(storyId)
+      console.log(source);
+      console.log(storyId);
     } catch (error) {
       console.error("Error fetching events:", error);
     }
@@ -72,6 +89,8 @@ export default function WriteStoryPage() {
       setTitle(fetchedStory.title);
       setContent(fetchedStory.content);
       setEventId(fetchedStory.eventId);
+      // 기존 이미지 URL 배열 (없을 경우 빈 배열)
+      setExistingImageUrls(fetchedStory.images || []);
     } catch (error) {
       console.error("Error fetching story:", error);
     }
@@ -87,12 +106,17 @@ export default function WriteStoryPage() {
 
     setLoading(true);
     try {
-      const deleteImageIds: number[] = [];
-
       if (storyId) {
-        await updateStory(storyId, title, content, eventId!, deleteImageIds, images);
+        await updateStory(
+          storyId,
+          title,
+          content,
+          eventId!,
+          deleteImageIds,
+          newImages
+        );
         if (source === "booklist") {
-          router.push(`/yesterday/booklist/${userNickname}?tab=stories`);
+          router.push(`/profile/booklist/${userNickname}?tab=stories`);
         } else {
           router.push("/yesterday/create-book");
         }
@@ -100,7 +124,12 @@ export default function WriteStoryPage() {
         if (stage === "select") {
           setStage("editor");
         } else {
-          const newStoryId = await makeStory(title, content, selected!, images);
+          const newStoryId = await makeStory(
+            title,
+            content,
+            selected!,
+            newImages
+          );
           router.push(`/yesterday/create-book`);
         }
       }
@@ -114,11 +143,14 @@ export default function WriteStoryPage() {
   const handleBack = () => {
     if (stage === "editor") {
       if (source === "booklist") {
-        router.push(`/yesterday/booklist/${userNickname}?tab=stories`);
+        router.push(`/profile/booklist/${userNickname}?tab=stories`);
       } else {
         setStage("select");
       }
     } else {
+      if (source === "booklist2") {
+        router.push(`/profile/booklist/${userNickname}?tab=stories`);
+      }
       router.back();
     }
   };
@@ -143,16 +175,23 @@ export default function WriteStoryPage() {
           onClick={handleNext}
           disabled={loading || (stage === "select" && selected === null)}
           className={`bg-brand text-white border border-brand rounded-md py-2 px-4 transition-all duration-300 ease-in-out
-            ${loading || (stage === "select" && selected === null) ? 'cursor-not-allowed opacity-50' : 'hover:bg-brand-dark hover:border-brand-dark focus:ring-2 focus:ring-brand-light focus:outline-none'}`}
+            ${
+              loading || (stage === "select" && selected === null)
+                ? "cursor-not-allowed opacity-50"
+                : "hover:bg-brand-dark hover:border-brand-dark focus:ring-2 focus:ring-brand-light focus:outline-none"
+            }`}
         >
           {stage === "select" ? "다음" : "저장"}
         </Button>
-
       </div>
 
       {stage === "select" ? (
         <>
-          <SelectEvent events={events} selected={selected} onSelect={setSelected} />
+          <SelectEvent
+            events={events}
+            selected={selected}
+            onSelect={setSelected}
+          />
           <AddEvent onEventAdded={handleEventAdded} />
         </>
       ) : (
@@ -161,8 +200,14 @@ export default function WriteStoryPage() {
           content={content}
           onTitleChange={setTitle}
           onContentChange={setContent}
-          images={images}
-          onImagesChange={setImages}
+          // 새로 추가할 이미지 파일들
+          newImages={newImages}
+          onNewImagesChange={setNewImages}
+          // 기존(서버에 이미 있는) 이미지 URL들
+          existingImageUrls={existingImageUrls}
+          onExistingImageUrlsChange={setExistingImageUrls}
+          // 사용자가 기존 이미지 삭제 시, 삭제할 S3 Key 목록 업데이트
+          onDeleteImageIdsChange={setDeleteImageIds}
         />
       )}
     </div>
