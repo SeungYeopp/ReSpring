@@ -11,5 +11,5 @@ public class StoryUpdateRequestDto {
     private String title;
     private String content;
     private Long eventId;
-    private List<Long> deleteImageIds;
+    private List<String> deleteImageIds;
 }

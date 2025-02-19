@@ -2,32 +2,32 @@
 import axiosAPI from "./axios";
 
 export interface Image {
-    imageId: number;
-    imageUrl: string;
+  imageId: number;
+  imageUrl: string;
 }
 
 /**
  * 스토리(글조각) 정보 인터페이스
  */
 export interface Story {
-    id: number;
-    title: string;
-    content: string;
-    createdAt: Date;
-    updatedAt: Date;
-    eventId: number;
-    occurredAt : Date;
-    images: string[];
+  id: number;
+  title: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+  eventId: number;
+  occurredAt: Date;
+  images: string[];
 }
 
 /**
  * 스토리 생성 요청 데이터 인터페이스
  */
 export interface StoryDto {
-    userId: string;
-    title: string;
-    content: string;
-    eventId: number;
+  userId: string;
+  title: string;
+  content: string;
+  eventId: number;
 }
 
 /**
@@ -35,13 +35,13 @@ export interface StoryDto {
  * @returns Promise<Story[]> - 사용자의 모든 스토리 목록 반환
  */
 export const getAllStories = async (): Promise<Story[]> => {
-    try {
-        const response = await axiosAPI.get('/stories');
+  try {
+    const response = await axiosAPI.get("/stories");
 
-        return response.data;
-    } catch (error) {
-        throw new Error('getAllStories 에러 발생');
-    }
+    return response.data;
+  } catch (error) {
+    throw new Error("getAllStories 에러 발생");
+  }
 };
 
 /**
@@ -53,31 +53,36 @@ export const getAllStories = async (): Promise<Story[]> => {
  * @returns Promise<number> - 생성된 스토리의 ID 반환
  */
 export const makeStory = async (
-    title: string,
-    content: string,
-    eventId: number,
-    images: File[]
+  title: string,
+  content: string,
+  eventId: number,
+  images: File[]
 ): Promise<number> => {
-    try {
-        const formData = new FormData();
-        formData.append('storyDto', new Blob([
-            JSON.stringify({ title, content, eventId })
-        ], { type: 'application/json' }));
+  try {
+    const formData = new FormData();
+    formData.append(
+      "storyDto",
+      new Blob([JSON.stringify({ title, content, eventId })], {
+        type: "application/json",
+      })
+    );
 
-        images.forEach((image) => {
-            formData.append('images', image);
-        });
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
 
-        const response = await axiosAPI.post('/stories', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+    const response = await axiosAPI.post("/stories", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-        return response.data; 
-    } catch (error:any) {
-        const errorMessage = error.response.data.message || '스토리 생성 중 알 수 없는 에러가 발생했습니다.';
-        alert(errorMessage); 
-        return Promise.reject(errorMessage);
-    }
+    return response.data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response.data.message ||
+      "스토리 생성 중 알 수 없는 에러가 발생했습니다.";
+    alert(errorMessage);
+    return Promise.reject(errorMessage);
+  }
 };
 
 /**
@@ -86,14 +91,14 @@ export const makeStory = async (
  * @returns Promise<Story> - 조회된 스토리 객체 반환
  */
 export const getStoryById = async (storyId: number): Promise<Story> => {
-    try {
-        const response = await axiosAPI.get(`/stories/${storyId}`);
+  try {
+    const response = await axiosAPI.get(`/stories/${storyId}`);
 
-        return response.data;
-    } catch (error) {
-        console.error('getStoryByStoryId 에러 발생!', error);
-        throw new Error('getStoryByStoryId 에러 발생!');
-    }
+    return response.data;
+  } catch (error) {
+    console.error("getStoryByStoryId 에러 발생!", error);
+    throw new Error("getStoryByStoryId 에러 발생!");
+  }
 };
 
 /**
@@ -102,19 +107,21 @@ export const getStoryById = async (storyId: number): Promise<Story> => {
  * @returns Promise<boolean> - 삭제 성공 여부 반환
  */
 export const deleteStory = async (storyId: number): Promise<boolean> => {
-    try {
-        const response = await axiosAPI.delete(`/stories/${storyId}`)
+  try {
+    const response = await axiosAPI.delete(`/stories/${storyId}`);
 
-        if (response.status === 200) {
-            return true;
-        } else {
-            console.log(`deleteStory에서 status : 200 이 아닌 다른 상태를 반환했습니다. storyID : ${storyId}`);
-            return false;
-        }
-    } catch (error) {
-        console.error('deleteStory 에러 발생', error);
-        throw new Error('deleteStory 에러 발생');
+    if (response.status === 200) {
+      return true;
+    } else {
+      console.log(
+        `deleteStory에서 status : 200 이 아닌 다른 상태를 반환했습니다. storyID : ${storyId}`
+      );
+      return false;
     }
+  } catch (error) {
+    console.error("deleteStory 에러 발생", error);
+    throw new Error("deleteStory 에러 발생");
+  }
 };
 
 /**
@@ -128,30 +135,38 @@ export const deleteStory = async (storyId: number): Promise<boolean> => {
  * @returns Promise<Story> - 업데이트된 스토리 객체 반환
  */
 export const updateStory = async (
-    storyId: number,
-    title: string,
-    content: string,
-    eventId: number,
-    deleteImageIds: number[],
-    images: File[]
+  storyId: number,
+  title: string,
+  content: string,
+  eventId: number,
+  deleteImageIds: String[],
+  images: File[]
 ): Promise<Story> => {
-    try {
-        const formData = new FormData();
+  try {
+    const formData = new FormData();
 
-        const storyDto = JSON.stringify({ title, content, eventId, deleteImageIds });
-        formData.append('storyDto', new Blob([storyDto], { type: 'application/json' }));
+    const storyDto = JSON.stringify({
+      title,
+      content,
+      eventId,
+      deleteImageIds,
+    });
+    formData.append(
+      "storyDto",
+      new Blob([storyDto], { type: "application/json" })
+    );
 
-        images.forEach((image) => {
-            formData.append('images', image);
-        });
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
 
-        const response = await axiosAPI.patch(`/stories/${storyId}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+    const response = await axiosAPI.patch(`/stories/${storyId}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-        return response.data;
-    } catch (error) {
-        console.error(`updateStory 에러 발생! storyId : ${storyId}`, error);
-        throw new Error(`updateStory 에러 발생! storyId : ${storyId}`);
-    }
+    return response.data;
+  } catch (error) {
+    console.error(`updateStory 에러 발생! storyId : ${storyId}`, error);
+    throw new Error(`updateStory 에러 발생! storyId : ${storyId}`);
+  }
 };
