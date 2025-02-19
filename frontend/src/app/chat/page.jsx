@@ -282,33 +282,85 @@ const Chat1 = () => {
   //     }
   //   };
   // }, []);
+
+
+  // 1차 방어코드 -> 로딩 시간 오래 걸림림
+  // useEffect(() => {
+  //   return () => {
+  //     if (currentRoomRef.current && stompClient) {
+  //       const roomId = currentRoomRef.current.id;
+  //       console.log("🚪 [Cleanup] leaving room on unmount:", roomId);
+
+  //       // 1) REST 호출
+  //       fetch(
+  //         `${SERVER_URL}/room/leave?roomId=${roomId}&userId=${currentUserId}`,
+  //         {
+  //           method: "POST",
+  //         }
+  //       ).catch(console.error);
+
+  //       // 2) STOMP 호출 (stompClient가 존재하는 경우에만 호출)
+  //       stompClient.send(
+  //         "/app/chat.leaveRoom",
+  //         {},
+  //         JSON.stringify({
+  //           roomId,
+  //           userIds: [currentUserId],
+  //           is_active: false,
+  //         })
+  //       );
+  //     }
+  //   };
+  // }, []);
+
+  // 방어코드 최적화
   useEffect(() => {
+    // AbortController 생성
+    const abortController = new AbortController();
+  
     return () => {
       if (currentRoomRef.current && stompClient) {
         const roomId = currentRoomRef.current.id;
         console.log("🚪 [Cleanup] leaving room on unmount:", roomId);
-
-        // 1) REST 호출
+  
+        // 1) REST 호출: signal을 추가하여 abortController와 연동
         fetch(
           `${SERVER_URL}/room/leave?roomId=${roomId}&userId=${currentUserId}`,
           {
             method: "POST",
+            signal: abortController.signal,
           }
-        ).catch(console.error);
-
+        ).catch((err) => {
+          if (err.name === "AbortError") {
+            console.log("Fetch 요청이 취소되었습니다.");
+          } else {
+            console.error(err);
+          }
+        });
+  
         // 2) STOMP 호출 (stompClient가 존재하는 경우에만 호출)
-        stompClient.send(
-          "/app/chat.leaveRoom",
-          {},
-          JSON.stringify({
-            roomId,
-            userIds: [currentUserId],
-            is_active: false,
-          })
-        );
+        try {
+          stompClient.send(
+            "/app/chat.leaveRoom",
+            {},
+            JSON.stringify({
+              roomId,
+              userIds: [currentUserId],
+              is_active: false,
+            })
+          );
+        } catch (error) {
+          console.error("STOMP 종료 오류:", error);
+        }
       }
+  
+      // 컴포넌트 언마운트 시 진행 중인 fetch 요청을 취소합니다.
+      abortController.abort();
     };
   }, []);
+  
+
+
 
   useEffect(() => {
     if (!socket || !currentRoom) return;
