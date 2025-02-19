@@ -141,12 +141,15 @@ export function ChallengeChatTab({ chatRoomId }: ChallengeChatTabProps) {
                 key={index}
                 className={`flex ${msg.sender === currentUserId ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm
-                  ${msg.sender === currentUserId ? "bg-[#96b23c] text-white" : "bg-white text-gray-900"}`}
-                >
-                  {msg.content}
-                </div>
+<div
+  className={`max-w-[75%] px-4 py-3 rounded-lg shadow-sm ${
+    msg.sender === currentUserId
+      ? "bg-[#96b23c] text-white ml-auto"
+      : "bg-gray-100 text-gray-800 mr-auto border border-gray-200"
+  } mb-2`}
+>
+  <p className="text-sm leading-relaxed">{msg.content}</p>
+</div>
               </motion.div>
             ))}
             <div ref={messagesEndRef} />
