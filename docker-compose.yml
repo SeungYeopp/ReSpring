@@ -201,7 +201,8 @@ services:
       - MEDIASOUP_SERVER=${MEDIASOUP_SERVER}
       - MEDIASOUP_PORT=4001  # 내부 통신용 포트 지정
     depends_on:
-      - mediasoup
+      mediasoup:
+        condition: service_healthy
     networks:
       - project-network
 
@@ -219,6 +220,11 @@ services:
       - MEDIASOUP_ANNOUNCED_IP=${MEDIASOUP_ANNOUNCED_IP}
       - MEDIASOUP_MIN_PORT=40000
       - MEDIASOUP_MAX_PORT=40100
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4000" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     networks:
       - project-network
 

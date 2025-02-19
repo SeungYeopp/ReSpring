@@ -58,7 +58,7 @@ io.on("connection", (socket) => {
     socket.on("createTransport", async (callback) => {
         try {
             const transport = await router.createWebRtcTransport({
-                listenIps: [{ ip: "0.0.0.0", announcedIp: "mediasoup-demo" }],
+                listenIps: [{ ip: "0.0.0.0", announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP}],
                 enableUdp: true,
                 enableTcp: true,
                 preferUdp: true,
