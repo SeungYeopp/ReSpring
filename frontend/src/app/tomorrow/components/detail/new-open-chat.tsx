@@ -20,9 +20,15 @@ import {
 import { motion } from "framer-motion";
 
 // 서버 관련 상수 선언
-const SERVER_URL = "http://localhost:8080/chat";
-const USER_SESSION_URL = "http://localhost:8080/user/me";
-const SOCKET_SERVER_URL = "http://localhost:4000"; // WebRTC 서버
+// const SERVER_URL = "http://localhost:8080/chat";
+// const USER_SESSION_URL = "http://localhost:8080/user/me";
+// const SOCKET_SERVER_URL = "http://localhost:4000"; // WebRTC 서버
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+const SERVER_URL = `${API_BASE_URL}/chat`;
+const USER_SESSION_URL = `${API_BASE_URL}/user/me`;
+const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || "http://localhost:4000"; // WebRTC 서버
+
 
 // 메시지 인터페이스 – 내부에서는 sender 필드를 사용 (기존 1:1 채팅과 동일)
 interface Message {

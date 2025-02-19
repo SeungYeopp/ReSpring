@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Send } from "lucide-react"
 import { motion } from "framer-motion"
 
-
 // const SERVER_URL = "http://localhost:8080/chat"
 // const USER_SESSION_URL = "http://localhost:8080/user/me"
 
@@ -19,6 +18,7 @@ const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8
 
 const SERVER_URL = `${BASE_API_URL}/chat`;
 const USER_SESSION_URL = `${BASE_API_URL}/user/me`;
+
 
 interface ChallengeChatTabProps {
   chatRoomId: string | number;}

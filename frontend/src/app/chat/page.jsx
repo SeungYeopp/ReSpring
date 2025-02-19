@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Sprout, Video, Settings, ArrowLeft, Send, Users, MessageSquarePlus, Eye, EyeOff } from "lucide-react"
+import { Sprout, Video, Settings, ArrowLeft, Send, Users,MessageSquarePlus,  Eye, EyeOff } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
@@ -25,11 +25,21 @@ import {
 import { motion } from "framer-motion"
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getUserInfoByNickname, UserInfo } from "@/lib/api/user";
+import { usePathname } from "next/navigation"
+import Link from "next/link"
 
-const SERVER_URL = "http://localhost:8080/chat";
-const USER_SESSION_URL = "http://localhost:8080/user/me";
-const SOCKET_SERVER_URL = "http://localhost:4000"; // ✅ WebRTC 서버
+// const SERVER_URL = "http://localhost:8080/chat";
+// const USER_SESSION_URL = "http://localhost:8080/user/me";
+// const SOCKET_SERVER_URL = "http://localhost:4000"; // ✅ WebRTC 서버
 // const currentUserId = "61000000-0000-0000-0000-000000000000";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || "http://localhost:4000";
+
+const SERVER_URL = `${API_BASE_URL}/chat`;
+const USER_SESSION_URL = `${API_BASE_URL}/user/me`;
+
+
 
 const Chat1 = () => {
   /* ✅ 기존 채팅 상태들 */
@@ -50,11 +60,10 @@ const Chat1 = () => {
   const fetchSubscribedUsers = async () => {
     try {
       // 서버가 요구하는 엔드포인트로 변경
-      const response = await fetch(
-        "http://localhost:8080/subscriptions/me/users",
-        { credentials: "include" }
-      );
-
+      const response = await fetch(`${API_BASE_URL}/subscriptions/me/users`, {
+        credentials: "include",
+      });
+  
       if (!response.ok) throw new Error("구독한 사용자 목록 불러오기 실패!");
 
       const data = await response.json();
@@ -84,9 +93,9 @@ const Chat1 = () => {
       try {
         console.log("Fetching user info for nickname:", targetNickname);
         const userInfo = await getUserInfoByNickname(targetNickname);
-        
+
         console.log("Fetched user info:", userInfo);
-        
+
         // Set the userId state
         setUserId(userInfo.userId);
       } catch (error) {
@@ -180,7 +189,9 @@ const Chat1 = () => {
     console.log("-----------------------------", currentUserId);
     const socket = new SockJS(SERVER_URL);
     const client = Stomp.over(socket);
-    const rtcSocket = io(SOCKET_SERVER_URL, { transports: ["websocket"] });
+    const rtcSocket = io("wss://i12a307.p.ssafy.io/socket.io/", {
+      transports: ["websocket"],
+    });
 
     client.connect({}, () => {
       console.log("✅ Stomp WebSocket Connected");
@@ -242,11 +253,38 @@ const Chat1 = () => {
     currentRoomRef.current = currentRoom;
   }, [currentRoom]);
 
-  // 컴포넌트가 언마운트되거나 페이지 이동될 때 실행
+  // // 컴포넌트가 언마운트되거나 페이지 이동될 때 실행
+  // useEffect(() => {
+  //   return () => {
+  //     // unmount 시점에 마지막에 설정된 currentRoomRef.current를 사용
+  //     if (currentRoomRef.current) {
+  //       const roomId = currentRoomRef.current.id;
+  //       console.log("🚪 [Cleanup] leaving room on unmount:", roomId);
+
+  //       // 1) REST 호출
+  //       fetch(
+  //         `${SERVER_URL}/room/leave?roomId=${roomId}&userId=${currentUserId}`,
+  //         {
+  //           method: "POST",
+  //         }
+  //       ).catch(console.error);
+
+  //       // 2) STOMP 호출
+  //       stompClient.send(
+  //         "/app/chat.leaveRoom",
+  //         {},
+  //         JSON.stringify({
+  //           roomId,
+  //           userIds: [currentUserId],
+  //           is_active: false,
+  //         })
+  //       );
+  //     }
+  //   };
+  // }, []);
   useEffect(() => {
     return () => {
-      // unmount 시점에 마지막에 설정된 currentRoomRef.current를 사용
-      if (currentRoomRef.current) {
+      if (currentRoomRef.current && stompClient) {
         const roomId = currentRoomRef.current.id;
         console.log("🚪 [Cleanup] leaving room on unmount:", roomId);
 
@@ -258,7 +296,7 @@ const Chat1 = () => {
           }
         ).catch(console.error);
 
-        // 2) STOMP 호출
+        // 2) STOMP 호출 (stompClient가 존재하는 경우에만 호출)
         stompClient.send(
           "/app/chat.leaveRoom",
           {},
@@ -500,7 +538,7 @@ const Chat1 = () => {
     return foundUser?.profileImage || `https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`;
   };
 
-  // 챌린지 상세에 있는 roomId랑 비교해서 같은 방 컨텐츠를 렌더링 하는 방식으로 하자. 디자인도 여기 있는 거 그대로 쓰고.
+// 챌린지 상세에 있는 roomId랑 비교해서 같은 방 컨텐츠를 렌더링 하는 방식으로 하자. 디자인도 여기 있는 거 그대로 쓰고.
   const fetchMessagesAndConnect = async (roomId, roomName, openChat) => {
     // ✅ 기존 WebSocket 구독이 있으면 해제 (중복 구독 방지)
     if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
@@ -808,7 +846,9 @@ const Chat1 = () => {
   const [letterSpacing, setLetterSpacing] = useState("normal");
   const [fontFamily, setFontFamily] = useState("binggraetaom");
   const [isVideoPopoverOpen, setIsVideoPopoverOpen] = useState(false);
-  const [showOpenChats, setShowOpenChats] = useState(true);
+  // const [showOpenChats, setShowOpenChats] = useState(true);
+  const [showOpenChats, setShowOpenChats] = useState(false);
+
   const [newChatUserId, setNewChatUserId] = useState("");
 
   // 글꼴 매핑을 Tailwind 설정의 fontFamily 키와 클래스 이름으로 변경합니다.
@@ -870,7 +910,11 @@ const Chat1 = () => {
     wide: "tracking-wide",
   };
 
-  const filteredRooms = showOpenChats ? myRooms : myRooms.filter((room) => !room.isOpenChat);
+  // const filteredRooms = showOpenChats ? myRooms : myRooms.filter((room) => !room.isOpenChat);
+  const filteredRooms = myRooms.filter((room) => !room.isOpenChat);
+
+  const router = useRouter()
+  const pathname = usePathname()
 
   const renderRoomList = () => (
     <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]} border-none bg-white/50 backdrop-blur-sm shadow-lg`}>
@@ -891,7 +935,7 @@ const Chat1 = () => {
             새 채팅
           </Button>
         </div>
-        <div className="flex items-center space-x-2 mt-2">
+        {/* <div className="flex items-center space-x-2 mt-2">
           <Switch
             checked={showOpenChats}
             onCheckedChange={setShowOpenChats}
@@ -902,7 +946,7 @@ const Chat1 = () => {
             {showOpenChats ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
             {showOpenChats ? "오픈채팅 보기" : "오픈채팅 숨기기"}
           </label>
-        </div>
+        </div> */}
       </CardHeader>
       <CardContent className="flex-1 p-0">
         <ScrollArea className="h-[calc(100vh-12rem)]">
@@ -946,6 +990,38 @@ const Chat1 = () => {
           </div>
         </ScrollArea>
       </CardContent>
+      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-chat-primary-light border-t md:hidden border-red-900">
+        <div className="grid grid-cols-4 h-full">
+          <Link
+            href="/yesterday"
+            className={`flex flex-col items-center justify-center ${pathname === "/yesterday" ? "text-[#96b23c]" : "text-dark-500"}`}
+          >
+            <Bean className="w-5 h-5" />
+            <span className="text-xs mt-1">어제</span>
+          </Link>
+          <Link
+            href="/today"
+            className={`flex flex-col items-center justify-center ${pathname === "/today" ? "text-[#96b23c]" : "text-dark-500"}`}
+          >
+            <Sprout className="w-5 h-5" />
+            <span className="text-xs mt-1">오늘</span>
+          </Link>
+          <Link
+            href="/tomorrow"
+            className={`flex flex-col items-center justify-center ${pathname === "/tomorrow" ? "text-[#96b23c]" : "text-dark-500"}`}
+          >
+            <Flower2 className="w-5 h-5" />
+            <span className="text-xs mt-1">내일</span>
+          </Link>
+          <Link
+            href="/profile"
+            className={`flex flex-col items-center justify-center ${pathname === "/profile" ? "text-[#96b23c]" : "text-dark-500"}`}
+          >
+            <User className="w-5 h-5" />
+            <span className="text-xs mt-1">나의 봄</span>
+          </Link>
+        </div>
+      </nav>
     </Card>
   );
 
