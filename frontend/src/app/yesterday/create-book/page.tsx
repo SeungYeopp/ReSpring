@@ -288,7 +288,7 @@ export default function CreateBook() {
     if (step > 1) {
       setStep(step - 1)
     } else {
-      router.push("/yesterday")
+      router.back()
     }
   }
 
