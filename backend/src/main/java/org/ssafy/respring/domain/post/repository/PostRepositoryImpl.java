@@ -63,8 +63,8 @@ public class PostRepositoryImpl implements PostRepositoryQuerydsl {
     public List<Post> findByUserName(String userName) {
         return queryFactory
                 .selectFrom(post)
-                .where(post.user.userNickname.eq(userName)) // ✅ userName으로 검색
-                .orderBy(post.createdAt.desc()) // ✅ 최신 순 정렬
+                .where(post.user.userNickname.eq(userName)) //   userName으로 검색
+                .orderBy(post.createdAt.desc()) //   최신 순 정렬
                 .fetch();
     }
 
@@ -81,7 +81,7 @@ public class PostRepositoryImpl implements PostRepositoryQuerydsl {
     @Override
     public List<Tuple> findTop3ByLikesInPastWeekWithComments(LocalDateTime oneWeekAgo) {
         return queryFactory
-                .select(post, comment.count()) // ✅ Post 엔티티 + 댓글 개수 조회
+                .select(post, comment.count()) //   Post 엔티티 + 댓글 개수 조회
                 .from(post)
                 .leftJoin(comment).on(comment.post.eq(post))
                 .where(post.createdAt.after(oneWeekAgo))
@@ -108,9 +108,9 @@ public class PostRepositoryImpl implements PostRepositoryQuerydsl {
     public Post findPostWithComments(Long postId) {
         return queryFactory
                 .selectFrom(post)
-                .leftJoin(post.comments).fetchJoin() // ✅ 댓글과 함께 가져오기
+                .leftJoin(post.comments).fetchJoin() //   댓글과 함께 가져오기
                 .where(post.id.eq(postId))
-                .fetchOne(); // ✅ Tuple 대신 Post 객체 그대로 반환
+                .fetchOne(); //   Tuple 대신 Post 객체 그대로 반환
     }
 
 

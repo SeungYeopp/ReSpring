@@ -43,7 +43,7 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
   const [replyTo, setReplyTo] = useState<{ id: number; username: string } | null>(null)
   const { login } = useAuth()
   const [hasMore, setHasMore] = useState(true)
-  const [commentCount, setCommentCount] = useState(0) // ✅ 내부 상태 관리
+  const [commentCount, setCommentCount] = useState(0) //   내부 상태 관리
   const [maxCharacterLimit] = useState(100) // Set the maximum character limit
 
   const router = useRouter()
@@ -53,7 +53,7 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId])
 
-  // ✅ 댓글 개수가 변경될 때 내부 상태 업데이트
+  //   댓글 개수가 변경될 때 내부 상태 업데이트
   useEffect(() => {
     const totalCommentCount = comments.reduce((count, comment) => {
       count++;
@@ -135,7 +135,7 @@ export function CommentSection({ postId, userId }: CommentSectionProps) {
     }
   }
 
-  // ✅ 개별 댓글 렌더링 컴포넌트
+  //   개별 댓글 렌더링 컴포넌트
   function CommentItem({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) {
     const [isLiked, setIsLiked] = useState(false)
     const [likeCount, setLikeCount] = useState(comment.likeCount || 0)

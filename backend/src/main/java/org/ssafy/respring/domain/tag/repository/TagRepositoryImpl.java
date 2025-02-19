@@ -42,7 +42,7 @@ public class TagRepositoryImpl implements TagRepositoryQueryDsl {
                         queryFactory.select(uc.challenge.id)
                                 .from(uc)
                                 .where(uc.user.id.eq(userId))
-                ).or(ct.challenge.id.in( // ✅ 사용자가 좋아요한 챌린지도 포함
+                ).or(ct.challenge.id.in( //   사용자가 좋아요한 챌린지도 포함
                         queryFactory.select(cl.challenge.id)
                                 .from(cl)
                                 .where(cl.user.id.eq(userId))
@@ -57,14 +57,14 @@ public class TagRepositoryImpl implements TagRepositoryQueryDsl {
         QChallengeTag ct = QChallengeTag.challengeTag;
 
         List<Tuple> tagCounts = queryFactory
-                .select(ct.tag.id, ct.tag.id.count())  // ✅ 태그별 COUNT 계산
+                .select(ct.tag.id, ct.tag.id.count())  //   태그별 COUNT 계산
                 .from(uc)
                 .join(ct).on(uc.challenge.id.eq(ct.challenge.id))
                 .where(uc.user.id.eq(userId))
                 .groupBy(ct.tag.id)
                 .fetch();
 
-        // ✅ Map으로 변환 (tagId -> count)
+        //   Map으로 변환 (tagId -> count)
         return tagCounts.stream()
                 .collect(Collectors.toMap(
                         tuple -> tuple.get(ct.tag.id),
@@ -78,7 +78,7 @@ public class TagRepositoryImpl implements TagRepositoryQueryDsl {
 
     @Override
     public List<Challenge> recommendChallenges(UUID userId) {
-        // ✅ 사용자가 좋아요를 누르거나 참여한 태그 ID 및 COUNT 조회
+        //   사용자가 좋아요를 누르거나 참여한 태그 ID 및 COUNT 조회
         Map<Long, Long> userTagCounts = getUserTagCounts(userId);
 
         QChallenge c = QChallenge.challenge;
@@ -86,7 +86,7 @@ public class TagRepositoryImpl implements TagRepositoryQueryDsl {
         QUserChallenge uc = QUserChallenge.userChallenge;
         QTag tag = QTag.tag;
 
-        // ✅ 관심 태그가 없으면 인기 챌린지 반환
+        //   관심 태그가 없으면 인기 챌린지 반환
         if (userTagCounts.isEmpty()) {
             return queryFactory
                     .select(c)
@@ -101,27 +101,27 @@ public class TagRepositoryImpl implements TagRepositoryQueryDsl {
                     .fetch();
         }
 
-        // ✅ 태그별 COUNT 기반 정렬을 위한 CASE WHEN 제거 (MySQL `ONLY_FULL_GROUP_BY` 문제 해결)
+        //   태그별 COUNT 기반 정렬을 위한 CASE WHEN 제거 (MySQL `ONLY_FULL_GROUP_BY` 문제 해결)
         NumberExpression<Long> tagWeightExpression = new CaseBuilder()
                 .when(ct.tag.id.in(userTagCounts.keySet())).then(ct.tag.id.count())
                 .otherwise(0L);
 
-        // ✅ QueryDSL 최적화된 쿼리 실행
+        //   QueryDSL 최적화된 쿼리 실행
         return queryFactory
                 .select(c)
                 .from(c)
                 .join(ct).on(c.id.eq(ct.challenge.id))
                 .where(
-                        c.id.notIn( // ✅ 사용자가 이미 참여한 챌린지는 제외
+                        c.id.notIn( //   사용자가 이미 참여한 챌린지는 제외
                                 JPAExpressions.select(uc.challenge.id)
                                         .from(uc)
                                         .where(uc.user.id.eq(userId))
                         )
                 )
-                .groupBy(c.id, ct.tag.id)  // ✅ GROUP BY에 tag.id 추가하여 정렬 문제 해결
+                .groupBy(c.id, ct.tag.id)  //   GROUP BY에 tag.id 추가하여 정렬 문제 해결
                 .orderBy(
-                        tagWeightExpression.desc(), // ✅ 사용자가 많이 참여한 태그 기반 정렬
-                        c.participantCount.desc()  // ✅ 참여자 수 기준 정렬
+                        tagWeightExpression.desc(), //   사용자가 많이 참여한 태그 기반 정렬
+                        c.participantCount.desc()  //   참여자 수 기준 정렬
                 )
                 .limit(10)
                 .fetch();

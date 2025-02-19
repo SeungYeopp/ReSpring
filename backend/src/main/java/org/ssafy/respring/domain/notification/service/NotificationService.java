@@ -33,8 +33,8 @@ public class NotificationService {
         Notification notification = Notification.builder()
                 .receiver(receiver)
                 .type(type)
-                .targetType(targetType) // ✅ 대상 유형 추가
-                .targetId(targetId) // ✅ 대상 ID
+                .targetType(targetType) //   대상 유형 추가
+                .targetId(targetId) //   대상 ID
                 .message(message)
                 .isRead(false)
                 .createdAt(LocalDateTime.now())
@@ -42,7 +42,7 @@ public class NotificationService {
 
         notificationRepository.save(notification);
 
-        // ✅ SSE를 통해 실시간으로 알림 전송
+        //   SSE를 통해 실시간으로 알림 전송
         sseService.sendNotification(receiverId, toDto(notification));
     }
 
@@ -56,7 +56,7 @@ public class NotificationService {
                 .receiver(receiver)
                 .type(type)
                 .targetType(targetType)
-                .targetId(targetId) // ✅ targetId 그대로 Long 사용
+                .targetId(targetId) //   targetId 그대로 Long 사용
                 .message(message)
                 .isRead(false)
                 .createdAt(LocalDateTime.now())
@@ -64,7 +64,7 @@ public class NotificationService {
 
         notificationRepository.save(notification);
 
-        // ✅ `initiatorId` 포함하여 DTO 변환 후 SSE 전송
+        //   `initiatorId` 포함하여 DTO 변환 후 SSE 전송
         sseService.sendNotification(receiverId, NotificationSubscriptionDto.from(notification, initiator.getId()));
     }
 
@@ -82,7 +82,7 @@ public class NotificationService {
     }
 
 
-    // ✅ 개별 알림 읽음 처리
+    //   개별 알림 읽음 처리
     public void markAsRead(Long notificationId, UUID userId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 알림을 찾을 수 없습니다. ID: " + notificationId));
@@ -95,7 +95,7 @@ public class NotificationService {
             notification.setRead(true);
             notificationRepository.save(notification);
 
-            // ✅ SSE로 프론트에 업데이트
+            //   SSE로 프론트에 업데이트
             sseService.sendNotification(notification.getReceiver().getId(),
                     NotificationDto.builder()
                             .id(notification.getId())
@@ -107,7 +107,7 @@ public class NotificationService {
         }
     }
 
-    // ✅ 모든 알림 읽음 처리
+    //   모든 알림 읽음 처리
     public void markAllAsRead(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
@@ -120,9 +120,9 @@ public class NotificationService {
             }
             notificationRepository.saveAll(notifications);
 
-            // ✅ SSE를 통해 실시간 업데이트
+            //   SSE를 통해 실시간 업데이트
             List<NotificationDto> notificationDtos = notifications.stream()
-                    .map(this::toDto) // ✅ sendNotification과 동일한 방식으로 DTO 변환
+                    .map(this::toDto) //   sendNotification과 동일한 방식으로 DTO 변환
                     .collect(Collectors.toList());
 
             for (NotificationDto notificationDto : notificationDtos) {

@@ -31,7 +31,7 @@ const useNotifications = (sseUrl?: string) => {
         const response = await axiosAPI.get("/user/me", { withCredentials: true });
         console.log(response.data);
         if (response.status === 200) {
-          console.log("✅ 세션 확인됨, SSE 연결 시작...");
+          console.log("  세션 확인됨, SSE 연결 시작...");
           connect();
         }
       } catch (error) {
@@ -45,7 +45,7 @@ const useNotifications = (sseUrl?: string) => {
       eventSourceRef.current = eventSource;
 
       eventSource.onopen = () => {
-        console.log("✅ SSE 연결 성공:", sseUrl);
+        console.log("  SSE 연결 성공:", sseUrl);
       };
 
       eventSource.onerror = () => {

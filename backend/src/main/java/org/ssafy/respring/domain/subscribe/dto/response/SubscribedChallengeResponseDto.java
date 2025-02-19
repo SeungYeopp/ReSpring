@@ -20,7 +20,7 @@ public class SubscribedChallengeResponseDto {
     private Long views;
     private Long participantCount;
 
-    // ✅ 추가: 챌린지 생성자 정보 (구독한 사람이 만든 챌린지인지 확인)
+    //   추가: 챌린지 생성자 정보 (구독한 사람이 만든 챌린지인지 확인)
     private UUID ownerId;
     private String ownerNickname;
 }

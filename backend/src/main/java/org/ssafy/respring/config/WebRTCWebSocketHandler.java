@@ -18,12 +18,10 @@ public class WebRTCWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         sessions.add(session);
-        System.out.println("📡 Client connected: " + session.getId());
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
-        System.out.println("📩 Message received: " + message.getPayload());
         for (WebSocketSession s : sessions) {
             if (s.isOpen() && !s.equals(session)) {
                 s.sendMessage(new TextMessage(message.getPayload()));
@@ -34,6 +32,5 @@ public class WebRTCWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         sessions.remove(session);
-        System.out.println("❌ Client disconnected: " + session.getId());
     }
 }

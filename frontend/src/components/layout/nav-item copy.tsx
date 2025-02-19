@@ -47,10 +47,10 @@
 //           ? "gap-2 px-3 py-2" // 🆕 상단 네비 스타일
 //           : "gap-3 p-3", // 기본(사이드바) 스타일
 
-//         // ✅ 바텀 네비 활성 스타일 유지 (변경 없음)
+//         //   바텀 네비 활성 스타일 유지 (변경 없음)
 //         isActive && isBottomNav && "bg-gray-50/80 border-b-2 border-brand",
 
-//         // ✅ 🚀 사이드바에서만 활성 스타일 적용
+//         //   🚀 사이드바에서만 활성 스타일 적용
 //         isActive && !isBottomNav && !isTopNav && "bg-gray-100 border-l-4 border-brand-dark",
 
 //         isLogo ? "text-brand-dark font-bold text-lg" : "text-brand",
@@ -62,7 +62,7 @@
 //         className={cn(
 //           "h-5 w-5",
 //           isLogo && "h-6 w-6 text-brand-dark",
-//           // ✅ 아이콘 색상 활성화 조건 변경 → 상단바는 활성화 스타일 없음
+//           //   아이콘 색상 활성화 조건 변경 → 상단바는 활성화 스타일 없음
 //           isActive && !isLogo && !isBottomNav && !isTopNav && "text-brand-dark"
 //         )}
 //       />
@@ -71,7 +71,7 @@
 //           className={cn(
 //             isBottomNav ? "text-[10px]" : "text-sm",
 //             isLogo && "text-base font-bold",
-//             // ✅ 텍스트 색상 활성화 조건 변경 → 상단바는 활성화 스타일 없음
+//             //   텍스트 색상 활성화 조건 변경 → 상단바는 활성화 스타일 없음
 //             isActive && !isLogo && !isBottomNav && !isTopNav && "text-brand-dark font-medium"
 //           )}
 //         >

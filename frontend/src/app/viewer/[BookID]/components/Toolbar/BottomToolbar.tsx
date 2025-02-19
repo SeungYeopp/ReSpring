@@ -14,7 +14,7 @@ import { usePanelContext } from "../../context/usePanelContext";
 import { Content } from "@/lib/api";
 
 interface BottomToolbarProps {
-  bookId: string; // ✅ bookId를 props로 받음
+  bookId: string; //   bookId를 props로 받음
   content: Content;
   imageUrls: string[];
 }
@@ -37,7 +37,7 @@ export function BottomToolbar({ bookId, content, imageUrls }: BottomToolbarProps
   const { pages, chapters } = useDynamicPages(content, imageUrls);
   const { fontFamily, fontSize, lineHeight, letterSpacing } = useViewerSettings();
 
-  /** ✅ 현재 페이지에서 가장 가까운 챕터 찾기 */
+  /**   현재 페이지에서 가장 가까운 챕터 찾기 */
   const currentChapter = useMemo(() => {
     if (!chapters.length) return "📖 목차 없음"; // 챕터가 없을 경우 기본값
 
@@ -49,7 +49,7 @@ export function BottomToolbar({ bookId, content, imageUrls }: BottomToolbarProps
     return foundChapter;
   }, [currentPage, chapters]);
 
-    // ✅ `isToolbarVisible` 체크
+    //   `isToolbarVisible` 체크
     if (!isToolbarVisible) return <></>;
 
   return (

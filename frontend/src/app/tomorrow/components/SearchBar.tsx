@@ -76,7 +76,7 @@ export function SearchBar({ placeholder, onSearchResults }: SearchBarProps) {
         const results = await searchChallenges(term.trim());
         onSearchResults?.(results);
 
-        // ✅ 입력한 검색어가 포함된 최근 검색어 필터링
+        //   입력한 검색어가 포함된 최근 검색어 필터링
         setFilteredSearches(
           recentSearches.filter((search) => search.includes(term)).slice(0, 10)
         );

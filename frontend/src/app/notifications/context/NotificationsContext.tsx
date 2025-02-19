@@ -21,7 +21,7 @@ export const NotificationsProvider = ({ children }: { children: React.ReactNode 
     const fetchUserSession = async () => {
       try {
         const response = await axiosAPI.get("/user/me");
-        console.log("✅ 사용자 세션 데이터:", response.data);
+        console.log("  사용자 세션 데이터:", response.data);
         
         setCurrentUserId(response.data.userId);
       } catch (error) {

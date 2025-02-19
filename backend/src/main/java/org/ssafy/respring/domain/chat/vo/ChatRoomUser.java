@@ -24,5 +24,5 @@ public class ChatRoomUser {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private boolean isActive; // ✅ 사용자 활성 상태 추가
+    private boolean isActive; //   사용자 활성 상태 추가
 }

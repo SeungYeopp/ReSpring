@@ -25,7 +25,7 @@ public class ChatRoom {
     private boolean isOpenChat = false;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<ChatRoomUser> chatRoomUsers = new ArrayList<>(); // ✅ 초기화 추가
+    private List<ChatRoomUser> chatRoomUsers = new ArrayList<>(); //   초기화 추가
 
     public List<User> getUsers() {
         return chatRoomUsers != null ? chatRoomUsers.stream().map(ChatRoomUser::getUser).collect(Collectors.toList()) : new ArrayList<>();

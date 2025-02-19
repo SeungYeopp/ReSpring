@@ -3,7 +3,7 @@ import { getBookById } from "@/lib/api";
 import {BookFull, Content} from "@/lib/api"
 import { useAuth } from "@/hooks/useAuth";
 
-// ✅ 기본 목업 데이터 (API 실패 시 사용)
+//   기본 목업 데이터 (API 실패 시 사용)
 const fallbackBookData = `
 마루 킁킁 마루 쫑긋 마루 덥석
 
@@ -575,7 +575,7 @@ const fallbackBookData = `
 총총총총총 마루도 함께 가요
 모두 다 모두 다 모두 다 함께`;
 
-// ✅ API에서 책 데이터 가져오기
+//   API에서 책 데이터 가져오기
   export function useBookData(bookId: string) {
       const [bookContent, setBookContent] = useState<Content>();
       const [bookTitle, setBookTitle] = useState<string>();
@@ -610,11 +610,11 @@ const fallbackBookData = `
             // const newContentText = chapters.map((chapter) => `${chapter.chapterTitle}\n${chapter.content}`).join('\n');
             // setPlainBookContent(newContentText);
 
-            console.log("✅ API 요청 성공, 책 데이터 적용됨.");
+            console.log("  API 요청 성공, 책 데이터 적용됨.");
           } catch (err) {
             console.error("🚨 책 데이터 가져오기 실패:", err);
             setBookTitle("임시 제목");
-            setBookContent({}); // ✅ 실패 시 기본 데이터 적용
+            setBookContent({}); //   실패 시 기본 데이터 적용
           } finally {
             setIsLoading(false);
           }
@@ -623,7 +623,7 @@ const fallbackBookData = `
         fetchBookData();
       }, [bookId, userId]);
     
-      // ✅ 디버깅용: 상태 변화 로깅
+      //   디버깅용: 상태 변화 로깅
       useEffect(() => {
         console.log("📖 현재 bookContent 상태:", bookContent);
       }, [bookContent]);

@@ -33,7 +33,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryQuerydsl {
                 .join(chatRoom.chatRoomUsers, chatRoomUser)
                 .join(chatRoomUser.user, user)
                 .where(user.id.eq(userId)
-                        .and(chatRoomUser.isActive.isTrue())) // ✅ 나간 방 제외
+                        .and(chatRoomUser.isActive.isTrue())) //   나간 방 제외
                 .fetch();
     }
 
@@ -46,12 +46,12 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryQuerydsl {
 
         ChatRoom result = queryFactory
                 .selectFrom(chatRoom)
-                .leftJoin(chatRoom.chatRoomUsers, chatRoomUser).fetchJoin() // ✅ chatRoomUsers를 함께 조회
+                .leftJoin(chatRoom.chatRoomUsers, chatRoomUser).fetchJoin() //   chatRoomUsers를 함께 조회
                 .where(
-                        chatRoom.isOpenChat.eq(false), // ✅ 1:1 채팅방 필터링
+                        chatRoom.isOpenChat.eq(false), //   1:1 채팅방 필터링
                         chatRoom.chatRoomUsers.any().user.eq(user1),
                         chatRoom.chatRoomUsers.any().user.eq(user2),
-                        chatRoom.chatRoomUsers.size().eq(2) // ✅ 정확히 두 명만 포함된 방 찾기
+                        chatRoom.chatRoomUsers.size().eq(2) //   정확히 두 명만 포함된 방 찾기
                 )
                 .fetchOne();
 

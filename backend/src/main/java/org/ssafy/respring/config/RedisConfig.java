@@ -49,12 +49,12 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // ✅ Jackson ObjectMapper 설정 (LocalDateTime 문제 해결)
+        //   Jackson ObjectMapper 설정 (LocalDateTime 문제 해결)
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule()); // LocalDateTime 지원 추가
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        // ✅ 동일한 ObjectMapper를 직렬화/역직렬화에 적용
+        //   동일한 ObjectMapper를 직렬화/역직렬화에 적용
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         template.setKeySerializer(new StringRedisSerializer());
@@ -72,7 +72,7 @@ public class RedisConfig {
         template.setConnectionFactory(redisConnectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
 
-        // ✅ ObjectMapper 설정 (LocalDateTime 직렬화 지원)
+        //   ObjectMapper 설정 (LocalDateTime 직렬화 지원)
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);

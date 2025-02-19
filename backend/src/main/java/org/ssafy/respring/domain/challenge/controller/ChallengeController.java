@@ -46,8 +46,8 @@ public class ChallengeController {
             description = "새로운 챌린지를 생성합니다. 챌린지 정보를 JSON으로 받고, 이미지는 별도로 업로드합니다.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ChallengeResponseDto> createChallenge(
-            @RequestPart("challengeDto") ChallengeRequestDto challengeDto, // ✅ 챌린지 정보(JSON)
-            @RequestPart(value = "image", required = false) MultipartFile image, // ✅ 이미지 파일(Optional)
+            @RequestPart("challengeDto") ChallengeRequestDto challengeDto, //   챌린지 정보(JSON)
+            @RequestPart(value = "image", required = false) MultipartFile image, //   이미지 파일(Optional)
             HttpSession session
     ) throws IOException {
 
@@ -72,7 +72,7 @@ public class ChallengeController {
     @GetMapping("/{challengeId}")
     public ResponseEntity<ChallengeDetailResponseDto> getChallengeDetail(
             @PathVariable Long challengeId,
-            HttpSession session // ✅ 현재 로그인한 사용자 ID 필요
+            HttpSession session //   현재 로그인한 사용자 ID 필요
     ) {
         UUID userId = getUserIdFromSession(session);
         return ResponseEntity.ok(challengeService.getChallengeDetail(challengeId, userId));

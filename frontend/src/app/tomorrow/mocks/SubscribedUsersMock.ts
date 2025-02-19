@@ -1,6 +1,6 @@
 import { SubscribedUser } from "@/app/tomorrow/types/challenge";
 
-/** ✅ 랜덤 프로필 이미지 생성 함수 */
+/**   랜덤 프로필 이미지 생성 함수 */
 const getRandomProfileImage = () => {
   const imageNumber = Math.floor(Math.random() * 5) + 1; // 1~5 숫자 랜덤 선택
   return `https://example.com/profile${imageNumber}.jpg`; // 예제 프로필 이미지 URL

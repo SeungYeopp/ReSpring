@@ -28,7 +28,7 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.getNotifications(userId));
     }
 
-    // ✅ 특정 알림 읽음 처리
+    //   특정 알림 읽음 처리
     @PatchMapping("/{notificationId}/read/{userId}")
     @Operation(summary = "특정 알림 읽음 처리", description = "특정 알림을 읽음 처리합니다.")
     public ResponseEntity<Void> markNotificationAsRead(
@@ -39,7 +39,7 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
-    // ✅ 모든 알림 읽음 처리
+    //   모든 알림 읽음 처리
     @PatchMapping("/read-all/{userId}")
     @Operation(summary = "모든 알림 읽음 처리", description = "모든 알림을 동시에 읽음 처리합니다.")
     public ResponseEntity<Void> markAllNotificationsAsRead(@PathVariable UUID userId) {

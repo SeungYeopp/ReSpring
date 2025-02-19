@@ -16,7 +16,7 @@ export function Reader({ content, imageUrls }: ReaderProps) {
   const { currentPage } = usePageContext();
   const { fontFamily, fontSize, lineHeight, letterSpacing, pageTransition } = useViewerSettings();
 
-  /** ✅ 현재 페이지에서 가장 가까운 챕터 찾기 */
+  /**   현재 페이지에서 가장 가까운 챕터 찾기 */
   const currentChapter = useMemo(() => {
     if (!chapters.length) return "📖 목차 없음";
     let foundChapter = chapters[0].title;
@@ -27,7 +27,7 @@ export function Reader({ content, imageUrls }: ReaderProps) {
     return foundChapter;
   }, [currentPage, chapters]);
 
-  /** ✅ 페이지 전환 애니메이션 관련 상태 */
+  /**   페이지 전환 애니메이션 관련 상태 */
   const [prevPage, setPrevPage] = useState(currentPage);
   const [animationClass, setAnimationClass] = useState("opacity-100");
 
@@ -50,20 +50,20 @@ export function Reader({ content, imageUrls }: ReaderProps) {
     }
   }, [currentPage, pageTransition, prevPage]);
 
-  /** ✅ 이미지 URL을 페이지 중간에 삽입 */
+  /**   이미지 URL을 페이지 중간에 삽입 */
   const isImagePage = currentPage < imageUrls.length;
   const currentImageUrl = isImagePage ? imageUrls[currentPage] : null;
 
   return (
     <div className="relative w-full max-w-5xl mx-auto h-full min-h-screen overflow-hidden flex flex-col items-start justify-start">
-      {/* ✅ 현재 페이지의 챕터 제목 표시 */}
+      {/*   현재 페이지의 챕터 제목 표시 */}
       {currentChapter !== "📖 목차 없음" && (
         <div className="w-full text-center text-xl font-bold px-0 p-3 bg-gray-100 text-black dark:bg-gray-800 dark:text-white border-b border-gray-300 dark:border-gray-700 mb-4">
           📖 {currentChapter}
         </div>
       )}
 
-      {/* ✅ 이미지가 포함된 페이지 처리 */}
+      {/*   이미지가 포함된 페이지 처리 */}
       {currentImageUrl ? (
         <div className="w-full flex justify-center">
           <img src={currentImageUrl} alt="봄날의 서 이미지" className="max-w-full max-h-screen object-contain" />

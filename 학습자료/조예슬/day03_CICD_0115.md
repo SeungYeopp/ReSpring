@@ -73,7 +73,7 @@ CI/CD 파이프라인을 설정하고 자동화하려면 다음 단계가 필요
 
 <br>
 
-#### ✅ 실제 빌드하면서 만났던 이슈
+####   실제 빌드하면서 만났던 이슈
 > BackEnd
 `./gradlew clean build` 를 통해 빌드를 진행할 때 Permission denied 오류가 발생했다.
 

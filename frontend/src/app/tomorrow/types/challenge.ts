@@ -35,7 +35,7 @@ export interface ChallengeDetail extends Challenge {
   records?: { [key: string]: "SUCCESS" | "FAIL" }; // 날짜별 성공/실패 기록 (옵션)
   isParticipating: boolean;  // 현재 사용자의 참여 여부 (응답 예시: Isparticipating → isParticipating)
   isLike: boolean;           // 사용자가 좋아요를 눌렀는지 여부 (응답 예시: Islike → isLike)
-  imageUrl: string; // ✅ API로부터 오는 이미지 URL
+  imageUrl: string; //   API로부터 오는 이미지 URL
   chatRoomId : number; // API로부터 오는 챌린지 전용 오픈채팅방 ID
   ownerNickname : string;
 }

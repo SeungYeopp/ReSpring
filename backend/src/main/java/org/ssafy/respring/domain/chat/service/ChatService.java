@@ -70,7 +70,7 @@ public class ChatService {
 
         chatRoomRepository.save(chatRoom);
 
-        // ✅ 채팅방-유저 관계 저장
+        //   채팅방-유저 관계 저장
         users.forEach(user -> {
             chatRoomUserRepository.save(ChatRoomUser.builder()
                     .chatRoom(chatRoom)
@@ -102,7 +102,6 @@ public class ChatService {
                 .anyMatch(chatRoomUser -> chatRoomUser.getUser().getId().equals(userId));
 
         if (alreadyJoined) {
-            System.out.println("⚠️ 이미 채팅방에 참가한 유저: " + userId);
             return chatRoom;
         }
 
@@ -113,7 +112,6 @@ public class ChatService {
                 .build();
 
         chatRoomUserRepository.save(chatRoomUser);
-        System.out.println("✅ 채팅방에 새 유저 추가: " + userId);
 
         return chatRoom;
     }
@@ -135,19 +133,18 @@ public class ChatService {
 
         // 🔹 1:1 채팅방인지 확인 (isOpenChat = false이면 1:1 채팅방)
         if (!chatRoom.isOpenChat()) {
-            System.out.println("✅ 1:1 채팅방 - 챌린지 조회 없이 메시지 저장");
         } else {
-            // ✅ 오픈 채팅방일 경우에만 챌린지 조회
+            //   오픈 채팅방일 경우에만 챌린지 조회
             Challenge challenge = challengeRepository.findByChatRoomId(chatRoom.getId())
                     .orElseThrow(() -> new IllegalArgumentException("❌ 해당 챌린지와 연결된 채팅방을 찾을 수 없습니다."));
 
-            // ✅ 챌린지가 종료되었는지 확인
+            //   챌린지가 종료되었는지 확인
             if (challenge.getEndDate().isBefore(LocalDateTime.now())) {
                 throw new IllegalStateException("❌ 챌린지가 종료되어 채팅을 보낼 수 없습니다.");
             }
         }
 
-        // ✅ 메시지 저장
+        //   메시지 저장
         ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
                 .sender(userId.toString())
                 .receiver(receiver)
@@ -247,11 +244,10 @@ public class ChatService {
                 .anyMatch(chatRoomUser -> chatRoomUser.getUser().getId().equals(userId));
 
         if (alreadyJoined) {
-            System.out.println("⚠️ 이미 채팅방에 참가한 유저: " + userId);
             return ChatRoomResponse.from(chatRoom);
         }
 
-        // ✅ 채팅방-유저 관계 저장
+        //   채팅방-유저 관계 저장
         ChatRoomUser chatRoomUser = ChatRoomUser.builder()
                 .chatRoom(chatRoom)
                 .user(user)
@@ -259,7 +255,6 @@ public class ChatService {
                 .build();
 
         chatRoomUserRepository.save(chatRoomUser);
-        System.out.println("✅ 채팅방 참가 성공: " + userId);
 
         return ChatRoomResponse.from(chatRoom);
     }
@@ -284,15 +279,14 @@ public class ChatService {
 
         chatRoomUser.setActive(false);
         chatRoomUserRepository.save(chatRoomUser);
-        System.out.println("🚪 일반 채팅방 - isActive = false 설정됨: " + userId);
 
-        // ✅ WebSocket을 통해 나간 사실을 알림
+        //   WebSocket을 통해 나간 사실을 알림
         messagingTemplate.convertAndSend(
                 "/topic/roomUpdates/" + roomId,
                 "User " + userId + " has left the room."
         );
 
-        // ✅ 1:1 채팅방에서 모든 유저가 나가면 방 삭제
+        //   1:1 채팅방에서 모든 유저가 나가면 방 삭제
         if (!chatRoom.isOpenChat()) {
             boolean hasActiveUsers = chatRoom.getUsers().stream().anyMatch(u ->
                     chatRoomUserRepository.findByChatRoomAndUser(chatRoom, u)
@@ -302,7 +296,6 @@ public class ChatService {
 
             if (!hasActiveUsers) {
                 chatRoomRepository.delete(chatRoom);
-                System.out.println("✅ 1:1 채팅방 삭제됨: " + roomId);
             }
         }
     }
@@ -327,14 +320,13 @@ public class ChatService {
         User user2 = userRepository.findById(user2Id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + user2Id));
 
-        // ✅ 기존 1:1 채팅방 조회
+        //   기존 1:1 채팅방 조회
         Optional<ChatRoom> existingRoomOpt = chatRoomRepository.findExactPrivateRoom(user1, user2);
 
         if (existingRoomOpt.isPresent()) {
             ChatRoom existingRoom = existingRoomOpt.get();
-            System.out.println("✅ 기존 1:1 채팅방 재사용: " + existingRoom.getId());
 
-            // ✅ 기존 사용자의 isActive를 다시 활성화 (isActive = true)
+            //   기존 사용자의 isActive를 다시 활성화 (isActive = true)
             existingRoom.getChatRoomUsers().forEach(chatRoomUser -> {
                 if (chatRoomUser.getUser().equals(user1) || chatRoomUser.getUser().equals(user2)) {
                     chatRoomUser.setActive(true);
@@ -345,8 +337,7 @@ public class ChatService {
             return existingRoom;
         }
 
-        // ✅ 기존 방이 없으면 새로운 1:1 채팅방 생성
-        System.out.println("✅ 새로운 1:1 채팅방 생성");
+        //   기존 방이 없으면 새로운 1:1 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .name("Private Chat: " + user1.getUserNickname() + " & " + user2.getUserNickname())
                 .isOpenChat(false)
@@ -369,13 +360,13 @@ public class ChatService {
     }
 
 
-    // ✅ 특정 방 정보 조회 (멘토링 여부 포함)
+    //   특정 방 정보 조회 (멘토링 여부 포함)
     public ChatRoom getRoomById(Long roomId) {
         return chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 채팅방을 찾을 수 없음"));
     }
 
-    // ✅ 마지막 접속 시간 저장 (Timestamp + Human-readable format)
+    //   마지막 접속 시간 저장 (Timestamp + Human-readable format)
     public void saveLastSeenTime(Long roomId, UUID userId) {
         String key = LAST_SEEN_KEY + roomId + ":" + userId;
         String humanKey = LAST_SEEN_HUMAN_KEY + roomId + ":" + userId;
@@ -386,39 +377,35 @@ public class ChatService {
         redisTemplate.opsForValue().set(key, String.valueOf(timestamp), 24, TimeUnit.HOURS);
         redisTemplate.opsForValue().set(humanKey, formattedDate, 24, TimeUnit.HOURS);
 
-        System.out.println("✅ Redis 저장됨: " + key + " → " + timestamp);
-        System.out.println("✅ Redis 저장됨: " + humanKey + " → " + formattedDate);
     }
 
-    // ✅ 마지막 접속 시간 조회 (Timestamp)
+    //   마지막 접속 시간 조회 (Timestamp)
     public Long getLastSeenTime(Long roomId, UUID userId) {
         String key = LAST_SEEN_KEY + roomId + ":" + userId;
         String timestamp = redisTemplate.opsForValue().get(key);
         return timestamp != null ? Long.parseLong(timestamp) : 0L;
     }
 
-    // ✅ 마지막 접속 시간 조회 (Human-readable Format)
+    //   마지막 접속 시간 조회 (Human-readable Format)
     public String getLastSeenTimeHuman(Long roomId, UUID userId) {
         String key = LAST_SEEN_HUMAN_KEY + roomId + ":" + userId;
         return redisTemplate.opsForValue().get(key);
     }
 
-    // ✅ 사용자가 채팅방에 입장할 때 호출
+    //   사용자가 채팅방에 입장할 때 호출
     public void markUserAsInRoom(Long roomId, UUID userId) {
         String key = "room_user_status:" + roomId + ":" + userId;
         redisTemplate.opsForValue().set(key, "true", 24, TimeUnit.HOURS);  // 24시간 유지
-        System.out.println("✅ Redis 저장됨: " + key);
     }
 
 
-    // ✅ 사용자가 채팅방에서 나갈 때 호출
+    //   사용자가 채팅방에서 나갈 때 호출
     public void markUserAsLeftRoom(Long roomId, UUID userId) {
         String key = ROOM_USER_STATUS_KEY + roomId + ":" + userId;
         redisTemplate.delete(key);
-        System.out.println("🚪 사용자 방에서 나감: " + key);
     }
 
-    // ✅ 사용자가 현재 방에 있는지 확인
+    //   사용자가 현재 방에 있는지 확인
     public boolean isUserCurrentlyInRoom(Long roomId, UUID userId) {
         String key = ROOM_USER_STATUS_KEY + roomId + ":" + userId;
         return redisTemplate.hasKey(key);

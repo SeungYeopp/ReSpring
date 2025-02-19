@@ -14,7 +14,7 @@ public class ChatRoomResponse {
     private Boolean isOpenChat;
     private int userCount;
 
-    // ✅ ChatRoom -> ChatRoomResponse 변환 메서드 추가
+    //   ChatRoom -> ChatRoomResponse 변환 메서드 추가
     public static ChatRoomResponse from(ChatRoom chatRoom) {
         return ChatRoomResponse.builder()
                 .roomId(chatRoom.getId())

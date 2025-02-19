@@ -264,8 +264,8 @@ public class BookService {
 	@Transactional(readOnly = true)
 	public LinkedHashMap<String, String> getBookContent(Long bookId) {
 		return Optional.ofNullable(bookContentRepository.findByBookId(bookId))
-				.map(bookContent -> restoreDots(bookContent.getContent())) // ✅ '_DOT_' → '.' 복구
-				.orElse(new LinkedHashMap<>()); // ✅ 빈 LinkedHashMap 반환
+				.map(bookContent -> restoreDots(bookContent.getContent())) //   '_DOT_' → '.' 복구
+				.orElse(new LinkedHashMap<>()); //   빈 LinkedHashMap 반환
 	}
 
 	// MongoDB 저장 시 '.' → '_DOT_' 변환
@@ -333,7 +333,6 @@ public class BookService {
 		// 캐시에서 조회
 		List<BookResponseDto> cachedResult = (List<BookResponseDto>) redisTemplate.opsForValue().get(cacheKey);
 		if (cachedResult != null) {
-//			System.out.println(" 캐시에서 불러옴: " + cacheKey);
 			return cachedResult;
 		}
 
@@ -401,15 +400,12 @@ public class BookService {
 			bookData.put("title", book.getTitle());
 
 			// 수정된 데이터 확인
-			System.out.println("📌 수정된 색인 요청 데이터: " + bookData);
-
 			IndexRequest<Map<String, Object>> request = IndexRequest.of(i -> i
 					.index(BOOK_INDEX)
 					.id(book.getId().toString())
 					.document(bookData));
 
 			esClient.index(request);
-			System.out.println("Elasticsearch 색인 성공: " + book.getTitle());
 		} catch (IOException e) {
 			throw new RuntimeException("Elasticsearch 색인 오류", e);
 		}
@@ -452,7 +448,6 @@ public class BookService {
 		Set<String> keys = redisTemplate.keys("trending_books:*");
 		if (keys != null) {
 			redisTemplate.delete(keys);
-			System.out.println("✅ Redis 캐시 삭제 완료: " + keys.size() + "개 항목");
 		}
 	}
 
@@ -468,7 +463,6 @@ public class BookService {
 		List<BookResponseDto> books = searchResponse.hits().hits().stream()
 				.map(hit -> {
 					try {
-						System.out.println("✅ 검색 결과: " + hit.source());
 
 						// Elasticsearch에서 변환
 						BookResponseDto bookDto = objectMapper.convertValue(hit.source(), BookResponseDto.class);
@@ -523,7 +517,6 @@ public class BookService {
 		book.setLikedUsers(likedUsers);
 		book.setLiked(isBookLiked(book.getId(), userId)); //   사용자의 좋아요 여부 확인
 
-		System.out.println(book);
 
 		return book;
 	}

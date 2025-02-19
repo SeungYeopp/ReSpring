@@ -9,6 +9,6 @@ import java.util.List;
 @AllArgsConstructor
 public class ChallengeParticipantsResponseDto {
     private Long challengeId;
-    private int participantCount; // ✅ 총 참여자 수
-    private List<ParticipantInfoDto> participantInfos; // ✅ 참여자 ID 목록
+    private int participantCount; //   총 참여자 수
+    private List<ParticipantInfoDto> participantInfos; //   참여자 ID 목록
 }
