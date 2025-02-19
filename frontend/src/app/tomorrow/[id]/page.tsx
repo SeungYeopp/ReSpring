@@ -167,22 +167,22 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
     </TooltipProvider>
   ) : (
     <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="secondary"
-            size="icon"
-            className="bg-white/80 hover:bg-white text-gray-800"
-            onClick={handleLeaveChallenge}
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>나가기</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="destructive"
+          size="icon"
+          className="bg-red-500 hover:bg-red-600 text-white"
+          onClick={handleLeaveChallenge}
+        >
+          <LogOut className="w-4 h-4" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>나가기</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
   )}
 </div>
 
