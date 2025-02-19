@@ -45,6 +45,20 @@ export default function TopCarousel() {
     handleInitials()
   }, [])
 
+  const getRandomSubscribers = (ids : string[], count : number) => {
+    if (ids.length <= count) {
+      return ids;
+    }
+  
+    const shuffled = [...ids]; // 배열을 복사한 뒤
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // 요소를 랜덤하게 섞기
+    }
+  
+    return shuffled.slice(0, count);
+  };
+
   return (
     <Tabs defaultValue="weekly" onValueChange={(value) => setActiveTab(value)} className="w-full">
       <TabsList className="grid w-full grid-cols-2">
