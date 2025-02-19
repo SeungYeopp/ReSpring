@@ -140,6 +140,8 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
 
   // 현재 날짜와 enddate 비교
   const isChallengeEnded = today > endDate;
+  // 현재 날짜와 startdate 비교
+  const isChallengeNotStarted = today < startDate;
 
 
   return (
@@ -214,21 +216,26 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
       </div>
 
       {/* ChallengeActionButton 컴포넌트에 소유자 여부와 챌린지 기간 활성 여부를 전달 */}
-      {isChallengeEnded ? (
-  <div className="text-center text-gray-600">
-    <h1>이미 끝난 챌린지입니다.</h1>
-  </div>
-) : (
-  <ChallengeActionButton
-    isParticipating={isParticipating}
-    isTodayCompleted={isTodayCompleted}
-    theme={theme}
-    onComplete={handleCompleteToday}
-    onJoin={handleJoinChallenge}
-    isOwner={isOwner}
-    isActive={isChallengeActive}
-  />
-)}
+      {isChallengeNotStarted ? (
+        <div className="text-center text-gray-600">
+          <h1>시작을 기다리고 있는 도전입니다.</h1>
+        </div>
+      ) : isChallengeEnded ? (
+        <div className="text-center text-gray-600">
+          <h1>이미 끝난 챌린지입니다.</h1>
+        </div>
+      ) : (
+        <ChallengeActionButton
+          isParticipating={isParticipating}
+          isTodayCompleted={isTodayCompleted}
+          theme={theme}
+          onComplete={handleCompleteToday}
+          onJoin={handleJoinChallenge}
+          isOwner={isOwner}
+          isActive={isChallengeActive}
+        />
+      )}
+
 
     </div>
   );
