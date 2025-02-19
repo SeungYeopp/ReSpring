@@ -8,12 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { ChallengeDetailTab } from "../components/detail/challenge-detail-tab"
 import { ChallengeChatTab } from "../components/detail/challenge-chat-tab"
-import { Heart, Eye, Edit, ArrowLeft } from "lucide-react"
+import { Heart, Eye, Edit, ArrowLeft, LogOut } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { ChallengeDetail } from "@/app/tomorrow/types/challenge"
 import { format, parseISO } from "date-fns"
 import { ko } from "date-fns/locale"
-import { getChallengeDetail, toggleChallengeLike, getSessionInfo } from "@/lib/api"
+import { getChallengeDetail, toggleChallengeLike, getSessionInfo, leaveChallenge } from "@/lib/api"
 import LoadingScreen from "@/components/custom/LoadingScreen"
 import { getUserInfo, type UserInfo } from "@/lib/api";
 
@@ -27,7 +27,7 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
   const [currentUserNickname, setCurrentUserNickname] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
-  // 수정하기 버튼의 좋아요 토글 핸들러
+  //  좋아요 토글 핸들러
   const handleLikeClick = async () => {
     if (!challenge) return;
     try {
@@ -62,6 +62,22 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
   
     fetchUserInfo();
   }, []);
+
+  // 나가기 버튼 핸들러 (챌린지 소유자가 아닐 경우)
+  const handleLeaveChallenge = async () => {
+    try {
+      const success = await leaveChallenge(challenge!.id)
+      if (success) {
+        console.log("챌린지 나가기 성공")
+        // 탈퇴 후 챌린지 목록 페이지 등으로 이동 (예시)
+        router.push("/tomorrow")
+      } else {
+        console.error("챌린지 나가기 실패")
+      }
+    } catch (error) {
+      console.error("챌린지 나가기 중 에러 발생:", error)
+    }
+  }
   
 
   // // 세션 정보를 통해 현재 유저의 ID를 가져와서 저장 (추가)
@@ -113,45 +129,63 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-40"></div>
                 <div className="absolute inset-0 p-4 flex flex-col justify-between">
-                  <div className="flex justify-between">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="secondary"
-                            size="icon"
-                            className="bg-white/80 hover:bg-white text-gray-800"
-                            onClick={() => router.push(`/tomorrow`)}
-                            >
-                            <ArrowLeft className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>뒤로 가기</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    {/* 현재 유저가 챌린지 소유자일 경우에만 수정하기 버튼을 표시 */}
-                    {userInfo?.userNickname === challenge.ownerNickname && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              className="bg-white/80 hover:bg-white text-gray-800"
-                              onClick={() => router.push(`/tomorrow/edit/${challenge.id}`)}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>수정하기</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                  </div>
+                <div className="flex justify-between">
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="bg-white/80 hover:bg-white text-gray-800"
+          onClick={() => router.push(`/tomorrow`)}
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>뒤로 가기</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+  {userInfo?.userNickname === challenge.ownerNickname ? (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="bg-white/80 hover:bg-white text-gray-800"
+            onClick={() => router.push(`/tomorrow/edit/${challenge.id}`)}
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>수정하기</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  ) : (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="bg-white/80 hover:bg-white text-gray-800"
+            onClick={handleLeaveChallenge}
+          >
+            <LogOut className="w-4 h-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>나가기</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )}
+</div>
+
                   <div className="flex justify-between items-end">
                     <div className="flex flex-col">
                       <p className="text-sm text-white mb-1">
