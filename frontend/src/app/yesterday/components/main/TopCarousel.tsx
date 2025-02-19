@@ -26,17 +26,23 @@ export default function TopCarousel() {
 
         const subscribersResult = await getAllSubscribers();
         const subscriberNicknames = subscribersResult.map((subbedUser) => subbedUser.userNickname);
-        const randomSubscribers = getRandomSubscribers(subscriberNicknames, 1); // 구독한 사람 랜덤 한 명 뽑기.
 
-        const subscriberBooks = await getAllBooksByUserNickname(randomSubscribers[0]);
+        // 모든 구독자들의 책을 가져오는 비동기 작업을 병렬 실행
+        const subscriberBooksArray = await Promise.all(
+          subscriberNicknames.map((nickname) => getAllBooksByUserNickname(nickname))
+        );
 
-        setSubscriberBooks(subscriberBooks);
+        // 2차원 배열을 1차원 배열로 변환 (flat 사용)
+        const mergedBooks = subscriberBooksArray.flat();
+
+        setSubscriberBooks(mergedBooks);
       }catch(error){
         console.error(error);
       }
     }
     handleInitials();
   }, [])
+
 
   const getRandomSubscribers = (ids : string[], count : number) => {
     if (ids.length <= count) {
