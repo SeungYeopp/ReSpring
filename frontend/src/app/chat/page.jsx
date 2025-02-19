@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
 import io from "socket.io-client";
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Sprout, Video, Settings, ArrowLeft, Send, Users,MessageSquarePlus,  Eye, EyeOff } from "lucide-react"
+import { Sprout, Video, Settings, ArrowLeft, Send, Users, MessageSquarePlus, Eye, EyeOff } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
@@ -23,6 +23,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { motion } from "framer-motion"
+import { useSearchParams, useRouter } from 'next/navigation';
+import { getUserInfoByNickname, UserInfo } from "@/lib/api/user";
 
 const SERVER_URL = "http://localhost:8080/chat";
 const USER_SESSION_URL = "http://localhost:8080/user/me";
@@ -52,9 +54,9 @@ const Chat1 = () => {
         "http://localhost:8080/subscriptions/me/users",
         { credentials: "include" }
       );
-  
+
       if (!response.ok) throw new Error("구독한 사용자 목록 불러오기 실패!");
-  
+
       const data = await response.json();
       // createdAt 필드를 Date 객체로 변환하는 처리 추가
       const formattedData = data.map((subscriber) => ({
@@ -66,8 +68,48 @@ const Chat1 = () => {
       console.error("❌ 구독 사용자 가져오는 중 오류 발생:", error);
     }
   };
-  
-  
+
+
+
+  // 프로필 화면서 접근시
+  const searchParams = useSearchParams();
+  const targetNickname = searchParams.get("targetNickname");
+  const [userId, setUserId] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useLayoutEffect(() => {
+    if (!targetNickname) return;
+
+    const fetchUserInfo = async () => {
+      try {
+        console.log("Fetching user info for nickname:", targetNickname);
+        const userInfo = await getUserInfoByNickname(targetNickname);
+        
+        console.log("Fetched user info:", userInfo);
+        
+        // Set the userId state
+        setUserId(userInfo.userId);
+      } catch (error) {
+        console.error("Failed to fetch user info:", error.message);
+      } finally {
+        setLoading(false);  // Once fetching is done, set loading to false
+      }
+    };
+
+    fetchUserInfo();
+  }, [targetNickname]);
+
+  // Ensure startPrivateChat is called only when userId is set and loading is complete
+  useLayoutEffect(() => {
+    if (!loading && userId) {
+      console.log("Starting private chat with userId:", userId);
+      startPrivateChat(userId);
+    }
+  }, [userId, loading]);  // Dependency on both userId and loading
+
+
+
+
   // 모달이 열릴 때 fetch 실행되게!
   useEffect(() => {
     if (isNewChatOpen) {
@@ -92,16 +134,16 @@ const Chat1 = () => {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const [isStreaming, setIsStreaming] = useState(false);
-// 모달 관련 상태 추가
-const [searchQuery, setSearchQuery] = useState("");
-// 검색어에 따라 필터링된 사용자 목록 생성
-const filteredUsers = subscribedUsers.filter((user) => {
-  const query = searchQuery.toLowerCase();
-  return (
-    user.userNickname.toLowerCase().includes(query) ||
-    user.email.toLowerCase().includes(query)
-  );
-});
+  // 모달 관련 상태 추가
+  const [searchQuery, setSearchQuery] = useState("");
+  // 검색어에 따라 필터링된 사용자 목록 생성
+  const filteredUsers = subscribedUsers.filter((user) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      user.userNickname.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query)
+    );
+  });
 
   /* ✅ 로그인 사용자 정보 */
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -435,30 +477,30 @@ const filteredUsers = subscribedUsers.filter((user) => {
     setIsProducing(false);
   };
 
- const updateMyRooms = (message) => {
-  const rooms = JSON.parse(message.body);
-  console.log("현재 방 목록:", rooms); // ✅ 여기 추가
-  setMyRooms(rooms);
-};
+  const updateMyRooms = (message) => {
+    const rooms = JSON.parse(message.body);
+    console.log("현재 방 목록:", rooms); // ✅ 여기 추가
+    setMyRooms(rooms);
+  };
 
 
-const getProfileImageForRoom = (room) => {
-  // 오픈채팅인 경우 Dicebear 이미지를 그대로 사용
-  if (room.isOpenChat) {
-    return `https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`;
-  }
-  
-  // 1:1 채팅인 경우, 상대방의 이름 추출 (ex: "Private Chat: A & B"에서 내 이름이 userNickname일 때 상대방 이름)
-  const otherName = extractOtherUserName(room.name, userNickname);
-  // 구독한 사용자 목록에서 일치하는 사용자 찾기
-  const foundUser = subscribedUsers.find(
-    (user) => user.userNickname === otherName
-  );
-  // 찾으면 프로필 이미지 URL 반환, 없으면 기본 Dicebear 이미지 반환
-  return foundUser?.profileImage || `https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`;
-};
+  const getProfileImageForRoom = (room) => {
+    // 오픈채팅인 경우 Dicebear 이미지를 그대로 사용
+    if (room.isOpenChat) {
+      return `https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`;
+    }
 
-// 챌린지 상세에 있는 roomId랑 비교해서 같은 방 컨텐츠를 렌더링 하는 방식으로 하자. 디자인도 여기 있는 거 그대로 쓰고.
+    // 1:1 채팅인 경우, 상대방의 이름 추출 (ex: "Private Chat: A & B"에서 내 이름이 userNickname일 때 상대방 이름)
+    const otherName = extractOtherUserName(room.name, userNickname);
+    // 구독한 사용자 목록에서 일치하는 사용자 찾기
+    const foundUser = subscribedUsers.find(
+      (user) => user.userNickname === otherName
+    );
+    // 찾으면 프로필 이미지 URL 반환, 없으면 기본 Dicebear 이미지 반환
+    return foundUser?.profileImage || `https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`;
+  };
+
+  // 챌린지 상세에 있는 roomId랑 비교해서 같은 방 컨텐츠를 렌더링 하는 방식으로 하자. 디자인도 여기 있는 거 그대로 쓰고.
   const fetchMessagesAndConnect = async (roomId, roomName, openChat) => {
     // ✅ 기존 WebSocket 구독이 있으면 해제 (중복 구독 방지)
     if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
@@ -537,26 +579,26 @@ const getProfileImageForRoom = (room) => {
   //     stompClient.send("/app/chat/myRooms/" + currentUserId, {}, {});
   //   });
   // };
-// 기존의 prompt 방식 대신 모달 입력값을 사용하도록 수정
-const startPrivateChat = (selectedUserId) => {
-  if (!selectedUserId) return;
-  
-  stompClient.send(
-    "/app/chat.private",
-    {},
-    JSON.stringify({
-      user1: currentUserId,
-      user2: selectedUserId,
-    })
-  );
-  
-  stompClient.subscribe(`/topic/newRoom/${currentUserId}`, (message) => {
-    const privateRoom = JSON.parse(message.body);
-    fetchMessagesAndConnect(privateRoom.roomId, privateRoom.name, false);
-    // 1:1 채팅 생성 후 즉시 내 방 목록 새로고침
-    stompClient.send("/app/chat/myRooms/" + currentUserId, {}, {});
-  });
-};
+  // 기존의 prompt 방식 대신 모달 입력값을 사용하도록 수정
+  const startPrivateChat = (selectedUserId) => {
+    if (!selectedUserId) return;
+
+    stompClient.send(
+      "/app/chat.private",
+      {},
+      JSON.stringify({
+        user1: currentUserId,
+        user2: selectedUserId,
+      })
+    );
+
+    stompClient.subscribe(`/topic/newRoom/${currentUserId}`, (message) => {
+      const privateRoom = JSON.parse(message.body);
+      fetchMessagesAndConnect(privateRoom.roomId, privateRoom.name, false);
+      // 1:1 채팅 생성 후 즉시 내 방 목록 새로고침
+      stompClient.send("/app/chat/myRooms/" + currentUserId, {}, {});
+    });
+  };
 
   const leaveRoom = () => {
     if (isOpenChat || !currentRoom) return;
@@ -759,253 +801,250 @@ const startPrivateChat = (selectedUserId) => {
   };
 
   // --------------------------------------------------------------------------------------------------------------------------------------------------------
-   // 초기 상태 변경: 기본 폰트를 "binggraetaom" 등 원하는 키로 설정합니다.
-   const [activeScreen, setActiveScreen] = useState("rooms");
-   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-   const [fontSize, setFontSize] = useState("medium");
-   const [letterSpacing, setLetterSpacing] = useState("normal");
-   const [fontFamily, setFontFamily] = useState("binggraetaom");
-   const [isVideoPopoverOpen, setIsVideoPopoverOpen] = useState(false);
-   const [showOpenChats, setShowOpenChats] = useState(true);
-   const [newChatUserId, setNewChatUserId] = useState("");
- 
-   // 글꼴 매핑을 Tailwind 설정의 fontFamily 키와 클래스 이름으로 변경합니다.
-   const fontFamilies = {
-     godob: "font-godob",
-     godom: "font-godom",
-     godomaum: "font-godomaum",
-     nunugothic: "font-nunugothic",
-     samlipbasic: "font-samlipbasic",
-     samlipoutline: "font-samlipoutline",
-     ongle: "font-ongle",
-     binggraetaom: "font-binggraetaom",
-     binggraetaombold: "font-binggraetaombold",
-     mapobackpacking: "font-mapobackpacking",
-     goodneighborsbold: "font-goodneighborsbold",
-     goodneighborsregular: "font-goodneighborsregular",
-     laundrygothicbold: "font-laundrygothicbold",
-     laundrygothicregular: "font-laundrygothicregular",
-     handon300: "font-handon300",
-     handon600: "font-handon600",
-   };
- 
-   const extractOtherUserName = (roomName, myNickname) => {
-     if (roomName.startsWith("Private Chat: ")) {
-       const namesPart = roomName.replace("Private Chat: ", "");
-       const names = namesPart.split(" & ");
-       return names.find((name) => name.trim() !== myNickname) || "알 수 없음";
-     }
-     return roomName;
-   };
- 
-   const messagesEndRef = useRef(null);
- 
-   const scrollToBottom = () => {
-     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-   };
- 
-   useEffect(() => {
-     scrollToBottom();
-   }, [messages]); // useEffect dependency 수정
- 
-   const handleStartPrivateChat = () => {
-     if (newChatUserId.trim()) {
-       startPrivateChat(newChatUserId);
-       setNewChatUserId("");
-       setIsNewChatOpen(false);
-     }
-   };
- 
-   const fontSizes = {
-     small: "text-sm",
-     medium: "text-base",
-     large: "text-lg",
-   };
- 
-   const letterSpacings = {
-     tight: "tracking-tight",
-     normal: "tracking-normal",
-     wide: "tracking-wide",
-   };
- 
-   const filteredRooms = showOpenChats ? myRooms : myRooms.filter((room) => !room.isOpenChat);
- 
-   const renderRoomList = () => (
-     <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]} border-none bg-white/50 backdrop-blur-sm shadow-lg`}>
-       <CardHeader>
-         <div className="flex justify-between items-center">
-           <div className="flex items-center gap-2">
-             <Sprout className="text-[#96b23c] w-5 h-5" />
-             <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
+  // 초기 상태 변경: 기본 폰트를 "binggraetaom" 등 원하는 키로 설정합니다.
+  const [activeScreen, setActiveScreen] = useState("rooms");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [fontSize, setFontSize] = useState("medium");
+  const [letterSpacing, setLetterSpacing] = useState("normal");
+  const [fontFamily, setFontFamily] = useState("binggraetaom");
+  const [isVideoPopoverOpen, setIsVideoPopoverOpen] = useState(false);
+  const [showOpenChats, setShowOpenChats] = useState(true);
+  const [newChatUserId, setNewChatUserId] = useState("");
+
+  // 글꼴 매핑을 Tailwind 설정의 fontFamily 키와 클래스 이름으로 변경합니다.
+  const fontFamilies = {
+    godob: "font-godob",
+    godom: "font-godom",
+    godomaum: "font-godomaum",
+    nunugothic: "font-nunugothic",
+    samlipbasic: "font-samlipbasic",
+    samlipoutline: "font-samlipoutline",
+    ongle: "font-ongle",
+    binggraetaom: "font-binggraetaom",
+    binggraetaombold: "font-binggraetaombold",
+    mapobackpacking: "font-mapobackpacking",
+    goodneighborsbold: "font-goodneighborsbold",
+    goodneighborsregular: "font-goodneighborsregular",
+    laundrygothicbold: "font-laundrygothicbold",
+    laundrygothicregular: "font-laundrygothicregular",
+    handon300: "font-handon300",
+    handon600: "font-handon600",
+  };
+
+  const extractOtherUserName = (roomName, myNickname) => {
+    if (roomName.startsWith("Private Chat: ")) {
+      const namesPart = roomName.replace("Private Chat: ", "");
+      const names = namesPart.split(" & ");
+      return names.find((name) => name.trim() !== myNickname) || "알 수 없음";
+    }
+    return roomName;
+  };
+
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]); // useEffect dependency 수정
+
+  const handleStartPrivateChat = () => {
+    if (newChatUserId.trim()) {
+      startPrivateChat(newChatUserId);
+      setNewChatUserId("");
+      setIsNewChatOpen(false);
+    }
+  };
+
+  const fontSizes = {
+    small: "text-sm",
+    medium: "text-base",
+    large: "text-lg",
+  };
+
+  const letterSpacings = {
+    tight: "tracking-tight",
+    normal: "tracking-normal",
+    wide: "tracking-wide",
+  };
+
+  const filteredRooms = showOpenChats ? myRooms : myRooms.filter((room) => !room.isOpenChat);
+
+  const renderRoomList = () => (
+    <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]} border-none bg-white/50 backdrop-blur-sm shadow-lg`}>
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Sprout className="text-[#96b23c] w-5 h-5" />
+            <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
               채팅방 목록
-             </CardTitle>
-           </div>
-           <Button
-             onClick={() => setIsNewChatOpen(true)}
-             variant="outline"
-             size="sm"
-             className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4] transition-all duration-300 hover:scale-105`}
-           >
-             새 채팅
-           </Button>
-         </div>
-         <div className="flex items-center space-x-2 mt-2">
-           <Switch
-             checked={showOpenChats}
-             onCheckedChange={setShowOpenChats}
-             id="open-chat-mode"
-             className="data-[state=checked]:bg-[#96b23c]"
-           />
-           <label htmlFor="open-chat-mode" className="text-sm font-medium text-gray-700">
-             {showOpenChats ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-             {showOpenChats ? "오픈채팅 보기" : "오픈채팅 숨기기"}
-           </label>
-         </div>
-       </CardHeader>
-       <CardContent className="flex-1 p-0">
-         <ScrollArea className="h-[calc(100vh-12rem)]">
-           <div className="space-y-2 p-4">
-             {filteredRooms.map((room) => (
-               <motion.div
-                 initial={{ opacity: 0, y: 20 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 key={room.roomId}
-                 className={`flex items-center space-x-4 p-3 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105
+            </CardTitle>
+          </div>
+          <Button
+            onClick={() => setIsNewChatOpen(true)}
+            variant="outline"
+            size="sm"
+            className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4] transition-all duration-300 hover:scale-105`}
+          >
+            새 채팅
+          </Button>
+        </div>
+        <div className="flex items-center space-x-2 mt-2">
+          <Switch
+            checked={showOpenChats}
+            onCheckedChange={setShowOpenChats}
+            id="open-chat-mode"
+            className="data-[state=checked]:bg-[#96b23c]"
+          />
+          <label htmlFor="open-chat-mode" className="text-sm font-medium text-gray-700">
+            {showOpenChats ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            {showOpenChats ? "오픈채팅 보기" : "오픈채팅 숨기기"}
+          </label>
+        </div>
+      </CardHeader>
+      <CardContent className="flex-1 p-0">
+        <ScrollArea className="h-[calc(100vh-12rem)]">
+          <div className="space-y-2 p-4">
+            {filteredRooms.map((room) => (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                key={room.roomId}
+                className={`flex items-center space-x-4 p-3 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105
                    ${currentRoom?.roomId === room.roomId ? "bg-[#96b23c] text-white" : "hover:bg-[#e6f3d4]"}
                    ${fontSizes[fontSize]} ${letterSpacings[letterSpacing]}`}
-                 onClick={() => {
-                   handleRoomClick(room);
-                   setActiveScreen("chat");
-                 }}
-               >
-                 <Avatar className="border-2 border-white shadow-sm">
-                 <AvatarImage src={getProfileImageForRoom(room)} />
-                 <AvatarFallback>{room.name[0]}</AvatarFallback>
-                 </Avatar>
-                 <div className="flex-1 min-w-0">
-                   <p
-                     className={`text-sm font-medium truncate ${
-                       currentRoom?.roomId === room.roomId ? "text-white" : "text-gray-900"
-                     }`}
-                   >
-                     {room.isOpenChat ? room.name : extractOtherUserName(room.name, userNickname)}
-                   </p>
-                   {room.isOpenChat && (
-                     <div
-                       className={`flex items-center text-xs ${
-                         currentRoom?.roomId === room.roomId ? "text-white/80" : "text-gray-500"
-                       }`}
-                     >
-                       <Users className="w-3 h-3 mr-1" />
-                       <span>{room.userCount || 0}</span>
-                     </div>
-                   )}
-                 </div>
-               </motion.div>
-             ))}
-           </div>
-         </ScrollArea>
-       </CardContent>
-     </Card>
-   );
- 
-   const renderEmptyChatScreen = () => (
-     <div className="flex flex-col items-center justify-center h-full">
-       <motion.div
-         initial={{ opacity: 0, y: 20 }}
-         animate={{ opacity: 1, y: 0 }}
-         transition={{ duration: 0.8 }}
-         className="text-center"
-       >
-         <Sprout className="text-[#96b23c] w-12 h-12 mx-auto mb-4" />
-         <h3 className="text-xl font-bold text-gray-900 mb-2">시작하기</h3>
-         <p className="text-sm text-gray-700 mb-6">채팅방을 선택하거나 새로운 채팅을 시작하세요.</p>
-         <Button
-           onClick={() => setIsNewChatOpen(true)}
-           variant="outline"
-           className="px-6 py-2 text-sm rounded-full border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4] transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg font-semibold"
-         >
-           새 채팅
-         </Button>
-       </motion.div>
-     </div>
-   );
- 
-   const renderVideoPopover = () => (
-     <Card className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-       <CardContent className="bg-white/95 p-6 rounded-2xl max-w-2xl w-full shadow-lg border-none">
-         <div className="flex justify-between items-center mb-4">
-           <div className="flex items-center gap-2">
-             <Video className="text-[#96b23c] w-5 h-5" />
-             <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
-               Video Chat
-             </CardTitle>
-           </div>
-           <Button
-             variant="ghost"
-             size="icon"
-             onClick={() => setIsVideoPopoverOpen(false)}
-             className="hover:bg-[#e6f3d4] text-[#96b23c]"
-           >
-             <ArrowLeft className="h-4 w-4" />
-           </Button>
-         </div>
-         <div className="grid grid-cols-2 gap-4">
-           <div className="relative aspect-video rounded-lg overflow-hidden shadow-lg">
-             <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-             <p className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-sm">You</p>
-           </div>
-           <div className="relative aspect-video rounded-lg overflow-hidden shadow-lg">
-             <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
-             <p className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-sm">Remote</p>
-           </div>
-         </div>
-         <div className="mt-6 flex justify-center">
-           <Button
-             onClick={toggleVideoStreaming}
-             variant={isStreaming ? "destructive" : "default"}
-             className={`${
-               isStreaming ? "bg-red-500 hover:bg-red-600" : "bg-[#96b23c] hover:bg-[#7a9431]"
-             } text-white transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg`}
-           >
-             {isStreaming ? "End Video Chat" : "Start Video Chat"}
-           </Button>
-         </div>
-       </CardContent>
-     </Card>
-   );
- 
-   const renderChatScreen = () => (
+                onClick={() => {
+                  handleRoomClick(room);
+                  setActiveScreen("chat");
+                }}
+              >
+                <Avatar className="border-2 border-white shadow-sm">
+                  <AvatarImage src={getProfileImageForRoom(room)} />
+                  <AvatarFallback>{room.name[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={`text-sm font-medium truncate ${currentRoom?.roomId === room.roomId ? "text-white" : "text-gray-900"
+                      }`}
+                  >
+                    {room.isOpenChat ? room.name : extractOtherUserName(room.name, userNickname)}
+                  </p>
+                  {room.isOpenChat && (
+                    <div
+                      className={`flex items-center text-xs ${currentRoom?.roomId === room.roomId ? "text-white/80" : "text-gray-500"
+                        }`}
+                    >
+                      <Users className="w-3 h-3 mr-1" />
+                      <span>{room.userCount || 0}</span>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
+  );
+
+  const renderEmptyChatScreen = () => (
+    <div className="flex flex-col items-center justify-center h-full">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="text-center"
+      >
+        <Sprout className="text-[#96b23c] w-12 h-12 mx-auto mb-4" />
+        <h3 className="text-xl font-bold text-gray-900 mb-2">시작하기</h3>
+        <p className="text-sm text-gray-700 mb-6">채팅방을 선택하거나 새로운 채팅을 시작하세요.</p>
+        <Button
+          onClick={() => setIsNewChatOpen(true)}
+          variant="outline"
+          className="px-6 py-2 text-sm rounded-full border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4] transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg font-semibold"
+        >
+          새 채팅
+        </Button>
+      </motion.div>
+    </div>
+  );
+
+  const renderVideoPopover = () => (
+    <Card className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <CardContent className="bg-white/95 p-6 rounded-2xl max-w-2xl w-full shadow-lg border-none">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
+            <Video className="text-[#96b23c] w-5 h-5" />
+            <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
+              Video Chat
+            </CardTitle>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsVideoPopoverOpen(false)}
+            className="hover:bg-[#e6f3d4] text-[#96b23c]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="relative aspect-video rounded-lg overflow-hidden shadow-lg">
+            <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+            <p className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-sm">You</p>
+          </div>
+          <div className="relative aspect-video rounded-lg overflow-hidden shadow-lg">
+            <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
+            <p className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-sm">Remote</p>
+          </div>
+        </div>
+        <div className="mt-6 flex justify-center">
+          <Button
+            onClick={toggleVideoStreaming}
+            variant={isStreaming ? "destructive" : "default"}
+            className={`${isStreaming ? "bg-red-500 hover:bg-red-600" : "bg-[#96b23c] hover:bg-[#7a9431]"
+              } text-white transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg`}
+          >
+            {isStreaming ? "End Video Chat" : "Start Video Chat"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const renderChatScreen = () => (
     <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]} border-none pb-10 mb-5 bg-white/50 backdrop-blur-sm shadow-lg`}>
       <CardHeader className="flex flex-row items-center justify-between py-2 border-b border-gray-100">
-      <div className="flex items-center space-x-3">
-  <Button
-    variant="ghost"
-    size="icon"
-    onClick={() => setActiveScreen("rooms")}
-    className="md:hidden hover:bg-[#e6f3d4] text-[#96b23c]"
-  >
-    <ArrowLeft className="h-4 w-4" />
-  </Button>
-  {/* currentRoom이 존재할 때만 Avatar 렌더링 */}
-  {currentRoom && (
-    <Avatar className="border-2 border-white shadow-sm">
-      <AvatarImage src={getProfileImageForRoom(currentRoom)} />
-      <AvatarFallback>
-        {currentRoom.isOpenChat
-          ? currentRoom.name?.[0]
-          : (extractOtherUserName(currentRoom.name, userNickname)?.charAt(0) || "U")}
-      </AvatarFallback>
-    </Avatar>
-  )}
-  <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
-    {currentRoom
-      ? currentRoom.isOpenChat
-        ? currentRoom.name
-        : extractOtherUserName(currentRoom.name, userNickname)
-      : ""}
-  </CardTitle>
-</div>
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setActiveScreen("rooms")}
+            className="md:hidden hover:bg-[#e6f3d4] text-[#96b23c]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          {/* currentRoom이 존재할 때만 Avatar 렌더링 */}
+          {currentRoom && (
+            <Avatar className="border-2 border-white shadow-sm">
+              <AvatarImage src={getProfileImageForRoom(currentRoom)} />
+              <AvatarFallback>
+                {currentRoom.isOpenChat
+                  ? currentRoom.name?.[0]
+                  : (extractOtherUserName(currentRoom.name, userNickname)?.charAt(0) || "U")}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          <CardTitle className={`${fontSizes[fontSize]} ${letterSpacings[letterSpacing]} text-gray-900`}>
+            {currentRoom
+              ? currentRoom.isOpenChat
+                ? currentRoom.name
+                : extractOtherUserName(currentRoom.name, userNickname)
+              : ""}
+          </CardTitle>
+        </div>
 
         <div className="flex items-center space-x-2">
           {currentRoom && !isOpenChat && (
@@ -1151,75 +1190,75 @@ const startPrivateChat = (selectedUserId) => {
       )}
     </Card>
   );
-  
-   return (
-     <div className="h-screen w-full bg-gradient-to-b from-[#e6f3d4] to-[#fce8e8] overflow-hidden">
-       <div className="h-full overflow-hidden md:grid md:grid-cols-[300px_1fr] md:gap-4 p-4 pb-0">
-         <div className={`h-full ${activeScreen === "chat" ? "hidden md:block" : ""}`}>{renderRoomList()}</div>
-         <div className={`h-full ${activeScreen === "rooms" ? "hidden md:block" : ""}`}>{renderChatScreen()}</div>
-         {isVideoPopoverOpen && renderVideoPopover()}
-       </div>
-       <Dialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen}>
-       <DialogContent className="bg-white/95 backdrop-blur-sm border-none shadow-lg">
-  <DialogHeader>
-    <DialogTitle className="text-gray-900">새 채팅 시작하기</DialogTitle>
-    <DialogDescription className="text-gray-700">
-      이야기를 나누고 싶은 사람을 선택하세요.
-    </DialogDescription>
-  </DialogHeader>
 
-  {/* 검색 입력 필드 추가 */}
-  <div className="px-4 pb-2">
-    <Input
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      placeholder="닉네임 또는 이메일 검색..."
-      className="border-[#96b23c] focus-visible:ring-[#96b23c]"
-    />
-  </div>
+  return (
+    <div className="h-screen w-full bg-gradient-to-b from-[#e6f3d4] to-[#fce8e8] overflow-hidden">
+      <div className="h-full overflow-hidden md:grid md:grid-cols-[300px_1fr] md:gap-4 p-4 pb-0">
+        <div className={`h-full ${activeScreen === "chat" ? "hidden md:block" : ""}`}>{renderRoomList()}</div>
+        <div className={`h-full ${activeScreen === "rooms" ? "hidden md:block" : ""}`}>{renderChatScreen()}</div>
+        {isVideoPopoverOpen && renderVideoPopover()}
+      </div>
+      <Dialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen}>
+        <DialogContent className="bg-white/95 backdrop-blur-sm border-none shadow-lg">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">새 채팅 시작하기</DialogTitle>
+            <DialogDescription className="text-gray-700">
+              이야기를 나누고 싶은 사람을 선택하세요.
+            </DialogDescription>
+          </DialogHeader>
 
-  {/* ✅ 구독한 사용자 목록 표시 */}
-  <div className="grid gap-4 py-4 max-h-60 overflow-y-auto">
-    {filteredUsers.length > 0 ? (
-      filteredUsers.map((user) => (
-        <div
-          key={user.id}
-          onClick={() => {
-            startPrivateChat(user.id);
-            setIsNewChatOpen(false); // 선택 후 모달 닫기
-          }}
-          className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-[#e6f3d4] transition"
-        >
-          <Avatar className="w-10 h-10">
-            <AvatarImage src={user.profileImage} />
-            <AvatarFallback>{user.userNickname ? user.userNickname[0] : "U"}</AvatarFallback>
-          </Avatar>
-          <div className="ml-3">
-            <p className="text-sm font-medium">{user.userNickname}</p>
-            <p className="text-xs text-gray-500">{user.email}</p>
+          {/* 검색 입력 필드 추가 */}
+          <div className="px-4 pb-2">
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="닉네임 또는 이메일 검색..."
+              className="border-[#96b23c] focus-visible:ring-[#96b23c]"
+            />
           </div>
-        </div>
-      ))
-    ) : (
-      <p className="text-gray-500 text-sm">검색 결과가 없습니다.</p>
-    )}
-  </div>
 
-  <DialogFooter>
-    <Button
-      variant="outline"
-      onClick={() => setIsNewChatOpen(false)}
-      className="border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4]"
-    >
-      닫기
-    </Button>
-  </DialogFooter>
-</DialogContent>
+          {/* ✅ 구독한 사용자 목록 표시 */}
+          <div className="grid gap-4 py-4 max-h-60 overflow-y-auto">
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map((user) => (
+                <div
+                  key={user.id}
+                  onClick={() => {
+                    startPrivateChat(user.id);
+                    setIsNewChatOpen(false); // 선택 후 모달 닫기
+                  }}
+                  className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-[#e6f3d4] transition"
+                >
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={user.profileImage} />
+                    <AvatarFallback>{user.userNickname ? user.userNickname[0] : "U"}</AvatarFallback>
+                  </Avatar>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium">{user.userNickname}</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm">검색 결과가 없습니다.</p>
+            )}
+          </div>
 
-</Dialog>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsNewChatOpen(false)}
+              className="border-[#96b23c] text-[#96b23c] hover:bg-[#e6f3d4]"
+            >
+              닫기
+            </Button>
+          </DialogFooter>
+        </DialogContent>
 
-     </div>
-   );
- };
- 
- export default Chat1;
+      </Dialog>
+
+    </div>
+  );
+};
+
+export default Chat1;

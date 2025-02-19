@@ -42,13 +42,13 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
       setIsModalOpen(false);
       onEventAdded();
 
-      setSuccessMessage("✅ 소중한 기억이 남겨졌습니다!");
+      setSuccessMessage("✅ 🎉 소중한 기억이 남겨졌습니다! ");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
     } catch (error) {
       console.error(error);
-      setSuccessMessage("❌ 추억을 남기지 못했어요.");
+      setSuccessMessage("💔 추억을 남기지 못했어요.");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
@@ -67,12 +67,12 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
       {isModalOpen && (
         <div className="modal-overlay" onClick={handleOverlayClick}>
           <div className="modal-content">
-            <div className="modal-header font-bold text-lg">그 순간을 남겨보세요.</div>
+            <div className="modal-header font-bold text-lg">💌 그 순간을 남겨보세요!</div>
             <p className="text-gray-500 text-center text-sm mb-4">
-              소중한 기억을 남길 준비가 되셨나요?
+            발자취에 소중했던 순간을 기록하세요.
             </p>
             <div>
-              <label className="font-semibold block mb-2">제목</label>
+              <label className="font-semibold block mb-2 text-gray-500">📌 제목</label>
               <input
                 value={eventName}
                 onChange={(event) => setEventName(event.target.value)}
@@ -80,10 +80,10 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
                 className="input"
               />
 
-              <label className="font-bold">날짜</label>
+              <label className="font-bold text-gray-500">📅 날짜</label>
               <input type="date" onChange={handleDateChange} className="input" />
 
-              <label className="font-bold">카테고리</label>
+              <label className="font-bold text-gray-500">📂 카테고리</label>
               <select value={category} onChange={(event) => setCategory(event.target.value)} className="input">
                 <option value="" disabled>
                   카테고리 선택
@@ -103,11 +103,11 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
                   onChange={(event) => setDisplay(event.target.checked)}
                   className="w-4 h-4"
                 />
-                <label className="font-bold">발자취를 남길까요?</label>
+                <label className="font-bold">🔓 공개</label>
               </div>
 
               {/* 버튼 배치 */}
-              <div className="flex justify-between mt-4 space-x-2">
+              <div className="flex justify-end mt-4 space-x-2">
                 <Button onClick={() => setIsModalOpen(false)} className="bg-gray-100 hover:bg-gray-400 text-black flex items-center px-4 py-2 rounded-md">
                   ❎ 그냥 둘래요
                 </Button>
@@ -120,16 +120,7 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
         </div>
       )}
 
-      {/* 새로운 발자취 남기는 버튼 */}
-      <div className="mt-6 text-center">
-        <Button
-          className="w-full text-gray-700 font-semibold text-sm bg-gray-100 hover:bg-gray-200" 
-          variant="ghost"
-          onClick={() => setIsModalOpen(true)}
-        >
-          🌿 새로운 추억을 남겨볼까요?
-        </Button>
-      </div>
+      
 
       {successMessage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -141,6 +132,17 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
           </div>
         </div>
       )}
+
+      {/* 새로운 발자취 남기는 버튼 */}
+      <div className="mt-6 flex justify-center">
+        <Button
+          className="w-full text-gray-700 font-semibold text-sm bg-gray-100 hover:bg-gray-200" 
+          variant="ghost"
+          onClick={() => setIsModalOpen(true)}
+        >
+          🌿 새로운 추억을 남겨볼까요?
+        </Button>
+      </div>
 
       <style jsx>{`
         /* Modal Overlay */

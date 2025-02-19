@@ -68,6 +68,7 @@ public class StoryService {
     /**
      * 스토리 수정
      */
+    @Transactional
     public void updateStory(Long storyId, StoryUpdateRequestDto requestDto, List<MultipartFile> imageFiles,UUID userId) {
         // 스토리 조회
         Story story = storyRepository.findById(storyId)
@@ -93,15 +94,17 @@ public class StoryService {
         story.setEvent(event);
 
         // ✅ 기존 이미지 삭제
-        List<Long> deleteImageIds = requestDto.getDeleteImageIds();
+        List<String> deleteImageIds = requestDto.getDeleteImageIds();
         if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-            imageService.deleteImages(ImageType.STORY, storyId);
+            imageService.deleteImagesByEntityAndS3Key(ImageType.STORY, storyId, deleteImageIds);
         }
 
         // ✅ 새로운 이미지 추가
         if (imageFiles != null && !imageFiles.isEmpty()) {
             imageService.saveImages(imageFiles, ImageType.STORY, storyId);
         }
+
+        storyRepository.save(story);
     }
 
     /**
