@@ -70,7 +70,6 @@ export function ChallengeChatTab({ chatRoomId }: ChallengeChatTabProps) {
     const client = Stomp.over(socket)
 
     client.connect({}, () => {
-      console.log("WebSocket Connected")
 
       // 채팅방 메시지 구독
       const subscription = client.subscribe(`/topic/messages/${chatRoomId}`, (msg: any) => {

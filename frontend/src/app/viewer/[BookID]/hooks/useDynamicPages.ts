@@ -63,7 +63,7 @@ export function useDynamicPages(bookContent: Content, imageUrls: string[]) {
 
       finalChapters.push({ title: chapterTitle, page: pageCount });
 
-      // ✅ 제목과 본문을 분리하여 저장
+      //   제목과 본문을 분리하여 저장
       currentPage = { title: chapterTitle, body: [] };
       wordCount = 0;
 

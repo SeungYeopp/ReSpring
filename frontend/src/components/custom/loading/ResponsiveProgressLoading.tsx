@@ -47,9 +47,7 @@ const ResponsiveProgressLoading = ({ isLoading, onFinish }: ResponsiveProgressLo
           return prev + 1;
         });
       }, 50); // 0.05초마다 1%씩 증가
-      console.log('1씩증가함')
     } else {
-      console.log('엘스로 넘어감')
       // 로딩이 false (끝)로 바뀌는 순간
       setProgress(100);   // 100%로 맞춤
       timer = setTimeout(() => {

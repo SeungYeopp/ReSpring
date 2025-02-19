@@ -44,7 +44,7 @@ const DelayedSkeleton = ({ children, delay = 200, isLoading }: DelayedSkeletonPr
     return () => clearTimeout(timer);
   }, [isLoading, delay]);  // isLoading 또는 delay 값이 변경될 때마다 useEffect 재실행
 
-  // ✅ 스켈레톤 표시 여부에 따라 렌더링 결정
+  //   스켈레톤 표시 여부에 따라 렌더링 결정
   return showSkeleton ? <>{children}</> : null;
 };
 

@@ -20,5 +20,5 @@ export type NavigationItemProps = NavItem & {
   showLabel?: boolean;
   className?: string;
   isBottomNav?: boolean;
-  isTopNav?: boolean; // ✅ 추가된
+  isTopNav?: boolean; //   추가된
 };

@@ -53,7 +53,6 @@ function LayoutWrapperContent({ children }: { children: React.ReactNode }) {
 
   // 디버깅: 전역 알림 배열 출력
   useEffect(() => {
-    console.log("전역 알림 배열:", notifications);
   }, [notifications]);
 
   // 스플래시 화면 표시 여부 상태 관리

@@ -18,7 +18,7 @@ export default function VideoChat({ partnerName }: VideoChatProps) {
   const [isCameraOn, setIsCameraOn] = useState(true);
   const { theme } = useTheme();
 
-  /** ✅ 랜덤 프로필 이미지 생성 함수 */
+  /**   랜덤 프로필 이미지 생성 함수 */
   const getRandomImage = () => {
     const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
     return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
@@ -78,7 +78,7 @@ export default function VideoChat({ partnerName }: VideoChatProps) {
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200">
               <Image
-                src={getRandomImage()} // ✅ 함수 호출 시 중괄호로 감싸기
+                src={getRandomImage()} //   함수 호출 시 중괄호로 감싸기
                 alt="카메라 꺼짐"
                 width={200}
                 height={200}

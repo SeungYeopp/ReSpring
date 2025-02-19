@@ -16,9 +16,9 @@ public class CommentDetailResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long parentId;
-    private Long postId;   // ✅ 게시글 ID 추가
-    private Long bookId; // ✅ 책 ID 추가
+    private Long postId;   //   게시글 ID 추가
+    private Long bookId; //   책 ID 추가
     private String postTitle;
     private String bookTitle;
-    private int likeCount;  // ✅ 좋아요 개수 필드 추가
+    private int likeCount;  //   좋아요 개수 필드 추가
 }

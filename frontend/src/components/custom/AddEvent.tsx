@@ -42,7 +42,7 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
       setIsModalOpen(false);
       onEventAdded();
 
-      setSuccessMessage("✅ 🎉 소중한 기억이 남겨졌습니다! ");
+      setSuccessMessage("  🎉 소중한 기억이 남겨졌습니다! ");
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
@@ -125,10 +125,10 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
       {successMessage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-xs w-full flex flex-col items-center justify-center text-center animate-fadeInOut">
-            <span className={`text-4xl ${successMessage.includes("✅") ? "text-green-500" : "text-red-500"}`}>
-              {successMessage.includes("✅") ? "✅" : "❌"}
+            <span className={`text-4xl ${successMessage.includes(" ") ? "text-green-500" : "text-red-500"}`}>
+              {successMessage.includes(" ") ? " " : "❌"}
             </span>
-            <p className="font-bold mt-2">{successMessage.replace("✅ ", "").replace("❌ ", "")}</p>
+            <p className="font-bold mt-2">{successMessage.replace("  ", "").replace("❌ ", "")}</p>
           </div>
         </div>
       )}

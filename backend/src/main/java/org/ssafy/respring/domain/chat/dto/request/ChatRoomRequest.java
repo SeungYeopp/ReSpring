@@ -1,9 +1,9 @@
 package org.ssafy.respring.domain.chat.dto.request;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @Builder

@@ -87,13 +87,13 @@ public class CommentService {
         // 5. 저장 및 반환
         Comment savedComment = commentRepository.save(comment);
 
-        // ✅ 알림 전송 로직 추가
+        //   알림 전송 로직 추가
         sendNotificationForComment(savedComment, user);
 
         return mapToResponseDto(savedComment);
     }
 
-    // ✅ 알림 전송 메서드 추가
+    //   알림 전송 메서드 추가
     private void sendNotificationForComment(Comment comment, User commenter) {
         if (comment.getPost() != null) {
             Post post = comment.getPost();
@@ -232,7 +232,7 @@ public class CommentService {
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getParent() != null ? comment.getParent().getId() : null,
-                comment.getPost() != null ? comment.getPost().getId() : null,   // ✅ 게시글 ID 추가
+                comment.getPost() != null ? comment.getPost().getId() : null,   //   게시글 ID 추가
                 comment.getBook() != null ? comment.getBook().getId() : null,
                 comment.getPost() != null ? comment.getPost().getTitle(): null,
                 comment.getBook() != null ? comment.getBook().getTitle() : null,
@@ -354,7 +354,7 @@ public class CommentService {
 
         // 3️⃣ 댓글 목록 합치기 & 좋아요 개수 순으로 정렬
         return Stream.concat(postComments.stream(), bookComments.stream())
-                .sorted((c1, c2) -> Integer.compare(c2.getLikeCount(), c1.getLikeCount())) // ✅ 좋아요 개수 내림차순 정렬
+                .sorted((c1, c2) -> Integer.compare(c2.getLikeCount(), c1.getLikeCount())) //   좋아요 개수 내림차순 정렬
                 .collect(Collectors.toList());
     }
 }

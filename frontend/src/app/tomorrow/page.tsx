@@ -3,7 +3,7 @@ import { fetchChallenges } from "@/lib/api/tomorrow";
 import ChallengeClientPage from "./ChallengeClientPage";
 import type { Challenge } from "@/app/tomorrow/types/challenge";
 
-// ✅ 서버 컴포넌트 (SSR 및 초기 로딩 최적화)
+//   서버 컴포넌트 (SSR 및 초기 로딩 최적화)
 export default async function ChallengePage() {
   // 1. 서버에서 'LATEST' 기준으로 챌린지 데이터를 가져옴
   let allChallenges: Challenge[] = [];

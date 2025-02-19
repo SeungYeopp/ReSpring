@@ -77,7 +77,7 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
         NumberExpression<Long> likeCount = bookLikes.id.count().coalesce(0L);
         NumberExpression<Long> viewCount = bookViews.id.count().coalesce(0L);
 
-        // ✅ 정렬 기준을 맞춰줌
+        //   정렬 기준을 맞춰줌
         OrderSpecifier<?> primaryOrder;
         OrderSpecifier<?> secondaryOrder = ascending ? book.id.asc() : book.id.desc();
 
@@ -93,16 +93,16 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
                 break;
         }
 
-        // ✅ 커서 기반 페이징을 위한 조건 설정
+        //   커서 기반 페이징을 위한 조건 설정
         BooleanExpression cursorCondition = null;
         if (lastValue != null && lastId != null) {
             if (sortBy.equals("createdAt") && lastCreatedAt != null) {
-                // ✅ createdAt 기준으로 정렬할 경우 LocalDateTime 비교
+                //   createdAt 기준으로 정렬할 경우 LocalDateTime 비교
                 cursorCondition = ascending
                         ? book.createdAt.gt(lastCreatedAt).or(book.createdAt.eq(lastCreatedAt).and(book.id.gt(lastId)))
                         : book.createdAt.lt(lastCreatedAt).or(book.createdAt.eq(lastCreatedAt).and(book.id.lt(lastId)));
             } else {
-                // ✅ 좋아요 또는 조회수 기준으로 정렬할 경우
+                //   좋아요 또는 조회수 기준으로 정렬할 경우
                 NumberExpression<Long> sortExpression = sortBy.equals("likes") ? likeCount : viewCount;
                 cursorCondition = ascending
                         ? sortExpression.gt(lastValue).or(sortExpression.eq(lastValue).and(book.id.gt(lastId)))
@@ -116,8 +116,8 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
                 .leftJoin(bookLikes).on(bookLikes.book.id.eq(book.id))
                 .leftJoin(bookViews).on(bookViews.book.id.eq(book.id))
                 .groupBy(book.id)
-                .having(cursorCondition)  // ✅ `HAVING` 절로 변경
-                .orderBy(primaryOrder, secondaryOrder)  // ✅ 정렬 기준 적용
+                .having(cursorCondition)  //   `HAVING` 절로 변경
+                .orderBy(primaryOrder, secondaryOrder)  //   정렬 기준 적용
                 .limit(size)
                 .fetch();
     }
@@ -153,7 +153,7 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
                 .leftJoin(bookLikes).on(bookLikes.book.id.eq(book.id))
                 .leftJoin(bookViews).on(bookViews.book.id.eq(book.id))
                 .groupBy(book.id)
-                .orderBy(orderSpecifier, book.id.desc()) // ✅ ID 내림차순 추가 (중복 방지)
+                .orderBy(orderSpecifier, book.id.desc()) //   ID 내림차순 추가 (중복 방지)
                 .fetch();
     }
 
@@ -199,13 +199,13 @@ public class BookRepositoryImpl implements BookRepositoryQueryDsl {
                 )
                 .where(
                         lastCreatedAt == null ? null : book.createdAt.loe(lastCreatedAt), // 생성일 커서 적용
-                        lastBookId == null ? null : book.id.lt(lastBookId) // ✅ 마지막 책 ID보다 작은 값만 조회 (중복 방지)
+                        lastBookId == null ? null : book.id.lt(lastBookId) //   마지막 책 ID보다 작은 값만 조회 (중복 방지)
                 )
                 .orderBy(
                         likeCount.desc(),       // 1순위: 좋아요 수 내림차순
                         viewCount.desc(),       // 2순위: 조회수 내림차순
                         book.createdAt.desc(),  // 3순위: 최신순 정렬
-                        book.id.desc()          // ✅ 4순위: 중복 방지를 위해 book ID 내림차순 추가
+                        book.id.desc()          //   4순위: 중복 방지를 위해 book ID 내림차순 추가
                 )
                 .limit(size)
                 .fetch();

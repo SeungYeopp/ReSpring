@@ -27,7 +27,6 @@ const GoalSetting: React.FC<GoalSettingProps> = ({ onNext, onPrevious }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Selected goals:", selectedGoals)
     onNext()
   }
 

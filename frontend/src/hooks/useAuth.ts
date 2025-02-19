@@ -12,7 +12,6 @@ export function useAuth(blockUnauthenticated : boolean) {
     const checkAuth = async () => {
         if(blockUnauthenticated){ // 실제 로그인 인증 기능을 사용하는 경우.
             try {
-                console.log("useAuth에서 로그인 인증 보냄")
                 const session = await getSessionInfo();
                 if(session && session.userNickname && session.userId){
                     setIsAuthenticated(true);

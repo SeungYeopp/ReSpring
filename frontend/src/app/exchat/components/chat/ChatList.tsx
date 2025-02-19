@@ -31,19 +31,19 @@ export default function ChatList() {
 
   const currentChatId = pathname.split("/").pop();
 
-  /** ✅ 초기 로딩은 inView에서 처리하므로 제거 */
+  /**   초기 로딩은 inView에서 처리하므로 제거 */
   // useEffect(() => {
   //   loadMoreChats();
   // }, []);
 
-  /** ✅ 스크롤 위치 감지 시 데이터 로드 */
+  /**   스크롤 위치 감지 시 데이터 로드 */
   useEffect(() => {
     if (inView && hasMore && !loading) {
       loadMoreChats();
     }
   }, [inView, hasMore, loading]);
 
-  /** ✅ 중복 데이터 방지 로직 추가 */
+  /**   중복 데이터 방지 로직 추가 */
   const loadMoreChats = async () => {
     if (loading) return;
     setLoading(true);

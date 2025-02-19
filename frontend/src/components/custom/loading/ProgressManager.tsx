@@ -61,13 +61,9 @@ export function ProgressManager({
     };
   }, [isLoading]);
 
-  // 디버깅 로그
-  console.log("[ProgressManager] avgResponseTime:", avgResponseTime, 
-              "loadingType:", loadingType, "isLoading:", isLoading, "showOverlay:", showOverlay);
 
   // [A] 500ms 이상 => 즉시 오버레이
   if (loadingType === "IMMEDIATE_OVERLAY" && showOverlay) {
-    console.log("[ProgressManager] IMMEDIATE_OVERLAY branch activated");
     return (
       <>
         {children}
@@ -80,7 +76,6 @@ export function ProgressManager({
 
   // [B] 100ms ~ 500ms => 지연 오버레이 (200ms 뒤 표시)
   if (loadingType === "DELAYED_OVERLAY" && isLoading) {
-    console.log("[ProgressManager] DELAYED_OVERLAY branch activated");
     return (
       <>
         {children}
@@ -93,7 +88,6 @@ export function ProgressManager({
     );
   }
 
-  console.log("[ProgressManager] No overlay activated (either isLoading is false or loadingType is NO_INDICATOR)");
   return <>{children}</>;
 }
 

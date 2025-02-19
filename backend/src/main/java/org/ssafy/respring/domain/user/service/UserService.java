@@ -1,14 +1,10 @@
 package org.ssafy.respring.domain.user.service;
 
-import jakarta.mail.AuthenticationFailedException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.image.service.ImageService;
-import org.ssafy.respring.domain.image.vo.ImageType;
-import org.ssafy.respring.domain.user.dto.request.LoginRequestDto;
 import org.ssafy.respring.domain.user.dto.request.PasswordEncryptionResultDto;
 import org.ssafy.respring.domain.user.dto.request.SignUpRequestDto;
 import org.ssafy.respring.domain.user.mapper.UserMapper;
@@ -17,9 +13,6 @@ import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.Salt;
 import org.ssafy.respring.domain.user.vo.User;
 import org.ssafy.respring.util.OpenCrypt;
-import org.ssafy.respring.domain.user.dto.response.LoginResponseDto;
-
-import java.util.*;
 
 @Service
 @Transactional

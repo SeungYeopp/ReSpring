@@ -12,7 +12,6 @@ import org.ssafy.respring.domain.subscribe.dto.response.SubscribedPostResponseDt
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedUserResponseDto;
 import org.ssafy.respring.domain.subscribe.service.SubscribeService;
 import org.ssafy.respring.domain.user.service.UserService;
-import org.ssafy.respring.domain.user.vo.User;
 
 import java.util.List;
 import java.util.UUID;

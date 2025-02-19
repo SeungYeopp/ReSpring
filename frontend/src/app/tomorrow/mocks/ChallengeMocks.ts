@@ -1,13 +1,13 @@
 // src/app/tomorrow/mocks/ChallengeMocks.ts
 import { Challenge } from "@/app/tomorrow/types/challenge";
 
-/** ✅ 랜덤 챌린지 이미지 생성 함수 */
+/**   랜덤 챌린지 이미지 생성 함수 */
 const getRandomImage = () => {
   const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
   return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로
 };
 
-/** ✅ 현재 날짜를 기준으로 챌린지 상태 계산 함수 */
+/**   현재 날짜를 기준으로 챌린지 상태 계산 함수 */
 const getChallengeStatus = (startDate: string, endDate: string): "UPCOMING" | "ONGOING" | "ENDED" => {
   const now = new Date();
   const start = new Date(startDate);

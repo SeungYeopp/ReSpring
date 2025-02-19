@@ -30,7 +30,7 @@ import Link from "next/link"
 
 // const SERVER_URL = "http://localhost:8080/chat";
 // const USER_SESSION_URL = "http://localhost:8080/user/me";
-// const SOCKET_SERVER_URL = "http://localhost:4000"; // ✅ WebRTC 서버
+// const SOCKET_SERVER_URL = "http://localhost:4000"; //   WebRTC 서버
 // const currentUserId = "61000000-0000-0000-0000-000000000000";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
@@ -42,7 +42,7 @@ const USER_SESSION_URL = `${API_BASE_URL}/user/me`;
 
 
 const Chat1 = () => {
-  /* ✅ 기존 채팅 상태들 */
+  /*   기존 채팅 상태들 */
   const [stompClient, setStompClient] = useState(null);
   const [myRooms, setMyRooms] = useState([]);
   const [currentRoom, setCurrentRoom] = useState(null);
@@ -131,15 +131,15 @@ const Chat1 = () => {
     fetchSubscribedUsers();
   }, []);
 
-  /* ✅ WebRTC 상태 */
+  /*   WebRTC 상태 */
   const [socket, setSocket] = useState(null);
   const [device, setDevice] = useState(null);
   const [producerTransport, setProducerTransport] = useState(null);
   const [consumerTransport, setConsumerTransport] = useState(null);
   const [producer, setProducer] = useState(null);
   const [consumer, setConsumer] = useState(null);
-  const [isProducing, setIsProducing] = useState(false); // ✅ 현재 내가 방송 중인지 체크
-  const [isConsuming, setIsConsuming] = useState(false); // ✅ 현재 내가 시청 중인지 체크
+  const [isProducing, setIsProducing] = useState(false); //   현재 내가 방송 중인지 체크
+  const [isConsuming, setIsConsuming] = useState(false); //   현재 내가 시청 중인지 체크
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -154,7 +154,7 @@ const Chat1 = () => {
     );
   });
 
-  /* ✅ 로그인 사용자 정보 */
+  /*   로그인 사용자 정보 */
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userNickname, setUserNickname] = useState("");
   const currentRoomRef = useRef(null);
@@ -171,7 +171,7 @@ const Chat1 = () => {
         const data = await response.json();
         setCurrentUserId(data.userId);
         setUserNickname(data.userNickname);
-        console.log("✅ 로그인한 사용자:", data.userNickname);
+        console.log("  로그인한 사용자:", data.userNickname);
       } catch (error) {
         console.error("❌ 사용자 정보를 가져오는 데 실패했습니다:", error);
         setCurrentUserId(null);
@@ -181,8 +181,8 @@ const Chat1 = () => {
     fetchUserSession();
   }, [currentUserId]);
 
-  /* ✅ WebSocket 및 WebRTC 초기화 */
-  /* ✅ WebSocket 및 WebRTC 초기화 */
+  /*   WebSocket 및 WebRTC 초기화 */
+  /*   WebSocket 및 WebRTC 초기화 */
   useEffect(() => {
     if (!currentUserId) return;
 
@@ -194,7 +194,7 @@ const Chat1 = () => {
     });
 
     client.connect({}, () => {
-      console.log("✅ Stomp WebSocket Connected");
+      console.log("  Stomp WebSocket Connected");
       client.subscribe(`/topic/chat/myRooms/${currentUserId}`, updateMyRooms);
       client.subscribe(`/topic/chat/roomUpdated/${currentUserId}`, () => {
         client.send("/app/chat/myRooms/" + currentUserId, {}, {});
@@ -225,7 +225,7 @@ const Chat1 = () => {
           `🚀 Leaving room ${currentRoom.id}. Updating last seen time...`
         );
 
-        // ✅ 🔹 Redis에서 사용자 퇴장 처리
+        //   🔹 Redis에서 사용자 퇴장 처리
         await fetch(
           `${SERVER_URL}/room/leave?roomId=${currentRoom.id}&userId=${currentUserId}`,
           {
@@ -365,14 +365,14 @@ const Chat1 = () => {
   useEffect(() => {
     if (!socket || !currentRoom) return;
 
-    // ✅ 상대가 화면을 끄면 내 remote 비디오를 정리하는 이벤트 추가
+    //   상대가 화면을 끄면 내 remote 비디오를 정리하는 이벤트 추가
     const handleStopStreaming = ({ roomId }) => {
       if (currentRoom.id === roomId) {
         console.log(
           "📴 상대방이 방송을 중지했습니다. 내 remote 화면을 끕니다."
         );
 
-        // ✅ remote 비디오 정리
+        //   remote 비디오 정리
         if (remoteVideoRef.current && remoteVideoRef.current.srcObject) {
           let stream = remoteVideoRef.current.srcObject;
           stream.getTracks().forEach((track) => track.stop());
@@ -427,7 +427,7 @@ const Chat1 = () => {
               return;
             }
 
-            console.log("✅ [consume] 받은 데이터:", data);
+            console.log("  [consume] 받은 데이터:", data);
 
             const consumer = await transport.consume({
               id: data.id,
@@ -443,7 +443,7 @@ const Chat1 = () => {
             if (data.kind === "video") {
               console.log("📡 [consume] 비디오 스트림 설정");
               if (remoteVideoRef.current) {
-                remoteVideoRef.current.srcObject = stream; // ✅ 새로운 Producer 비디오 표시
+                remoteVideoRef.current.srcObject = stream; //   새로운 Producer 비디오 표시
               }
             }
           }
@@ -477,8 +477,8 @@ const Chat1 = () => {
     }
 
     if (isStreaming) {
-      stopVideoStreaming(); // ✅ 현재 스트리밍 중이면 끄기
-      setIsStreaming(false); // ✅ Stop 후 상태 초기화
+      stopVideoStreaming(); //   현재 스트리밍 중이면 끄기
+      setIsStreaming(false); //   Stop 후 상태 초기화
       setIsProducing(false);
       return;
     }
@@ -492,16 +492,16 @@ const Chat1 = () => {
     if (producerIds.length > 0) {
       console.log("🎥 Existing Producers found. Consuming first...");
 
-      // ✅ Step 1: Consume 먼저 실행 (방송 시청)
+      //   Step 1: Consume 먼저 실행 (방송 시청)
       await startConsuming(producerIds);
       setIsConsuming(true);
 
-      // ✅ Step 2: Produce (내 방송 시작)
+      //   Step 2: Produce (내 방송 시작)
       console.log("📡 Now Producing...");
       await startPublishing();
       setIsProducing(true);
 
-      // ✅ Step 3: 서버에 기존 Producer들에게 Consume 요청 보내기
+      //   Step 3: 서버에 기존 Producer들에게 Consume 요청 보내기
       console.log("📡 Requesting existing Producers to consume...");
       socket.emit("triggerConsume", { roomId: currentRoom.id });
     } else {
@@ -510,7 +510,7 @@ const Chat1 = () => {
       setIsProducing(true);
     }
 
-    setIsStreaming(true); // ✅ 스트리밍 상태 ON
+    setIsStreaming(true); //   스트리밍 상태 ON
   };
 
   const handleRoomClick = async (newRoom) => {
@@ -533,7 +533,7 @@ const Chat1 = () => {
             is_active: false,
           })
         );
-        console.log(`✅ Left previous room: ${currentRoom.id}`);
+        console.log(`  Left previous room: ${currentRoom.id}`);
       } catch (err) {
         console.error("❌ Failed to leave previous room:", err);
       }
@@ -547,16 +547,16 @@ const Chat1 = () => {
     console.log("📴 Stopping video stream...");
 
     if (producer && typeof producer.close === "function") {
-      producer.close(); // ✅ 송출 중단
+      producer.close(); //   송출 중단
       setProducer(null);
     } else {
       console.warn("⚠️ Producer is already closed or undefined.");
     }
 
-    // ✅ 서버에 현재 사용자의 송출 중단 알리기
+    //   서버에 현재 사용자의 송출 중단 알리기
     socket.emit("stopStreaming", { roomId: currentRoom.id });
 
-    // ✅ Local Video 화면 비우기
+    //   Local Video 화면 비우기
     if (localVideoRef.current && localVideoRef.current.srcObject) {
       let stream = localVideoRef.current.srcObject;
       stream.getTracks().forEach((track) => track.stop());
@@ -569,7 +569,7 @@ const Chat1 = () => {
 
   const updateMyRooms = (message) => {
     const rooms = JSON.parse(message.body);
-    console.log("현재 방 목록:", rooms); // ✅ 여기 추가
+    console.log("현재 방 목록:", rooms); //   여기 추가
     setMyRooms(rooms);
   };
 
@@ -592,7 +592,7 @@ const Chat1 = () => {
 
 // 챌린지 상세에 있는 roomId랑 비교해서 같은 방 컨텐츠를 렌더링 하는 방식으로 하자. 디자인도 여기 있는 거 그대로 쓰고.
   const fetchMessagesAndConnect = async (roomId, roomName, openChat) => {
-    // ✅ 기존 WebSocket 구독이 있으면 해제 (중복 구독 방지)
+    //   기존 WebSocket 구독이 있으면 해제 (중복 구독 방지)
     if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
 
     setCurrentRoom({ id: roomId, name: roomName, isOpenChat: openChat });
@@ -606,7 +606,7 @@ const Chat1 = () => {
           method: "POST",
         }
       );
-      // ✅ 1️⃣ 채팅 메시지 불러오기
+      //   1️⃣ 채팅 메시지 불러오기
       const response = await fetch(`${SERVER_URL}/messages/${roomId}`);
       if (!response.ok)
         throw new Error(
@@ -615,7 +615,7 @@ const Chat1 = () => {
 
       const chatMessages = await response.json();
 
-      // ✅ 2️⃣ 마지막 접속 시간 불러오기 (Redis에서 조회)
+      //   2️⃣ 마지막 접속 시간 불러오기 (Redis에서 조회)
       let lastSeenTime = 0;
       try {
         const lastSeenResponse = await fetch(
@@ -628,7 +628,7 @@ const Chat1 = () => {
         console.warn("⚠️ Error fetching last seen time:", err);
       }
 
-      // ✅ 3️⃣ 읽음 여부 반영
+      //   3️⃣ 읽음 여부 반영
       const processedMessages = chatMessages.map((msg) => ({
         ...msg,
         isRead: new Date(msg.timestamp).getTime() <= lastSeenTime,
@@ -639,7 +639,7 @@ const Chat1 = () => {
       console.error("❌ 메시지 조회 실패:", error);
     }
 
-    // ✅ 4️⃣ WebSocket 메시지 실시간 구독
+    //   4️⃣ WebSocket 메시지 실시간 구독
     const sub = stompClient.subscribe(`/topic/messages/${roomId}`, (msg) => {
       const newMessage = JSON.parse(msg.body);
       setMessages((prev) => [...prev, newMessage]);
@@ -665,7 +665,7 @@ const Chat1 = () => {
   //     const privateRoom = JSON.parse(message.body);
   //     fetchMessagesAndConnect(privateRoom.roomId, privateRoom.name, false);
 
-  //     // ✅ 1:1 채팅 생성 후 즉시 내 방 목록 새로고침
+  //     //   1:1 채팅 생성 후 즉시 내 방 목록 새로고침
   //     stompClient.send("/app/chat/myRooms/" + currentUserId, {}, {});
   //   });
   // };
@@ -768,7 +768,7 @@ const startPrivateChat = (selectedUserId) => {
     setMessages([]);
     setIsActive(false);
 
-    // ✅ 서버 변경 반영 후 500ms 후 방 목록 새로고침 (반응 속도 개선)
+    //   서버 변경 반영 후 500ms 후 방 목록 새로고침 (반응 속도 개선)
     setTimeout(() => {
       stompClient.send("/app/chat/myRooms/" + currentUserId, {}, {});
     }, 500);
@@ -818,7 +818,7 @@ const startPrivateChat = (selectedUserId) => {
               console.error("❌ Transport 연결 실패:", response.error);
               return errback(response.error);
             }
-            console.log("✅ Transport 연결 성공!");
+            console.log("  Transport 연결 성공!");
             callback();
           }
         );
@@ -839,7 +839,7 @@ const startPrivateChat = (selectedUserId) => {
               return errback(error);
             }
 
-            console.log(`✅ [produce] ${kind} Producer Created: ${id}`);
+            console.log(`  [produce] ${kind} Producer Created: ${id}`);
             callback({ id });
 
             if (kind === "video") setProducer(id);
@@ -853,7 +853,7 @@ const startPrivateChat = (selectedUserId) => {
         .getUserMedia({ video: true, audio: true })
         .then(async (stream) => {
           if (localVideoRef.current) {
-            localVideoRef.current.srcObject = stream; // ✅ `useRef`를 사용하여 안전하게 설정
+            localVideoRef.current.srcObject = stream; //   `useRef`를 사용하여 안전하게 설정
           } else {
             console.error("❌ [startPublishing] localVideoRef is null!");
           }
@@ -881,10 +881,10 @@ const startPrivateChat = (selectedUserId) => {
 
     console.log("📡 모든 Producer IDs:", producerIds);
 
-    // ✅ 현재 사용자의 producer는 필터링하여 제외
+    //   현재 사용자의 producer는 필터링하여 제외
     const filteredProducerIds = producerIds.filter((id) => id !== producer);
     console.log(
-      "✅ 본인 Producer 제외 후, Consume할 Producer IDs:",
+      "  본인 Producer 제외 후, Consume할 Producer IDs:",
       filteredProducerIds
     );
 
@@ -924,7 +924,7 @@ const startPrivateChat = (selectedUserId) => {
               return;
             }
 
-            console.log("✅ [consume] 받은 데이터:", data);
+            console.log("  [consume] 받은 데이터:", data);
 
             const consumer = await transport.consume({
               id: data.id,
@@ -940,7 +940,7 @@ const startPrivateChat = (selectedUserId) => {
             if (data.kind === "video") {
               console.log("📡 [consume] 비디오 스트림 설정");
               if (remoteVideoRef.current) {
-                remoteVideoRef.current.srcObject = stream; // ✅ 상대방 화면만 설정
+                remoteVideoRef.current.srcObject = stream; //   상대방 화면만 설정
               }
             }
           }
@@ -1404,7 +1404,7 @@ const startPrivateChat = (selectedUserId) => {
             />
           </div>
 
-          {/* ✅ 구독한 사용자 목록 표시 */}
+          {/*   구독한 사용자 목록 표시 */}
           <div className="grid gap-4 py-4 max-h-60 overflow-y-auto">
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (

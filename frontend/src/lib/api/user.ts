@@ -130,7 +130,7 @@ export const getUserInfo = async (): Promise<UserInfo> => {
 
 
   /**
- * ✅ 사용법 예시
+ *   사용법 예시
  *
  * 1. 비동기 함수 안에서 사용:
  *    const userInfo = await getUserInfo();

@@ -58,7 +58,7 @@ ps. 첨부한 사진은 제가 가꾸고 있는 작은 정원입니다. 어떠�
     images: [
       {
         imageId: 101,
-        imageUrl: "/placeholder.webp", // ✅ 내부 이미지 경로로 변경
+        imageUrl: "/placeholder.webp", //   내부 이미지 경로로 변경
       },
       {
         imageId: 102,
@@ -452,7 +452,6 @@ async function getPostDetail(postId: number): Promise<Post> {
   });
   if (!response.ok) throw new Error("게시글 상세 조회 실패");
   const data = await response.json();
-  console.log(data);
   return data;
 }
 
@@ -487,14 +486,11 @@ async function updatePost(postId: number, title: string, content: string, catego
     userId,
     deleteImageIds,
   };
-  console.log("🔍 보낼 데이터:", postDto);
-  console.log("🖼 추가할 이미지:", newFiles);
   formData.append("postDto", new Blob([JSON.stringify(postDto)], { type: "application/json" }));
 
   if (newFiles) {
     newFiles.forEach((file) => {
       formData.append("newImages", file);
-      console.log("📸 추가된 이미지 파일:", file.name);
     });
   }
 
@@ -503,7 +499,6 @@ async function updatePost(postId: number, title: string, content: string, catego
     body: formData,
   });
 
-  console.log("🔍 서버 응답 상태 코드:", response.status);
 
   if (!response.ok) {
     console.error("❌ 게시글 수정 실패");

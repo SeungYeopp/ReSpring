@@ -11,12 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.image.service.ImageService;
-import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
 import org.ssafy.respring.domain.story.dto.request.StoryRequestDto;
 import org.ssafy.respring.domain.story.dto.request.StoryUpdateRequestDto;
 import org.ssafy.respring.domain.story.dto.response.StoryResponseDto;
 import org.ssafy.respring.domain.story.service.StoryService;
-import org.ssafy.respring.domain.user.service.UserService;
 
 import java.io.IOException;
 import java.util.List;

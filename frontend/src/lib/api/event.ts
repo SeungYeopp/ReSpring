@@ -56,7 +56,6 @@ export const deleteEvent = async (eventId : number) : Promise<boolean> => {
         if(response.status === 200){
             return true; // 성공 시 true 반환.
         }else{
-            console.log("deleteEvent : response status 200이 아님. 에러 발생.");
             return false;
         }
     }catch(error){
@@ -75,7 +74,6 @@ export const updateEvent = async (eventId : number, eventPostData : EventPostDto
         if(response.status === 200){
             return true;
         }else{
-            console.log("updateEvent : response status 200이 아님. 에러 발생.");
             return false;
         }
     }catch(error){

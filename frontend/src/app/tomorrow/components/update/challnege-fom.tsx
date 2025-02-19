@@ -132,7 +132,7 @@ export function ChallengeForm({ onSubmit, onCancel, onChange }: ChallengeFormPro
         image: image!,
       };
 
-      await onSubmit(challengeData); // ✅ 에러 발생 시 catch로 전달
+      await onSubmit(challengeData); //   에러 발생 시 catch로 전달
     } catch (error) {
     } finally {
       setIsLoading(false);

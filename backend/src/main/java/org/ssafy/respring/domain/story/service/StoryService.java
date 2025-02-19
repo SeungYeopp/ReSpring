@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.event.repository.EventRepository;
 import org.ssafy.respring.domain.event.vo.Event;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.story.dto.request.StoryRequestDto;
@@ -57,7 +56,7 @@ public class StoryService {
         // 스토리 저장
         storyRepository.save(story);
 
-        // ✅ Image 테이블에 이미지 저장
+        //   Image 테이블에 이미지 저장
         if (imageFiles != null && !imageFiles.isEmpty()) {
             imageService.saveImages(imageFiles, ImageType.STORY, story.getId());
         }
@@ -93,13 +92,13 @@ public class StoryService {
         story.setContent(requestDto.getContent());
         story.setEvent(event);
 
-        // ✅ 기존 이미지 삭제
+        //   기존 이미지 삭제
         List<String> deleteImageIds = requestDto.getDeleteImageIds();
         if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
             imageService.deleteImagesByEntityAndS3Key(ImageType.STORY, storyId, deleteImageIds);
         }
 
-        // ✅ 새로운 이미지 추가
+        //   새로운 이미지 추가
         if (imageFiles != null && !imageFiles.isEmpty()) {
             imageService.saveImages(imageFiles, ImageType.STORY, storyId);
         }
@@ -120,7 +119,7 @@ public class StoryService {
             throw new IllegalArgumentException("You are not allowed to delete this story.");
         }
 
-        // ✅ Image 테이블에서 관련 이미지 삭제
+        //   Image 테이블에서 관련 이미지 삭제
         imageService.deleteImages(ImageType.STORY, storyId);
 
         // 스토리 삭제
@@ -156,7 +155,7 @@ public class StoryService {
      * Story -> StoryResponseDto 변환
      */
     private StoryResponseDto toResponseDto(Story story) {
-        // ✅ Image 테이블에서 스토리에 해당하는 이미지 조회 후 변환
+        //   Image 테이블에서 스토리에 해당하는 이미지 조회 후 변환
         List<String> images = imageService.getImagesByEntity(ImageType.STORY, story.getId());
 
         LocalDateTime occurredAt = story.getEvent().getOccurredAt();

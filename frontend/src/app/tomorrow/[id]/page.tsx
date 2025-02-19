@@ -70,7 +70,6 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
     try {
       const success = await leaveChallenge(challenge!.id)
       if (success) {
-        console.log("챌린지 나가기 성공")
         // 탈퇴 후 챌린지 목록 페이지 등으로 이동 (예시)
         router.push("/tomorrow")
       } else {

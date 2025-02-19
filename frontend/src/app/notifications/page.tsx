@@ -313,7 +313,7 @@ const NotificationPage = () => {
 
   const markAllAsRead = async () => {
     try {
-      await markAllNotificationsRead(); // ✅ userId 제거
+      await markAllNotificationsRead(); //   userId 제거
       setNotifications((prev) =>
         prev.map((notif) => ({ ...notif, read: true }))
       );

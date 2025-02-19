@@ -1,11 +1,11 @@
 package org.ssafy.respring.domain.challenge.dto.response;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.ssafy.respring.domain.tag.vo.Tag;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor

@@ -73,7 +73,6 @@ export default function TaggedPopularBooks() {
 
   useEffect(() => {
     // 중복 태그가 포함되지 않았는지 검증 로그
-    console.log("✅ 선택된 태그:", selectedTags);
   }, [selectedTags]);
 
   if (isLoading) {

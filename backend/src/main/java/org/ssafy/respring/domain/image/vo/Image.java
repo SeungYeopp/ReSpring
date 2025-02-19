@@ -1,11 +1,7 @@
 package org.ssafy.respring.domain.image.vo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
-import org.ssafy.respring.domain.post.vo.Post;
-import org.ssafy.respring.domain.story.vo.Story;
 
 @Entity
 @Table(name = "image")

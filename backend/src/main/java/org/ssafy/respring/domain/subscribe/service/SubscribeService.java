@@ -11,6 +11,7 @@ import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.notification.service.NotificationService;
+import org.ssafy.respring.domain.notification.vo.NotificationType;
 import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.post.repository.PostRepository;
 import org.ssafy.respring.domain.subscribe.dto.response.SubscribedBookResponseDto;
@@ -21,7 +22,6 @@ import org.ssafy.respring.domain.subscribe.repository.SubscribeRepository;
 import org.ssafy.respring.domain.subscribe.vo.Subscribe;
 import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
-import org.ssafy.respring.domain.notification.vo.NotificationType;
 
 import java.util.List;
 import java.util.UUID;
@@ -40,9 +40,9 @@ public class SubscribeService {
 
     private final BookLikesRedisService bookLikesRedisService;
     private final BookViewsRedisService bookViewsRedisService;
-    private final NotificationService notificationService; // ✅ 알림 서비스 추가
+    private final NotificationService notificationService; //   알림 서비스 추가
 
-    // ✅ 구독 기능 추가 (사용자 구독)
+    //   구독 기능 추가 (사용자 구독)
     public void subscribeUser(UUID subscriberId, UUID subscribedToId) {
         User subscriber = userRepository.findById(subscriberId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 구독하는 사용자를 찾을 수 없습니다."));
@@ -61,10 +61,10 @@ public class SubscribeService {
 
         subscribeRepository.save(subscription);
 
-// ✅ 구독된 사용자(subscribedToId)에게 알림 전송 (구독한 사용자 ID 포함)
+//   구독된 사용자(subscribedToId)에게 알림 전송 (구독한 사용자 ID 포함)
         notificationService.sendNotification(
-                subscribedToId, // ✅ receiverId (구독된 사용자)
-                subscriberId, // ✅ initiatorId (구독한 사용자)
+                subscribedToId, //   receiverId (구독된 사용자)
+                subscriberId, //   initiatorId (구독한 사용자)
                 NotificationType.FOLLOW,
                 TargetType.USER,
                 subscription.getId(),
@@ -72,7 +72,7 @@ public class SubscribeService {
         );
     }
 
-    // ✅ 구독 취소 기능
+    //   구독 취소 기능
     public void unsubscribeUser(UUID subscriberId, UUID subscribedToId) {
         User subscriber = userRepository.findById(subscriberId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 구독하는 사용자를 찾을 수 없습니다."));
@@ -86,7 +86,7 @@ public class SubscribeService {
         subscribeRepository.deleteBySubscriberAndSubscribedTo(subscriber, subscribedTo);
     }
 
-    // ✅ 내가 구독한 사용자의 게시글 조회
+    //   내가 구독한 사용자의 게시글 조회
     public List<SubscribedPostResponseDto> getSubscribedUsersPosts(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
@@ -127,7 +127,7 @@ public class SubscribeService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ 내가 구독한 사용자의 챌린지 조회
+    //   내가 구독한 사용자의 챌린지 조회
     public List<SubscribedChallengeResponseDto> getSubscribedUsersChallenges(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
@@ -156,7 +156,7 @@ public class SubscribeService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ 내가 구독한 사용자의 봄날의 서 조회
+    //   내가 구독한 사용자의 봄날의 서 조회
     public List<SubscribedBookResponseDto> getSubscribedUsersBooks(UUID userId) {
         User user = userRepository.findById(userId)
           .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
@@ -173,19 +173,19 @@ public class SubscribeService {
             .title(book.getTitle())
             .coverImage(imageService.generatePresignedUrl(book.getCoverImage()))
             .tags(book.getTags())
-            .isLiked(bookLikesRedisService.isLiked(book.getId(), userId)) // ✅ 좋아요 여부
-            .likeCount(bookLikesRedisService.getLikeCount(book.getId())) // ✅ 좋아요 수
-            .viewCount(bookViewsRedisService.getViewCount(book.getId())) // ✅ 조회 수
-            .likedUsers(bookLikesRedisService.getLikedUsers(book.getId())) // ✅ 좋아요 누른 사용자 목록
+            .isLiked(bookLikesRedisService.isLiked(book.getId(), userId)) //   좋아요 여부
+            .likeCount(bookLikesRedisService.getLikeCount(book.getId())) //   좋아요 수
+            .viewCount(bookViewsRedisService.getViewCount(book.getId())) //   조회 수
+            .likedUsers(bookLikesRedisService.getLikedUsers(book.getId())) //   좋아요 누른 사용자 목록
             .createdAt(book.getCreatedAt())
             .updatedAt(book.getUpdatedAt())
-            .authorNickname(book.getAuthor().getUserNickname()) // ✅ 작성자 이름
+            .authorNickname(book.getAuthor().getUserNickname()) //   작성자 이름
             .authorProfileImage(imageService.generatePresignedUrl(book.getAuthor().getProfileImage()))
             .build())
           .collect(Collectors.toList());
     }
 
-    // ✅ 내가 구독한 사용자 전체 조회
+    //   내가 구독한 사용자 전체 조회
     public List<SubscribedUserResponseDto> getSubscribedUsers(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
@@ -202,7 +202,7 @@ public class SubscribeService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ 내가 특정 사용자를 구독했는지 여부 확인
+    //   내가 특정 사용자를 구독했는지 여부 확인
     public boolean isSubscribed(UUID subscriberId, UUID subscribedToId) {
         User subscriber = userRepository.findById(subscriberId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 구독하는 사용자를 찾을 수 없습니다."));

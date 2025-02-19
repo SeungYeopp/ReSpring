@@ -1,7 +1,6 @@
 package org.ssafy.respring.domain.post.repository;
 
 import com.querydsl.core.Tuple;
-import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
 import org.ssafy.respring.domain.post.vo.Post;
 
 import java.time.LocalDateTime;
