@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
 import io from "socket.io-client";
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Flower2, Bean, Calendar, Clock, User, Users ,Sprout, Video, Settings, ArrowLeft, Send, MessageSquarePlus, Eye, EyeOff } from "lucide-react"
+import { Sprout, Video, Settings, ArrowLeft, Send, Users,MessageSquarePlus,  Eye, EyeOff } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
@@ -28,10 +28,18 @@ import { getUserInfoByNickname, UserInfo } from "@/lib/api/user";
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 
-const SERVER_URL = "http://localhost:8080/chat";
-const USER_SESSION_URL = "http://localhost:8080/user/me";
-const SOCKET_SERVER_URL = "http://localhost:4000"; // ✅ WebRTC 서버
+// const SERVER_URL = "http://localhost:8080/chat";
+// const USER_SESSION_URL = "http://localhost:8080/user/me";
+// const SOCKET_SERVER_URL = "http://localhost:4000"; // ✅ WebRTC 서버
 // const currentUserId = "61000000-0000-0000-0000-000000000000";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || "http://localhost:4000";
+
+const SERVER_URL = `${API_BASE_URL}/chat`;
+const USER_SESSION_URL = `${API_BASE_URL}/user/me`;
+
+
 
 const Chat1 = () => {
   /* ✅ 기존 채팅 상태들 */
@@ -52,11 +60,10 @@ const Chat1 = () => {
   const fetchSubscribedUsers = async () => {
     try {
       // 서버가 요구하는 엔드포인트로 변경
-      const response = await fetch(
-        "http://localhost:8080/subscriptions/me/users",
-        { credentials: "include" }
-      );
-
+      const response = await fetch(`${API_BASE_URL}/subscriptions/me/users`, {
+        credentials: "include",
+      });
+  
       if (!response.ok) throw new Error("구독한 사용자 목록 불러오기 실패!");
 
       const data = await response.json();
@@ -86,9 +93,9 @@ const Chat1 = () => {
       try {
         console.log("Fetching user info for nickname:", targetNickname);
         const userInfo = await getUserInfoByNickname(targetNickname);
-        
+
         console.log("Fetched user info:", userInfo);
-        
+
         // Set the userId state
         setUserId(userInfo.userId);
       } catch (error) {
@@ -182,7 +189,9 @@ const Chat1 = () => {
     console.log("-----------------------------", currentUserId);
     const socket = new SockJS(SERVER_URL);
     const client = Stomp.over(socket);
-    const rtcSocket = io(SOCKET_SERVER_URL, { transports: ["websocket"] });
+    const rtcSocket = io("wss://i12a307.p.ssafy.io/socket.io/", {
+      transports: ["websocket"],
+    });
 
     client.connect({}, () => {
       console.log("✅ Stomp WebSocket Connected");
@@ -278,7 +287,7 @@ const Chat1 = () => {
       if (currentRoomRef.current && stompClient) {
         const roomId = currentRoomRef.current.id;
         console.log("🚪 [Cleanup] leaving room on unmount:", roomId);
-  
+
         // 1) REST 호출
         fetch(
           `${SERVER_URL}/room/leave?roomId=${roomId}&userId=${currentUserId}`,
@@ -286,7 +295,7 @@ const Chat1 = () => {
             method: "POST",
           }
         ).catch(console.error);
-  
+
         // 2) STOMP 호출 (stompClient가 존재하는 경우에만 호출)
         stompClient.send(
           "/app/chat.leaveRoom",
@@ -300,7 +309,7 @@ const Chat1 = () => {
       }
     };
   }, []);
-  
+
   useEffect(() => {
     if (!socket || !currentRoom) return;
 
@@ -529,7 +538,7 @@ const Chat1 = () => {
     return foundUser?.profileImage || `https://api.dicebear.com/6.x/initials/svg?seed=${room.name}`;
   };
 
-  // 챌린지 상세에 있는 roomId랑 비교해서 같은 방 컨텐츠를 렌더링 하는 방식으로 하자. 디자인도 여기 있는 거 그대로 쓰고.
+// 챌린지 상세에 있는 roomId랑 비교해서 같은 방 컨텐츠를 렌더링 하는 방식으로 하자. 디자인도 여기 있는 거 그대로 쓰고.
   const fetchMessagesAndConnect = async (roomId, roomName, openChat) => {
     // ✅ 기존 WebSocket 구독이 있으면 해제 (중복 구독 방지)
     if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
