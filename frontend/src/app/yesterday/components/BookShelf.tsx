@@ -123,12 +123,6 @@ const BookShelf: React.FC<BookShelfProps> = ({ userNickname, isMine }) => {
                           >
                             읽기
                           </a>
-                          <a
-                            href="#"
-                            className="px-3 py-1 bg-green-500 text-white rounded-md flex items-center gap-1 text-xs hover:bg-green-600"
-                          >
-                            편집
-                          </a>
                         </div>
                       </div>
                     </div>
