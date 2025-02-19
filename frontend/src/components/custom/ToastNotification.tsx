@@ -17,6 +17,8 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({ notifications }) 
   const toastRef = useRef<HTMLDivElement>(null)
   const touchStartY = useRef<number | null>(null)
 
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+
   useEffect(() => {
     if (notifications.length > 0) {
       const newNotification = notifications[notifications.length - 1]
@@ -69,7 +71,7 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({ notifications }) 
 
   const markNotificationRead = async (notificationId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/notifications/${notificationId}/read`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
       })

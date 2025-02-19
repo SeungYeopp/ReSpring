@@ -44,9 +44,18 @@ export interface Notification {
 
 export type NotificationType = "COMMENT" | "LIKE" | "SUBSCRIBE" | "REPLY";
 
+
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+
+
 // 한 페이지에 한 번에 보여줄 알림 개수
 const ITEMS_PER_PAGE = 10;
 type ReadStatus = "ALL" | "READ" | "UNREAD";
+
+
+
+
 
 // ------------------------------------------------------------------
 // NotificationPage 컴포넌트
@@ -81,8 +90,8 @@ const NotificationPage = () => {
       const userId = userInfo.userId;
   
       // userId를 쿼리 파라미터로 전달하여 알림 데이터를 요청합니다.
-      const response = await fetch(`http://localhost:8080/notifications/${userId}`, {
-        credentials: "include", // 세션 정보를 포함하여 요청
+      const response = await fetch(`${API_BASE_URL}/notifications/${userId}`, {
+        credentials: "include",
       });
       if (!response.ok) {
         throw new Error("네트워크 응답이 정상이 아닙니다");
@@ -99,7 +108,7 @@ const NotificationPage = () => {
   const markNotificationRead = async (notificationId: number) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/notifications/${notificationId}/read`,
+        `${API_BASE_URL}/notifications/${notificationId}/read`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -121,13 +130,11 @@ const NotificationPage = () => {
 
   const markAllNotificationsRead = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:8080/notifications/read-all",
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        }
+      const response = await fetch(`${API_BASE_URL}/notifications/read-all`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+          }
       );
 
       if (!response.ok) {

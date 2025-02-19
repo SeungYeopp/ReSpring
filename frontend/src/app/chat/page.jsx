@@ -24,10 +24,18 @@ import {
 } from "@/components/ui/dialog"
 import { motion } from "framer-motion"
 
-const SERVER_URL = "http://localhost:8080/chat";
-const USER_SESSION_URL = "http://localhost:8080/user/me";
-const SOCKET_SERVER_URL = "http://localhost:4000"; // ✅ WebRTC 서버
+// const SERVER_URL = "http://localhost:8080/chat";
+// const USER_SESSION_URL = "http://localhost:8080/user/me";
+// const SOCKET_SERVER_URL = "http://localhost:4000"; // ✅ WebRTC 서버
 // const currentUserId = "61000000-0000-0000-0000-000000000000";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || "http://localhost:4000";
+
+const SERVER_URL = `${API_BASE_URL}/chat`;
+const USER_SESSION_URL = `${API_BASE_URL}/user/me`;
+
+
 
 const Chat1 = () => {
   /* ✅ 기존 채팅 상태들 */
@@ -48,10 +56,9 @@ const Chat1 = () => {
   const fetchSubscribedUsers = async () => {
     try {
       // 서버가 요구하는 엔드포인트로 변경
-      const response = await fetch(
-        "http://localhost:8080/subscriptions/me/users",
-        { credentials: "include" }
-      );
+      const response = await fetch(`${API_BASE_URL}/subscriptions/me/users`, {
+        credentials: "include",
+      });
   
       if (!response.ok) throw new Error("구독한 사용자 목록 불러오기 실패!");
   
