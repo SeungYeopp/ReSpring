@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Flame, BookCheck, Footprints } from 'lucide-react';
+import { MessageSquare, UserPlus, UserMinus, Award, ArrowLeft, Flame, BookCheck, Footprints } from 'lucide-react';
 import StatSummary from "../components/stat-summary";
 import TabBar from "../components/tabbar";
 import { isSubscribed, newSubscription, cancelSubscription } from "@/lib/api/subscribe";
@@ -37,6 +37,21 @@ export default function ProfilePage() {
       console.error("Error checking subscription status:", error);
     }
   };
+
+  const handleSubscribeUnsubscribe = async () => {
+    try {
+      if (isSubscribedState) {
+        const success = await cancelSubscription(targetNickname);
+        if (success) setIsSubscribedState(false);
+      } else {
+        const success = await newSubscription(targetNickname);
+        if (success) setIsSubscribedState(true);
+      }
+    } catch (error) {
+      console.error("Failed to update subscription status:", error);
+    }
+  };
+
 
   const openBadgeModal = (badge: string) => {
     setSelectedBadge(badge);
@@ -96,7 +111,33 @@ export default function ProfilePage() {
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mt-6">{decodeURIComponent(targetNickname)}</h1>
 
-          
+          {myNickname !== decodeURIComponent(targetNickname) && (
+            <div className="flex gap-3">
+              <button
+                onClick={handleSubscribeUnsubscribe}
+                className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md shadow-lg ${
+                  isSubscribedState ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"
+                }`}
+              >
+                {isSubscribedState ? (
+                  <>
+                    <UserMinus className="w-4 h-4 mr-2" /> 구독 취소하기
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4 mr-2" /> 구독하기
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => router.push(`/chat?targetNickname=${targetNickname}`)}
+                className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 shadow-lg"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" /> 채팅하기
+              </button>
+            
+          </div>
+          )}
         </div>
 
         {/* 내 업적 - 프로필과 같은 높이에 정렬 */}
@@ -114,18 +155,24 @@ export default function ProfilePage() {
               </button>
             ))}
           </div>
+          
           <div className="flex items-center justify-end">
             <StatSummary userNickname={targetNickname} challengeCount={challenges.length} />
           </div>
 
         </div>
         
+        {/* 모달 표시 */}
+        {selectedBadge && <BadgeModal badge={selectedBadge} onClose={closeBadgeModal} />}
+
 
         {/* 도전, 활동, 발자취 */}
         <div className="lg:col-span-2 flex flex-col items-center mt-0 w-full">
           <TabBar userNickname={targetNickname} challenges={challenges} isMine={isMine} />
         </div>
+        
       </div>
+      
 
       {/* 모바일 및 작은 화면 레이아웃 */}
       <div className="lg:hidden flex flex-col items-start w-full px-4">
@@ -146,6 +193,34 @@ export default function ProfilePage() {
           <h1 className="text-3xl font-bold text-gray-900 text-center">
             {decodeURIComponent(targetNickname)}
           </h1>
+
+          {myNickname !== decodeURIComponent(targetNickname) && (
+            <div className="flex gap-3">
+              <button
+                onClick={handleSubscribeUnsubscribe}
+                className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md shadow-lg ${
+                  isSubscribedState ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"
+                }`}
+              >
+                {isSubscribedState ? (
+                  <>
+                    <UserMinus className="w-4 h-4 mr-2" /> 구독 취소하기
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4 mr-2" /> 구독하기
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => router.push(`/chat?targetNickname=${targetNickname}`)}
+                className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 shadow-lg"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" /> 채팅하기
+              </button>
+            
+          </div>
+          )}
 
           {/* 획득한 배지 */}
           <div className="absolute right-4 top-1 items-center gap-2 ">
