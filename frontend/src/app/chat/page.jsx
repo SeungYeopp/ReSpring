@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Sprout, Video, Settings, ArrowLeft, Send, Users,MessageSquarePlus,  Eye, EyeOff } from "lucide-react"
+import { Bean, Flower2, Sprout, Video, Settings, ArrowLeft, Send, Users,MessageSquarePlus,  Eye, EyeOff } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
