@@ -11,7 +11,7 @@ import { Book, BookOpen, Tag } from "lucide-react"
 export default function YesterdayPage({ searchParams }: { searchParams: { q?: string } }) {
   const searchQuery = searchParams.q || ""
   return (
-    <div className="flex flex-col min-h-screen bg-spring-pink overflow-y-auto relative touch-action-pan-y">
+    <div className="flex flex-col min-h-screen bg-spring-pink overflow-y-auto relative touch-action-pan-y  md:-my-4 lg:-my-8 sm:mt-0 sm:my-0">
       <main className="flex-grow flex flex-col space-y-4 bg-background">
         <div className="lg:mt-4 w-full mb-6">
           <CarouselHeader messages={carouselMessages.yesterday} />
