@@ -3,7 +3,10 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { EditChallengeForm } from "../../components/update/edit-challenge-form";
 import { ChallengePreview } from "../../components/update/challnege-preview";
-import type { ChallengeDetail, ChallengeUpdateRequest } from "../../types/challenge";
+import type {
+  ChallengeDetail,
+  ChallengeUpdateRequest,
+} from "../../types/challenge";
 import { useMediaQuery } from "../../hooks/use-media-query";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
@@ -56,7 +59,10 @@ export default function EditChallengePage() {
             ownerId: userInfo.userId, // 필수 필드 추가
           };
 
-          const updatedChallenge = await updateChallenge(challenge.id, updateData);
+          const updatedChallenge = await updateChallenge(
+            challenge.id,
+            updateData
+          );
           setChallenge(updatedChallenge);
           alert("챌린지가 성공적으로 수정되었습니다!");
           router.push(`/tomorrow/${challenge.id}`);
@@ -98,17 +104,35 @@ export default function EditChallengePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="w-full lg:w-1/2">
-            <EditChallengeForm challenge={challenge} onSubmit={handleSubmit} onCancel={handleCancel} onChange={handleChange} />
+            <EditChallengeForm
+              challenge={challenge}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              onChange={handleChange}
+            />
           </div>
           {previewData && (
-            <motion.div className="w-full lg:w-1/2 mt-8 lg:mt-0" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <motion.div
+              className="w-full lg:w-1/2 mt-8 lg:mt-0"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
               <ChallengePreview
                 title={previewData.title}
                 description={previewData.description}
                 tags={previewData.tags.map((tag) => tag.name)}
                 startDate={new Date(previewData.startDate)}
-                endDate={typeof previewData.endDate === "string" ? new Date(previewData.endDate) : previewData.endDate}
-                preview={typeof previewData.image === "string" ? previewData.image : challenge.image}
+                endDate={
+                  typeof previewData.endDate === "string"
+                    ? new Date(previewData.endDate)
+                    : previewData.endDate
+                }
+                preview={
+                  typeof previewData.image === "string"
+                    ? previewData.image
+                    : challenge.imageUrl
+                }
               />
             </motion.div>
           )}
