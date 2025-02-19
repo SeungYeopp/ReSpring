@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { getAllBooksScrolled, type Book } from "@/lib/api"
 import { BookCard } from "./BookCard"
+import { BookCardSkeleton } from "./BookCardSkeleton"
 
 const INITIAL_LOAD_SIZE = 3
 const LOAD_MORE_SIZE = 10
@@ -50,7 +51,7 @@ export default function PopularBooks() {
 
   useEffect(() => {
     fetchBooks()
-  }, [])
+  }, [fetchBooks]) // Added fetchBooks to the dependency array
 
   if (error) {
     return <div className="mt-8 px-4 text-red-500">{error}</div>
@@ -62,6 +63,13 @@ export default function PopularBooks() {
         {books.map((book) => (
           <BookCard key={book.id} book={book} />
         ))}
+        {isLoading && books.length === 0 && (
+          <>
+            {[...Array(INITIAL_LOAD_SIZE)].map((_, index) => (
+              <BookCardSkeleton key={index} />
+            ))}
+          </>
+        )}
       </div>
       {hasMore && (
         <div className="text-center mt-4">
@@ -74,6 +82,14 @@ export default function PopularBooks() {
           </button>
         </div>
       )}
+      {isLoading && books.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+          {[...Array(LOAD_MORE_SIZE)].map((_, index) => (
+            <BookCardSkeleton key={index} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
+
