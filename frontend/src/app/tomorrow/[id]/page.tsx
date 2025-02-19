@@ -161,42 +161,45 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
     </Tooltip>
   </TooltipProvider>
   {userInfo?.userNickname === challenge.ownerNickname ? (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="bg-white/80 hover:bg-white text-gray-800"
+          onClick={() => router.push(`/tomorrow/edit/${challenge.id}`)}
+        >
+          <Edit className="w-4 h-4" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>수정하기</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+) : (
+  challenge.isParticipating && (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="secondary"
+            variant="destructive"
             size="icon"
-            className="bg-white/80 hover:bg-white text-gray-800"
-            onClick={() => router.push(`/tomorrow/edit/${challenge.id}`)}
+            className="bg-red-500 hover:bg-red-600 text-white"
+            onClick={handleLeaveChallenge}
           >
-            <Edit className="w-4 h-4" />
+            <LogOut className="w-4 h-4" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>수정하기</p>
+          <p>나가기</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  ) : (
-    <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="destructive"
-          size="icon"
-          className="bg-red-500 hover:bg-red-600 text-white"
-          onClick={handleLeaveChallenge}
-        >
-          <LogOut className="w-4 h-4" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p>나가기</p>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-  )}
+  )
+)}
+
 </div>
 
                   <div className="flex justify-between items-end">
