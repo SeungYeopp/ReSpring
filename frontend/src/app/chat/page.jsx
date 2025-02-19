@@ -145,8 +145,10 @@ const filteredUsers = subscribedUsers.filter((user) => {
     console.log("-----------------------------", currentUserId);
     const socket = new SockJS(SERVER_URL);
     const client = Stomp.over(socket);
-    const rtcSocket = io(SOCKET_SERVER_URL, { transports: ["websocket"] });
-
+    const rtcSocket = io("wss://i12a307.p.ssafy.io/socket.io/", {
+      transports: ["websocket"],
+    });
+    
     client.connect({}, () => {
       console.log("✅ Stomp WebSocket Connected");
       client.subscribe(`/topic/chat/myRooms/${currentUserId}`, updateMyRooms);
