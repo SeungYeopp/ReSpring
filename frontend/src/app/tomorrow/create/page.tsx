@@ -7,8 +7,8 @@ import { ChallengePreview } from "../components/update/challnege-preview";
 import type { CreateChallenge, ChallengeCreateRequest } from "../types/challenge";
 import { useMediaQuery } from "../hooks/use-media-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { getSessionInfo } from "@/lib/api/user"; // ✅ 세션 정보 가져오기
-import { createChallenge } from "@/lib/api/tomorrow"; // ✅ 새로운 API 호출
+import { getSessionInfo } from "@/lib/api/user"; //   세션 정보 가져오기
+import { createChallenge } from "@/lib/api/tomorrow"; //   새로운 API 호출
 
 export default function CreateChallengePage() {
   const [challengeData, setChallengeData] = useState<Partial<CreateChallenge>>({});
@@ -21,7 +21,7 @@ export default function CreateChallengePage() {
 
   const handleSubmit = async (data: CreateChallenge) => {
     try {
-      // ✅ 세션 정보 가져오기 (ownerId 확보)
+      //   세션 정보 가져오기 (ownerId 확보)
       const sessionInfo = await getSessionInfo();
       const ownerId = sessionInfo.userId;
 
@@ -34,14 +34,12 @@ export default function CreateChallengePage() {
         image: data.image ?? undefined, // 이미지가 있을 경우 포함
       };
 
-      // ✅ 새로운 API 호출
+      //   새로운 API 호출
       const result = await createChallenge(requestData);
-      console.log("챌린지 생성 성공:", result);
 
-      // ✅ 챌린지 상세 페이지로 이동
+      //   챌린지 상세 페이지로 이동
       router.push(`/tomorrow/${result.id}`);
     } catch (error:any) {
-      console.error("챌린지 생성 중 오류:", error.response.data);
       alert("챌린지 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
       
     }

@@ -3,8 +3,6 @@ package org.ssafy.respring.domain.chat.dto.response;
 import lombok.*;
 import org.ssafy.respring.domain.chat.vo.ChatRoom;
 
-import java.util.UUID;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,7 +14,7 @@ public class ChatRoomResponse {
     private Boolean isOpenChat;
     private int userCount;
 
-    // ✅ ChatRoom -> ChatRoomResponse 변환 메서드 추가
+    //   ChatRoom -> ChatRoomResponse 변환 메서드 추가
     public static ChatRoomResponse from(ChatRoom chatRoom) {
         return ChatRoomResponse.builder()
                 .roomId(chatRoom.getId())

@@ -1,7 +1,6 @@
 package org.ssafy.respring.domain.book.repository;
 
 import org.ssafy.respring.domain.book.vo.Book;
-import org.ssafy.respring.domain.comment.vo.Comment;
 
 import java.time.LocalDateTime;
 import java.util.List;

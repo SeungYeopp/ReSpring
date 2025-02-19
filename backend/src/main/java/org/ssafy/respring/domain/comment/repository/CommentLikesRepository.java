@@ -1,12 +1,12 @@
 package org.ssafy.respring.domain.comment.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.ssafy.respring.domain.comment.vo.CommentLikes;
 import org.ssafy.respring.domain.comment.vo.Comment;
+import org.ssafy.respring.domain.comment.vo.CommentLikes;
 import org.ssafy.respring.domain.user.vo.User;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 public interface CommentLikesRepository extends JpaRepository<CommentLikes, Long> {
     Optional<CommentLikes> findByUserAndComment(User user, Comment comment);

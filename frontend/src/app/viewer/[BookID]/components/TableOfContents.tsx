@@ -25,7 +25,7 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
   const { currentPage, totalPages, setCurrentPage, setHighlightKeyword } = usePageContext();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [searchType, setSearchType] = useState("chapter"); // ✅ 검색 유형 상태 추가
+  const [searchType, setSearchType] = useState("chapter"); //   검색 유형 상태 추가
   const [searchTerm, setSearchTerm] = useState("");
   const [currentListPage, setCurrentListPage] = useState(1);
 
@@ -48,7 +48,7 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
     }
   }, [currentOpenPanel, isOpen]);
 
-  // ✅ 챕터 검색
+  //   챕터 검색
   const filteredChapters = useMemo(() => chapters?.filter((chap) => chap.title.toLowerCase().includes(searchTerm.toLowerCase())) || [], [chapters, searchTerm]);
 
   // const contentMatches = useMemo(() =>
@@ -94,7 +94,7 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
     - 또한, 검색어(keyword)가 있으면 강조 효과를 설정합니다.
     - 마지막으로 패널을 닫으며 전역 패널 상태를 해제합니다.
   */
-  // ✅ 페이지 이동 및 키워드 강조
+  //   페이지 이동 및 키워드 강조
   const goToPage = (targetPage: number, keyword?: string) => {
     const difference = targetPage - currentPage;
     setCurrentPage(difference);
@@ -103,7 +103,7 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
     closePanel();
   };
 
-  // ✅ 현재 페이지네이션 설정
+  //   현재 페이지네이션 설정
   const totalItems = searchType === "chapter" ? filteredChapters.length : contentMatches.length;
   const totalListPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const startIndex = (currentListPage - 1) * ITEMS_PER_PAGE;
@@ -111,7 +111,7 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
 
   const paginatedItems = searchType === "chapter" ? filteredChapters.slice(startIndex, endIndex) : contentMatches.slice(startIndex, endIndex);
 
-  // ✅ 검색어 강조 표시
+  //   검색어 강조 표시
   const highlightSearchTerm = (text: string) => {
     if (!searchTerm) return text;
     const parts = text.split(new RegExp(`(${searchTerm})`, "gi"));
@@ -126,7 +126,7 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
     );
   };
 
-  // ✅ 검색 결과 미리보기 (내용 검색용)
+  //   검색 결과 미리보기 (내용 검색용)
   const getContentPreview = (text: string, maxLength = 100) => {
     const lowerSearchTerm = searchTerm.toLowerCase();
     const index = text.toLowerCase().indexOf(lowerSearchTerm);
@@ -142,7 +142,7 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
   return (
     <>
       {/* 패널을 열기 위한 버튼 */}
-      {/* ✅ 오른쪽 아래 목차 버튼 */}
+      {/*   오른쪽 아래 목차 버튼 */}
       <Button variant="ghost" size="icon" onClick={togglePanel}>
         <BookOpen className="h-6 w-6" />
       </Button>
@@ -184,7 +184,7 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
           className="w-full p-2 mb-4 border rounded"
         />
 
-        {/* ✅ 검색 결과 목록 */}
+        {/*   검색 결과 목록 */}
         <ul className="space-y-2 mb-4">
           {paginatedItems.map((item, idx) => (
             <li key={idx} className="cursor-pointer p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => goToPage(item.page, searchTerm)}>
@@ -199,7 +199,7 @@ export function TableOfContents({ pages, chapters = [] }: TableOfContentsProps) 
           ))}
         </ul>
 
-        {/* ✅ 페이지네이션 */}
+        {/*   페이지네이션 */}
         {totalListPages > 1 && (
           <div className="flex justify-center items-center space-x-2">
             <Button variant="outline" size="icon" onClick={() => setCurrentListPage((prev) => Math.max(1, prev - 1))} disabled={currentListPage === 1}>

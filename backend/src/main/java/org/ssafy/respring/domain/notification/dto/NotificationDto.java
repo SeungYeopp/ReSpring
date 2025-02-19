@@ -5,7 +5,6 @@ import org.ssafy.respring.domain.notification.vo.NotificationType;
 import org.ssafy.respring.domain.notification.vo.TargetType;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter

@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth"
 /** 카테고리 타입 */
 type Category = "전체" | "고민/질문" | "정보 공유"
 
-/** ✅ 랜덤 프로필 이미지 생성 함수 */
+/**   랜덤 프로필 이미지 생성 함수 */
 const getRandomImage = () => {
   const imageNumber = Math.floor(Math.random() * 9) + 1
   return `/corgis/placeholder${imageNumber}.jpg`
@@ -42,7 +42,7 @@ export default function CommunityPosts() {
     ALL: "전체",
   }
 
-  /** ✅ 카테고리에 따른 뱃지 색상 */
+  /**   카테고리에 따른 뱃지 색상 */
   const getCategoryColor = (category: Category | string): string => {
     switch (category) {
       case "전체":
@@ -56,7 +56,7 @@ export default function CommunityPosts() {
     }
   }
 
-  /** ✅ 전체 게시물 불러오기 */
+  /**   전체 게시물 불러오기 */
   useEffect(() => {
     if (!userNickname) return
 
@@ -81,7 +81,7 @@ export default function CommunityPosts() {
     fetchPosts()
   }, [userNickname])
 
-  /** ✅ 카테고리 변경 시 필터링 */
+  /**   카테고리 변경 시 필터링 */
   useEffect(() => {
     if (selectedCategory === "전체") {
       setDisplayedPosts(allPosts)
@@ -93,14 +93,14 @@ export default function CommunityPosts() {
 
   return (
     <div className="space-y-4 p-4 max-w-2xl mx-auto">
-      {/* ✅ 뒤로가기 버튼 */}
+      {/*   뒤로가기 버튼 */}
       <Button variant="ghost" onClick={() => router.back()} className="mb-4">
         <ArrowLeft className="mr-2 h-4 w-4" /> 뒤로가기
       </Button>
 
       <h1 className="text-2xl font-bold mb-6">커뮤니티 게시글</h1>
 
-      {/* ✅ 카테고리 탭 */}
+      {/*   카테고리 탭 */}
       <Tabs defaultValue={selectedCategory} onValueChange={(value) => setSelectedCategory(value as Category)}>
         <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="전체">전체</TabsTrigger>
@@ -109,10 +109,10 @@ export default function CommunityPosts() {
         </TabsList>
       </Tabs>
 
-      {/* ✅ 게시물 목록 */}
+      {/*   게시물 목록 */}
       <PostList posts={displayedPosts} getCategoryColor={getCategoryColor} getRandomImage={getRandomImage} />
 
-      {/* ✅ 상태 처리 */}
+      {/*   상태 처리 */}
       {isLoading && <p className="text-center py-4">게시물을 불러오는 중...</p>}
       {error && <p className="text-center py-4 text-red-500">{error}</p>}
       {!isLoading && !error && displayedPosts.length === 0 && <p className="text-center py-4">게시물이 없습니다.</p>}
@@ -121,7 +121,7 @@ export default function CommunityPosts() {
 }
 
 /**
- * ✅ PostList 컴포넌트 (게시물 리스트)
+ *   PostList 컴포넌트 (게시물 리스트)
  */
 function PostList({
   posts,

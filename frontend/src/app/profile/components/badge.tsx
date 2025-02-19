@@ -15,11 +15,11 @@ export default function BadgeModal({ badge, onClose }: BadgeModalProps) {
   return (
     <div 
       className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 z-20"
-      onClick={onClose} // ✅ 배경 클릭 시 닫힘
+      onClick={onClose} //   배경 클릭 시 닫힘
     >
       <div 
         className="bg-white p-6 rounded-lg text-center shadow-lg w-80 transform scale-100 transition-transform duration-200"
-        onClick={(e) => e.stopPropagation()} // ✅ 내부 클릭 시 닫힘 방지
+        onClick={(e) => e.stopPropagation()} //   내부 클릭 시 닫힘 방지
       >
         <h2 className="text-lg font-bold mb-2">{badgeDescriptions[badge]?.name}</h2>
         <p>{badgeDescriptions[badge]?.description}</p>

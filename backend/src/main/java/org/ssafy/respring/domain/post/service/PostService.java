@@ -5,9 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.ssafy.respring.domain.comment.repository.CommentLikesRepository;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.comment.dto.response.CommentDto;
+import org.ssafy.respring.domain.comment.repository.CommentLikesRepository;
 import org.ssafy.respring.domain.image.service.ImageService;
 import org.ssafy.respring.domain.image.vo.ImageType;
 import org.ssafy.respring.domain.notification.service.NotificationService;
@@ -16,7 +15,6 @@ import org.ssafy.respring.domain.notification.vo.TargetType;
 import org.ssafy.respring.domain.post.dto.request.PostRequestDto;
 import org.ssafy.respring.domain.post.dto.request.PostUpdateRequestDto;
 import org.ssafy.respring.domain.post.dto.response.PostResponseDto;
-import org.ssafy.respring.domain.comment.dto.response.CommentResponseDto;
 import org.ssafy.respring.domain.post.repository.PostRepository;
 import org.ssafy.respring.domain.post.vo.Post;
 import org.ssafy.respring.domain.user.repository.UserRepository;
@@ -42,10 +40,10 @@ public class PostService {
      */
     @Transactional
     public Long createPostWithImages(PostRequestDto requestDto, List<MultipartFile> imageFiles, UUID userId) {
-        // ✅ 유저 조회
+        //   유저 조회
         User user = getUserById(userId);
 
-        // ✅ 포스트 저장
+        //   포스트 저장
         Post post = Post.builder()
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
@@ -56,7 +54,7 @@ public class PostService {
 
         postRepository.save(post);
 
-        // ✅ 이미지 저장
+        //   이미지 저장
         if (imageFiles != null && !imageFiles.isEmpty()) {
             imageService.saveImages(imageFiles, ImageType.POST, post.getId());
         }
@@ -69,12 +67,12 @@ public class PostService {
      */
     @Transactional
     public void updatePost(Long postId, PostUpdateRequestDto requestDto, List<MultipartFile> imageFiles, UUID userId) {
-        // ✅ 포스트 조회
+        //   포스트 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
 
 
-        // ✅ 작성자 검증
+        //   작성자 검증
         User user = getUserById(userId);
 
         if (!post.getUser().getId().equals(user.getId())) {
@@ -96,18 +94,18 @@ public class PostService {
             isUpdated = true;
         }
 
-        // ✅ 삭제할 이미지 리스트 확인 후 삭제 실행 (S3 Key 기반)
+        //   삭제할 이미지 리스트 확인 후 삭제 실행 (S3 Key 기반)
         List<String> deleteImageIds = requestDto.getDeleteImageIds();
         if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
             imageService.deleteImagesByEntityAndS3Key(ImageType.POST, postId, deleteImageIds);
         }
 
-        // ✅ 새로운 이미지 추가
+        //   새로운 이미지 추가
         if (imageFiles != null && !imageFiles.isEmpty()) {
             imageService.saveImages(imageFiles, ImageType.POST, postId);
         }
 
-        // ✅ 변경된 경우만 업데이트
+        //   변경된 경우만 업데이트
         if (isUpdated) {
             postRepository.save(post);
         }
@@ -118,20 +116,20 @@ public class PostService {
      */
     @Transactional
     public void deletePost(Long postId, UUID userId) {
-        // ✅ 포스트 조회
+        //   포스트 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
 
-        // ✅ 작성자 검증
+        //   작성자 검증
         UUID requestUserId = getUserById(userId).getId();
         if (!post.getUser().getId().equals(requestUserId)) {
             throw new IllegalArgumentException("You are not authorized to delete this post.");
         }
 
-        // ✅ 관련 이미지 삭제
+        //   관련 이미지 삭제
         imageService.deleteImages(ImageType.POST, postId);
 
-        // ✅ 포스트 삭제
+        //   포스트 삭제
         postRepository.delete(post);
     }
 
@@ -147,42 +145,42 @@ public class PostService {
     public List<PostResponseDto> getAllPosts(UUID userId) {
         return postRepository.findAll()
                 .stream()
-                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
+                .map(post -> toResponseDto(post, userId))  //   userId 전달
                 .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> getMyPosts(UUID userId) {
         return postRepository.findByUser_Id(userId)
                 .stream()
-                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
+                .map(post -> toResponseDto(post, userId))  //   userId 전달
                 .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> getPostsByUser(String userName, UUID userId) {
         return postRepository.findByUserName(userName)
                 .stream()
-                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
+                .map(post -> toResponseDto(post, userId))  //   userId 전달
                 .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> getPostsByCursor(Long lastId, int limit, UUID userId) {
         return postRepository.findByCursor(lastId, limit)
                 .stream()
-                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
+                .map(post -> toResponseDto(post, userId))  //   userId 전달
                 .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> searchPostsByTitle(String title, UUID userId) {
         return postRepository.searchByTitle(title)
                 .stream()
-                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
+                .map(post -> toResponseDto(post, userId))  //   userId 전달
                 .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> filterPostsByCategory(String category, UUID userId) {
         return postRepository.filterByCategory(category)
                 .stream()
-                .map(post -> toResponseDto(post, userId))  // ✅ userId 전달
+                .map(post -> toResponseDto(post, userId))  //   userId 전달
                 .collect(Collectors.toList());
     }
 
@@ -207,7 +205,7 @@ public class PostService {
 
         boolean isLiked = post.toggleLike(userId);
         post.setLikes((long) post.getLikedUsers().size());
-        // ✅ "좋아요"가 새로 눌린 경우 + "본인 글이 아닐 때" 알림 발송
+        //   "좋아요"가 새로 눌린 경우 + "본인 글이 아닐 때" 알림 발송
         if (isLiked && !post.getUser().getId().equals(userId)) {
             notificationService.sendNotification(
                     post.getUser().getId(),    // 알림을 받을 유저(게시글 작성자)
@@ -233,7 +231,7 @@ public class PostService {
      * 📝 Post → PostResponseDto 변환
      */
     private PostResponseDto toResponseDto(Post post, UUID userId) {
-        // ✅ Image 테이블에서 Post에 해당하는 이미지 조회
+        //   Image 테이블에서 Post에 해당하는 이미지 조회
         List<String> images = imageService.getImagesByEntity(ImageType.POST, post.getId());
 
         boolean isLiked = (userId != null)? isPostLikedByUser(post.getId(), userId) : false;

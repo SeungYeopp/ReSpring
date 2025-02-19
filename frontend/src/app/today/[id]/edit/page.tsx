@@ -50,7 +50,6 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
           return;
         }
 
-        console.log("불러온 게시글:", fetchedPost);
 
         setFormData({
           title: fetchedPost.title,
@@ -58,7 +57,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
           category: fetchedPost.category,
         });
 
-        // ✅ `null` 체크 후 `previews` 업데이트
+        //   `null` 체크 후 `previews` 업데이트
         if (fetchedPost.images && fetchedPost.images.length > 0) {
           setPreviews(fetchedPost.images.slice(0, MAX_IMAGES));
         }
@@ -94,23 +93,22 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
   };
 
   const removeImage = (index: number) => {
-    const imageToRemove = previews[index]; // ✅ 삭제할 이미지 URL 확인
+    const imageToRemove = previews[index]; //   삭제할 이미지 URL 확인
     if (!imageToRemove) {
       console.warn("🚨 삭제할 이미지의 URL이 없음!");
       return;
     }
 
-    // ✅ S3 Key 추출 (URL에서 이미지 경로만 가져오기)
+    //   S3 Key 추출 (URL에서 이미지 경로만 가져오기)
     const urlParts = imageToRemove.split("/");
     let s3Key = urlParts.slice(-2).join("/"); // 예: "posts/xxxx-xxxx-xxxx.png?..."
 
-    // ✅ Presigned URL의 파라미터 제거
+    //   Presigned URL의 파라미터 제거
     if (s3Key.includes("?")) {
       s3Key = s3Key.split("?")[0]; // '?' 이후의 모든 값 제거
     }
 
-    console.log("🗑 삭제 요청할 S3 Key:", s3Key);
-    setDeleteImageIds((prev) => [...prev, s3Key]); // ✅ Presigned URL 제거 후 저장
+    setDeleteImageIds((prev) => [...prev, s3Key]); //   Presigned URL 제거 후 저장
 
     setImages((prev) => prev.filter((_, i) => i !== index));
     setPreviews((prev) => prev.filter((_, i) => i !== index));
@@ -124,7 +122,6 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
       return;
     }
 
-    console.log("삭제할 이미지 s3Key 목록:", deleteImageIds);
 
     try {
       setIsSubmitting(true);
@@ -217,7 +214,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
             className="min-h-[300px] border-[#618264]"
           />
 
-          {/* ✅ 이미지 개수만큼만 표시되도록 변경 */}
+          {/*   이미지 개수만큼만 표시되도록 변경 */}
           <div className="grid grid-cols-3 gap-2">
             {previews.map((preview, index) =>
               preview ? (
@@ -239,7 +236,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
               ) : null
             )}
 
-            {/* ✅ 추가 버튼이 마지막 칸에 유지됨 */}
+            {/*   추가 버튼이 마지막 칸에 유지됨 */}
             {previews.length < MAX_IMAGES && (
               <label className="cursor-pointer w-24 h-24 border-2 border-dashed border-[#618264] rounded-lg flex flex-col items-center justify-center gap-2 text-[#618264] hover:bg-[#618264]/10">
                 <input

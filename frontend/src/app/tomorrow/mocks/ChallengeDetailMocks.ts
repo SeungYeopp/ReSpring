@@ -19,7 +19,7 @@
 //   return records;
 // }
 
-// /** ✅ 랜덤 프로필 이미지 생성 함수 */
+// /**   랜덤 프로필 이미지 생성 함수 */
 // const getRandomImage = () => {
 //   const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
 //   return `/corgis/placeholder${imageNumber}.jpg`; // public 폴더 내 이미지 경로

@@ -1,14 +1,10 @@
 package org.ssafy.respring.domain.user.vo;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.domain.book.vo.Book;
 import org.ssafy.respring.domain.challenge.vo.Challenge;
-import org.ssafy.respring.domain.challenge.vo.UserChallenge;
-import org.ssafy.respring.domain.chat.vo.ChatMessage;
 
 import java.time.LocalDateTime;
 import java.util.List;

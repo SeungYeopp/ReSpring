@@ -27,7 +27,7 @@ export interface ViewerSettingsContextProps {
   pageTransition: PageTransitionType;
   setPageTransition: Dispatch<SetStateAction<PageTransitionType>>;
 
-  // ✅ 글꼴 추가!
+  //   글꼴 추가!
   fontFamily: string;
   setFontFamily: Dispatch<SetStateAction<string>>;
 }

@@ -1,7 +1,7 @@
 // src/app/today/mocks/posts.ts
 import type { Post, Image } from "@/lib/api";
 
-// ✅ 랜덤 이미지 생성 함수
+//   랜덤 이미지 생성 함수
 const getRandomImage = () : string => {
   const imageNumber = Math.floor(Math.random() * 9) + 1; // 1~9 숫자 랜덤 선택
   const newImg : string = `/corgis/placeholder${imageNumber}.jpg`;
@@ -199,10 +199,10 @@ const getRandomImage = () : string => {
 //   },
 // ];
 
-// // ✅ 구독한 사용자들의 게시물 목데이터 (한 카테고리당 10개씩, 총 20개)
+// //   구독한 사용자들의 게시물 목데이터 (한 카테고리당 10개씩, 총 20개)
 
 // export const followedPosts: Post[] = [
-//   // ✅ "고민/질문" 카테고리 (10개)
+//   //   "고민/질문" 카테고리 (10개)
 //   {
 //     id: 31,
 //     title: "퇴직 후 무료함을 어떻게 해결하시나요?",
@@ -288,7 +288,7 @@ const getRandomImage = () : string => {
 //     images: [getRandomImage()],
 //   },
 
-//   // ✅ "INFORMATION_SHARING" 카테고리 (10개)
+//   //   "INFORMATION_SHARING" 카테고리 (10개)
 //   {
 //     id: 41,
 //     title: "나만의 작은 텃밭 가꾸기",

@@ -146,7 +146,7 @@ export async function createPost(
 }
 
 /**
- * ✅ 구독한 사람들의 게시물 가져오기 (현재 Mock 데이터 사용)
+ *   구독한 사람들의 게시물 가져오기 (현재 Mock 데이터 사용)
  * @param lastId - 페이지네이션을 위한 마지막 게시물 ID (옵션)
  * @param limit - 한 번에 가져올 게시물 수 (기본값: 10)
  * @returns Post[] - 구독한 사람들의 게시물 배열
@@ -156,7 +156,7 @@ export async function createPost(
 //     setTimeout(() => {
 //       const filteredPosts = lastId ? followedPosts.filter((post) => post.id < lastId).slice(0, limit) : followedPosts.slice(0, limit);
 //       resolve(filteredPosts);
-//     }, 500); // ✅ 0.5초 지연 후 데이터 반환 (실제 API 응답처럼 보이도록)
+//     }, 500); //   0.5초 지연 후 데이터 반환 (실제 API 응답처럼 보이도록)
 //   });
 // }
 
@@ -251,8 +251,6 @@ export async function updatePost(
       category,
       deleteImageIds,
     };
-    console.log("🔍 보낼 데이터:", postDto);
-    console.log("🖼 추가할 이미지:", newFiles);
     formData.append(
       "postDto",
       new Blob([JSON.stringify(postDto)], { type: "application/json" })
@@ -261,7 +259,6 @@ export async function updatePost(
     if (newFiles) {
       newFiles.forEach((file) => {
         formData.append("newImages", file);
-        console.log("📸 추가된 이미지 파일:", file.name);
       });
     }
 
@@ -269,9 +266,7 @@ export async function updatePost(
       headers: { "Content-Type": "multipart/form-data" },
     });
 
-    console.log("🔍 서버 응답 상태 코드:", response.status);
   } catch (error) {
-    console.error("❌ 게시글 수정 실패");
     throw new Error("게시글 수정 실패");
   }
 }

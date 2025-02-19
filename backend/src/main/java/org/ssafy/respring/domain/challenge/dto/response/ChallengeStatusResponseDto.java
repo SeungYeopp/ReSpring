@@ -22,5 +22,5 @@ public class ChallengeStatusResponseDto {
     private Long likes;
     private Long views;
     private Long participantCount;
-    private Long chatRoomId; // ✅ 오픈채팅방 UUID 추가
+    private Long chatRoomId; //   오픈채팅방 UUID 추가
 }

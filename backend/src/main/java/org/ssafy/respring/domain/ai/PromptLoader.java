@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
 import java.util.Map;
 
-import static org.ssafy.respring.domain.ai.PromptType.*;
+import static org.ssafy.respring.domain.ai.PromptType.AUTOBIOGRAPHY;
 
 @Component
 @Slf4j

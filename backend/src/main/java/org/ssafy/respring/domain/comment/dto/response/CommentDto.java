@@ -2,8 +2,8 @@ package org.ssafy.respring.domain.comment.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
@@ -15,6 +15,6 @@ public class CommentDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long parentId;
-    private int likeCount;  // ✅ 좋아요 개수 필드 추가
+    private int likeCount;  //   좋아요 개수 필드 추가
 }
 

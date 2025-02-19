@@ -200,8 +200,7 @@ services:
     environment:
       - MEDIASOUP_SERVER=${MEDIASOUP_SERVER}
       - MEDIASOUP_PORT=4001  # 내부 통신용 포트 지정
-    depends_on:
-      - mediasoup
+
     networks:
       - project-network
 

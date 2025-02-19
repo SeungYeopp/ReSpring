@@ -17,7 +17,7 @@ let router;
 const transports = {};
 const producers = {};
 const consumers = {};
-const clients = {}; // ✅ roomId 별로 연결된 사용자 관리
+const clients = {}; //   roomId 별로 연결된 사용자 관리
 
 const createWorker = async () => {
     console.log("🛠️ Creating Mediasoup Worker...");
@@ -40,11 +40,11 @@ const createWorker = async () => {
         return;
     }
 
-    console.log("✅ Mediasoup Worker & Router Created!");
+    console.log("  Mediasoup Worker & Router Created!");
 };
 
 io.on("connection", (socket) => {
-    console.log("✅ New client connected:", socket.id);
+    console.log("  New client connected:", socket.id);
 
     socket.on("getRouterRtpCapabilities", (callback) => {
         if (!router) {
@@ -58,7 +58,7 @@ io.on("connection", (socket) => {
     socket.on("createTransport", async (callback) => {
         try {
             const transport = await router.createWebRtcTransport({
-                listenIps: [{ ip: "0.0.0.0", announcedIp: "mediasoup-demo" }],
+                listenIps: [{ ip: "0.0.0.0", announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP}],
                 enableUdp: true,
                 enableTcp: true,
                 preferUdp: true,
@@ -66,7 +66,7 @@ io.on("connection", (socket) => {
 
             transports[transport.id] = transport;
 
-            console.log("✅ Transport Created:", transport.id);
+            console.log("  Transport Created:", transport.id);
 
             callback({
                 id: transport.id,
@@ -87,16 +87,16 @@ io.on("connection", (socket) => {
 
             if (!transport) {
                 console.error("❌ Transport를 찾을 수 없음:", transportId);
-                return callback({ error: "Transport not found" }); // ✅ 에러 응답 추가
+                return callback({ error: "Transport not found" }); //   에러 응답 추가
             }
 
             try {
                 await transport.connect({ dtlsParameters });
-                console.log("✅ Transport 연결 완료:", transportId);
-                callback({ success: true }); // ✅ 정상 응답 추가
+                console.log("  Transport 연결 완료:", transportId);
+                callback({ success: true }); //   정상 응답 추가
             } catch (error) {
                 console.error("❌ Transport 연결 실패:", error);
-                callback({ error: error.message }); // ✅ 에러 응답 추가
+                callback({ error: error.message }); //   에러 응답 추가
             }
         }
     );
@@ -129,12 +129,12 @@ io.on("connection", (socket) => {
                 producers[roomKey].push(producer.id);
 
                 console.log(
-                    `✅ [produce] Room ${roomKey}에 Producer 추가됨:`,
+                    `  [produce] Room ${roomKey}에 Producer 추가됨:`,
                     producer.id
                 );
                 callback({ id: producer.id });
 
-                // ✅ 새롭게 생성된 Producer를 다른 사용자들에게 Consume 요청
+                //   새롭게 생성된 Producer를 다른 사용자들에게 Consume 요청
                 const existingClients = clients[roomId] || [];
                 const otherUsers = existingClients.filter((id) => id !== socket.id); // 본인 제외
 
@@ -160,14 +160,14 @@ io.on("connection", (socket) => {
 
         if (!producers[roomId]) return;
 
-        // ✅ 해당 Producer 삭제
+        //   해당 Producer 삭제
         producers[roomId] = producers[roomId].filter((id) => id !== producerId);
 
         if (producers[roomId].length === 0) delete producers[roomId];
 
         console.log("📡 Updated Producers List:", producers);
 
-        // ✅ 해당 Producer를 소비하는 모든 사용자에게 Consumer 삭제 요청
+        //   해당 Producer를 소비하는 모든 사용자에게 Consumer 삭제 요청
         io.to(roomId).emit("removeConsumer", { producerId });
     });
 
@@ -217,7 +217,7 @@ io.on("connection", (socket) => {
                 consumers[roomId][socket.id] = consumer;
 
                 console.log(
-                    `✅ [consume] Room ID: ${roomId}, Consumer ID: ${consumer.id}`
+                    `  [consume] Room ID: ${roomId}, Consumer ID: ${consumer.id}`
                 );
 
                 callback({
@@ -242,7 +242,7 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
         console.log("❌ Client Disconnected:", socket.id);
 
-        // ✅ 클라이언트가 나가면 clients 리스트에서 제거
+        //   클라이언트가 나가면 clients 리스트에서 제거
         Object.keys(clients).forEach((roomId) => {
             clients[roomId] = clients[roomId].filter((id) => id !== socket.id);
             if (clients[roomId].length === 0) delete clients[roomId];
@@ -265,7 +265,7 @@ io.on("connection", (socket) => {
         console.log(`👤 Producers in Room ${roomId}:`, currentProducers);
         console.log(`👥 Clients in Room ${roomId}:`, existingClients);
 
-        // ✅ 현재 이벤트를 보낸 사용자를 제외한 사용자 찾기
+        //   현재 이벤트를 보낸 사용자를 제외한 사용자 찾기
         const otherUsers = existingClients.filter((id) => id !== socket.id);
 
         if (otherUsers.length > 0) {

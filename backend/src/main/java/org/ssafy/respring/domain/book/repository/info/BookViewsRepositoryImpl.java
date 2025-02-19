@@ -22,8 +22,8 @@ public class BookViewsRepositoryImpl implements BookViewsRepositoryQueryDsl {
         return queryFactory
                 .selectFrom(bookViews)
                 .where(bookViews.user.id.eq(userId))
-                .orderBy(bookViews.id.desc())  // ✅ ID를 기준으로 내림차순 정렬 (최근 조회한 책이 위로)
-                .limit(10)  // ✅ 최근 10개 조회
+                .orderBy(bookViews.id.desc())  //   ID를 기준으로 내림차순 정렬 (최근 조회한 책이 위로)
+                .limit(10)  //   최근 10개 조회
                 .fetch();
     }
 }

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { CustomSkeleton } from "@/components/custom/Skeleton";
 
 interface SkeletonCardProps {
-  className?: string; // ✅ 외부에서 스타일 조정 가능하도록 추가
+  className?: string; //   외부에서 스타일 조정 가능하도록 추가
 }
 
 export function SkeletonCard({ className }: SkeletonCardProps) {

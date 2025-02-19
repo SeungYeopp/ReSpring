@@ -30,7 +30,7 @@ const TabsTrigger = React.forwardRef<
     className={cn(
       "px-4 py-2 text-sm font-medium text-gray-500 rounded-md transition-all",
       "hover:bg-lightgreen-50 hover:text-gray-700",
-      "data-[state=active]:bg-lightgreen-50 data-[state=active]:text-green-600", // ✅ 초록색 계열로 변경
+      "data-[state=active]:bg-lightgreen-50 data-[state=active]:text-green-600", //   초록색 계열로 변경
       className
     )}
     {...props}

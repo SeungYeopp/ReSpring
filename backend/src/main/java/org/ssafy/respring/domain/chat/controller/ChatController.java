@@ -13,7 +13,10 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.ssafy.respring.domain.chat.dto.request.ChatMessageRequest;
 import org.ssafy.respring.domain.chat.dto.request.ChatRoomPrivateRequest;
 import org.ssafy.respring.domain.chat.dto.request.ChatRoomRequest;
@@ -66,15 +69,14 @@ public class ChatController {
         ChatRoom chatRoom = chatService.getRoomById(messageRequest.getRoomId());
 
         if(!chatRoom.isOpenChat()){
-            // ✅ 사용자 목록 조회
+            //   사용자 목록 조회
             List<User> roomUsers = chatService.getRoomById(messageRequest.getRoomId()).getUsers();
             for (User user : roomUsers) {
-                if (!user.getId().equals(messageRequest.getUserId())) {  // ✅ 발신자는 제외
+                if (!user.getId().equals(messageRequest.getUserId())) {  //   발신자는 제외
                     boolean isUserInRoom = chatService.isUserCurrentlyInRoom(messageRequest.getRoomId(), user.getId());
 
-                    // ✅ 사용자가 현재 방에 없으면 알림 전송
+                    //   사용자가 현재 방에 없으면 알림 전송
                     if (!isUserInRoom) {
-                        System.out.println("🔔 새로운 메시지 알림 전송: " + user.getId());
 
                         notificationService.sendNotification(
                                 user.getId(),                 // 알림을 받을 사용자 UUID
@@ -84,8 +86,6 @@ public class ChatController {
                                 messageRequest.getRoomId(),   // 채팅방 ID
                                 "새로운 채팅 메시지가 도착했습니다." // 알림 메시지
                         );
-                    } else {
-                        System.out.println("✅ 사용자가 현재 방에 있으므로 알림을 보내지 않음: " + user.getId());
                     }
                 }
             }
@@ -94,7 +94,7 @@ public class ChatController {
 
     }
 
-    /** ✅ 모든 채팅방 조회 (WebSocket) */
+    /**   모든 채팅방 조회 (WebSocket) */
     @MessageMapping("/chat/rooms")
     @SendTo("/topic/chat/rooms")
     public List<ChatRoomResponse> getAllRooms() {
@@ -108,7 +108,7 @@ public class ChatController {
                 .collect(Collectors.toList());
     }
 
-    /** ✅ 내 채팅방 조회 (WebSocket) */
+    /**   내 채팅방 조회 (WebSocket) */
     @MessageMapping("/chat/myRooms/{userId}")
     @SendTo("/topic/chat/myRooms/{userId}")
     public List<ChatRoomResponse> getMyRooms(@DestinationVariable UUID userId) {
@@ -122,7 +122,7 @@ public class ChatController {
                 .collect(Collectors.toList());
     }
 
-    /** ✅ 방 참가 기능 */
+    /**   방 참가 기능 */
     @MessageMapping("/chat/joinRoom")
     public void joinRoom(ChatRoomRequest request) {
         UUID userId = UUID.fromString(request.getUserIds().get(0));
@@ -188,7 +188,7 @@ public class ChatController {
 //    }
 
     @Operation(summary = "채팅 메시지 조회", description = "특정 채팅방의 모든 메시지를 조회합니다.")
-    @GetMapping("/chat/messages/{roomId}")  // ✅ REST API로 변경
+    @GetMapping("/chat/messages/{roomId}")  //   REST API로 변경
     public ResponseEntity<List<ChatMessageResponse>> getMessages(@PathVariable Long roomId) {
         List<ChatMessageResponse> messages = chatService.getMessages(roomId).stream()
                 .map(message -> ChatMessageResponse.builder()
@@ -238,7 +238,7 @@ public class ChatController {
 
         ChatRoomResponse response = ChatRoomResponse.from(chatRoom);
 
-        // ✅ WebSocket을 통해 두 사용자에게 새로운 1:1 채팅방 정보 전송
+        //   WebSocket을 통해 두 사용자에게 새로운 1:1 채팅방 정보 전송
         messagingTemplate.convertAndSend("/topic/newRoom/" + request.getUser1(), response);
         messagingTemplate.convertAndSend("/topic/newRoom/" + request.getUser2(), response);
     }
@@ -247,14 +247,14 @@ public class ChatController {
 
 
 
-    // ✅ 채팅방 접속 시 마지막 접속 시간 업데이트 (프론트에서 호출)
+    //   채팅방 접속 시 마지막 접속 시간 업데이트 (프론트에서 호출)
     @PostMapping("/chat/last-seen")
     public ResponseEntity<Void> updateLastSeen(@RequestParam Long roomId, @RequestParam UUID userId) {
         chatService.saveLastSeenTime(roomId, userId);
         return ResponseEntity.ok().build();
     }
 
-    // ✅ 특정 채팅방의 마지막 접속 시간 조회 (Timestamp + Human-readable)
+    //   특정 채팅방의 마지막 접속 시간 조회 (Timestamp + Human-readable)
     @GetMapping("/chat/last-seen")
     public ResponseEntity<Map<String, Object>> getLastSeenTime(@RequestParam Long roomId, @RequestParam UUID userId) {
         Long lastSeenTime = chatService.getLastSeenTime(roomId, userId);
@@ -267,7 +267,7 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
-    // ✅ 사용자의 모든 채팅방 마지막 접속 시간 조회
+    //   사용자의 모든 채팅방 마지막 접속 시간 조회
     @GetMapping("/chat/last-seen/all")
     public ResponseEntity<Map<Long, Map<String, Object>>> getAllLastSeenTimes(@RequestParam UUID userId) {
         Map<Long, Map<String, Object>> lastSeenMap = new HashMap<>();
@@ -288,7 +288,7 @@ public class ChatController {
     }
 
 
-    // ✅ 특정 채팅방의 안 읽은 메시지 개수 조회
+    //   특정 채팅방의 안 읽은 메시지 개수 조회
     @GetMapping("/chat/unread-messages")
     public ResponseEntity<Integer> getUnreadMessageCount(@RequestParam Long roomId, @RequestParam UUID userId) {
         Long lastSeenTime = chatService.getLastSeenTime(roomId, userId);
@@ -296,21 +296,21 @@ public class ChatController {
         return ResponseEntity.ok(unreadMessages.size());
     }
 
-    // ✅ 사용자가 채팅방에 입장할 때 Redis 상태 저장
+    //   사용자가 채팅방에 입장할 때 Redis 상태 저장
     @PostMapping("/chat/room/join")
     public ResponseEntity<Void> joinRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
         chatService.markUserAsInRoom(roomId, userId);
         return ResponseEntity.ok().build();
     }
 
-    // ✅ 사용자가 채팅방을 나갈 때 Redis 상태 제거
+    //   사용자가 채팅방을 나갈 때 Redis 상태 제거
     @PostMapping("/chat/room/leave")
     public ResponseEntity<Void> leaveRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
         chatService.markUserAsLeftRoom(roomId, userId);
         return ResponseEntity.ok().build();
     }
 
-    // ✅ 사용자가 현재 채팅방에 있는지 확인
+    //   사용자가 현재 채팅방에 있는지 확인
     @GetMapping("/chat/room/status")
     public ResponseEntity<Boolean> checkUserInRoom(@RequestParam Long roomId, @RequestParam UUID userId) {
         boolean isInRoom = chatService.isUserCurrentlyInRoom(roomId, userId);

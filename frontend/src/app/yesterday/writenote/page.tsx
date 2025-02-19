@@ -60,8 +60,6 @@ export default function WriteStoryPage() {
         display: event.display,
       }));
       setEvents(formattedEvents);
-      console.log(source);
-      console.log(storyId);
     } catch (error) {
       console.error("Error fetching events:", error);
     }

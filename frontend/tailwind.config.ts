@@ -95,7 +95,7 @@ export default {
           lightgreen: "#F0FDF4",
           darkgreen: "#57986B"
         },
-        // ✅ 스플래시 스크린 색상 추가
+        //   스플래시 스크린 색상 추가
         splash: {
           background: "#e8f3d6", // 연한 초록색 배경
           text: "#638d3e", // 진한 초록색 텍스트

@@ -79,7 +79,6 @@ export const newSubscription = async (subscribedToNickname: string) : Promise<bo
     if (response.status === 200) {
       return true;
     } else {
-      console.log(`newSubscription에서 status : 200 이 아닌 다른 상태를 반환했습니다. subscribedToNickname : ${subscribedToNickname}`);
       return false;
     }
   } catch (error) {
@@ -100,11 +99,9 @@ export const cancelSubscription = async (subscribedToNickname: string) : Promise
     if (response.status === 200) {
       return true;
     } else {
-      console.log(`cancelSubscription에서 status : 200 이 아닌 다른 상태를 반환했습니다. subscribedToNickname : ${subscribedToNickname}`);
       return false;
     }
   } catch (error) {
-    console.error("cancelSubscription 에러 발생", error);
     throw new Error("cancelSubscription 에러 발생");
   }
 };
@@ -119,7 +116,6 @@ export const isSubscribed = async (subscribedToNickname: string): Promise<boolea
     const response = await axiosAPI.get(`/subscriptions/${subscribedToNickname}/check`);
     return response.data;
   } catch (error) {
-    console.error(`isSubscribed 에러 발생, 발생한 subscribedToNickname: ${subscribedToNickname}`, error);
     throw new Error("isSubscribed 에러 발생");
   }
 };
@@ -137,7 +133,6 @@ export const getAllSubscribers = async (): Promise<Subscriber[]> => {
       createdAt: new Date(subscriber.createdAt),
     }));
   } catch (error) {
-    console.error(`getAllSubscribers 에러 발생`, error);
     throw new Error('getAllSubscribers 에러 발생');
   }
 };
@@ -161,7 +156,6 @@ export const getAllSubscribersActivities = async (): Promise<Post[]> => {
       })),
     }));
   } catch (error) {
-    console.error(`getAllSubscribersActivities 에러 발생`, error);
     throw new Error("getAllSubscribersActivities 에러 발생");
   }
 };
@@ -179,7 +173,6 @@ export const getAllSubscribersChallenges = async (): Promise<Challenge[]> => {
       registerDate: new Date(challenge.registerDate),
     }));
   } catch (error) {
-    console.error(`getAllSubscribersChallenges 에러 발생`, error);
     throw new Error("getAllSubscribersChallenges 에러 발생");
   }
 };
@@ -200,7 +193,6 @@ export const getAllSubscribersBooks = async (): Promise<Book[]> => {
 
     return books;
   } catch (error) {
-    console.error(`getAllSubscribersBooks 에러 발생`, error);
     throw new Error("getAllSubscribersBooks 에러 발생");
   }
 };

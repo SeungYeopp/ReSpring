@@ -69,8 +69,6 @@ export default function WritePage() {
       // 이미지가 비어있으면 빈 배열, 있으면 파일들 그대로
       const validImages = images.length > 0 ? images : [];
 
-      console.log("formData:", formData);
-      console.log("images:", validImages);
 
       // 실제 서버로 전송
       await createPost(formData, validImages);

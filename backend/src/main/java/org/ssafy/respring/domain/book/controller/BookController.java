@@ -21,7 +21,6 @@ import org.ssafy.respring.domain.user.service.UserService;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 

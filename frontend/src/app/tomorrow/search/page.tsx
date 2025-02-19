@@ -22,7 +22,6 @@ export default function SearchPage() {
   const [results, setResults] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "UPCOMING" | "ONGOING" | "ENDED">("ALL");
-  console.log("[SearchPage] 렌더링, query:", query, "loading:", loading, "results length:", results.length);
 
   // 쿼리 파라미터 변화 시 검색
   useEffect(() => {
@@ -35,7 +34,6 @@ export default function SearchPage() {
 
  // 예시: performSearch 함수 내에 로그 추가
 const performSearch = useCallback(async (searchQuery: string) => {
-  console.log("[SearchPage] performSearch 시작, searchQuery:", searchQuery);
   if (!searchQuery.trim() || searchQuery.length < 2) {
     setResults([]);
     return;
@@ -47,15 +45,12 @@ const performSearch = useCallback(async (searchQuery: string) => {
     // await new Promise((r) => setTimeout(r, 1000));
 
     const data = await searchChallenges(searchQuery);
-    console.log("[SearchPage] 검색 결과:", data);
     setResults(data);
     addRecentSearch(searchQuery);
   } catch (error) {
-    console.error("검색 API 실패:", error);
     setResults([]);
   } finally {
     setLoading(false);
-    console.log("[SearchPage] performSearch 종료, loading:", false);
   }
 }, [addRecentSearch]);
 

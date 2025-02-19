@@ -1,13 +1,11 @@
 package org.ssafy.respring.domain.image.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.image.ImageResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.ssafy.respring.Exception.ImageSizeUploadException;
-import org.ssafy.respring.domain.image.dto.response.ImageResponseDto;
 import org.ssafy.respring.domain.image.repository.ImageRepository;
 import org.ssafy.respring.domain.image.vo.Image;
 import org.ssafy.respring.domain.image.vo.ImageType;
@@ -180,22 +178,17 @@ public class ImageService {
     @Transactional
     public void deleteImagesByEntityAndS3Key(ImageType imageType, Long entityId, List<String> deleteImageIds) {
         if (deleteImageIds == null || deleteImageIds.isEmpty()) {
-            System.out.println("🚨 삭제할 S3 Key 리스트가 비어 있음!");
             return;
         }
 
-        // ✅ 삭제할 이미지 조회
+        //   삭제할 이미지 조회
         List<Image> imagesToDelete = imageRepository.findByImageTypeAndEntityIdAndS3KeyIn(imageType, entityId, deleteImageIds);
 
         if (imagesToDelete.isEmpty()) {
-            System.out.println("🚨 삭제할 이미지를 찾을 수 없음!");
-            System.out.println("ImageType: " + imageType);
-            System.out.println("EntityId: " + entityId);
-            System.out.println("S3 Keys: " + deleteImageIds);
             throw new IllegalArgumentException("삭제할 이미지를 찾을 수 없습니다.");
         }
 
-        // ✅ S3에서 이미지 삭제
+        //   S3에서 이미지 삭제
         for (Image image : imagesToDelete) {
             String objectKey = image.getS3Key();
             if (objectKey != null && !objectKey.isEmpty()) {
@@ -203,7 +196,7 @@ public class ImageService {
             }
         }
 
-        // ✅ DB에서 이미지 삭제
+        //   DB에서 이미지 삭제
         imageRepository.deleteAll(imagesToDelete);
     }
 

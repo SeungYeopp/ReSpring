@@ -13,7 +13,7 @@ interface BookSearchResultProps {
   query: string
 }
 
-// ✅ 랜덤 이미지 생성 함수
+//   랜덤 이미지 생성 함수
 const getRandomImage = () => {
   const imageNumber = Math.floor(Math.random() * 9) + 1
   return `/placeholder/bookcover/thumb (${imageNumber}).webp`

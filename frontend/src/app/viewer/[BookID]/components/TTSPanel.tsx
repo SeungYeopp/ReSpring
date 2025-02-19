@@ -49,7 +49,6 @@ export function TTSPanel({ bookId }: TTSPanelProps) {
       return;
     }
 
-    console.log("📖 TTS에 전달되는 책 내용:", bookContent);
 
     const pitchValue = pitch === "김민순" ? 0.5 : pitch === "김민영" ? 2.0 : 4.0;
 
