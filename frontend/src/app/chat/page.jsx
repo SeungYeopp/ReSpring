@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Sprout, Video, Settings, ArrowLeft, Send, Users, MessageSquarePlus, Eye, EyeOff } from "lucide-react"
+import { Flower2, Bean, Calendar, Clock, User, Users ,Sprout, Video, Settings, ArrowLeft, Send, MessageSquarePlus, Eye, EyeOff } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
@@ -25,6 +25,8 @@ import {
 import { motion } from "framer-motion"
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getUserInfoByNickname, UserInfo } from "@/lib/api/user";
+import { usePathname } from "next/navigation"
+import Link from "next/link"
 
 const SERVER_URL = "http://localhost:8080/chat";
 const USER_SESSION_URL = "http://localhost:8080/user/me";
@@ -875,6 +877,9 @@ const Chat1 = () => {
   // const filteredRooms = showOpenChats ? myRooms : myRooms.filter((room) => !room.isOpenChat);
   const filteredRooms = myRooms.filter((room) => !room.isOpenChat);
 
+  const router = useRouter()
+  const pathname = usePathname()
+
   const renderRoomList = () => (
     <Card className={`flex flex-col h-full ${fontFamilies[fontFamily]} border-none bg-white/50 backdrop-blur-sm shadow-lg`}>
       <CardHeader>
@@ -949,6 +954,38 @@ const Chat1 = () => {
           </div>
         </ScrollArea>
       </CardContent>
+      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-chat-primary-light border-t md:hidden border-red-900">
+        <div className="grid grid-cols-4 h-full">
+          <Link
+            href="/yesterday"
+            className={`flex flex-col items-center justify-center ${pathname === "/yesterday" ? "text-[#96b23c]" : "text-dark-500"}`}
+          >
+            <Bean className="w-5 h-5" />
+            <span className="text-xs mt-1">어제</span>
+          </Link>
+          <Link
+            href="/today"
+            className={`flex flex-col items-center justify-center ${pathname === "/today" ? "text-[#96b23c]" : "text-dark-500"}`}
+          >
+            <Sprout className="w-5 h-5" />
+            <span className="text-xs mt-1">오늘</span>
+          </Link>
+          <Link
+            href="/tomorrow"
+            className={`flex flex-col items-center justify-center ${pathname === "/tomorrow" ? "text-[#96b23c]" : "text-dark-500"}`}
+          >
+            <Flower2 className="w-5 h-5" />
+            <span className="text-xs mt-1">내일</span>
+          </Link>
+          <Link
+            href="/profile"
+            className={`flex flex-col items-center justify-center ${pathname === "/profile" ? "text-[#96b23c]" : "text-dark-500"}`}
+          >
+            <User className="w-5 h-5" />
+            <span className="text-xs mt-1">나의 봄</span>
+          </Link>
+        </div>
+      </nav>
     </Card>
   );
 
