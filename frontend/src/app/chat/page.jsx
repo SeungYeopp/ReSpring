@@ -244,14 +244,41 @@ const Chat1 = () => {
     currentRoomRef.current = currentRoom;
   }, [currentRoom]);
 
-  // 컴포넌트가 언마운트되거나 페이지 이동될 때 실행
+  // // 컴포넌트가 언마운트되거나 페이지 이동될 때 실행
+  // useEffect(() => {
+  //   return () => {
+  //     // unmount 시점에 마지막에 설정된 currentRoomRef.current를 사용
+  //     if (currentRoomRef.current) {
+  //       const roomId = currentRoomRef.current.id;
+  //       console.log("🚪 [Cleanup] leaving room on unmount:", roomId);
+
+  //       // 1) REST 호출
+  //       fetch(
+  //         `${SERVER_URL}/room/leave?roomId=${roomId}&userId=${currentUserId}`,
+  //         {
+  //           method: "POST",
+  //         }
+  //       ).catch(console.error);
+
+  //       // 2) STOMP 호출
+  //       stompClient.send(
+  //         "/app/chat.leaveRoom",
+  //         {},
+  //         JSON.stringify({
+  //           roomId,
+  //           userIds: [currentUserId],
+  //           is_active: false,
+  //         })
+  //       );
+  //     }
+  //   };
+  // }, []);
   useEffect(() => {
     return () => {
-      // unmount 시점에 마지막에 설정된 currentRoomRef.current를 사용
-      if (currentRoomRef.current) {
+      if (currentRoomRef.current && stompClient) {
         const roomId = currentRoomRef.current.id;
         console.log("🚪 [Cleanup] leaving room on unmount:", roomId);
-
+  
         // 1) REST 호출
         fetch(
           `${SERVER_URL}/room/leave?roomId=${roomId}&userId=${currentUserId}`,
@@ -259,8 +286,8 @@ const Chat1 = () => {
             method: "POST",
           }
         ).catch(console.error);
-
-        // 2) STOMP 호출
+  
+        // 2) STOMP 호출 (stompClient가 존재하는 경우에만 호출)
         stompClient.send(
           "/app/chat.leaveRoom",
           {},
@@ -273,7 +300,7 @@ const Chat1 = () => {
       }
     };
   }, []);
-
+  
   useEffect(() => {
     if (!socket || !currentRoom) return;
 
