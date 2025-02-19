@@ -23,7 +23,6 @@ interface ChallengeClientPageProps {
 }
 
 export default function ChallengeClientPage({ serverChallenges }: ChallengeClientPageProps) {
-  console.log("ChallengeClientPage 렌더링 시작");
   const router = useRouter()
   const [allChallenges, setAllChallenges] = useState<Challenge[]>(serverChallenges)
   const [myChallenges, setMyChallenges] = useState<ParticipatedChallenge[]>([])

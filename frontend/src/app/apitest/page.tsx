@@ -9,7 +9,6 @@ const Page = () => {
   const [responseMessage, setResponseMessage] = useState('');
 
   const handleRequest = async (requestType: 'GET' | 'POST') => {
-    console.log(`Sending ${requestType} request`);
     try {
       const data = await postLogin(title, body, requestType);
       setResponseMessage(JSON.stringify(data, null, 2));

@@ -36,12 +36,10 @@ export default function CreateChallengePage() {
 
       //   새로운 API 호출
       const result = await createChallenge(requestData);
-      console.log("챌린지 생성 성공:", result);
 
       //   챌린지 상세 페이지로 이동
       router.push(`/tomorrow/${result.id}`);
     } catch (error:any) {
-      console.error("챌린지 생성 중 오류:", error.response.data);
       alert("챌린지 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
       
     }

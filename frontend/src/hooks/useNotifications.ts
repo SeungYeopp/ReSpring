@@ -26,12 +26,9 @@ const useNotifications = (sseUrl?: string) => {
 
     const checkSessionAndConnect = async () => {
       try {
-        console.log("리스폰스 응답 :");
 
         const response = await axiosAPI.get("/user/me", { withCredentials: true });
-        console.log(response.data);
         if (response.status === 200) {
-          console.log("  세션 확인됨, SSE 연결 시작...");
           connect();
         }
       } catch (error) {
@@ -40,19 +37,16 @@ const useNotifications = (sseUrl?: string) => {
     };
 
     const connect = () => {
-      console.log("SSE 연결 시도:", sseUrl);
       const eventSource = new EventSource(sseUrl, { withCredentials: true });
       eventSourceRef.current = eventSource;
 
       eventSource.onopen = () => {
-        console.log("  SSE 연결 성공:", sseUrl);
       };
 
       eventSource.onerror = () => {
         console.error("SSE 연결 에러");
 
         if (!isCancelled) {
-          console.log("⏳ 3초 후 SSE 재연결 시도");
           retryTimeoutRef.current = setTimeout(checkSessionAndConnect, 3000);
         }
         eventSource.close();
@@ -68,7 +62,6 @@ const useNotifications = (sseUrl?: string) => {
       });
 
       eventSource.addEventListener("connect", (event: MessageEvent) => {
-        console.log("[connect] 이벤트 수신:", event.data);
       });
 
       return () => {
@@ -88,7 +81,6 @@ const useNotifications = (sseUrl?: string) => {
 
   const clearNotifications = () => {
     setNotifications([]);
-    console.log("🔄 알림 목록 초기화 완료");
   };
 
   return { notifications, clearNotifications };

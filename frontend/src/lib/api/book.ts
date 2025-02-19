@@ -61,7 +61,6 @@ export const convertToContent = (compiledBook: CompiledBook): Content => {
 // 출력 : 봄날의 서
 export const getBookById = async (bookId : number) : Promise<BookFull>=> {
     try{
-        console.log("getBookById 호출!")
         const response = await axiosAPI.get(`/books/${bookId}`);
 
         // Date 형 변환.
@@ -142,8 +141,6 @@ export const makeBook = async (
         const content = convertToContent(compiledBook)
         const title : string = compiledBook.title;
         const formData = new FormData();
-        console.log("makeBook, title", title);
-        console.log("makeBook, convertedContent", content);
         formData.append('requestDto', new Blob([
             JSON.stringify({title, content, tags, storyIds})
         ], {type : 'application/json'}
@@ -152,7 +149,6 @@ export const makeBook = async (
         formData.append('coverImg', coverImage);
         const response = await axiosAPI.post('/books', formData, {headers : {'Content-Type': 'multipart/form-data'}});
 
-        console.log(response.data)
         return response.data;
     }catch(error : any){
 
@@ -255,7 +251,6 @@ export interface BookAutoComplete{
 export const getAllBooksAutocomplete = async (query : string) : Promise<BookAutoComplete[]> => {
     if(query.length < 2) return [];
 
-    console.log("자동생성 쿼리문", encodeURIComponent(query))
     try {
         const response = await axiosAPI.get(`/books/autocomplete/title?query=${encodeURIComponent(query)}`);
 
@@ -272,7 +267,6 @@ export const getAllBooksAutocomplete = async (query : string) : Promise<BookAuto
 // 출력 : 봄날의 서 배열
 export const getAllBooksScrolled = async (lastLikes : number, lastViews : number, lastBookId : number, lastCreatedAt : Date | null, size : number) : Promise<Book[]> => {
     try{
-        console.log(lastLikes, lastViews, lastBookId, size)
         const params: Record<string, any> = {
             lastLikes, lastViews, lastBookId, size
         }
@@ -422,7 +416,6 @@ export const compileBookByAI = async (content: Content): Promise<Content> => {
             const response = await axiosAPI.post('/books/ai-compile', {content});
             const uncleaned = response.data.response;
 
-            console.log(`AI 생성 RAW DATA (시도 ${attempts + 1}):`, uncleaned);
 
             //const cleaned = uncleaned.replaceAll("```json", "").replaceAll("```", "").replaceAll("json", "").replaceAll('`', "");
             const cleaned = uncleaned.replace(/```json|```/g, "").replace(/\s{2,}/g, "");

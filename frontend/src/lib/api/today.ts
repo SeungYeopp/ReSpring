@@ -251,8 +251,6 @@ export async function updatePost(
       category,
       deleteImageIds,
     };
-    console.log("🔍 보낼 데이터:", postDto);
-    console.log("🖼 추가할 이미지:", newFiles);
     formData.append(
       "postDto",
       new Blob([JSON.stringify(postDto)], { type: "application/json" })
@@ -261,7 +259,6 @@ export async function updatePost(
     if (newFiles) {
       newFiles.forEach((file) => {
         formData.append("newImages", file);
-        console.log("📸 추가된 이미지 파일:", file.name);
       });
     }
 
@@ -269,9 +266,7 @@ export async function updatePost(
       headers: { "Content-Type": "multipart/form-data" },
     });
 
-    console.log("🔍 서버 응답 상태 코드:", response.status);
   } catch (error) {
-    console.error("❌ 게시글 수정 실패");
     throw new Error("게시글 수정 실패");
   }
 }

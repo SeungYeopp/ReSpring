@@ -74,7 +74,6 @@ export default function StoryEditor({
 
   const removeExistingImage = (index: number) => {
     const urlToRemove = existingImageUrls[index];
-    console.log("[removeExistingImage] URL to remove:", urlToRemove);
     if (!urlToRemove) {
       console.warn("🚨 삭제할 이미지의 URL이 없음!");
       return;
@@ -82,20 +81,15 @@ export default function StoryEditor({
     // URL API를 사용하여 pathname 추출
     const pathname = new URL(urlToRemove).pathname;
     const s3Key = pathname.startsWith("/") ? pathname.slice(1) : pathname;
-    console.log("[removeExistingImage] Extracted S3 key:", s3Key);
 
     // onDeleteImageIdsChange prop을 사용하여 업데이트
     onDeleteImageIdsChange((prev) => {
       const newIds = [...prev, s3Key];
-      console.log("[removeExistingImage] Updated deleteImageIds:", newIds);
       return newIds;
     });
 
     const updatedExisting = existingImageUrls.filter((_, i) => i !== index);
-    console.log(
-      "[removeExistingImage] Updated existingImageUrls:",
-      updatedExisting
-    );
+
     onExistingImageUrlsChange(updatedExisting);
   };
 

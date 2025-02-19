@@ -50,7 +50,6 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
           return;
         }
 
-        console.log("불러온 게시글:", fetchedPost);
 
         setFormData({
           title: fetchedPost.title,
@@ -109,7 +108,6 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
       s3Key = s3Key.split("?")[0]; // '?' 이후의 모든 값 제거
     }
 
-    console.log("🗑 삭제 요청할 S3 Key:", s3Key);
     setDeleteImageIds((prev) => [...prev, s3Key]); //   Presigned URL 제거 후 저장
 
     setImages((prev) => prev.filter((_, i) => i !== index));
@@ -124,7 +122,6 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
       return;
     }
 
-    console.log("삭제할 이미지 s3Key 목록:", deleteImageIds);
 
     try {
       setIsSubmitting(true);

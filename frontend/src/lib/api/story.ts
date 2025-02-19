@@ -96,7 +96,6 @@ export const getStoryById = async (storyId: number): Promise<Story> => {
 
     return response.data;
   } catch (error) {
-    console.error("getStoryByStoryId 에러 발생!", error);
     throw new Error("getStoryByStoryId 에러 발생!");
   }
 };
@@ -113,13 +112,9 @@ export const deleteStory = async (storyId: number): Promise<boolean> => {
     if (response.status === 200) {
       return true;
     } else {
-      console.log(
-        `deleteStory에서 status : 200 이 아닌 다른 상태를 반환했습니다. storyID : ${storyId}`
-      );
       return false;
     }
   } catch (error) {
-    console.error("deleteStory 에러 발생", error);
     throw new Error("deleteStory 에러 발생");
   }
 };
@@ -166,7 +161,6 @@ export const updateStory = async (
 
     return response.data;
   } catch (error) {
-    console.error(`updateStory 에러 발생! storyId : ${storyId}`, error);
     throw new Error(`updateStory 에러 발생! storyId : ${storyId}`);
   }
 };
