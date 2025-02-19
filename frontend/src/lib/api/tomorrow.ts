@@ -29,17 +29,27 @@ export const fetchChallenges = async (sort: SortOption = "LATEST"): Promise<Chal
 };
 
 /**
+ * 변환 함수: 서버의 'liked' 필드를 클라이언트의 'isLike'로 매핑
+ */
+const transformChallengeDetail = (data: any): ChallengeDetail => ({
+  ...data,
+  isLike: data.liked,
+});
+
+/**
  * 📌 2. 챌린지 상세 조회
  */
 export const getChallengeDetail = async (challengeId: number): Promise<ChallengeDetail> => {
   try {
     const response = await axiosAPI.get(`${BASE_URL}/challenges/${challengeId}`);
-    return response.data; // 새 필드들이 포함된 응답 데이터를 그대로 반환
+    // 응답 데이터를 변환하여 반환
+    return transformChallengeDetail(response.data);
   } catch (error) {
     console.error("챌린지 상세 조회 실패:", error);
     throw new Error("챌린지 상세 조회 실패");
   }
 };
+
 
 /**
  * 📌 3. 챌린지 상태별 조회 (UPCOMING, ONGOING, COMPLETED)

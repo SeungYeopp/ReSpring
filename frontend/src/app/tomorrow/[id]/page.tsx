@@ -29,15 +29,25 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
 
   // 수정하기 버튼의 좋아요 토글 핸들러
   const handleLikeClick = async () => {
+    if (!challenge) return;
     try {
-      const success = await toggleChallengeLike(challenge!.id);
+      const success = await toggleChallengeLike(challenge.id);
       if (success) {
-        setIsLiked(!isLiked);
+        // 좋아요 상태를 토글하고, 좋아요 카운드도 함께 조정
+        setIsLiked((prev) => !prev);
+        setChallenge((prevChallenge) => {
+          if (!prevChallenge) return prevChallenge;
+          return {
+            ...prevChallenge,
+            likes: isLiked ? prevChallenge.likes - 1 : prevChallenge.likes + 1,
+          };
+        });
       }
     } catch (error) {
       console.error("Error toggling like:", error);
     }
   };
+  
 
 
   useEffect(() => {
@@ -72,14 +82,17 @@ export default function ChallengePage({ params }: { params: { id: number } }) {
     const fetchChallenge = async () => {
       try {
         const challengeData = await getChallengeDetail(params.id);
+        // 서버 응답이 liked 필드를 포함한다면, 이를 isLike에 매핑합니다.
         setChallenge(challengeData);
+        setIsLiked(challengeData.isLike);
       } catch (error) {
         console.error("Failed to fetch challenge details:", error);
       }
     };
   
     fetchChallenge();
-  }, [params.id, isLiked]);
+  }, [params.id]);
+  
 
   if (!challenge) {
     return <LoadingScreen />
