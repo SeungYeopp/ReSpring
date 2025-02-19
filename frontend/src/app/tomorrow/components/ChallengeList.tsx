@@ -3,12 +3,12 @@ import { useState, useEffect } from "react";
 import { GridChallengeCard } from "./GridChallengeCard";
 import SortButton from "./SortButton";
 import type { Challenge, SortOption } from "../types/challenge";
-import { fetchChallenges } from "@/lib/api/tomorrow";  // API 호출 함수
+import { fetchChallenges } from "@/lib/api/tomorrow"; // API 호출 함수
 import { List } from "lucide-react";
-import { SkeletonCard } from "@/components/custom/SkeletonCard";  // SkeletonCard 추가
+import { SkeletonCard } from "@/components/custom/SkeletonCard"; // SkeletonCard 추가
 
 interface ChallengeListProps {
-  initialChallenges: Challenge[];  // 초기 데이터 (서버 사이드 렌더링으로 받은 값)
+  initialChallenges: Challenge[]; // 초기 데이터 (서버 사이드 렌더링으로 받은 값)
 }
 
 export default function ChallengeList({ initialChallenges }: ChallengeListProps) {
@@ -21,7 +21,7 @@ export default function ChallengeList({ initialChallenges }: ChallengeListProps)
     const fetchSortedChallenges = async () => {
       setIsLoading(true);
       try {
-        const sortedChallenges = await fetchChallenges(currentSort);  // 서버 API 호출
+        const sortedChallenges = await fetchChallenges(currentSort); // 서버 API 호출
         setChallenges(sortedChallenges);
       } catch (error) {
         console.error("🚨 챌린지 목록 가져오기 실패:", error);
@@ -53,12 +53,7 @@ export default function ChallengeList({ initialChallenges }: ChallengeListProps)
     );
   }
 
-  // 챌린지가 없는 경우
-  if (challenges.length === 0) {
-    return <div className="text-center font-samlipoutline py-4">현재 진행 중인 챌린지가 없습니다.</div>;
-  }
-
-  // 데이터가 있는 경우
+  // 챌린지 목록이 없는 경우에도 헤더(제목 및 정렬 버튼)는 항상 표시
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-3 sm:mb-4">
@@ -68,22 +63,26 @@ export default function ChallengeList({ initialChallenges }: ChallengeListProps)
         </div>
         <SortButton currentSort={currentSort} setCurrentSort={setCurrentSort} />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-        {challenges.map((challenge) => (
-          <GridChallengeCard
-            key={challenge.id}
-            id={challenge.id}
-            title={challenge.title}
-            description={challenge.description}
-            image={challenge.image}
-            like={challenge.likes}
-            participants={challenge.participantCount}
-            tags={challenge.tags?.map((tag) => tag.name) || []} // 수정된 부분
-            status={challenge.status}
-            isParticipating={challenge.isParticipating} // 사용자의 참여 여부 전달
-          />
-        ))}
-      </div>
+      {challenges.length === 0 ? (
+        <div className="text-center py-4">현재 진행 중인 챌린지가 없습니다.</div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          {challenges.map((challenge) => (
+            <GridChallengeCard
+              key={challenge.id}
+              id={challenge.id}
+              title={challenge.title}
+              description={challenge.description}
+              image={challenge.image}
+              like={challenge.likes}
+              participants={challenge.participantCount}
+              tags={challenge.tags?.map((tag) => tag.name) || []} // 수정된 부분
+              status={challenge.status}
+              isParticipating={challenge.isParticipating} // 사용자의 참여 여부 전달
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
