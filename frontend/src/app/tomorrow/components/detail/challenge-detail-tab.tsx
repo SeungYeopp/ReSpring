@@ -222,7 +222,7 @@ export function ChallengeDetailTab({ challenge }: ChallengeDetailTabProps) {
         </div>
       ) : isChallengeEnded ? (
         <div className="text-center text-gray-600">
-          <h1>이미 끝난 챌린지입니다.</h1>
+          <h1>이미 끝난 도전입니다.</h1>
         </div>
       ) : (
         <ChallengeActionButton
