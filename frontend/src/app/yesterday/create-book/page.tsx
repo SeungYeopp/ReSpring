@@ -18,7 +18,7 @@ import NextImage from "next/image"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
-
+import { ScrollArea } from "@radix-ui/react-scroll-area"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,15 +37,52 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
   if (!story) return null
 
   return (
+    // <Dialog open={isOpen} onOpenChange={onClose}>
+    //   <DialogContent className="sm:max-w-[425px]">
+    //     <DialogHeader>
+    //       <DialogTitle>{story.title}</DialogTitle>
+    //       <DialogDescription>
+    //         {new Date(story.occurredAt).toLocaleDateString()}
+    //       </DialogDescription>
+    //     </DialogHeader>
+    //     <div className="mt-4">
+    //       <p className="text-sm mb-4">{story.content}</p>
+    //       {story.images.length > 0 && (
+    //         <Carousel className="w-full max-w-xs mx-auto">
+    //           <CarouselContent>
+    //             {story.images.map((image) => (
+    //               <CarouselItem key={image}>
+    //                 <div className="p-1">
+    //                   <div className="flex aspect-square items-center justify-center p-6">
+    //                     <NextImage
+    //                       src={image}
+    //                       alt={image}
+    //                       width={100}
+    //                       height={100}
+    //                       objectFit="cover"
+    //                       className="rounded-md"
+    //                     />
+    //                   </div>
+    //                 </div>
+    //               </CarouselItem>
+    //             ))}
+    //           </CarouselContent>
+    //           <CarouselPrevious />
+    //           <CarouselNext />
+    //         </Carousel>
+    //       )}
+    //     </div>
+    //   </DialogContent>
+    // </Dialog>
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{story.title}</DialogTitle>
-          <DialogDescription>
-            {new Date(story.occurredAt).toLocaleDateString()}
-          </DialogDescription>
+      <DialogContent className="sm:max-w-[425px] h-[80vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-xl font-semibold truncate" title={story.title}>
+            {story.title}
+          </DialogTitle>
+          <DialogDescription>{new Date(story.occurredAt).toLocaleDateString()}</DialogDescription>
         </DialogHeader>
-        <div className="mt-4">
+        <ScrollArea className="flex-grow mt-4 pr-4">
           <p className="text-sm mb-4">{story.content}</p>
           {story.images.length > 0 && (
             <Carousel className="w-full max-w-xs mx-auto">
@@ -55,7 +92,7 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
                     <div className="p-1">
                       <div className="flex aspect-square items-center justify-center p-6">
                         <NextImage
-                          src={image}
+                          src={image || "/placeholder.svg"}
                           alt={image}
                           width={100}
                           height={100}
@@ -71,7 +108,7 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
               <CarouselNext />
             </Carousel>
           )}
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   )
@@ -128,15 +165,37 @@ export default function CreateBook() {
     setBookTags(tagParsed)
   }
 
-  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && tagInput.trim() !== "") {
-      e.preventDefault()
-      if (!bookTags.includes(tagInput.trim())) {
-        setBookTags([...bookTags, tagInput.trim()])
-      }
-      setTagInput("")
+  // const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (e.key === "Enter" && tagInput.trim() !== "") {
+  //     e.preventDefault()
+  //     if (!bookTags.includes(tagInput.trim())) {
+  //       setBookTags([...bookTags, tagInput.trim()])
+  //     }
+  //     setTagInput("")
+  //   }
+  // }
+
+  // (수정 후) 태그 입력 핸들러 – 입력한 태그의 UTF-8 바이트 길이가 255 이하인지 체크
+const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === "Enter" && tagInput.trim() !== "") {
+    e.preventDefault();
+    
+    // 태그를 UTF-8로 인코딩한 후 바이트 길이 계산 (varbinary(255) 기준)
+    const tagBytes = new TextEncoder().encode(tagInput.trim()).length;
+    
+    // 바이트 길이가 255 초과하면 경고 후 추가하지 않음
+    if (tagBytes > 255) {
+      alert("태그는 최대 255바이트까지 허용됩니다.");
+      return;
     }
+    
+    if (!bookTags.includes(tagInput.trim())) {
+      setBookTags([...bookTags, tagInput.trim()]);
+    }
+    setTagInput("");
   }
+}
+
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -369,24 +428,49 @@ const handleRemoveChapter = (index: number) => {
           </Tooltip>
           </div>
           <Button
-            variant="secondary"
-            onClick={() => {
-              if (step === 1) {
-                handleMakeAIContent()
-              } else if (step === 4) {
-                handleSubmit()
-              } else {
-                setStep(step + 1)
-              }
-            }}
-            disabled={(step === 1 && selectedStoryIds.length === 0) || (step === 4 && !compiledBook)}
-            className={`bg-brand-light hover:bg-brand-dark text-white shadow-lg ${
-              step === 1 && selectedStoryIds.length === 0 ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : "다음"}
-            {/* <ChevronRight className="ml-2 h-4 w-4" /> */}
-          </Button>
+  variant="secondary"
+  onClick={() => {
+    if (step === 1) {
+      handleMakeAIContent();
+    } else if (step === 4) {
+      handleSubmit();
+    } else if (step === 3) {
+      // 수정하기 단계에서 제목, 태그, 챕터 검증
+      if (!compiledBook?.title) {
+        alert("제목을 입력하세요.");
+        return;
+      }
+      if (bookTags.length === 0) {
+        alert("최소 한 개 이상의 태그를 추가하세요.");
+        return;
+      }
+      if (!compiledBook?.chapters || compiledBook.chapters.length === 0) {
+        alert("최소 한 개 이상의 챕터가 필요합니다.");
+        return;
+      }
+      setStep(step + 1);
+    } else {
+      setStep(step + 1);
+    }
+  }}
+  // 수정하기 단계(step === 3)에서는 제목, 태그, 챕터 조건이 만족되지 않으면 버튼 비활성화
+  disabled={
+    (step === 1 && selectedStoryIds.length === 0) ||
+    (step === 3 &&
+      (!compiledBook?.title || bookTags.length === 0 || compiledBook.chapters.length === 0)) ||
+    (step === 4 && !compiledBook)
+  }
+  className={`bg-brand-light hover:bg-brand-dark text-white shadow-lg ${
+    (step === 1 && selectedStoryIds.length === 0) ||
+    (step === 3 &&
+      (!compiledBook?.title || bookTags.length === 0 || compiledBook.chapters.length === 0))
+      ? "opacity-50 cursor-not-allowed"
+      : ""
+  }`}
+>
+  {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : "다음"}
+</Button>
+
             
         </div>
         <div className="p-6 relative">
@@ -418,48 +502,50 @@ const handleRemoveChapter = (index: number) => {
 
               {/* 카드 리스트 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {stories.map((story) => (
-                  <Card
-                    key={story.id}
-                    className={`p-4 flex items-center space-x-4 rounded-lg cursor-pointer transition-all ${
-                      selectedStoryIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-200"
-                    }`}
-                    onClick={() => toggleStorySelection(story)}
-                  >
-                    {/* 왼쪽: 이미지 */}
-                    {/* 이미지 블록이 있을 때만 렌더링 */}
-                    {story.images.length > 0 && (
-                      <div className="w-16 h-16 relative flex-shrink-0">
-                        <NextImage
-                          src={story.images[0]} // 첫 번째 이미지를 썸네일로 사용
-                          alt={story.title}
-                          layout="fill"
-                          objectFit="cover"
-                          className="rounded-lg"
-                        />
-                      </div>
-                    )}
-
-                    {/* 오른쪽: 제목 + 내용 */}
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-left mb-1">{story.title}</h3>
-                      <p className="text-sm text-gray-600 line-clamp-2 text-left">{story.content}</p>
-
-                      {/* 자세히 보기 버튼 */}
-                      <Button
-                        className="mt-2 w-full"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStoryClick(story);
-                        }}
-                      >
-                        자세히 보기
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
+      {stories.map((story) => (
+        <Card
+          key={story.id}
+          className={`p-4 flex flex-col h-[280px] rounded-lg cursor-pointer transition-all ${
+            selectedStoryIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-200"
+          }`}
+          onClick={() => toggleStorySelection(story)}
+        >
+          <div className="flex items-start space-x-4 mb-2 flex-grow overflow-hidden">
+            {/* 왼쪽: 이미지 */}
+            {/* 이미지 블록이 있을 때만 렌더링 */}
+            {story.images.length > 0 && (
+              <div className="w-16 h-16 relative flex-shrink-0">
+                <NextImage
+                  src={story.images[0]} // 첫 번째 이미지를 썸네일로 사용
+                  alt={story.title}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
+                />
               </div>
+            )}
+
+            {/* 오른쪽: 제목 + 내용 */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-bold text-left mb-1 truncate">{story.title}</h3>
+              <p className="text-sm text-gray-600 line-clamp-3 text-left">{story.content}</p>
+            </div>
+          </div>
+
+          {/* 자세히 보기 버튼 */}
+          <Button
+            className="mt-auto w-full"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleStoryClick(story)
+            }}
+          >
+            자세히 보기
+          </Button>
+        </Card>
+      ))}
+    </div>
 
               {/* 글 조각 쓰러 가는 버튼 (반응형) */}
               <div className="mt-6 text-center mb-16">
