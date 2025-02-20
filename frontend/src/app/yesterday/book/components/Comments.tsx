@@ -224,31 +224,36 @@ export default function Comments({ bookId }: { bookId: number }) {
                 )}
                 <span className="text-xs text-gray-500">{formattedDate}</span>
               </div>
-              <p className="text-sm text-gray-900 mt-1 break-words">{comment.content}</p>
-              {comment.content === "삭제된 댓글입니다." ? (
-                <div className="mt-2">{/* <span className="text-xs text-gray-500">삭제된 댓글입니다.</span> */}</div>
-              ) : (
-                <div className="flex items-center gap-3 mt-2">
-                  <button onClick={handleLike} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700">
-                    <Heart className={`w-3.5 h-3.5 ${isLiked ? "fill-current text-red-500" : ""}`} />
-                    {likeCount > 0 && likeCount}
+              <p className="text-sm text-gray-900 mt-1 break-words">{comment.content.startsWith("삭제된 댓글") ? <span className="text-gray-400">{comment.content}</span> : comment.content}</p>
+              <div className="flex items-center gap-3 mt-2">
+                {/* 대댓글 토글 버튼: 댓글이 삭제되었어도 자식 댓글이 있다면 항상 렌더링 */}
+                {!isReply && hasReplies && (
+                  <button onClick={() => toggleReplies(comment.id)} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700">
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    {replyCount > 0 && replyCount}
                   </button>
-                  {!isReply && (
-                    <button onClick={() => toggleReplies(comment.id)} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700">
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      {replyCount > 0 && replyCount}
+                )}
+
+                {/* 댓글 내용이 삭제된 경우, 나머지 버튼들은 숨김 */}
+                {!comment.content.startsWith("삭제된 댓글") && (
+                  <>
+                    <button onClick={handleLike} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700">
+                      <Heart className={`w-3.5 h-3.5 ${isLiked ? "fill-current text-red-500" : ""}`} />
+                      {likeCount > 0 && likeCount}
                     </button>
-                  )}
-                  <button onClick={() => handleReplyClick(comment)} className="text-xs text-gray-500 hover:text-gray-700">
-                    {/* 답글 */}
-                  </button>
-                  {comment.userNickname === userInfo?.userNickname && (
-                    <button onClick={() => handleDeleteComment(comment.id)} className="ml-auto text-gray-400 hover:text-red-500">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              )}
+                    {!isReply && (
+                      <button onClick={() => handleReplyClick(comment)} className="text-xs text-gray-500 hover:text-gray-700">
+                        {/* 답글 */}
+                      </button>
+                    )}
+                    {comment.userNickname === userInfo?.userNickname && (
+                      <button onClick={() => handleDeleteComment(comment.id)} className="ml-auto text-gray-400 hover:text-red-500">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
