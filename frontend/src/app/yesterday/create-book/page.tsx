@@ -18,7 +18,7 @@ import NextImage from "next/image"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
-
+import { ScrollArea } from "@radix-ui/react-scroll-area"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,15 +37,52 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
   if (!story) return null
 
   return (
+    // <Dialog open={isOpen} onOpenChange={onClose}>
+    //   <DialogContent className="sm:max-w-[425px]">
+    //     <DialogHeader>
+    //       <DialogTitle>{story.title}</DialogTitle>
+    //       <DialogDescription>
+    //         {new Date(story.occurredAt).toLocaleDateString()}
+    //       </DialogDescription>
+    //     </DialogHeader>
+    //     <div className="mt-4">
+    //       <p className="text-sm mb-4">{story.content}</p>
+    //       {story.images.length > 0 && (
+    //         <Carousel className="w-full max-w-xs mx-auto">
+    //           <CarouselContent>
+    //             {story.images.map((image) => (
+    //               <CarouselItem key={image}>
+    //                 <div className="p-1">
+    //                   <div className="flex aspect-square items-center justify-center p-6">
+    //                     <NextImage
+    //                       src={image}
+    //                       alt={image}
+    //                       width={100}
+    //                       height={100}
+    //                       objectFit="cover"
+    //                       className="rounded-md"
+    //                     />
+    //                   </div>
+    //                 </div>
+    //               </CarouselItem>
+    //             ))}
+    //           </CarouselContent>
+    //           <CarouselPrevious />
+    //           <CarouselNext />
+    //         </Carousel>
+    //       )}
+    //     </div>
+    //   </DialogContent>
+    // </Dialog>
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{story.title}</DialogTitle>
-          <DialogDescription>
-            {new Date(story.occurredAt).toLocaleDateString()}
-          </DialogDescription>
+      <DialogContent className="sm:max-w-[425px] h-[80vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-xl font-semibold truncate" title={story.title}>
+            {story.title}
+          </DialogTitle>
+          <DialogDescription>{new Date(story.occurredAt).toLocaleDateString()}</DialogDescription>
         </DialogHeader>
-        <div className="mt-4">
+        <ScrollArea className="flex-grow mt-4 pr-4">
           <p className="text-sm mb-4">{story.content}</p>
           {story.images.length > 0 && (
             <Carousel className="w-full max-w-xs mx-auto">
@@ -55,7 +92,7 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
                     <div className="p-1">
                       <div className="flex aspect-square items-center justify-center p-6">
                         <NextImage
-                          src={image}
+                          src={image || "/placeholder.svg"}
                           alt={image}
                           width={100}
                           height={100}
@@ -71,7 +108,7 @@ const StoryModal: React.FC<StoryModalProps> = ({ story, isOpen, onClose }) => {
               <CarouselNext />
             </Carousel>
           )}
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   )
@@ -418,48 +455,50 @@ const handleRemoveChapter = (index: number) => {
 
               {/* 카드 리스트 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {stories.map((story) => (
-                  <Card
-                    key={story.id}
-                    className={`p-4 flex items-center space-x-4 rounded-lg cursor-pointer transition-all ${
-                      selectedStoryIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-200"
-                    }`}
-                    onClick={() => toggleStorySelection(story)}
-                  >
-                    {/* 왼쪽: 이미지 */}
-                    {/* 이미지 블록이 있을 때만 렌더링 */}
-                    {story.images.length > 0 && (
-                      <div className="w-16 h-16 relative flex-shrink-0">
-                        <NextImage
-                          src={story.images[0]} // 첫 번째 이미지를 썸네일로 사용
-                          alt={story.title}
-                          layout="fill"
-                          objectFit="cover"
-                          className="rounded-lg"
-                        />
-                      </div>
-                    )}
-
-                    {/* 오른쪽: 제목 + 내용 */}
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-left mb-1">{story.title}</h3>
-                      <p className="text-sm text-gray-600 line-clamp-2 text-left">{story.content}</p>
-
-                      {/* 자세히 보기 버튼 */}
-                      <Button
-                        className="mt-2 w-full"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStoryClick(story);
-                        }}
-                      >
-                        자세히 보기
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
+      {stories.map((story) => (
+        <Card
+          key={story.id}
+          className={`p-4 flex flex-col h-[280px] rounded-lg cursor-pointer transition-all ${
+            selectedStoryIds.includes(story.id) ? "border-brand bg-brand/15" : "border-gray-200"
+          }`}
+          onClick={() => toggleStorySelection(story)}
+        >
+          <div className="flex items-start space-x-4 mb-2 flex-grow overflow-hidden">
+            {/* 왼쪽: 이미지 */}
+            {/* 이미지 블록이 있을 때만 렌더링 */}
+            {story.images.length > 0 && (
+              <div className="w-16 h-16 relative flex-shrink-0">
+                <NextImage
+                  src={story.images[0]} // 첫 번째 이미지를 썸네일로 사용
+                  alt={story.title}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
+                />
               </div>
+            )}
+
+            {/* 오른쪽: 제목 + 내용 */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-bold text-left mb-1 truncate">{story.title}</h3>
+              <p className="text-sm text-gray-600 line-clamp-3 text-left">{story.content}</p>
+            </div>
+          </div>
+
+          {/* 자세히 보기 버튼 */}
+          <Button
+            className="mt-auto w-full"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleStoryClick(story)
+            }}
+          >
+            자세히 보기
+          </Button>
+        </Card>
+      ))}
+    </div>
 
               {/* 글 조각 쓰러 가는 버튼 (반응형) */}
               <div className="mt-6 text-center mb-16">
