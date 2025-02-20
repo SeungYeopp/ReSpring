@@ -190,7 +190,7 @@ const Chat1 = () => {
         try {
           const newDevice = new mediasoupClient.Device();
           await newDevice.load({ routerRtpCapabilities: rtpCapabilities });
-          console.log("Device successfully loaded:", newDevice);
+          console.log("Device successfull y loaded:", newDevice);
           setDevice(newDevice);
         } catch (error) {
           console.error("❌ Device 초기화 오류:", error);
@@ -307,13 +307,15 @@ const Chat1 = () => {
                 kind: response.kind,
                 rtpParameters: response.rtpParameters,
               });
+              consumer.resume().catch((err) => console.error("consumer.resume() 오류:", err));
               console.log("[consume] consumer 생성:", consumer);
               setConsumer(consumer);
-              const stream = new MediaStream();
-              stream.addTrack(consumer.track);
-              if (response.kind === "video" && remoteVideoRef.current) {
-                remoteVideoRef.current.srcObject = stream;
+              let stream = remoteVideoRef.current.srcObject;
+              if (!stream) {
+                stream = new MediaStream();
               }
+              stream.addTrack(consumer.track);
+              remoteVideoRef.current.srcObject = stream;
             } catch (error) {
               console.error("❌ Consumer 생성 오류:", error);
             }
