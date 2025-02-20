@@ -591,17 +591,21 @@ const Chat1 = () => {
               });
               console.log("[consume] consumer 생성:", consumer);
               setConsumer(consumer);
-              // 기존에 MediaStream이 있으면 재사용하고, 없으면 새로 생성
+              if (!remoteVideoRef.current) {
+                console.error("remoteVideoRef.current is not available");
+                return;
+              }
               let stream = remoteVideoRef.current.srcObject;
               if (!stream) {
                 stream = new MediaStream();
               }
               stream.addTrack(consumer.track);
               remoteVideoRef.current.srcObject = stream;
+              console.log("------------------------------")
+              console.log(remoteVideoRef.current.srcObject);
             } catch (error) {
               console.error("❌ Consumer 생성 오류:", error);
-            }
-          }
+            }          }
         );
       });
     });
