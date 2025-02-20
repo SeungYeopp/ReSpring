@@ -165,15 +165,37 @@ export default function CreateBook() {
     setBookTags(tagParsed)
   }
 
-  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && tagInput.trim() !== "") {
-      e.preventDefault()
-      if (!bookTags.includes(tagInput.trim())) {
-        setBookTags([...bookTags, tagInput.trim()])
-      }
-      setTagInput("")
+  // const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (e.key === "Enter" && tagInput.trim() !== "") {
+  //     e.preventDefault()
+  //     if (!bookTags.includes(tagInput.trim())) {
+  //       setBookTags([...bookTags, tagInput.trim()])
+  //     }
+  //     setTagInput("")
+  //   }
+  // }
+
+  // (수정 후) 태그 입력 핸들러 – 입력한 태그의 UTF-8 바이트 길이가 255 이하인지 체크
+const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === "Enter" && tagInput.trim() !== "") {
+    e.preventDefault();
+    
+    // 태그를 UTF-8로 인코딩한 후 바이트 길이 계산 (varbinary(255) 기준)
+    const tagBytes = new TextEncoder().encode(tagInput.trim()).length;
+    
+    // 바이트 길이가 255 초과하면 경고 후 추가하지 않음
+    if (tagBytes > 255) {
+      alert("태그는 최대 255바이트까지 허용됩니다.");
+      return;
     }
+    
+    if (!bookTags.includes(tagInput.trim())) {
+      setBookTags([...bookTags, tagInput.trim()]);
+    }
+    setTagInput("");
   }
+}
+
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -406,24 +428,49 @@ const handleRemoveChapter = (index: number) => {
           </Tooltip>
           </div>
           <Button
-            variant="secondary"
-            onClick={() => {
-              if (step === 1) {
-                handleMakeAIContent()
-              } else if (step === 4) {
-                handleSubmit()
-              } else {
-                setStep(step + 1)
-              }
-            }}
-            disabled={(step === 1 && selectedStoryIds.length === 0) || (step === 4 && !compiledBook)}
-            className={`bg-brand-light hover:bg-brand-dark text-white shadow-lg ${
-              step === 1 && selectedStoryIds.length === 0 ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : "다음"}
-            {/* <ChevronRight className="ml-2 h-4 w-4" /> */}
-          </Button>
+  variant="secondary"
+  onClick={() => {
+    if (step === 1) {
+      handleMakeAIContent();
+    } else if (step === 4) {
+      handleSubmit();
+    } else if (step === 3) {
+      // 수정하기 단계에서 제목, 태그, 챕터 검증
+      if (!compiledBook?.title) {
+        alert("제목을 입력하세요.");
+        return;
+      }
+      if (bookTags.length === 0) {
+        alert("최소 한 개 이상의 태그를 추가하세요.");
+        return;
+      }
+      if (!compiledBook?.chapters || compiledBook.chapters.length === 0) {
+        alert("최소 한 개 이상의 챕터가 필요합니다.");
+        return;
+      }
+      setStep(step + 1);
+    } else {
+      setStep(step + 1);
+    }
+  }}
+  // 수정하기 단계(step === 3)에서는 제목, 태그, 챕터 조건이 만족되지 않으면 버튼 비활성화
+  disabled={
+    (step === 1 && selectedStoryIds.length === 0) ||
+    (step === 3 &&
+      (!compiledBook?.title || bookTags.length === 0 || compiledBook.chapters.length === 0)) ||
+    (step === 4 && !compiledBook)
+  }
+  className={`bg-brand-light hover:bg-brand-dark text-white shadow-lg ${
+    (step === 1 && selectedStoryIds.length === 0) ||
+    (step === 3 &&
+      (!compiledBook?.title || bookTags.length === 0 || compiledBook.chapters.length === 0))
+      ? "opacity-50 cursor-not-allowed"
+      : ""
+  }`}
+>
+  {step === 1 ? "AI 엮기" : step === 4 ? "편찬" : "다음"}
+</Button>
+
             
         </div>
         <div className="p-6 relative">
