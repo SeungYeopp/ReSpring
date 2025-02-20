@@ -567,7 +567,7 @@ export default function CreateBook() {
                   {stories.map((story) => (
                     <Card
                       key={story.id}
-                      className={`p-4 flex flex-col h-[280px] rounded-lg cursor-pointer transition-all ${
+                      className={`p-4 flex flex-col h-[180px] rounded-lg cursor-pointer transition-all ${
                         selectedStoryIds.includes(story.id)
                           ? "border-brand bg-brand/15"
                           : "border-gray-200"
