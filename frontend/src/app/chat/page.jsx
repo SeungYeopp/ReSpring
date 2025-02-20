@@ -271,93 +271,82 @@ const Chat1 = () => {
   }, []);
 
   useEffect(() => {
-    if (!socket || !currentRoom) return;
-    const handleStopStreaming = ({ roomId }) => {
-      console.log("handleStopStreaming - currentRoom.id:", currentRoom.id, "roomId:", roomId);
-      if (currentRoom.id === roomId) {
-        if (remoteVideoRef.current && remoteVideoRef.current.srcObject) {
-          let stream = remoteVideoRef.current.srcObject;
-          stream.getTracks().forEach((track) => track.stop());
-          remoteVideoRef.current.srcObject = null;
-        }
-        setConsumer(null);
-        setIsConsuming(false);
-      }
-    };
-    socket.on("stopStreaming", handleStopStreaming);
-    return () => socket.off("stopStreaming", handleStopStreaming);
-  }, [socket, currentRoom]);
-
-  useEffect(() => {
-    if (!socket || !currentRoom) return;
+    if (!socket || !currentRoom || !device) return;
   
     const handleNewProducerConsume = async ({ producerId, roomId }) => {
-      console.log("handleNewProducerConsume - producerId:", producerId, "roomId:", roomId);
+      if (roomId !== currentRoom.id) return;
+      console.log("📥 handleNewProducerConsume - producerId:", producerId, "roomId:", roomId);
   
-      socket.emit("createTransport", (data) => {
-        const transport = device.createRecvTransport(data);
+      let transport = consumerTransport;
   
-        transport.on("connect", async ({ dtlsParameters }, callback) => {
-          console.log("[consume] Transport connect:", data.id);
-          socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, callback);
+      // ✅ 기존 consumerTransport 재사용 (없으면 새로 생성)
+      if (!transport) {
+        transport = device.createRecvTransport({
+          id: `${currentRoom.id}-recv-transport`,
+          iceParameters: {}, // 필요 시 서버에서 전달된 값 사용
+          iceCandidates: [],
+          dtlsParameters: {},
+        });
+  
+        transport.on("connect", ({ dtlsParameters }, callback) => {
+          console.log("[consume] Transport 연결 시도:", dtlsParameters);
+          socket.emit("connectTransport", { transportId: transport.id, dtlsParameters }, callback);
         });
   
         setConsumerTransport(transport);
+      }
   
-        socket.emit(
-          "consume",
-          {
-            roomId: String(roomId),
-            transportId: data.id,
-            producerId,
-            rtpCapabilities: device.rtpCapabilities,
-          },
-          async (response) => {
-            console.log("[consume] 응답:", response);
-            if (!response || response.error) {
-              console.error("❌ [consume] 오류:", response?.error);
-              return;
-            }
+      socket.emit(
+        "consume",
+        {
+          roomId: String(roomId),
+          transportId: transport.id,
+          producerId,
+          rtpCapabilities: device.rtpCapabilities,
+        },
+        async (response) => {
+          if (!response || response.error) {
+            console.error("❌ [consume] 오류:", response?.error);
+            return;
+          }
   
-            try {
-              const consumer = await transport.consume({
-                id: response.id,
-                producerId: response.producerId,
-                kind: response.kind,
-                rtpParameters: response.rtpParameters,
-              });
+          try {
+            const consumer = await transport.consume({
+              id: response.id,
+              producerId: response.producerId,
+              kind: response.kind,
+              rtpParameters: response.rtpParameters,
+            });
   
-              try {
-                await consumer.resume();
-              } catch (err) {
-                console.error("consumer.resume() 오류:", err);
+            await consumer.resume();
+            console.log("✅ consumer 생성 및 resume 완료:", consumer);
+  
+            setConsumer(consumer);
+  
+            // ✅ 기존 스트림 정리 및 새 MediaStream 생성
+            if (remoteVideoRef.current) {
+              if (remoteVideoRef.current.srcObject) {
+                remoteVideoRef.current.srcObject.getTracks().forEach((track) => track.stop());
               }
   
-              console.log("[consume] consumer 생성:", consumer);
-              setConsumer(consumer);
-  
-              // ✅ 새 MediaStream 생성 및 트랙 추가
               const newStream = new MediaStream([consumer.track]);
               remoteVideoRef.current.srcObject = newStream;
   
-              // ✅ 비디오 메타데이터 로드 후 재생 시도
-              remoteVideoRef.current.onloadedmetadata = () => {
+              // ✅ 비디오 메타데이터 로드 후 재생
+              const handleLoadedMetadata = () => {
                 remoteVideoRef.current.play().catch((err) => {
-                  console.error("🚫 remoteVideoRef play() 오류:", err);
+                  console.error("🚫 remoteVideo play 오류:", err);
                 });
+                remoteVideoRef.current.removeEventListener("loadedmetadata", handleLoadedMetadata); // 중복 방지
               };
   
-              // ✅ 추가 안정성 확보 (로드된 데이터 감지)
-              remoteVideoRef.current.addEventListener("loadeddata", () => {
-                console.log("✅ remote video ready to play");
-              });
-              
-            } catch (error) {
-              console.error("❌ Consumer 생성 오류:", error);
+              remoteVideoRef.current.addEventListener("loadedmetadata", handleLoadedMetadata);
             }
+          } catch (error) {
+            console.error("❌ Consumer 생성 오류:", error);
           }
-        );
-      });
+        }
+      );
     };
   
     socket.on("triggerConsumeNew", handleNewProducerConsume);
@@ -365,8 +354,7 @@ const Chat1 = () => {
     return () => {
       socket.off("triggerConsumeNew", handleNewProducerConsume);
     };
-  }, [socket, currentRoom, device]);
-  
+  }, [socket, currentRoom, device, consumerTransport]);
 
   useEffect(() => {
     if (!socket || !currentRoom) return;
@@ -535,59 +523,65 @@ const Chat1 = () => {
   };
 
   const startPublishing = async () => {
-    if (!device || !currentRoom || isOpenChat || !currentRoom.id) {
+    if (!device || !currentRoom || !currentRoom.id) {
       console.error("❌ [startPublishing] Room 또는 Device 초기화 오류", { currentRoom });
       return;
     }
+  
     socket.emit("createTransport", (data) => {
       const transport = device.createSendTransport(data);
-      transport.on("connect", async ({ dtlsParameters }, callback, errback) => {
-        if (transport.connected) return;
-        console.log("[publish] Transport connecting with dtlsParameters:", dtlsParameters);
+  
+      transport.on("connect", ({ dtlsParameters }, callback, errback) => {
         socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, (response) => {
           if (response?.error) {
             console.error("[publish] connectTransport error:", response.error);
             return errback(response.error);
           }
-          console.log("[publish] Transport connected");
           callback();
         });
       });
-      transport.on("produce", ({ kind, rtpParameters }, callback, errback) => {
-        console.log("[produce] 요청 전:", { kind, rtpParameters });
-        socket.emit(
-          "produce",
-          { roomId: String(currentRoom.id), transportId: data.id, kind, rtpParameters },
-          ({ id, error }) => {
-            console.log("[produce] 응답:", { id, error });
-            if (error) return errback(error);
-            callback({ id });
-            if (kind === "video") setProducer(id);
-          }
-        );
-      });
+  
+      // 🚀 produce 시 한 번만 호출되도록 처리
+      const produceTrack = async (track, kind) => {
+        try {
+          const producer = await transport.produce({ track, kind });
+          console.log(`✅ ${kind} 트랙 생산 성공`);
+          return producer.id;
+        } catch (err) {
+          console.error(`❌ ${kind} 트랙 생산 실패:`, err);
+          return null;
+        }
+      };
+  
       setProducerTransport(transport);
+  
       navigator.mediaDevices
         .getUserMedia({ video: true, audio: true })
         .then(async (stream) => {
-          console.log("getUserMedia 성공, stream:", stream);
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = stream;
-          }
+          console.log("🎥 getUserMedia 성공:", stream);
+  
+          if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+  
           const videoTrack = stream.getVideoTracks()[0];
           const audioTrack = stream.getAudioTracks()[0];
-          if (videoTrack) {
-            await transport.produce({ track: videoTrack, kind: "video" });
-          }
-          // 오디오 트랙 생산 (별도의 producer로 생성)
-          if (audioTrack) {
-            await transport.produce({ track: audioTrack, kind: "audio" });
+  
+          const videoProducerId = videoTrack ? await produceTrack(videoTrack, "video") : null;
+          const audioProducerId = audioTrack ? await produceTrack(audioTrack, "audio") : null;
+  
+          // ✅ 하나라도 producer 생성에 성공하면 상대방에 알림 전송
+          if (videoProducerId || audioProducerId) {
+            console.log("📢 triggerConsumeNew 전송:", { videoProducerId, audioProducerId });
+            socket.emit("triggerConsumeNew", {
+              roomId: currentRoom.id,
+              videoProducerId,
+              audioProducerId,
+            });
           }
         })
         .catch((error) => console.error("❌ getUserMedia 오류:", error));
-          });
+    });
   };
-
+  
   const startConsuming = async () => {
     if (!device || !currentRoom || isOpenChat || !currentRoom.id) {
       console.error("❌ [startConsuming] Room 또는 Device 초기화 오류");
