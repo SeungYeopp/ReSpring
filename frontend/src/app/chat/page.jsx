@@ -636,21 +636,30 @@ const Chat1 = () => {
   
     // ✅ 서버에 transport 생성 요청 및 응답 처리
     socket.emit("createTransport", (data) => {
+      console.log("🚀 Received transport data:", data);
+    
       if (!data || data.error) {
-        console.error("🚫 Transport 생성 실패:", data?.error);
+        console.error("❌ Transport 생성 실패:", data?.error);
         return;
       }
-  
+    
       const { id, iceParameters, iceCandidates, dtlsParameters } = data;
-  
+    
+      // 🛡️ 데이터 유효성 검증
+      if (!id) console.error("🚨 transport id가 없음");
+      if (!iceParameters) console.error("🚨 iceParameters가 없음");
+      if (!iceCandidates || !Array.isArray(iceCandidates) || iceCandidates.length === 0)
+        console.error("🚨 iceCandidates가 유효하지 않음:", iceCandidates);
+      if (!dtlsParameters) console.error("🚨 dtlsParameters가 없음");
+    
       if (!id || !iceParameters || !iceCandidates || !dtlsParameters) {
-        console.error("🚨 잘못된 Transport 파라미터:", data);
+        console.error("🚫 잘못된 Transport 파라미터:", data);
         return;
       }
-  
-      // ✅ transport 생성
+    
       const transport = device.createRecvTransport({ id, iceParameters, iceCandidates, dtlsParameters });
-  
+      console.log("✅ createRecvTransport 성공:", transport.id);
+    
       transport.on("connect", ({ dtlsParameters }, callback, errback) => {
         console.log("🔗 [consume] Transport 연결 시도...");
         socket.emit("connectTransport", { transportId: id, dtlsParameters }, (response) => {
