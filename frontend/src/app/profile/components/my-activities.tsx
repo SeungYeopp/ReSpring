@@ -108,23 +108,23 @@ function PostList({ posts }: { posts: Post[] }) {
       {posts.map((post) => (
         <Link key={post.id} href={`/today/${post.id}`} passHref>
           <Card className="border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
-            <CardContent className="p-4 mb-2">
-              <div className="flex justify-between items-center">
-                <div className="flex-1 text-left">
-                  <h3 className="text-sm font-semibold truncate text-gray-800">{post.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2 text-gray-500">
-                    {post.content}
-                  </p>
-                </div>
-                <div className="flex flex-col ml-4 items-end text-right">
-                  <Badge variant="outline" className="text-xs px-2 py-1 mb-4">{CATEGORY_MAP[post.category]}</Badge>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatDistanceToNowStrict(new Date(post.updatedAt), { addSuffix: true, locale: ko })}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+  <CardContent className="p-4 mb-2">
+    <div className="flex justify-between items-center">
+      <div className="flex-1 text-left overflow-hidden">
+        <h3 className="text-sm font-semibold truncate text-gray-800">{post.title}</h3>
+        <p className="text-xs text-muted-foreground mt-2 line-clamp-2 text-gray-500">
+          {post.content}
+        </p>
+      </div>
+      <div className="flex flex-col ml-4 items-end text-right">
+        <Badge variant="outline" className="text-xs px-2 py-1 mb-4 truncate max-w-[120px]">{CATEGORY_MAP[post.category]}</Badge>
+        <p className="text-xs text-muted-foreground mt-1 truncate max-w-[120px]">
+          {formatDistanceToNowStrict(new Date(post.updatedAt), { addSuffix: true, locale: ko })}
+        </p>
+      </div>
+    </div>
+  </CardContent>
+</Card>
         </Link>
       ))}
     </div>
