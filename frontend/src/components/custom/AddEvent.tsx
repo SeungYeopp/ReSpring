@@ -328,7 +328,7 @@ const AddEvent = ({ onEventAdded }: AddEventProps) => {
 
   const validateField = (field: string, value: any): boolean => {
     if (!value || (typeof value === "string" && !value.trim())) {
-      setErrors((prev) => ({ ...prev, [field]: `${field}은(는) 필수 항목입니다.` }))
+      setErrors((prev) => ({ ...prev, [field]: `위 항목은 빈 칸으로 남길 수 없습니다.` }))
       return false
     }
     if (field === "eventName" && value.length > 255) {
