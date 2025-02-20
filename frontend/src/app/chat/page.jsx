@@ -153,11 +153,9 @@ const Chat1 = () => {
   // WebSocket 및 WebRTC 초기화
   useEffect(() => {
     console.log("1번 currentUserId:", currentUserId);
-    if (!currentUserId) 
-      return;
-  
-    // SockJS + STOMP 연결 (기존 로직)
+    if (!currentUserId) return;
 
+    // SockJS + STOMP 연결
     const sock = new SockJS(SERVER_URL);
     console.log("2번 sock:", sock);
     const client = Stomp.over(sock);
@@ -171,7 +169,7 @@ const Chat1 = () => {
     });
     setStompClient(client);
     console.log("4번 client:", client);
-  
+
     // Socket.io 연결
     const rtcSock = io("wss://i12a307.p.ssafy.io", {
       path: "/socket.io",
@@ -179,11 +177,9 @@ const Chat1 = () => {
     });
     setSocket(rtcSock);
     console.log("5번 rtcSock:", rtcSock);
-  
-    // 디버깅: Socket.io 연결 상태 확인
+
     rtcSock.on("connect", () => {
       console.log("Socket.io connected on rtcSock");
-      // 요청 전: 로그 출력
       console.log("Emitting getRouterRtpCapabilities event...");
       rtcSock.emit("getRouterRtpCapabilities", async (rtpCapabilities) => {
         console.log("Received rtpCapabilities:", rtpCapabilities);
@@ -201,21 +197,20 @@ const Chat1 = () => {
         }
       });
     });
-  
+
     rtcSock.on("connect_error", (err) => {
       console.error("Socket.io connect_error:", err);
     });
-  
+
     rtcSock.on("error", (err) => {
       console.error("Socket.io error:", err);
     });
-  
+
     return () => {
       client.disconnect();
       rtcSock.disconnect();
     };
   }, [currentUserId]);
-    
 
   useEffect(() => {
     const handleBeforeUnload = async () => {
@@ -236,7 +231,7 @@ const Chat1 = () => {
     currentRoomRef.current = currentRoom;
   }, [currentRoom]);
 
-  // 방어 코드 최적화 (컴포넌트 언마운트 시 처리)
+  // 컴포넌트 언마운트 시 처리
   useEffect(() => {
     const abortController = new AbortController();
     return () => {
@@ -265,6 +260,7 @@ const Chat1 = () => {
   useEffect(() => {
     if (!socket || !currentRoom) return;
     const handleStopStreaming = ({ roomId }) => {
+      console.log("handleStopStreaming - currentRoom.id:", currentRoom.id, "roomId:", roomId);
       if (currentRoom.id === roomId) {
         if (remoteVideoRef.current && remoteVideoRef.current.srcObject) {
           let stream = remoteVideoRef.current.srcObject;
@@ -282,9 +278,11 @@ const Chat1 = () => {
   useEffect(() => {
     if (!socket || !currentRoom) return;
     const handleNewProducerConsume = async ({ producerId, roomId }) => {
+      console.log("handleNewProducerConsume - producerId:", producerId, "roomId:", roomId);
       socket.emit("createTransport", (data) => {
         const transport = device.createRecvTransport(data);
         transport.on("connect", async ({ dtlsParameters }, callback) => {
+          console.log("[consume] Transport connect:", data.id);
           socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, callback);
         });
         setConsumerTransport(transport);
@@ -297,6 +295,7 @@ const Chat1 = () => {
             rtpCapabilities: device.rtpCapabilities,
           },
           async (response) => {
+            console.log("[consume] 응답:", response);
             if (!response || response.error) {
               console.error("❌ [consume] 오류:", response?.error);
               return;
@@ -308,6 +307,7 @@ const Chat1 = () => {
                 kind: response.kind,
                 rtpParameters: response.rtpParameters,
               });
+              console.log("[consume] consumer 생성:", consumer);
               setConsumer(consumer);
               const stream = new MediaStream();
               stream.addTrack(consumer.track);
@@ -346,8 +346,9 @@ const Chat1 = () => {
       const producerIds = await new Promise((resolve) => {
         socket.emit("getProducers", { roomId: String(currentRoom.id) }, resolve);
       });
+      console.log("현재 producerIds:", producerIds);
       if (producerIds.length > 0) {
-        await startConsuming(producerIds);
+        await startConsuming();
         setIsConsuming(true);
         await startPublishing();
         setIsProducing(true);
@@ -498,24 +499,25 @@ const Chat1 = () => {
     socket.emit("createTransport", (data) => {
       const transport = device.createSendTransport(data);
       transport.on("connect", async ({ dtlsParameters }, callback, errback) => {
-        if (transport.connected) {
-          return;
-        }
+        if (transport.connected) return;
+        console.log("[publish] Transport connecting with dtlsParameters:", dtlsParameters);
         socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, (response) => {
           if (response?.error) {
+            console.error("[publish] connectTransport error:", response.error);
             return errback(response.error);
           }
+          console.log("[publish] Transport connected");
           callback();
         });
       });
       transport.on("produce", ({ kind, rtpParameters }, callback, errback) => {
+        console.log("[produce] 요청 전:", { kind, rtpParameters });
         socket.emit(
           "produce",
           { roomId: String(currentRoom.id), transportId: data.id, kind, rtpParameters },
           ({ id, error }) => {
-            if (error) {
-              return errback(error);
-            }
+            console.log("[produce] 응답:", { id, error });
+            if (error) return errback(error);
             callback({ id });
             if (kind === "video") setProducer(id);
           }
@@ -525,10 +527,12 @@ const Chat1 = () => {
       navigator.mediaDevices
         .getUserMedia({ video: true, audio: true })
         .then(async (stream) => {
+          console.log("getUserMedia 성공, stream:", stream);
           if (localVideoRef.current) {
             localVideoRef.current.srcObject = stream;
           }
           const videoTrack = stream.getVideoTracks()[0];
+          // 추가: 오디오도 필요하면 audioTrack도 함께 처리
           await transport.produce({ track: videoTrack });
         })
         .catch((error) => console.error("❌ getUserMedia 오류:", error));
@@ -543,13 +547,16 @@ const Chat1 = () => {
     const producerIds = await new Promise((resolve) => {
       socket.emit("getProducers", { roomId: String(currentRoom.id) }, resolve);
     });
+    console.log("startConsuming - received producerIds:", producerIds);
     const filteredProducerIds = producerIds.filter((id) => id !== producer);
     if (!filteredProducerIds || filteredProducerIds.length === 0) {
+      console.warn("startConsuming - 필터링된 producer가 없음");
       return;
     }
     socket.emit("createTransport", (data) => {
       const transport = device.createRecvTransport(data);
       transport.on("connect", async ({ dtlsParameters }, callback) => {
+        console.log("[consume] Transport connecting with dtlsParameters:", dtlsParameters);
         socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, callback);
       });
       setConsumerTransport(transport);
@@ -558,6 +565,7 @@ const Chat1 = () => {
           "consume",
           { roomId: String(currentRoom.id), transportId: data.id, producerId, rtpCapabilities: device.rtpCapabilities },
           async (response) => {
+            console.log("[consume] 응답:", response);
             if (!response || response.error) {
               console.error("❌ [consume] 오류:", response?.error);
               return;
@@ -569,6 +577,7 @@ const Chat1 = () => {
                 kind: response.kind,
                 rtpParameters: response.rtpParameters,
               });
+              console.log("[consume] consumer 생성:", consumer);
               setConsumer(consumer);
               const stream = new MediaStream();
               stream.addTrack(consumer.track);
@@ -862,7 +871,7 @@ const Chat1 = () => {
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <Button variant="ghost" className="w-full justify-start bg-red-600 hover:bg-[#ff4141] text-white" onClick={() => { leaveRoom(); setActiveScreen("rooms"); setIsSettingsOpen(false); }}>
+                    <Button variant="ghost" className="w-full justify-start bg-red-600 hover:bg-[#ff4141] text-white" onClick={() => { /* leaveRoom 구현 필요 */ setActiveScreen("rooms"); setIsSettingsOpen(false); }}>
                       채팅 나가기
                     </Button>
                   </div>
