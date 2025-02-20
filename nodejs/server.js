@@ -59,6 +59,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("createTransport", async (callback) => {
+        console.log("📡 [서버] createTransport 요청 수신"); // 서버가 이벤트를 수신하면 출력
         try {
             const transport = await router.createWebRtcTransport({
                 listenIps: [{ ip: "0.0.0.0", announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP }],
@@ -69,7 +70,7 @@ io.on("connection", (socket) => {
 
             transports[transport.id] = transport;
 
-            console.log("  Transport Created:", transport.id);
+            console.log("🚀 [서버] Transport 생성:", transport.id);
 
             callback({
                 id: transport.id,
