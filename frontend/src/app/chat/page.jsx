@@ -153,16 +153,30 @@ const Chat1 = () => {
   // WebSocket 및 WebRTC 초기화
   useEffect(() => {
     if (!currentUserId) return;
+  
+    // SockJS + STOMP 연결 (기존 로직)
     const sock = new SockJS(SERVER_URL);
     const client = Stomp.over(sock);
+    client.connect({}, () => {
+      client.subscribe(`/topic/chat/myRooms/${currentUserId}`, updateMyRooms);
+      client.subscribe(`/topic/chat/roomUpdated/${currentUserId}`, () => {
+        client.send("/app/chat/myRooms/" + currentUserId, {}, {});
+      });
+      client.send("/app/chat/myRooms/" + currentUserId, {}, {});
+    });
+    setStompClient(client);
+  
+    // Socket.io 연결
     const rtcSock = io("wss://i12a307.p.ssafy.io/socket.io/", {
       transports: ["websocket"],
     });
+    setSocket(rtcSock);
   
-    // 연결 확인 로그 추가
+    // 디버깅: Socket.io 연결 상태 확인
     rtcSock.on("connect", () => {
       console.log("Socket.io connected on rtcSock");
-      // getRouterRtpCapabilities 이벤트를 서버에 요청합니다.
+      // 요청 전: 로그 출력
+      console.log("Emitting getRouterRtpCapabilities event...");
       rtcSock.emit("getRouterRtpCapabilities", async (rtpCapabilities) => {
         console.log("Received rtpCapabilities:", rtpCapabilities);
         if (rtpCapabilities.error) {
@@ -172,7 +186,7 @@ const Chat1 = () => {
         try {
           const newDevice = new mediasoupClient.Device();
           await newDevice.load({ routerRtpCapabilities: rtpCapabilities });
-          console.log("Device successfully loaded");
+          console.log("Device successfully loaded:", newDevice);
           setDevice(newDevice);
         } catch (error) {
           console.error("❌ Device 초기화 오류:", error);
@@ -180,22 +194,20 @@ const Chat1 = () => {
       });
     });
   
-    client.connect({}, () => {
-      client.subscribe(`/topic/chat/myRooms/${currentUserId}`, updateMyRooms);
-      client.subscribe(`/topic/chat/roomUpdated/${currentUserId}`, () => {
-        client.send("/app/chat/myRooms/" + currentUserId, {}, {});
-      });
-      client.send("/app/chat/myRooms/" + currentUserId, {}, {});
+    rtcSock.on("connect_error", (err) => {
+      console.error("Socket.io connect_error:", err);
     });
-    setStompClient(client);
-    setSocket(rtcSock);
+  
+    rtcSock.on("error", (err) => {
+      console.error("Socket.io error:", err);
+    });
   
     return () => {
       client.disconnect();
       rtcSock.disconnect();
     };
   }, [currentUserId]);
-  
+    
 
   useEffect(() => {
     const handleBeforeUnload = async () => {
