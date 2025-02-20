@@ -1,3 +1,5 @@
+"use client"
+
 // "use client";
 
 // import { useState, useEffect } from "react";
@@ -207,7 +209,6 @@
 // }
 
 
-"use client"
 
 import type React from "react"
 
@@ -244,6 +245,7 @@ export default function StoryEditor({
   const [newPreviews, setNewPreviews] = useState<string[]>([])
   const [titleError, setTitleError] = useState("")
   const [contentError, setContentError] = useState("")
+  const [imageError, setImageError] = useState("")  // <-- 추가
 
   useEffect(() => {
     const previews = newImages.map((file) => URL.createObjectURL(file))
@@ -254,6 +256,9 @@ export default function StoryEditor({
     }
   }, [newImages])
 
+
+
+  
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value
     if (newTitle.length <= MAX_CHAR_LENGTH) {
@@ -287,6 +292,8 @@ export default function StoryEditor({
     onNewImagesChange([...newImages, ...filesArray])
   }
 
+
+  
   const removeExistingImage = (index: number) => {
     const urlToRemove = existingImageUrls[index]
     if (!urlToRemove) {
@@ -308,6 +315,16 @@ export default function StoryEditor({
   }
 
   const totalImagesCount = existingImageUrls.length + newImages.length
+
+
+// (추가) totalImagesCount가 0이면 오류 메시지 설정
+useEffect(() => {
+  if (totalImagesCount === 0) {
+    setImageError("이미지는 최소 1장 이상 업로드해주세요.")
+  } else {
+    setImageError("")
+  }
+}, [totalImagesCount])
 
   return (
     <div className="w-full p-6 space-y-4">
@@ -347,7 +364,7 @@ export default function StoryEditor({
         </p>
       </div>
 
-      <div>
+      {/* <div>
         <label className="block text-sm font-semibold text-gray-700">이미지 업로드</label>
         <div className="grid grid-cols-3 gap-2 mt-2">
           {existingImageUrls.map((src, index) => (
@@ -395,7 +412,72 @@ export default function StoryEditor({
           )}
         </div>
       </div>
-    </div>
+    </div> */}
+    <div>
+  {/* (수정) "이미지 업로드" 라벨에 (필수) 문구 추가 */}
+  <label className="block text-sm font-semibold text-gray-700">
+    이미지 업로드 <span className="text-red-500">(*)</span>
+  </label>
+
+  <div className="grid grid-cols-3 gap-2 mt-2">
+    {existingImageUrls.map((src, index) => (
+      <div key={`existing-${index}`} className="relative w-full aspect-square">
+        <Image
+          src={src || "/placeholder.svg"}
+          alt={`이미지 ${index + 1}`}
+          fill
+          className="object-cover rounded-lg"
+        />
+        <button
+          type="button"
+          onClick={() => removeExistingImage(index)}
+          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    ))}
+
+    {newPreviews.map((src, index) => (
+      <div key={`new-${index}`} className="relative w-full aspect-square">
+        <Image
+          src={src || "/placeholder.svg"}
+          alt={`새 이미지 ${index + 1}`}
+          fill
+          className="object-cover rounded-lg"
+        />
+        <button
+          type="button"
+          onClick={() => removeNewImage(index)}
+          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    ))}
+
+    {totalImagesCount < MAX_IMAGES && (
+      <label className="cursor-pointer w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 text-gray-600 hover:bg-gray-100">
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleNewImageChange}
+          className="hidden"
+        />
+        <Plus size={24} />
+        <span className="text-sm">이미지 추가</span>
+      </label>
+    )}
+  </div>
+
+  {/* (추가) 이미지가 없을 때 나타나는 에러 메시지 (imageError) */}
+  {imageError && (
+    <p className="text-red-500 text-sm mt-1">{imageError}</p>
+  )}
+</div>
+</div>
+
   )
 }
 
