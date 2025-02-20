@@ -12,6 +12,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#4CAF50" />
+      </head>
       <body className={inter.className}>
         {/* 네비게이션/사이드바 관리를 별도 컴포넌트에서 처리 */}
         <LayoutWrapper>{children}</LayoutWrapper>
