@@ -28,7 +28,7 @@ import { getUserInfoByNickname } from "@/lib/api/user";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
-// DEBUG 플래그: true이면 추가 디버깅 로그 출력
+// DEBUG 플래그: true이면 추가 디버깅 로그 출력 
 const DEBUG = true;
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
@@ -296,9 +296,9 @@ const Chat1 = () => {
           socket.emit("connectTransport", { transportId, dtlsParameters }, callback);
         });
   
-        transport.on("connectionstatechange", (state) => {
-          console.log(`🔄 Transport 상태 변경: ${state}`);
-        });
+        // transport.on("connectionstatechange", (state) => {
+        //   console.log(`🔄 Transport 상태 변경: ${state}`);
+        // });
   
         setConsumerTransport(transport);
       }
@@ -528,25 +528,20 @@ const Chat1 = () => {
           }
           console.log("✅ [publish] Transport 연결 완료");
           callback();
+          startMediaProduction(transport); // 🎯 Transport 연결 완료 후 미디어 송출 시작
         });
       });
   
-      transport.on("produce", ({ kind, rtpParameters }, callback, errback) => {
-        console.log(`📡 [produce] 요청 수신 - kind: ${kind}`);
-        socket.emit("produce", {
-          roomId: currentRoom.id,
-          transportId: transport.id,
-          kind,
-          rtpParameters,
-        }, ({ id, error }) => {
-          if (error) {
-            console.error("❌ [produce] 서버 오류:", error);
-            return errback(error);
-          }
-          console.log(`✅ [produce] 서버에서 producer 생성 완료 - id: ${id}`);
-          callback({ id });
-        });
-      });
+      setProducerTransport(transport);
+    });
+  };
+  
+  const startMediaProduction = async (transport) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      console.log("🎥 getUserMedia 성공:", stream);
+  
+      localVideoRef.current.srcObject = stream;
   
       const produceTrack = async (track, kind) => {
         try {
@@ -559,44 +554,22 @@ const Chat1 = () => {
         }
       };
   
-      setProducerTransport(transport);
+      const videoProducerId = stream.getVideoTracks()[0] ? await produceTrack(stream.getVideoTracks()[0], "video") : null;
+      const audioProducerId = stream.getAudioTracks()[0] ? await produceTrack(stream.getAudioTracks()[0], "audio") : null;
   
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: true })
-        .then(async (stream) => {
-          console.log("🎥 getUserMedia 성공:", stream);
-  
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = stream;
-            localVideoRef.current.onloadedmetadata = () => {
-              localVideoRef.current.play().catch((err) => console.error("🚫 localVideo play 오류:", err));
-            };
-          }
-  
-          const videoTrack = stream.getVideoTracks()[0];
-          const audioTrack = stream.getAudioTracks()[0];
-  
-          const videoProducerId = videoTrack ? await produceTrack(videoTrack, "video") : null;
-          const audioProducerId = audioTrack ? await produceTrack(audioTrack, "audio") : null;
-  
-          // 🔥 잘못된 producer 참조 수정 및 로그 강화
-          console.log(`🎯 Video Producer ID: ${videoProducerId}`);
-          console.log(`🎯 Audio Producer ID: ${audioProducerId}`);
-  
-          if (videoProducerId || audioProducerId) {
-            console.log("📢 [triggerConsumeNew] 이벤트 전송");
-            socket.emit("triggerConsumeNew", {
-              roomId: currentRoom.id,
-              videoProducerId,
-              audioProducerId,
-            });
-          } else {
-            console.warn("⚠️ producer 생성 실패로 triggerConsumeNew 전송 취소");
-          }
-        })
-        .catch((error) => console.error("❌ getUserMedia 오류:", error));
-    });
+      const producerIds = [videoProducerId, audioProducerId].filter(Boolean);
+      if (producerIds.length) {
+        console.log("📢 [triggerConsumeNew] 이벤트 전송:", producerIds);
+        socket.emit("triggerConsumeNew", { roomId: currentRoom.id, producerIds });
+      } else {
+        console.warn("⚠️ producer 생성 실패로 triggerConsumeNew 전송 취소");
+      }
+    } catch (error) {
+      console.error("❌ getUserMedia 오류:", error);
+      alert("카메라 또는 마이크 접근이 거부되었습니다.");
+    }
   };
+  
   
   const startConsuming = async () => {
     if (!device || !currentRoom?.id) {
