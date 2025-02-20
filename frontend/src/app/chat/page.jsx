@@ -600,6 +600,11 @@ const Chat1 = () => {
                 stream = new MediaStream();
               }
               stream.addTrack(consumer.track);
+
+              console.log("Tracks:", stream.getTracks());
+              console.log("Video Tracks:", stream.getVideoTracks());
+              console.log("Audio Tracks:", stream.getAudioTracks());
+
               remoteVideoRef.current.srcObject = stream;
               console.log("------------------------------")
               console.log(remoteVideoRef.current.srcObject);
