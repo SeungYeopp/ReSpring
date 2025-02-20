@@ -35,14 +35,10 @@ export default function TableOfContents({ book }: { book: BookFull }) {
     <div className="space-y-2">
       {chapters.length > 0 ? (
         chapters.map((chapter) => (
-          <Card key={chapter.id}>
-            <CardContent className="flex items-center p-4">
-              <span className="font-medium">{chapter.title}</span>
-            </CardContent>
-          </Card>
+              <p className="font-medium p-1">{chapter.title}</p>
         ))
       ) : (
-        <p>목차를 불러오는 중입니다...</p>
+        <p>👻 목차가 없습니다! 👻</p>
       )}
     </div>
   )
