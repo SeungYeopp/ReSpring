@@ -66,6 +66,7 @@ io.on("connection", (socket) => {
                 enableUdp: true,
                 enableTcp: true,
                 preferUdp: true,
+                appData: { clientId: socket.id }, // ✅ 클라이언트 정보 추가
             });
 
             transports[transport.id] = transport;
@@ -109,42 +110,39 @@ io.on("connection", (socket) => {
     socket.on("produce", async ({ roomId, transportId, kind, rtpParameters }, callback) => {
         console.log(`📡 [produce] 요청: Room ID=${roomId}, Kind=${kind}, Transport=${transportId}`);
 
-        if (!roomId) {
-            console.error("❌ [produce] roomId가 없음!");
-            return callback({ error: "roomId가 필요합니다." });
-        }
+        if (!roomId) return callback({ error: "roomId가 필요합니다." });
 
         const transport = transports[transportId];
-        if (!transport) {
-            console.error("❌ [produce] Transport를 찾을 수 없음:", transportId);
-            return callback({ error: "Transport not found" });
-        }
+        if (!transport) return callback({ error: "Transport not found" });
 
         try {
             const producer = await transport.produce({ kind, rtpParameters });
-            const roomKey = String(roomId);
-            if (!producers[roomKey]) {
-                producers[roomKey] = [];
-            }
-            producers[roomKey].push(producer.id);
-            console.log(`  [produce] Room ${roomKey}에 Producer 추가됨:`, producer.id);
+
+            producers[roomId] = producers[roomId] || [];
+            producers[roomId].push(producer.id);
+
             callback({ id: producer.id });
 
-            // producerOwners에 현재 소켓의 producer 정보 기록
-            if (!producerOwners[socket.id]) {
-                producerOwners[socket.id] = [];
-            }
-            producerOwners[socket.id].push({ roomId, producerId: producer.id });
+            console.log(`✅ Producer created: ${producer.id} (Room: ${roomId})`);
 
-            // 새롭게 생성된 Producer를 다른 사용자들에게 consume 요청
-            const existingClients = clients[roomId] || [];
-            const otherUsers = existingClients.filter((id) => id !== socket.id);
-            console.log(`🎯 Sending new consume request for producer ${producer.id} to:`, otherUsers);
-            otherUsers.forEach((userId) => {
-                io.to(userId).emit("triggerConsumeNew", { producerId: producer.id, roomId });
-            });
+            const otherUsers = (clients[roomId] || []).filter((id) => id !== socket.id);
+
+            if (otherUsers.length > 0) {
+                console.log(`🎯 Sending triggerConsumeNew to other users:`, otherUsers);
+                otherUsers.forEach((userId) => {
+                    io.to(userId).emit("triggerConsumeNew", {
+                        producerId: producer.id,
+                        roomId,
+                        transportId: transport.id, // ✅ 소비자 생성에 필요한 transport ID 추가
+                        kind,                       // ✅ 오디오/비디오 종류
+                        rtpParameters,              // ✅ RTP 파라미터 포함
+                    });
+                });
+            } else {
+                console.warn(`⚠️ No other users to notify in Room ${roomId}`);
+            }
         } catch (error) {
-            console.error("❌ [produce] Producer 생성 실패:", error);
+            console.error("❌ Producer creation failed:", error);
             callback({ error: error.message });
         }
     });
@@ -175,21 +173,16 @@ io.on("connection", (socket) => {
     });
 
     socket.on("consume", async ({ roomId, transportId, producerId, rtpCapabilities }, callback) => {
-        console.log(`🎥 [consume] Room ID: ${roomId}, Consumer: ${socket.id}, Producer ID: ${producerId}`);
-
-        if (!roomId) {
-            console.error("❌ ERROR: Room ID is undefined!");
-            return callback({ error: "Room ID is required!" });
-        }
+        console.log(`🎥 [consume] Room: ${roomId}, Consumer: ${socket.id}, Producer: ${producerId}`);
 
         const transport = transports[transportId];
         if (!transport) {
-            console.error("❌ Transport를 찾을 수 없음:", transportId);
+            console.error("❌ Transport not found:", transportId);
             return callback({ error: "Transport not found" });
         }
 
         if (!router.canConsume({ producerId, rtpCapabilities })) {
-            console.error("❌ Cannot consume Producer:", producerId);
+            console.error("❌ Cannot consume producer:", producerId);
             return callback({ error: "Cannot consume Producer" });
         }
 
@@ -200,10 +193,11 @@ io.on("connection", (socket) => {
                 paused: false,
             });
 
-            if (!consumers[roomId]) consumers[roomId] = {};
+            consumers[roomId] = consumers[roomId] || {};
             consumers[roomId][socket.id] = consumer;
 
-            console.log(`  [consume] Room ID: ${roomId}, Consumer ID: ${consumer.id}`);
+            console.log(`✅ Consumer created: ${consumer.id} (Room: ${roomId})`);
+
             callback({
                 id: consumer.id,
                 producerId: consumer.producerId,
@@ -211,61 +205,99 @@ io.on("connection", (socket) => {
                 rtpParameters: consumer.rtpParameters,
             });
         } catch (error) {
-            console.error("❌ [consume] Consumer 생성 실패:", error);
+            console.error("❌ Consumer creation failed:", error);
             callback({ error: error.message });
         }
     });
 
     socket.on("joinRoom", ({ roomId }) => {
         if (!clients[roomId]) clients[roomId] = [];
-        clients[roomId].push(socket.id);
-        console.log(`👤 Client ${socket.id} joined Room ${roomId}`);
+
+        if (!clients[roomId].includes(socket.id)) {
+            clients[roomId].push(socket.id);
+            console.log(`👤 Client ${socket.id} joined Room ${roomId}`);
+        } else {
+            console.warn(`⚠️ Client ${socket.id} already in Room ${roomId}`);
+        }
+
+        const roomProducers = producers[roomId] || [];
+        if (roomProducers.length > 0) {
+            console.log(`📢 Sending existing producers to new client: ${roomProducers}`);
+            roomProducers.forEach((producerId) => {
+                io.to(socket.id).emit("triggerConsumeNew", { producerId, roomId });
+            });
+        }
     });
 
-    socket.on("disconnect", () => {
-        console.log("❌ Client Disconnected:", socket.id);
+    socket.on("disconnect", async () => {
+        console.log(`❌ Client disconnected: ${socket.id}`);
 
-        // 클라이언트가 나가면 clients 리스트에서 제거
-        Object.keys(clients).forEach((roomId) => {
-            clients[roomId] = clients[roomId].filter((id) => id !== socket.id);
-            if (clients[roomId].length === 0) delete clients[roomId];
+        // 1️⃣ 소비자(Consumers) 제거
+        Object.entries(consumers).forEach(([roomId, roomConsumers]) => {
+            const consumer = roomConsumers[socket.id];
+            if (consumer) {
+                console.log(`🗑️ Closing consumer ${consumer.id} for client ${socket.id} in Room ${roomId}`);
+                consumer.close();  // 실제 Mediasoup Consumer 제거
+                delete roomConsumers[socket.id];
+            }
+
+            if (Object.keys(roomConsumers).length === 0) {
+                delete consumers[roomId];
+            }
         });
-        console.log("📡 Updated clients list:", clients);
 
-        // producerOwners 에 기록된 본인 producer들을 cleanup
+        // 2️⃣ 생산자(Producers) 제거
         if (producerOwners[socket.id]) {
             producerOwners[socket.id].forEach(({ roomId, producerId }) => {
-                console.log(`📴 Cleaning up Producer ${producerId} for disconnected socket ${socket.id} in Room ${roomId}`);
-                if (producers[roomId]) {
-                    producers[roomId] = producers[roomId].filter((id) => id !== producerId);
-                    // 소비자들에게 해당 producer 삭제 알림 전송
-                    io.to(roomId).emit("removeConsumer", { producerId });
+                const roomProducers = producers[roomId];
+                if (roomProducers) {
+                    producers[roomId] = roomProducers.filter((id) => id !== producerId);
+                    console.log(`🗑️ Removed producer ${producerId} from Room ${roomId}`);
+                    io.to(roomId).emit("removeConsumer", { producerId }); // 소비자에게 해당 producer 삭제 알림
                 }
             });
             delete producerOwners[socket.id];
         }
+
+        // 3️⃣ 전송기(Transports) 제거
+        Object.entries(transports).forEach(([transportId, transport]) => {
+            if (transport.appData?.clientId === socket.id) {
+                console.log(`🗑️ Closing transport ${transportId} for client ${socket.id}`);
+                transport.close();
+                delete transports[transportId];
+            }
+        });
+
+        // 4️⃣ clients 리스트에서 제거
+        Object.entries(clients).forEach(([roomId, users]) => {
+            clients[roomId] = users.filter((id) => id !== socket.id);
+            if (clients[roomId].length === 0) {
+                delete clients[roomId];
+                console.log(`🏠 Room ${roomId} is now empty and removed.`);
+            }
+        });
+        console.log("✅ Clean-up completed for disconnected client:", socket.id);
     });
 
     socket.on("triggerConsume", ({ roomId }) => {
         console.log(`📡 Received request to trigger consumption in Room ${roomId}`);
 
-        if (!producers[roomId] || producers[roomId].length === 0) {
+        const currentProducers = producers[roomId];
+        if (!currentProducers || currentProducers.length === 0) {
             console.log(`⚠️ No producers found in Room ${roomId}`);
             return;
         }
 
-        const currentProducers = producers[roomId];
         const existingClients = clients[roomId] || [];
-
         console.log(`👤 Producers in Room ${roomId}:`, currentProducers);
         console.log(`👥 Clients in Room ${roomId}:`, existingClients);
 
         const otherUsers = existingClients.filter((id) => id !== socket.id);
 
         if (otherUsers.length > 0) {
-            console.log(`🎯 Sending triggerConsume to other users in Room ${roomId}:`, otherUsers);
+            console.log(`🎯 Sending triggerConsumeNew with producers to other users in Room ${roomId}:`, otherUsers);
             otherUsers.forEach((userId) => {
-                io.to(userId).emit("triggerConsume");
+                io.to(userId).emit("triggerConsumeNew", { producerIds: currentProducers, roomId });  // ✅ producerIds 포함
             });
         } else {
             console.warn(`⚠️ No other users in Room ${roomId} to send triggerConsume.`);
