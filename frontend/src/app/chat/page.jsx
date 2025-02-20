@@ -307,7 +307,11 @@ const Chat1 = () => {
                 kind: response.kind,
                 rtpParameters: response.rtpParameters,
               });
-              consumer.resume().catch((err) => console.error("consumer.resume() 오류:", err));
+              try {
+                consumer.resume();
+              } catch (err) {
+                console.error("consumer.resume() 오류:", err);
+              }
               console.log("[consume] consumer 생성:", consumer);
               setConsumer(consumer);
               let stream = remoteVideoRef.current.srcObject;
