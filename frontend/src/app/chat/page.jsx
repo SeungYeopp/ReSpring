@@ -86,6 +86,19 @@ const Chat1 = () => {
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
 
+
+  // targetNickname 값이 있을 경우, 입력값을 미리 채워두고 모달을 엽니다.
+  useEffect(() => {
+    if (targetNickname) {
+      setSearchQuery(targetNickname);
+      setNewChatUserId(targetNickname);
+      setIsNewChatOpen(true);
+    }
+  }, [targetNickname]);
+
+
+
+
   useLayoutEffect(() => {
     if (!targetNickname) return;
 
