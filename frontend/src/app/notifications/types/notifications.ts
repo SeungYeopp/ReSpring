@@ -1,6 +1,6 @@
 // 예: src/types/notifications.ts
-export type NotificationType = "COMMENT" | "LIKE" | "SUBSCRIBE" | "REPLY";
 export type TargetType = "POST" | "BOOK" | "USER" | "COMMENT";
+export type NotificationType = "COMMENT" | "LIKE" | "SUBSCRIBE" | "REPLY" | "CHAT" | "CHALLENGE" | "FOLLOW";
 
 export interface Notification {
   id: number;
