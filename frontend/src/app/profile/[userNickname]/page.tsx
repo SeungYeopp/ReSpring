@@ -301,11 +301,11 @@ export default function ProfilePage() {
 
               </div>
 
-              <div className="flex space-x-2 justify-end">
+              <div className="flex gap-2 mb-4 ml-4">
                 {[
-                  { id: "flame", icon: <Flame className="w-4 h-4 text-red-500" /> },
-                  { id: "bookCheck", icon: <BookCheck className="w-4 h-4 text-green-500" /> },
-                  { id: "footprints", icon: <Footprints className="w-4 h-4 text-blue-500" /> },
+                  { id: "flame", icon: <Flame className="w-5 h-5 text-red-500" /> },
+                  { id: "bookCheck", icon: <BookCheck className="w-5 h-5 text-green-500" /> },
+                  { id: "footprints", icon: <Footprints className="w-5 h-5 text-blue-500" /> },
                 ].map((badge) => (
                   <button key={badge.id} onClick={() => openBadgeModal(badge.id)}>
                     {badge.icon}
@@ -317,6 +317,8 @@ export default function ProfilePage() {
 
         {/* 내 업적 */}
         <StatSummary userNickname={targetNickname} challengeCount={challenges.length} />
+
+        {selectedBadge && <BadgeModal badge={selectedBadge} onClose={closeBadgeModal} />}
 
         {/* 도전, 활동, 발자취 - 왼쪽 정렬 */}
         <div className="w-full flex flex-col items-start pl-4">
