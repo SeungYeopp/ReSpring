@@ -273,102 +273,72 @@ const Chat1 = () => {
   useEffect(() => {
     if (!socket || !currentRoom || !device) return;
   
-    const handleNewProducerConsume = async ({ producerId, roomId }) => {
-      if (roomId !== currentRoom.id) return;
-      console.log("📥 handleNewProducerConsume - producerId:", producerId, "roomId:", roomId);
+    const handleNewProducerConsume = async ({ producerId, roomId, transportId, kind, rtpParameters }) => {
+      if (roomId !== currentRoom.id) return; // 🚫 다른 방이면 무시
+  
+      console.log("📥 새로운 producer 탐지:", producerId, "Room:", roomId);
   
       let transport = consumerTransport;
   
-      // ✅ 기존 consumerTransport 재사용 (없으면 새로 생성)
+      // ✅ consumerTransport가 없으면 즉시 생성
       if (!transport) {
         console.log("🚀 consumerTransport 생성 시작...");
-      
+  
         transport = device.createRecvTransport({
           id: `${currentRoom.id}-recv-transport`,
-          iceParameters: {},  // 서버에서 전달된 값 필요
-          iceCandidates: [],  // 서버에서 전달된 값 필요
-          dtlsParameters: {}, // 서버에서 전달된 값 필요
+          iceParameters,  // 서버로부터 전달받은 값 필요
+          iceCandidates,  // 서버로부터 전달받은 값 필요
+          dtlsParameters, // 서버로부터 전달받은 값 필요
         });
-      
-        // 🚩 생성된 transport 정보 출력
-        console.log("🆕 RecvTransport 생성 완료:");
-        console.log("  🔑 id:", transport.id);
-        console.log("  🧊 iceParameters:", transport.iceParameters);
-        console.log("  ❄️ iceCandidates:", transport.iceCandidates);
-        console.log("  🔐 dtlsParameters:", transport.dtlsParameters);
-      
+  
         transport.on("connect", ({ dtlsParameters }, callback) => {
-          console.log("[consume] Transport 연결 시도:");
-          console.log("  🔐 전달된 dtlsParameters:", dtlsParameters);
-          socket.emit("connectTransport", { transportId: transport.id, dtlsParameters }, callback);
+          console.log("[consume] Transport 연결 시도:", dtlsParameters);
+          socket.emit("connectTransport", { transportId, dtlsParameters }, callback);
         });
-      
+  
         transport.on("connectionstatechange", (state) => {
           console.log(`🔄 Transport 상태 변경: ${state}`);
         });
-      
-        setConsumerTransport(transport); // 상태 업데이트
+  
+        setConsumerTransport(transport);
       }
+  
+      // ✅ consume 요청 전송
       socket.emit(
         "consume",
-        {
-          roomId: String(roomId),
-          transportId: transport.id,
-          producerId,
-          rtpCapabilities: device.rtpCapabilities,
-        },
+        { roomId, transportId, producerId, rtpCapabilities: device.rtpCapabilities },
         async (response) => {
           if (!response || response.error) {
-            console.error("❌ [consume] 오류:", response?.error);
+            console.error("❌ consume 오류:", response?.error);
             return;
           }
   
-          try {
-            const consumer = await transport.consume({
-              id: response.id,
-              producerId: response.producerId,
-              kind: response.kind,
-              rtpParameters: response.rtpParameters,
-            });
+          console.log("✅ consume 응답 수신:", response);
   
-            await consumer.resume();
-            console.log("✅ consumer 생성 및 resume 완료:", consumer);
+          const consumer = await transport.consume({
+            id: response.id,
+            producerId: response.producerId,
+            kind: response.kind,
+            rtpParameters: response.rtpParameters,
+          });
   
-            setConsumer(consumer);
+          await consumer.resume(); // 🚀 소비자 스트림 활성화
+          setConsumer(consumer);
   
-            // ✅ 기존 스트림 정리 및 새 MediaStream 생성
-            if (remoteVideoRef.current) {
-              if (remoteVideoRef.current.srcObject) {
-                remoteVideoRef.current.srcObject.getTracks().forEach((track) => track.stop());
-              }
-  
-              const newStream = new MediaStream([consumer.track]);
-              remoteVideoRef.current.srcObject = newStream;
-  
-              // ✅ 비디오 메타데이터 로드 후 재생
-              const handleLoadedMetadata = () => {
-                remoteVideoRef.current.play().catch((err) => {
-                  console.error("🚫 remoteVideo play 오류:", err);
-                });
-                remoteVideoRef.current.removeEventListener("loadedmetadata", handleLoadedMetadata); // 중복 방지
-              };
-  
-              remoteVideoRef.current.addEventListener("loadedmetadata", handleLoadedMetadata);
-            }
-          } catch (error) {
-            console.error("❌ Consumer 생성 오류:", error);
+          // 🎥 스트림 화면에 출력
+          const newStream = new MediaStream([consumer.track]);
+          if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = newStream;
+            remoteVideoRef.current.onloadedmetadata = () => remoteVideoRef.current.play().catch((err) => console.error("🚫 비디오 재생 오류:", err));
           }
         }
       );
     };
   
     socket.on("triggerConsumeNew", handleNewProducerConsume);
-  
-    return () => {
-      socket.off("triggerConsumeNew", handleNewProducerConsume);
-    };
+    return () => socket.off("triggerConsumeNew", handleNewProducerConsume);
   }, [socket, currentRoom, device, consumerTransport]);
-
+  
   useEffect(() => {
     if (!socket || !currentRoom) return;
     socket.emit("joinRoom", { roomId: currentRoom.id });
