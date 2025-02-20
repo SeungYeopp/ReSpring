@@ -1,25 +1,15 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
-import { ko } from "date-fns/locale";
-import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Loader2, Send } from "lucide-react";
-import {
-  createNewBookComment,
-  deleteBookComment,
-  getCommentsByBookId,
-  checkIfUserLikedComment,
-  likeComment,
-  type UserInfo,
-  type Comment,
-} from "@/lib/api";
+import { Loader2, Send, X, MessageSquare, Trash2, Heart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CustomSelect, CustomSelectContent, CustomSelectItem, CustomSelectTrigger, CustomSelectValue } from "./custom-select";
+import { createNewBookComment, deleteBookComment, getCommentsByBookId, checkIfUserLikedComment, likeComment, type UserInfo, type Comment } from "@/lib/api";
 import { getUserInfo } from "@/lib/api";
 
-// CommentWithReplies: Comment를 확장하여 replies와 isDeleted 속성을 추가합니다.
 interface CommentWithReplies extends Comment {
   replies?: Comment[];
   isDeleted?: boolean;
@@ -31,13 +21,13 @@ export default function Comments({ bookId }: { bookId: number }) {
   const [newComment, setNewComment] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  // 답글달기로 선택된 부모 댓글 정보
-  const [replyTo, setReplyTo] = useState<{
-    id: number;
-    userNickname: string;
-  } | null>(null);
+  const [replyingTo, setReplyingTo] = useState<{ id: number; userNickname: string } | null>(null);
   const [commentCount, setCommentCount] = useState(0);
+  const [expandedReplies, setExpandedReplies] = useState<{ [key: number]: boolean }>({});
   const maxCharacterLimit = 100;
+  const [sortBy, setSortBy] = useState<"popular" | "latest">("popular");
+  const commentInputRef = useRef<HTMLInputElement>(null);
+  const replyingCommentRef = useRef<HTMLDivElement>(null);
 
   const fetchUserInfo = useCallback(async () => {
     try {
@@ -65,7 +55,6 @@ export default function Comments({ bookId }: { bookId: number }) {
     fetchUserInfo();
   }, [fetchComments, fetchUserInfo]);
 
-  // 댓글 총 개수 업데이트 (부모와 자식 댓글 모두 포함)
   useEffect(() => {
     const totalCount = comments.reduce((count, comment) => count + 1, 0);
     setCommentCount(totalCount);
@@ -82,19 +71,7 @@ export default function Comments({ bookId }: { bookId: number }) {
     if (!newComment.trim() || isLoading) return;
     setIsLoading(true);
     try {
-      let newCommentData;
-      if (replyTo) {
-        // 답글 작성: 부모 댓글의 id를 세 번째 인자로 전달
-        newCommentData = await createNewBookComment(
-          bookId,
-          newComment,
-          replyTo.id
-        );
-      } else {
-        // 부모 댓글 작성
-        newCommentData = await createNewBookComment(bookId, newComment);
-      }
-      // 새 댓글은 배열의 맨 아래에 추가
+      const newCommentData = await createNewBookComment(bookId, newComment, replyingTo?.id);
       setComments((prev) => [
         ...prev,
         {
@@ -104,7 +81,11 @@ export default function Comments({ bookId }: { bookId: number }) {
         },
       ]);
       setNewComment("");
-      setReplyTo(null);
+      setReplyingTo(null);
+      // 새 답글이 추가되면 해당 부모 댓글의 답글을 자동으로 펼칩니다.
+      if (replyingTo) {
+        setExpandedReplies((prev) => ({ ...prev, [replyingTo.id]: true }));
+      }
     } catch (error) {
       console.error("댓글 작성에 실패했습니다:", error);
     } finally {
@@ -112,18 +93,11 @@ export default function Comments({ bookId }: { bookId: number }) {
     }
   };
 
-  // 댓글 삭제 시 해당 댓글을 "삭제된 댓글입니다"로 업데이트하고, isDeleted 플래그를 true로 설정
   const handleDeleteComment = async (commentId: number) => {
     try {
       const success = await deleteBookComment(commentId);
       if (success) {
-        setComments((prev) =>
-          prev.map((c) =>
-            c.id === commentId
-              ? { ...c, content: "삭제된 댓글입니다", isDeleted: true }
-              : c
-          )
-        );
+        setComments((prev) => prev.map((c) => (c.id === commentId ? { ...c, content: "삭제된 댓글입니다", isDeleted: true } : c)));
       }
     } catch (error) {
       console.error("댓글 삭제 중 오류 발생:", error);
@@ -135,184 +109,213 @@ export default function Comments({ bookId }: { bookId: number }) {
   };
 
   const handleReplyClick = (comment: Comment) => {
-    setReplyTo({ id: comment.id, userNickname: comment.userNickname });
+    setReplyingTo({ id: comment.id, userNickname: comment.userNickname });
     setNewComment(`@${comment.userNickname} `);
+    if (commentInputRef.current) {
+      commentInputRef.current.focus();
+    }
+    if (replyingCommentRef.current) {
+      replyingCommentRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+    // 답글 작성 시 해당 댓글의 답글을 자동으로 펼칩니다.
+    setExpandedReplies((prev) => ({ ...prev, [comment.id]: true }));
   };
 
-  // 개별 댓글 렌더링 컴포넌트
-  const CommentItem = React.memo(
-    ({
-      comment,
-      isReply = false,
-    }: {
-      comment: CommentWithReplies;
-      isReply?: boolean;
-    }) => {
-      // 좋아요 상태 관리
-      const [isLiked, setIsLiked] = useState(false);
-      const [likeCount, setLikeCount] = useState(comment.likeCount || 0);
+  const cancelReply = () => {
+    setReplyingTo(null);
+    setNewComment("");
+  };
 
-      useEffect(() => {
-        async function checkLike() {
-          const liked = await checkIfUserLikedComment(comment.id);
-          setIsLiked(liked);
-        }
-        checkLike();
-      }, [comment.id]);
+  const toggleReplies = (commentId: number) => {
+    setExpandedReplies((prev) => ({ ...prev, [commentId]: !prev[commentId] }));
+  };
 
-      const handleLike = useCallback(async () => {
+  const sortedComments = useMemo(() => {
+    return [...comments].sort((a, b) => {
+      if (sortBy === "popular") {
+        return (b.likeCount || 0) - (a.likeCount || 0);
+      } else {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    });
+  }, [comments, sortBy]);
+
+  const groupedComments = useMemo(() => {
+    const parentComments = sortedComments.filter((c) => !c.parentId);
+    return parentComments.map((parent) => ({
+      ...parent,
+      replies: sortedComments.filter((c) => c.parentId === parent.id),
+    }));
+  }, [sortedComments]);
+
+  const isTopComment = useCallback(
+    (comment: Comment) => {
+      const parentComments = comments.filter((c) => !c.parentId);
+      const sortedByLikes = parentComments.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
+      return sortedByLikes.indexOf(comment) < 3;
+    },
+    [comments]
+  );
+
+  const CommentItem = React.memo(({ comment, isReply = false }: { comment: CommentWithReplies; isReply?: boolean }) => {
+    const [isLiked, setIsLiked] = useState(false);
+    const [likeCount, setLikeCount] = useState(comment.likeCount || 0);
+    const hasReplies = !isReply && comment.replies && comment.replies.length > 0;
+    const replyCount = hasReplies ? comment.replies?.length || 0 : 0;
+
+    const checkLike = useCallback(async (commentId: number) => {
+      try {
+        const liked = await checkIfUserLikedComment(commentId);
+        return liked;
+      } catch (error) {
+        console.error("좋아요 확인 실패:", error);
+        return false;
+      }
+    }, []);
+
+    const [hasCheckedLike, setHasCheckedLike] = useState(false);
+
+    useEffect(() => {
+      const fetchLikeStatus = async () => {
         try {
-          const liked = await likeComment(comment.id);
+          const liked = await checkLike(comment.id);
           setIsLiked(liked);
-          setLikeCount((prev) => (liked ? prev + 1 : prev - 1));
+          setHasCheckedLike(true);
         } catch (error) {
-          console.error("좋아요 토글 실패:", error);
+          console.error("좋아요 상태 확인 실패:", error);
         }
-      }, [comment.id]);
+      };
 
-      return (
-        <div
-          className={`flex gap-3 ${
-            isReply
-              ? 'ml-8 before:content-[""] before:border-l-2 before:border-gray-200 before:-ml-4 before:mr-4'
-              : ""
-          }`}
-        >
-          <Avatar
-            className="h-8 w-8 flex-shrink-0 cursor-pointer"
-            onClick={() => handleOnClickProfile(comment.userNickname)}
-          >
-            <AvatarImage src={comment.profileImg} alt={comment.userNickname} />
-            <AvatarFallback>{comment.userNickname[0]}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <div className="flex items-baseline gap-1">
-              <span
-                className="text-sm font-semibold cursor-pointer hover:underline"
-                onClick={() => handleOnClickProfile(comment.userNickname)}
-              >
-                {comment.userNickname}
-              </span>
-              <time className="text-xs text-gray-500">
-                {formatDistanceToNowStrict(new Date(comment.createdAt), {
-                  locale: ko,
-                  addSuffix: true,
-                })}
-              </time>
-            </div>
-            <p className="text-sm text-gray-800 mt-0.5">{comment.content}</p>
-            <div className="flex gap-2 mt-1 text-xs text-gray-500">
-              <button
-                onClick={handleLike}
-                className={`hover:text-gray-700 ${
-                  isLiked ? "text-blue-500" : ""
-                }`}
-              >
-                좋아요 {likeCount > 0 && `(${likeCount})`}
-              </button>
-              {!isReply && (
-                <button
-                  onClick={() => handleReplyClick(comment)}
-                  className="hover:text-gray-700"
-                >
-                  답글달기
-                </button>
-              )}
-              {/* 삭제 버튼은 삭제된 댓글일 경우 보이지 않음 */}
-              {!comment.isDeleted && (
-                <button
-                  onClick={() => handleDeleteComment(comment.id)}
-                  className="hover:text-gray-700"
-                >
-                  삭제
-                </button>
+      if (!hasCheckedLike) {
+        fetchLikeStatus();
+      }
+    }, [checkLike, comment.id, hasCheckedLike]);
+
+    const handleLike = useCallback(async () => {
+      try {
+        const liked = await likeComment(comment.id);
+        setIsLiked(liked);
+        setLikeCount((prev) => (liked ? prev + 1 : prev - 1));
+      } catch (error) {
+        console.error("좋아요 토글 실패:", error);
+      }
+    }, [comment.id]);
+
+    const date = new Date(comment.createdAt);
+    const formattedDate = `${date.getFullYear().toString().slice(-2)}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getDate().toString().padStart(2, "0")}`;
+
+    return (
+      <div className="space-y-4">
+        <div className={`${isReply ? "ml-8" : ""}`}>
+          <div className="flex items-start gap-3">
+            <Avatar className="h-8 w-8 flex-shrink-0 cursor-pointer" onClick={() => handleOnClickProfile(comment.userNickname)}>
+              <AvatarImage src={comment.profileImg} alt={comment.userNickname} />
+              <AvatarFallback>{comment.userNickname[0]}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium cursor-pointer hover:underline" onClick={() => handleOnClickProfile(comment.userNickname)}>
+                  {comment.userNickname}
+                </span>
+                {!isReply && sortBy === "popular" && isTopComment(comment) && (
+                  <Badge variant="destructive" className="text-[10px] px-1 py-0 h-4 bg-red-500">
+                    BEST
+                  </Badge>
+                )}
+                <span className="text-xs text-gray-500">{formattedDate}</span>
+              </div>
+              <p className="text-sm text-gray-900 mt-1 break-words">{comment.content}</p>
+              {comment.content === "삭제된 댓글입니다." ? (
+                <div className="mt-2">{/* <span className="text-xs text-gray-500">삭제된 댓글입니다.</span> */}</div>
+              ) : (
+                <div className="flex items-center gap-3 mt-2">
+                  <button onClick={handleLike} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700">
+                    <Heart className={`w-3.5 h-3.5 ${isLiked ? "fill-current text-red-500" : ""}`} />
+                    {likeCount > 0 && likeCount}
+                  </button>
+                  {!isReply && (
+                    <button onClick={() => toggleReplies(comment.id)} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700">
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      {replyCount > 0 && replyCount}
+                    </button>
+                  )}
+                  <button onClick={() => handleReplyClick(comment)} className="text-xs text-gray-500 hover:text-gray-700">
+                    {/* 답글 */}
+                  </button>
+                  {comment.userNickname === userInfo?.userNickname && (
+                    <button onClick={() => handleDeleteComment(comment.id)} className="ml-auto text-gray-400 hover:text-red-500">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
         </div>
-      );
-    }
-  );
-
-  // 그룹화: 부모 댓글과 해당 답글을 묶어서 반환
-  const groupedComments = useMemo(() => {
-    const parentComments = comments.filter((c) => !c.parentId);
-    return parentComments.map((parent) => ({
-      ...parent,
-      replies: comments.filter((c) => c.parentId === parent.id),
-    }));
-  }, [comments]);
-
-  const memoizedComments = useMemo(() => {
-    return groupedComments.map((parent) => (
-      <div key={parent.id} className="space-y-4">
-        <CommentItem comment={parent} />
-        {parent.replies && parent.replies.length > 0 && (
-          <div className="space-y-4">
-            {parent.replies.map((reply) => (
+        {hasReplies && expandedReplies[comment.id] && (
+          <div className="space-y-4 mt-2">
+            {comment.replies?.map((reply) => (
               <CommentItem key={reply.id} comment={reply} isReply />
             ))}
           </div>
         )}
       </div>
-    ));
-  }, [groupedComments]);
+    );
+  });
 
   const isLimitReached = newComment.length === maxCharacterLimit;
 
   return (
     <div className="relative">
-      <div className="text-sm text-gray-600 font-medium mb-4">
-        총 {commentCount}개의 댓글
+      <div className="flex justify-between items-center mb-4">
+        <div className="text-sm text-gray-600 font-medium">전체 {commentCount}</div>
+        <CustomSelect value={sortBy} onValueChange={(value: "popular" | "latest") => setSortBy(value)}>
+          <CustomSelectTrigger className="w-[180px]">
+            <CustomSelectValue placeholder="정렬 기준" />
+          </CustomSelectTrigger>
+          <CustomSelectContent>
+            <CustomSelectItem value="popular">인기순</CustomSelectItem>
+            <CustomSelectItem value="latest">최신순</CustomSelectItem>
+          </CustomSelectContent>
+        </CustomSelect>
       </div>
       <div className="space-y-6">
-        {memoizedComments}
+        {groupedComments.map((parent) => (
+          <div key={parent.id}>
+            <CommentItem comment={parent} />
+          </div>
+        ))}
         {isLoading && (
           <div className="flex justify-center items-center py-4">
             <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
           </div>
         )}
       </div>
-      <div className="fixed bottom-16 left-0 w-full p-4 bg-white border-t md:static md:border-none md:bg-transparent">
-        {replyTo && (
+      <div className="z-50 fixed bottom-0 left-0 w-full p-4 bg-white border-t md:static md:border-none md:bg-transparent">
+        {replyingTo && (
           <div className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-md mb-2">
             <span className="text-sm text-gray-600">
-              <span className="font-semibold">{replyTo.userNickname}</span>{" "}
-              님에게 답글 작성 중
+              <span className="font-semibold">{replyingTo.userNickname}</span> 님에게 답글 작성 중
             </span>
-            <button
-              type="button"
-              onClick={() => {
-                setReplyTo(null);
-                setNewComment("");
-              }}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              취소
+            <button type="button" onClick={cancelReply} className="text-sm text-gray-500 hover:text-gray-700">
+              <X className="h-4 w-4" />
             </button>
           </div>
         )}
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <Avatar className="h-8 w-8 flex-shrink-0">
-            <AvatarImage
-              src={userInfo?.profileImageUrl}
-              alt={userInfo?.userNickname}
-            />
+            <AvatarImage src={userInfo?.profileImageUrl} alt={userInfo?.userNickname} />
             <AvatarFallback>{userInfo?.userNickname?.[0]}</AvatarFallback>
           </Avatar>
           <input
+            ref={commentInputRef}
             type="text"
-            placeholder="따뜻한 댓글을 입력해주세요 :)"
+            placeholder={replyingTo ? "답글을 입력해주세요" : "따뜻한 댓글을 입력해주세요 :)"}
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
+            onChange={handleCommentChange}
             className="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
-          <Button
-            type="submit"
-            disabled={isLoading || !newComment.trim()}
-            className="rounded-full"
-            size="icon"
-          >
+          <Button type="submit" disabled={isLoading || !newComment.trim()} className="rounded-full" size="icon">
             <Send className="h-4 w-4" />
           </Button>
         </form>
