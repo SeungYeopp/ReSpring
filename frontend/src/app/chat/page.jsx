@@ -281,21 +281,34 @@ const Chat1 = () => {
   
       // ✅ 기존 consumerTransport 재사용 (없으면 새로 생성)
       if (!transport) {
+        console.log("🚀 consumerTransport 생성 시작...");
+      
         transport = device.createRecvTransport({
           id: `${currentRoom.id}-recv-transport`,
-          iceParameters: {}, // 필요 시 서버에서 전달된 값 사용
-          iceCandidates: [],
-          dtlsParameters: {},
+          iceParameters: {},  // 서버에서 전달된 값 필요
+          iceCandidates: [],  // 서버에서 전달된 값 필요
+          dtlsParameters: {}, // 서버에서 전달된 값 필요
         });
-  
+      
+        // 🚩 생성된 transport 정보 출력
+        console.log("🆕 RecvTransport 생성 완료:");
+        console.log("  🔑 id:", transport.id);
+        console.log("  🧊 iceParameters:", transport.iceParameters);
+        console.log("  ❄️ iceCandidates:", transport.iceCandidates);
+        console.log("  🔐 dtlsParameters:", transport.dtlsParameters);
+      
         transport.on("connect", ({ dtlsParameters }, callback) => {
-          console.log("[consume] Transport 연결 시도:", dtlsParameters);
+          console.log("[consume] Transport 연결 시도:");
+          console.log("  🔐 전달된 dtlsParameters:", dtlsParameters);
           socket.emit("connectTransport", { transportId: transport.id, dtlsParameters }, callback);
         });
-  
-        setConsumerTransport(transport);
+      
+        transport.on("connectionstatechange", (state) => {
+          console.log(`🔄 Transport 상태 변경: ${state}`);
+        });
+      
+        setConsumerTransport(transport); // 상태 업데이트
       }
-  
       socket.emit(
         "consume",
         {
@@ -630,97 +643,61 @@ const Chat1 = () => {
   
     const filteredProducerIds = producerIds.filter((id) => id !== producer);
     if (!filteredProducerIds.length) {
-      console.warn("startConsuming - 필터링된 producer가 없음");
+      console.warn("⚠️ 소비할 producer가 없습니다.");
       return;
     }
-
-    // ✅ 서버에 consume 요청 전송
-socket.emit(
-  "consume",
-  {
-    roomId: currentRoom.id,
-    transportId: consumerTransport.id,
-    producerId,
-    rtpCapabilities: device.rtpCapabilities,
-  },
-  (response) => {
-    console.log("📥 consume 응답:", response);
-
-    if (!response || response.error) {
-      console.error("🚫 consume 오류:", response?.error);
-      return;
-    }
-
-    const { id, producerId, kind, rtpParameters } = response;
-
-    try {
-      const consumer = consumerTransport.consume({
-        id,
-        producerId,
-        kind,
-        rtpParameters,
-      });
-      console.log("✅ consumer 생성 성공:", consumer.id);
-
-      const stream = new MediaStream([consumer.track]);
-      remoteVideoRef.current.srcObject = stream;
-      remoteVideoRef.current.play().catch((err) => console.error("🚫 play 오류:", err));
-    } catch (err) {
-      console.error("❌ consumer 생성 실패:", err);
-    }
-  }
-);
-
   
-    // ✅ 서버에 transport 생성 요청 및 응답 처리
-    socket.emit("createTransport", (data) => {
-      console.log("🚀 Received transport data:", data);
-    
-      if (!data || data.error) {
-        console.error("❌ Transport 생성 실패:", data?.error);
-        return;
-      }
-    
-      const { id, iceParameters, iceCandidates, dtlsParameters } = data;
-    
-      // 🛡️ 데이터 유효성 검증
-      if (!id) console.error("🚨 transport id가 없음");
-      if (!iceParameters) console.error("🚨 iceParameters가 없음");
-      if (!iceCandidates || !Array.isArray(iceCandidates) || iceCandidates.length === 0)
-        console.error("🚨 iceCandidates가 유효하지 않음:", iceCandidates);
-      if (!dtlsParameters) console.error("🚨 dtlsParameters가 없음");
-    
-      if (!id || !iceParameters || !iceCandidates || !dtlsParameters) {
-        console.error("🚫 잘못된 Transport 파라미터:", data);
-        return;
-      }
-    
-      const transport = device.createRecvTransport({ id, iceParameters, iceCandidates, dtlsParameters });
-      console.log("✅ createRecvTransport 성공:", transport.id);
-    
-      transport.on("connect", ({ dtlsParameters }, callback, errback) => {
-        console.log("🔗 [consume] Transport 연결 시도...");
-        socket.emit("connectTransport", { transportId: id, dtlsParameters }, (response) => {
-          if (response?.error) {
-            console.error("🚫 [consume] connectTransport 오류:", response.error);
-            return errback(response.error);
+    // ✅ consumerTransport가 없으면 생성
+    let transport = consumerTransport;
+    if (!transport) {
+      transport = await new Promise((resolve, reject) => {
+        socket.emit("createTransport", (data) => {
+          if (!data || data.error) {
+            console.error("❌ Transport 생성 실패:", data?.error);
+            return reject(new Error("Transport 생성 실패"));
           }
-          console.log("✅ [consume] Transport 연결 완료");
-          callback();
+  
+          const newTransport = device.createRecvTransport(data);
+  
+          newTransport.on("connect", ({ dtlsParameters }, callback, errback) => {
+            console.log("🔗 [consume] Transport 연결 시도...");
+            socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, (response) => {
+              if (response?.error) {
+                console.error("🚫 [consume] Transport 연결 오류:", response.error);
+                return errback(response.error);
+              }
+              console.log("✅ [consume] Transport 연결 완료");
+              callback();
+              resolve(newTransport);
+            });
+          });
+  
+          newTransport.on("connectionstatechange", (state) => {
+            console.log(`🔄 Transport 상태 변경: ${state}`);
+          });
         });
       });
   
-      setConsumerTransport(transport);
+      setConsumerTransport(transport); // 상태 업데이트
+    }
   
-      // ✅ 각 producer에 대해 consume 요청
-      filteredProducerIds.forEach((producerId) => {
+    // ✅ 각 producerId에 대해 consume 요청
+    for (const producerId of filteredProducerIds) {
+      await new Promise((resolve) => {
         socket.emit(
           "consume",
-          { roomId: String(currentRoom.id), transportId: id, producerId, rtpCapabilities: device.rtpCapabilities },
+          {
+            roomId: currentRoom.id,
+            transportId: transport.id,
+            producerId,
+            rtpCapabilities: device.rtpCapabilities,
+          },
           async (response) => {
+            console.log("📥 consume 응답:", response);
+  
             if (!response || response.error) {
-              console.error("❌ [consume] 오류:", response?.error);
-              return;
+              console.error("🚫 consume 오류:", response?.error);
+              return resolve();
             }
   
             try {
@@ -731,32 +708,29 @@ socket.emit(
                 rtpParameters: response.rtpParameters,
               });
   
-              console.log("✅ [consume] consumer 생성:", consumer);
-              setConsumer(consumer);
-  
-              if (!remoteVideoRef.current) {
-                console.error("🚫 remoteVideoRef.current is not available");
-                return;
-              }
+              console.log(`✅ consumer 생성 성공 - ID: ${consumer.id}, Kind: ${response.kind}`);
   
               const stream = new MediaStream([consumer.track]);
-              remoteVideoRef.current.srcObject = stream;
+              if (remoteVideoRef.current) {
+                remoteVideoRef.current.srcObject = stream;
+                remoteVideoRef.current.onloadedmetadata = () => {
+                  remoteVideoRef.current.play().catch((err) => console.error("🚫 비디오 재생 오류:", err));
+                };
+              } else {
+                console.warn("⚠️ remoteVideoRef가 초기화되지 않았습니다.");
+              }
   
-              remoteVideoRef.current.onloadedmetadata = () => {
-                remoteVideoRef.current.play().catch((err) => console.error("🚫 video play 오류:", err));
-              };
-  
-              console.log("🎥 Tracks:", stream.getTracks());
-              console.log("🎥 Video Tracks:", stream.getVideoTracks());
-              console.log("🎥 Audio Tracks:", stream.getAudioTracks());
-            } catch (error) {
-              console.error("❌ [consume] Consumer 생성 실패:", error);
+              resolve();
+            } catch (err) {
+              console.error("❌ consumer 생성 실패:", err);
+              resolve();
             }
           }
         );
       });
-    });
+    }
   };
+
   
   const [activeScreen, setActiveScreen] = useState("rooms");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);

@@ -72,6 +72,10 @@ io.on("connection", (socket) => {
 
             console.log("🚀 [서버] Transport 생성:", transport.id);
 
+            console.log("🧊 iceParameters:", transport.iceParameters);
+            console.log("❄️ iceCandidates:", transport.iceCandidates);
+            console.log("🔐 dtlsParameters:", transport.dtlsParameters);
+
             callback({
                 id: transport.id,
                 iceParameters: transport.iceParameters,
