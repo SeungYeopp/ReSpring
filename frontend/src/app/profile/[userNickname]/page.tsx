@@ -321,7 +321,7 @@ export default function ProfilePage() {
         {selectedBadge && <BadgeModal badge={selectedBadge} onClose={closeBadgeModal} />}
 
         {/* 도전, 활동, 발자취 - 왼쪽 정렬 */}
-        <div className="w-full flex flex-col items-start pl-4">
+        <div className="w-full flex flex-col items-start">
           <TabBar userNickname={targetNickname} challenges={challenges} isMine={isMine} />
         </div>
 
