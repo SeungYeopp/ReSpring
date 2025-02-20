@@ -532,11 +532,17 @@ const Chat1 = () => {
             localVideoRef.current.srcObject = stream;
           }
           const videoTrack = stream.getVideoTracks()[0];
-          // 추가: 오디오도 필요하면 audioTrack도 함께 처리
-          await transport.produce({ track: videoTrack });
+          const audioTrack = stream.getAudioTracks()[0];
+          if (videoTrack) {
+            await transport.produce({ track: videoTrack, kind: "video" });
+          }
+          // 오디오 트랙 생산 (별도의 producer로 생성)
+          if (audioTrack) {
+            await transport.produce({ track: audioTrack, kind: "audio" });
+          }
         })
         .catch((error) => console.error("❌ getUserMedia 오류:", error));
-    });
+          });
   };
 
   const startConsuming = async () => {
@@ -579,11 +585,13 @@ const Chat1 = () => {
               });
               console.log("[consume] consumer 생성:", consumer);
               setConsumer(consumer);
-              const stream = new MediaStream();
-              stream.addTrack(consumer.track);
-              if (response.kind === "video" && remoteVideoRef.current) {
-                remoteVideoRef.current.srcObject = stream;
+              // 기존에 MediaStream이 있으면 재사용하고, 없으면 새로 생성
+              let stream = remoteVideoRef.current.srcObject;
+              if (!stream) {
+                stream = new MediaStream();
               }
+              stream.addTrack(consumer.track);
+              remoteVideoRef.current.srcObject = stream;
             } catch (error) {
               console.error("❌ Consumer 생성 오류:", error);
             }
