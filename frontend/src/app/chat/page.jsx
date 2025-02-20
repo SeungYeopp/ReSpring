@@ -152,11 +152,16 @@ const Chat1 = () => {
 
   // WebSocket 및 WebRTC 초기화
   useEffect(() => {
-    if (!currentUserId) return;
+    console.log("1번 currentUserId:", currentUserId);
+    if (!currentUserId) 
+      return;
   
     // SockJS + STOMP 연결 (기존 로직)
+
     const sock = new SockJS(SERVER_URL);
+    console.log("2번 sock:", sock);
     const client = Stomp.over(sock);
+    console.log("3번 client:", client);
     client.connect({}, () => {
       client.subscribe(`/topic/chat/myRooms/${currentUserId}`, updateMyRooms);
       client.subscribe(`/topic/chat/roomUpdated/${currentUserId}`, () => {
@@ -165,12 +170,15 @@ const Chat1 = () => {
       client.send("/app/chat/myRooms/" + currentUserId, {}, {});
     });
     setStompClient(client);
+    console.log("4번 client:", client);
   
     // Socket.io 연결
-    const rtcSock = io("wss://i12a307.p.ssafy.io/socket.io/", {
+    const rtcSock = io("wss://i12a307.p.ssafy.io", {
+      path: "/socket.io",
       transports: ["websocket"],
     });
     setSocket(rtcSock);
+    console.log("5번 rtcSock:", rtcSock);
   
     // 디버깅: Socket.io 연결 상태 확인
     rtcSock.on("connect", () => {
