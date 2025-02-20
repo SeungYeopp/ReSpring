@@ -325,19 +325,51 @@ const NotificationPage = () => {
   // ----------------------------------------------------------------
   // 기타 유틸리티 함수들
   // ----------------------------------------------------------------
-  const getNotificationLink = (targetType: string, targetId: number) => {
+  // const getNotificationLink = (targetType: string, targetId: number) => {
+  //   switch (targetType) {
+  //     case "POST":
+  //     case "COMMENT": // COMMENT도 POST와 동일하게 처리
+  //       return `/today/${targetId}`;
+  //     case "BOOK":
+  //       return `/yesterday/book/${targetId}`;
+  //     case "USER":
+  //       return `/profile/${targetId}`;
+  //     default:
+  //       return "/";
+  //   }
+  // };
+
+
+  const getNotificationLink = (
+    targetType: string,
+    targetId: number,
+    message?: string
+  ): string => {
+    if (targetType === "USER") {
+      // 메시지 형식 예시: "{닉네임}님이 당신을 구독했습니다."
+      if (message) {
+        const nicknameMatch = message.match(/^(.*?)님이/);
+        if (nicknameMatch && nicknameMatch[1]) {
+          return `/profile/${nicknameMatch[1]}`;
+        }
+      }
+      // 메시지가 없거나 닉네임 추출에 실패한 경우 적절한 fallback 처리
+      return "/";
+    }
+  
+    // USER가 아닌 경우 기존 로직에 따른 경로 반환
     switch (targetType) {
       case "POST":
       case "COMMENT": // COMMENT도 POST와 동일하게 처리
         return `/today/${targetId}`;
       case "BOOK":
         return `/yesterday/book/${targetId}`;
-      case "USER":
-        return `/profile/${targetId}`;
       default:
         return "/";
     }
   };
+  
+
 
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
@@ -422,14 +454,14 @@ const NotificationPage = () => {
                 {getNotificationIcon(notif.type)}
               </div>
               <div className="flex-grow min-w-0">
-                <Link
-                  href={getNotificationLink(notif.targetType, notif.targetId)}
-                  className={`block text-sm ${
-                    notif.read ? "text-gray-600" : "text-gray-800 font-medium"
-                  }`}
-                >
-                  {highlightText(notif.message, searchTerm)}
-                </Link>
+              <Link
+  href={getNotificationLink(notif.targetType, notif.targetId, notif.message)}
+  className={`block text-sm ${
+    notif.read ? "text-gray-600" : "text-gray-800 font-medium"
+  }`}
+>
+  {highlightText(notif.message, searchTerm)}
+</Link>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-xs text-gray-400">
                     {formatDistanceToNow(new Date(notif.createdAt), {
