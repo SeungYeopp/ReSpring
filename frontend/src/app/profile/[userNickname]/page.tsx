@@ -245,7 +245,7 @@ export default function ProfilePage() {
           </h1>
 
           {myNickname !== decodeURIComponent(targetNickname) && (
-            <div className="flex gap-3">
+            <div className="flex gap-3 mt-2">
               <button
                 onClick={handleSubscribeUnsubscribe}
                 className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md shadow-lg ${
