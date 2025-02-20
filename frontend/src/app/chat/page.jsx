@@ -633,6 +633,44 @@ const Chat1 = () => {
       console.warn("startConsuming - 필터링된 producer가 없음");
       return;
     }
+
+    // ✅ 서버에 consume 요청 전송
+socket.emit(
+  "consume",
+  {
+    roomId: currentRoom.id,
+    transportId: consumerTransport.id,
+    producerId,
+    rtpCapabilities: device.rtpCapabilities,
+  },
+  (response) => {
+    console.log("📥 consume 응답:", response);
+
+    if (!response || response.error) {
+      console.error("🚫 consume 오류:", response?.error);
+      return;
+    }
+
+    const { id, producerId, kind, rtpParameters } = response;
+
+    try {
+      const consumer = consumerTransport.consume({
+        id,
+        producerId,
+        kind,
+        rtpParameters,
+      });
+      console.log("✅ consumer 생성 성공:", consumer.id);
+
+      const stream = new MediaStream([consumer.track]);
+      remoteVideoRef.current.srcObject = stream;
+      remoteVideoRef.current.play().catch((err) => console.error("🚫 play 오류:", err));
+    } catch (err) {
+      console.error("❌ consumer 생성 실패:", err);
+    }
+  }
+);
+
   
     // ✅ 서버에 transport 생성 요청 및 응답 처리
     socket.emit("createTransport", (data) => {
