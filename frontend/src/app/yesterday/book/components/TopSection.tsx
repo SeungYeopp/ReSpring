@@ -107,21 +107,24 @@ export default function TopSection({ book }: { book: BookFull }) {
   }
 
   const handleClickLike = async () => {
-    try{
+    try {
       const result = await likeOrUnlikeBook(book.id);
-
-      if(result === 'Liked'){
+  
+      if (result === 'Liked') {
         setIsLiked(true);
-        setLikeCount(likeCount + 1);
-      }else{
+        setLikeCount((prev) => prev + 1);
+      } else if (result === 'Unliked') {
         setIsLiked(false);
-        setLikeCount(likeCount - 1);
+        setLikeCount((prev) => (prev > 0 ? prev - 1 : 0)); // 0 밑으로 내려가지 않도록
+      } else {
+        console.error("Unexpected response:", result);
+        // 좋아요 수 변경 안 함
       }
-
-    }catch(error){
-      alert('책 좋아요에 실패했습니다.')
+    } catch (error) {
+      alert("책 좋아요에 실패했습니다.");
     }
-  }
+  };
+  
 
   return (
     <section className="relative min-h-[80vh] text-white">
