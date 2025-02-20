@@ -25,6 +25,8 @@ public class Post {
     private User user;
 
     private String title;
+
+    @Column(length = 500)
     private String content;
 
     @Enumerated(EnumType.STRING)

@@ -49,8 +49,8 @@ const Footsteps: React.FC<{ userNickname: string }> = ({ userNickname }) => {
     (footstepsData.length - 1) * 0.5 + animationDuration;
 
   return (
-    <div className="relative pl-6">
-      <div className="relative">
+    <div className="relative ">
+      <div className="relative pl-3">
         <div
           className="absolute ml-[23px] top-0 w-[2px] bg-[#a46500]"
           style={{
