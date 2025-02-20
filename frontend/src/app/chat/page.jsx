@@ -523,16 +523,33 @@ const Chat1 = () => {
   };
 
   const startPublishing = async () => {
-    if (!device || !currentRoom || !currentRoom.id) {
+    if (!device || !currentRoom?.id) {
       console.error("❌ [startPublishing] Room 또는 Device 초기화 오류", { currentRoom });
       return;
     }
   
     socket.emit("createTransport", (data) => {
+      if (!data || data.error) {
+        console.error("❌ Transport 생성 실패:", data?.error);
+        return;
+      }
+  
       const transport = device.createSendTransport(data);
-
+  
+      transport.on("connect", ({ dtlsParameters }, callback, errback) => {
+        console.log("🔗 [publish] Transport 연결 시도...");
+        socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, (response) => {
+          if (response?.error) {
+            console.error("🚫 [publish] connectTransport error:", response.error);
+            return errback(response.error);
+          }
+          console.log("✅ [publish] Transport 연결 완료");
+          callback();
+        });
+      });
+  
       transport.on("produce", ({ kind, rtpParameters }, callback, errback) => {
-        console.log(`[produce] 요청 수신 - kind: ${kind}`);
+        console.log(`📡 [produce] 요청 수신 - kind: ${kind}`);
         socket.emit("produce", {
           roomId: currentRoom.id,
           transportId: transport.id,
@@ -540,32 +557,21 @@ const Chat1 = () => {
           rtpParameters,
         }, ({ id, error }) => {
           if (error) {
-            console.error("[produce] 서버 오류:", error);
+            console.error("❌ [produce] 서버 오류:", error);
             return errback(error);
           }
-          console.log("[produce] 서버에서 producer 생성 완료 - id:", id);
+          console.log(`✅ [produce] 서버에서 producer 생성 완료 - id: ${id}`);
           callback({ id });
         });
       });
   
-      transport.on("connect", ({ dtlsParameters }, callback, errback) => {
-        socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, (response) => {
-          if (response?.error) {
-            console.error("[publish] connectTransport error:", response.error);
-            return errback(response.error);
-          }
-          callback();
-        });
-      });
-  
-      // 🚀 produce 시 한 번만 호출되도록 처리
       const produceTrack = async (track, kind) => {
         try {
           const producer = await transport.produce({ track, kind });
-          console.log(`✅ ${kind} 트랙 생산 성공`);
+          console.log(`✅ [produceTrack] ${kind} producer 생성: ${producer.id}`);
           return producer.id;
         } catch (err) {
-          console.error(`❌ ${kind} 트랙 생산 실패:`, err);
+          console.error(`❌ [produceTrack] ${kind} 트랙 생성 실패:`, err);
           return null;
         }
       };
@@ -577,7 +583,12 @@ const Chat1 = () => {
         .then(async (stream) => {
           console.log("🎥 getUserMedia 성공:", stream);
   
-          if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = stream;
+            localVideoRef.current.onloadedmetadata = () => {
+              localVideoRef.current.play().catch((err) => console.error("🚫 localVideo play 오류:", err));
+            };
+          }
   
           const videoTrack = stream.getVideoTracks()[0];
           const audioTrack = stream.getAudioTracks()[0];
@@ -585,14 +596,19 @@ const Chat1 = () => {
           const videoProducerId = videoTrack ? await produceTrack(videoTrack, "video") : null;
           const audioProducerId = audioTrack ? await produceTrack(audioTrack, "audio") : null;
   
-          // ✅ 하나라도 producer 생성에 성공하면 상대방에 알림 전송
+          // 🔥 잘못된 producer 참조 수정 및 로그 강화
+          console.log(`🎯 Video Producer ID: ${videoProducerId}`);
+          console.log(`🎯 Audio Producer ID: ${audioProducerId}`);
+  
           if (videoProducerId || audioProducerId) {
-            console.log("📢 triggerConsumeNew 전송:", { videoProducerId, audioProducerId });
+            console.log("📢 [triggerConsumeNew] 이벤트 전송");
             socket.emit("triggerConsumeNew", {
               roomId: currentRoom.id,
               videoProducerId,
               audioProducerId,
             });
+          } else {
+            console.warn("⚠️ producer 생성 실패로 triggerConsumeNew 전송 취소");
           }
         })
         .catch((error) => console.error("❌ getUserMedia 오류:", error));
