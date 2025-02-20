@@ -135,32 +135,58 @@ export default function ProfilePage() {
 
           {/* 구독 & 채팅 버튼 */}
           {myNickname !== decodeURIComponent(targetNickname) && (
-            <div className="flex gap-4 mt-4">
-              <button
-                onClick={handleSubscribeUnsubscribe}
-                className={`flex items-center justify-center py-2 px-6 text-sm md:text-base font-medium text-white rounded-lg shadow-md transition duration-200 ${
-                  isSubscribedState ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"
-                }`}
-              >
-                {isSubscribedState ? (
-                  <>
-                    <UserMinus className="w-5 h-5 mr-2" /> 구독 취소
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="w-5 h-5 mr-2" /> 구독하기
-                  </>
-                )}
-              </button>
+  <div className="flex gap-4 mt-4">
+    {/* 구독 버튼은 그대로 사용 */}
+    <button
+      onClick={handleSubscribeUnsubscribe}
+      className={`flex items-center justify-center py-2 px-6 text-sm md:text-base font-medium text-white rounded-lg shadow-md transition duration-200 ${
+        isSubscribedState ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"
+      }`}
+    >
+      {isSubscribedState ? (
+        <>
+          <UserMinus className="w-5 h-5 mr-2" /> 구독 취소
+        </>
+      ) : (
+        <>
+          <UserPlus className="w-5 h-5 mr-2" /> 구독하기
+        </>
+      )}
+    </button>
 
-              <button
-                onClick={() => router.push(`/chat?targetNickname=${targetNickname}`)}
-                className="flex items-center justify-center py-2 px-6 text-sm md:text-base font-medium text-white bg-green-500 rounded-lg shadow-md transition duration-200 hover:bg-green-600"
-              >
-                <MessageSquare className="w-5 h-5 mr-2" /> 채팅하기
-              </button>
-            </div>
-          )}
+    {isSubscribedState ? (
+      // 구독 중인 경우: 정상 동작하는 채팅 버튼
+      <button
+        onClick={() => router.push(`/chat?targetNickname=${targetNickname}`)}
+        className="flex items-center justify-center py-2 px-6 text-sm md:text-base font-medium text-white bg-green-500 rounded-lg shadow-md transition duration-200 hover:bg-green-600"
+      >
+        <MessageSquare className="w-5 h-5 mr-2" /> 채팅하기
+      </button>
+    ) : (
+      // 구독하지 않은 경우: 디자인은 그대로 두고 onClick 이벤트만 무력화, Tooltip으로 안내
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            // onClick에서 아무런 동작도 하지 않도록 처리 (e.preventDefault()로 클릭 무력화)
+            onClick={(e) => e.preventDefault()}
+            className="flex items-center justify-center py-2 px-6 text-sm md:text-base font-medium text-white bg-green-500 rounded-lg shadow-md transition duration-200 hover:bg-green-600"
+          >
+            <MessageSquare className="w-5 h-5 mr-2" /> 채팅하기
+          </button>
+        </TooltipTrigger>
+        <TooltipContent
+          side="top"
+          align="center"
+          className="bg-black text-white text-sm rounded-lg p-2 shadow-lg"
+        >
+          구독한 사람에게만 대화를 걸 수 있습니다.
+        </TooltipContent>
+      </Tooltip>
+    )}
+  </div>
+)}
+
+
 
         </div>
 
@@ -245,33 +271,56 @@ export default function ProfilePage() {
           </h1>
 
           {myNickname !== decodeURIComponent(targetNickname) && (
-            <div className="flex gap-3 mt-2">
-              <button
-                onClick={handleSubscribeUnsubscribe}
-                className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md shadow-lg ${
-                  isSubscribedState ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"
-                }`}
-              >
-                {isSubscribedState ? (
-                  <>
-                    <UserMinus className="w-4 h-4 mr-2" /> 구독 취소하기
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="w-4 h-4 mr-2" /> 구독하기
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => router.push(`/chat?targetNickname=${targetNickname}`)}
-                className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 shadow-lg"
-              >
-                <MessageSquare className="w-4 h-4 mr-2" /> 채팅하기
-              </button>
+  <div className="flex gap-3 mt-2">
+    {/* 구독 버튼은 그대로 사용 */}
+    <button
+      onClick={handleSubscribeUnsubscribe}
+      className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md shadow-lg ${
+        isSubscribedState ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"
+      }`}
+    >
+      {isSubscribedState ? (
+        <>
+          <UserMinus className="w-4 h-4 mr-2" /> 구독 취소하기
+        </>
+      ) : (
+        <>
+          <UserPlus className="w-4 h-4 mr-2" /> 구독하기
+        </>
+      )}
+    </button>
 
-            
-          </div>
-          )}
+    {isSubscribedState ? (
+      // 구독 중인 경우: 정상 동작하는 채팅 버튼
+      <button
+        onClick={() => router.push(`/chat?targetNickname=${targetNickname}`)}
+        className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 shadow-lg"
+      >
+        <MessageSquare className="w-4 h-4 mr-2" /> 채팅하기
+      </button>
+    ) : (
+      // 구독하지 않은 경우: 디자인 그대로, onClick 무력화 + Tooltip
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={(e) => e.preventDefault()}
+            className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 shadow-lg"
+          >
+            <MessageSquare className="w-4 h-4 mr-2" /> 채팅하기
+          </button>
+        </TooltipTrigger>
+        <TooltipContent
+          side="top"
+          align="center"
+          className="bg-black text-white text-sm rounded-lg p-2 shadow-lg"
+        >
+          구독한 사람에게만 대화를 걸 수 있습니다.
+        </TooltipContent>
+      </Tooltip>
+    )}
+  </div>
+)}
+
 
         </div>
 
