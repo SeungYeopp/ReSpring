@@ -153,7 +153,85 @@ const Home = () => {
   ]
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+//     <div className="min-h-screen flex flex-col items-center justify-center p-4">
+//       <div className="md:-pt-12 pb-8">
+//         <Sprout className="w-16 h-16 text-[#96b23c]" />
+//       </div>
+
+//       {/* Rounded Rectangular Links */}
+//       <div className="w-full max-w-md space-y-4 flex flex-col">
+//         {tileLinks.map((tile) => (
+//           <Link key={tile.id} href={tile.url} passHref>
+//             <div
+//               className={`${tile.bgColor} p-6 rounded-2xl shadow-md cursor-pointer hover:opacity-80 flex items-center max-h-32 overflow-hidden`}
+//             >
+//               <div className="w-1/3 -ml-8 -mr-2 flex justify-center items-center">
+//                 <div className={`w-16 h-16 ${tile.circleColor} rounded-full flex justify-center items-center`}>
+//                   {tile.icon}
+//                 </div>
+//               </div>
+//               <div className="flex flex-col w-2/3">
+//                 <h2 className="text-xl font-semibold">{tile.title}</h2>
+//                 <p className="text-gray-600">{tile.content}</p>
+//               </div>
+//             </div>
+//           </Link>
+//         ))}
+//       </div>
+
+//       {/* Square Tile Links with Icons */}
+//       <div className="w-full max-w-md mt-8 grid grid-cols-3 gap-4">
+//         {/* 글조각 작성 */}
+//         <Link href="/yesterday/writenote" passHref className="block">
+//           <div className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full aspect-square flex flex-col items-start justify-between p-4 relative">
+//             <div className="absolute top-2 right-2">
+//               <Pencil className="text-gray-700 w-6 h-6" />
+//             </div>
+//             <div className="mt-auto">
+//               <h2 className="text-md font-semibold">글조각 작성</h2>
+//               <p className="text-xs text-gray-600 mt-1">글조각을 작성해보세요.</p>
+//             </div>
+//           </div>
+//         </Link>
+
+//         {/* 서재 보기 */}
+//         {userNickname ? (
+//           <Link href={`/profile/booklist/${userNickname}`} passHref className="block">
+//             <div className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full aspect-square flex flex-col items-start justify-between p-4 relative">
+//               <div className="absolute top-2 right-2">
+//                 <BookOpen className="text-gray-700 w-6 h-6" />
+//               </div>
+//               <div className="mt-auto">
+//                 <h2 className="text-md font-semibold">서재 보기</h2>
+//                 <p className="text-xs text-gray-600 mt-1">내가 쓴 글을 확인해보세요.</p>
+//               </div>
+//             </div>
+//           </Link>
+//         ) : (
+//           <div className="bg-gray-100 rounded-2xl shadow-md w-full aspect-square flex flex-col items-center justify-center p-4">
+//             <p className="text-sm text-gray-500">로딩 중...</p>
+//           </div>
+//         )}
+
+//         {/* 로그아웃 */}
+//         {/* <button
+//           onClick={handleLogout}
+//           className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full aspect-square flex flex-col items-start justify-between p-4 relative"
+//         >
+//           <div className="absolute top-2 right-2">
+//             <LogOut className="text-gray-700 w-6 h-6" />
+//           </div>
+//           <div className="mt-auto text-left">
+//             <h2 className="text-md font-semibold">로그아웃</h2>
+//             <p className="text-xs text-gray-600 mt-1">휴식도 필요한 법이지요.</p>
+//           </div>
+//         </button> */}
+//       </div>
+//     </div>
+//   )
+// }
+
+<div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="md:-pt-12 pb-8">
         <Sprout className="w-16 h-16 text-[#96b23c]" />
       </div>
@@ -180,52 +258,42 @@ const Home = () => {
       </div>
 
       {/* Square Tile Links with Icons */}
-      <div className="w-full max-w-md mt-8 grid grid-cols-3 gap-4">
+      <div className="w-full max-w-md mt-8 grid grid-cols-2 gap-4">
         {/* 글조각 작성 */}
-        <Link href="/yesterday/writenote" passHref className="block">
-          <div className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full aspect-square flex flex-col items-start justify-between p-4 relative">
+        <Link href="/yesterday/writenote" passHref className="block w-full">
+          <div className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full h-full flex flex-col items-start justify-between p-4 relative">
             <div className="absolute top-2 right-2">
               <Pencil className="text-gray-700 w-6 h-6" />
             </div>
             <div className="mt-auto">
               <h2 className="text-md font-semibold">글조각 작성</h2>
-              <p className="text-xs text-gray-600 mt-1">글조각을 작성해보세요.</p>
+              <p className="text-xs text-gray-600 mt-1 line-clamp-3 min-h-[3em]">
+              글조각을 직접 작성해보세요.
+              </p>
             </div>
           </div>
         </Link>
 
         {/* 서재 보기 */}
         {userNickname ? (
-          <Link href={`/profile/booklist/${userNickname}`} passHref className="block">
-            <div className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full aspect-square flex flex-col items-start justify-between p-4 relative">
+          <Link href={`/profile/booklist/${userNickname}`} passHref className="block w-full">
+            <div className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full h-full flex flex-col items-start justify-between p-4 relative">
               <div className="absolute top-2 right-2">
                 <BookOpen className="text-gray-700 w-6 h-6" />
               </div>
               <div className="mt-auto">
                 <h2 className="text-md font-semibold">서재 보기</h2>
-                <p className="text-xs text-gray-600 mt-1">내가 쓴 글을 확인해보세요.</p>
+                <p className="text-xs text-gray-600 mt-1 line-clamp-3 min-h-[3em]">
+                내가 쓴 글을 확인해보세요.
+                </p>
               </div>
             </div>
           </Link>
         ) : (
-          <div className="bg-gray-100 rounded-2xl shadow-md w-full aspect-square flex flex-col items-center justify-center p-4">
+          <div className="bg-gray-100 rounded-2xl shadow-md w-full h-full flex flex-col items-center justify-center p-4">
             <p className="text-sm text-gray-500">로딩 중...</p>
           </div>
         )}
-
-        {/* 로그아웃 */}
-        <button
-          onClick={handleLogout}
-          className="bg-white rounded-2xl shadow-md cursor-pointer hover:bg-gray-200 w-full aspect-square flex flex-col items-start justify-between p-4 relative"
-        >
-          <div className="absolute top-2 right-2">
-            <LogOut className="text-gray-700 w-6 h-6" />
-          </div>
-          <div className="mt-auto text-left">
-            <h2 className="text-md font-semibold">로그아웃</h2>
-            <p className="text-xs text-gray-600 mt-1">휴식도 필요한 법이지요.</p>
-          </div>
-        </button>
       </div>
     </div>
   )
