@@ -149,8 +149,8 @@ export function TTSPanel({ bookId }: TTSPanelProps) {
         {/* 속도 선택 */}
         <div className="mt-4">
           <label className="block mb-1 font-semibold">🔄 속도</label>
-          <Select value={rate.toString()} onValueChange={(value) => setRate(Number.parseFloat(value))}>
-            <SelectTrigger className={`w-full ${theme === "basic" ? "bg-white" : "bg-gray-700"}`}>
+          <Select value={rate.toFixed(1)} onValueChange={(value) => setRate(Number.parseFloat(value))}>
+          <SelectTrigger className={`w-full ${theme === "basic" ? "bg-white" : "bg-gray-700"}`}>
               <SelectValue placeholder="속도 선택" />
             </SelectTrigger>
             <SelectContent
