@@ -99,7 +99,10 @@ io.on("connection", (socket) => {
 
         try {
             await transport.connect({ dtlsParameters });
-            console.log("  Transport 연결 완료:", transportId);
+            transport.on("icestatechange", (state) => {
+                console.log(`🔔 ICE 상태 변경: ${state}`);
+            });
+            console.log("✅ Transport 연결 완료:", transportId);
             callback({ success: true });
         } catch (error) {
             console.error("❌ Transport 연결 실패:", error);
@@ -133,7 +136,6 @@ io.on("connection", (socket) => {
                     io.to(userId).emit("triggerConsumeNew", {
                         producerId: producer.id,
                         roomId,
-                        transportId: transport.id, // ✅ 소비자 생성에 필요한 transport ID 추가
                         kind,                       // ✅ 오디오/비디오 종류
                         rtpParameters,              // ✅ RTP 파라미터 포함
                     });
@@ -183,6 +185,8 @@ io.on("connection", (socket) => {
 
         if (!router.canConsume({ producerId, rtpCapabilities })) {
             console.error("❌ Cannot consume producer:", producerId);
+            console.log("📡 Client RTP Capabilities:", rtpCapabilities);
+            console.log("📡 Router RTP Capabilities:", router.rtpCapabilities);
             return callback({ error: "Cannot consume Producer" });
         }
 

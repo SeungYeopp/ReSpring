@@ -7,6 +7,9 @@ import { SettingsPanel } from "../SettingsPannel";
 import { usePageControls } from "../../hooks/usePageControls";
 // PanelContext를 통해 현재 열린 패널의 ID를 가져옵니다.
 import { usePanelContext } from "../../context/usePanelContext";
+import { useParams } from "next/navigation";
+
+
 
 interface ReaderProps {
   title: string;
@@ -17,6 +20,7 @@ export function TopToolbar({ title }: ReaderProps) {
   if (!isToolbarVisible) return null; // 툴바 숨김 상태면 안보이게!
 
   const router = useRouter();
+  const { BookID } = useParams(); 
   const { theme } = useViewerSettings();
   // 전역 패널 상태에서 현재 열린 패널의 ID를 가져옵니다.
   const { currentOpenPanel } = usePanelContext();
@@ -33,8 +37,7 @@ export function TopToolbar({ title }: ReaderProps) {
         <button
           onClick={() => {
             if (currentOpenPanel !== null) return;
-            router.back();
-          }}
+            router.push(`/yesterday/book/${BookID}`)          }}
           className="absolute left-4 text-sm text-blue-500"
         >
           &larr; 뒤로
