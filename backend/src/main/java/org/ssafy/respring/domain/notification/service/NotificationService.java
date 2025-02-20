@@ -95,17 +95,14 @@ public class NotificationService {
             notification.setRead(true);
             notificationRepository.save(notification);
 
-            //   SSE로 프론트에 업데이트
-            sseService.sendNotification(notification.getReceiver().getId(),
-                    NotificationDto.builder()
-                            .id(notification.getId())
-                            .message(notification.getMessage())
-                            .isRead(true)
-                            .createdAt(notification.getCreatedAt())
-                            .build()
-            );
+            // ✅ SSE에 구독된 사용자에게만 알림 전송
+            if (sseService.isUserSubscribed(userId)) {
+                sseService.sendNotification(userId, toDto(notification));
+            }
         }
     }
+
+
 
     //   모든 알림 읽음 처리
     public void markAllAsRead(UUID userId) {

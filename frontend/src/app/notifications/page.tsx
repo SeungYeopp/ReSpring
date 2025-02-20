@@ -9,7 +9,7 @@ import {
   UserPlus,
   Reply,
   Search,
-  Flag  // 추가된 아이콘
+  Flag, // 추가된 아이콘
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,20 +45,21 @@ export interface Notification {
 
 // 새로 "CHAT"과 "CHALLENGE" 타입을 추가
 // "FOLLOW"를 추가하여 서버의 구독 알림 값도 포함시킵니다.
-export type NotificationType = "COMMENT" | "LIKE" | "SUBSCRIBE" | "REPLY" | "CHAT" | "CHALLENGE" | "FOLLOW";
+export type NotificationType =
+  | "COMMENT"
+  | "LIKE"
+  | "SUBSCRIBE"
+  | "REPLY"
+  | "CHAT"
+  | "CHALLENGE"
+  | "FOLLOW";
 
-
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 // 한 페이지에 한 번에 보여줄 알림 개수
 const ITEMS_PER_PAGE = 10;
 type ReadStatus = "ALL" | "READ" | "UNREAD";
-
-
-
-
 
 // ------------------------------------------------------------------
 // NotificationPage 컴포넌트
@@ -91,7 +92,7 @@ const NotificationPage = () => {
   //     // 세션 정보에서 userId를 가져옵니다.
   //     const userInfo = await getSessionInfo();
   //     const userId = userInfo.userId;
-  
+
   //     // userId를 쿼리 파라미터로 전달하여 알림 데이터를 요청합니다.
   //     const response = await fetch(`${API_BASE_URL}/notifications/${userId}`, {
   //       credentials: "include",
@@ -106,7 +107,6 @@ const NotificationPage = () => {
   //     return [];
   //   }
   // }, []);
-  
 
   // const markNotificationRead = async (notificationId: number) => {
   //   try {
@@ -154,58 +154,61 @@ const NotificationPage = () => {
   //     return null;
   //   }
   // };
-// axiosAPI 인스턴스를 사용하여 알림 데이터를 GET 하는 함수
-const fetchInitialNotifications = useCallback(async () => {
-  try {
-    const userInfo = await getSessionInfo();
-    const userId = userInfo.userId;
-    // axiosAPI는 baseURL, headers, withCredentials가 이미 설정되어 있습니다.
-    const response = await axiosAPI.get<Notification[]>(`/notifications/${userId}`);
-    return response.data;
-  } catch (error) {
-    console.error("초기 알림 데이터 GET 요청 에러:", error);
-    return [];
-  }
-}, []);
+  // axiosAPI 인스턴스를 사용하여 알림 데이터를 GET 하는 함수
+  const fetchInitialNotifications = useCallback(async () => {
+    try {
+      const userInfo = await getSessionInfo();
+      const userId = userInfo.userId;
+      // axiosAPI는 baseURL, headers, withCredentials가 이미 설정되어 있습니다.
+      const response = await axiosAPI.get<Notification[]>(
+        `/notifications/${userId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("초기 알림 데이터 GET 요청 에러:", error);
+      return [];
+    }
+  }, []);
 
-// axiosAPI를 사용하여 개별 알림을 읽음 처리하는 함수
-const markNotificationRead = async (notificationId: number) => {
-  try {
-    // 세션 또는 인증정보에서 userId를 가져옴
-    const userInfo = await getSessionInfo();
-    const userId = userInfo.userId;
+  // axiosAPI를 사용하여 개별 알림을 읽음 처리하는 함수
+  const markNotificationRead = async (notificationId: number) => {
+    try {
+      // 세션 또는 인증정보에서 userId를 가져옴
+      const userInfo = await getSessionInfo();
+      const userId = userInfo.userId;
 
-    // 문서에 맞춰 userId를 path param에 넣어 호출
-    const response = await axiosAPI.patch(
-      `/notifications/${notificationId}/read/${userId}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("알림 읽음 처리 에러:", error);
-    return null;
-  }
-};
+      // 문서에 맞춰 userId를 path param에 넣어 호출
+      const response = await axiosAPI.patch(
+        `/notifications/${notificationId}/read/${userId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("알림 읽음 처리 에러:", error);
+      return null;
+    }
+  };
 
-// axiosAPI를 사용하여 전체 알림을 읽음 처리하는 함수
-const markAllNotificationsRead = async () => {
-  try {
-    // 마찬가지로 userId를 가져옴
-    const userInfo = await getSessionInfo();
-    const userId = userInfo.userId;
+  // axiosAPI를 사용하여 전체 알림을 읽음 처리하는 함수
+  const markAllNotificationsRead = async () => {
+    try {
+      // 마찬가지로 userId를 가져옴
+      const userInfo = await getSessionInfo();
+      const userId = userInfo.userId;
 
-    // 문서에 맞춰 userId를 path param에 포함
-    const response = await axiosAPI.patch(`/notifications/read-all/${userId}`);
+      // 문서에 맞춰 userId를 path param에 포함
+      const response = await axiosAPI.patch(
+        `/notifications/read-all/${userId}`
+      );
 
-    setNotifications((prev) =>
-      prev.map((notif) => ({ ...notif, read: true }))
-    );
-    return response.data;
-  } catch (error) {
-    console.error("전체 알림 읽음 처리 에러:", error);
-    return null;
-  }
-};
-
+      setNotifications((prev) =>
+        prev.map((notif) => ({ ...notif, read: true }))
+      );
+      return response.data;
+    } catch (error) {
+      console.error("전체 알림 읽음 처리 에러:", error);
+      return null;
+    }
+  };
 
   // ------------------------------------------------------------------
   // 초기 GET 요청으로 기존 알림 데이터 불러오기 (최신순 정렬)
@@ -224,10 +227,10 @@ const markAllNotificationsRead = async () => {
       // 데이터가 있든 없든 로딩 상태 해제
       setIsInitialLoad(false);
     };
-  
+
     initFetch();
   }, [fetchInitialNotifications]);
-  
+
   // ----------------------------------------------------------------
   // 상태 관리
   // ----------------------------------------------------------------
@@ -350,8 +353,6 @@ const markAllNotificationsRead = async () => {
         return notif.type === filter;
       });
     }
-    
-
 
     if (readStatus !== "ALL") {
       filtered = filtered.filter((notif) =>
@@ -416,7 +417,6 @@ const markAllNotificationsRead = async () => {
   //   }
   // };
 
-
   const getNotificationLink = (
     targetType: string,
     targetId: number,
@@ -433,7 +433,7 @@ const markAllNotificationsRead = async () => {
       // 메시지가 없거나 닉네임 추출에 실패한 경우 적절한 fallback 처리
       return "/";
     }
-  
+
     // USER가 아닌 경우, targetType에 따라 다른 링크를 반환
     switch (targetType) {
       case "POST":
@@ -451,9 +451,6 @@ const markAllNotificationsRead = async () => {
         return "/";
     }
   };
-  
-  
-
 
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
@@ -509,7 +506,7 @@ const markAllNotificationsRead = async () => {
         </div>
       );
     }
-  
+
     // 로딩 완료 후, 알림 데이터가 없는 경우
     if (!isInitialLoad && notifications.length === 0) {
       return (
@@ -519,7 +516,7 @@ const markAllNotificationsRead = async () => {
         </div>
       );
     }
-  
+
     // 데이터는 있으나, 현재 필터나 검색으로 표시될 알림이 없는 경우
     if (displayedNotifications.length === 0) {
       return (
@@ -528,7 +525,7 @@ const markAllNotificationsRead = async () => {
         </div>
       );
     }
-  
+
     // 알림 데이터가 있는 경우
     return (
       <div className="space-y-4">
@@ -544,14 +541,18 @@ const markAllNotificationsRead = async () => {
                 {getNotificationIcon(notif.type)}
               </div>
               <div className="flex-grow min-w-0">
-              <Link
-  href={getNotificationLink(notif.targetType, notif.targetId, notif.message)}
-  className={`block text-sm ${
-    notif.read ? "text-gray-600" : "text-gray-800 font-medium"
-  }`}
->
-  {highlightText(notif.message, searchTerm)}
-</Link>
+                <Link
+                  href={getNotificationLink(
+                    notif.targetType,
+                    notif.targetId,
+                    notif.message
+                  )}
+                  className={`block text-sm ${
+                    notif.read ? "text-gray-600" : "text-gray-800 font-medium"
+                  }`}
+                >
+                  {highlightText(notif.message, searchTerm)}
+                </Link>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-xs text-gray-400">
                     {formatDistanceToNow(new Date(notif.createdAt), {
@@ -574,14 +575,17 @@ const markAllNotificationsRead = async () => {
           </div>
         ))}
         {hasMore && (
-          <div ref={loaderRef} className="flex justify-center items-center h-20">
+          <div
+            ref={loaderRef}
+            className="flex justify-center items-center h-20"
+          >
             {isLoadingMore && <LoadingSpinner />}
           </div>
         )}
       </div>
     );
   };
-  
+
   // ----------------------------------------------------------------
   // 최종 렌더링
   // ----------------------------------------------------------------
@@ -602,14 +606,13 @@ const markAllNotificationsRead = async () => {
               <SelectValue placeholder="필터" />
             </SelectTrigger>
             <SelectContent>
-            <SelectItem value="ALL">전체</SelectItem>
-            <SelectItem value="COMMENT">댓글</SelectItem>
-            <SelectItem value="LIKE">좋아요</SelectItem>
-            <SelectItem value="SUBSCRIBE">구독</SelectItem>
-            <SelectItem value="REPLY">답글</SelectItem>
-            <SelectItem value="CHAT">채팅</SelectItem>
+              <SelectItem value="ALL">전체</SelectItem>
+              <SelectItem value="COMMENT">댓글</SelectItem>
+              <SelectItem value="LIKE">좋아요</SelectItem>
+              <SelectItem value="SUBSCRIBE">구독</SelectItem>
+              <SelectItem value="REPLY">답글</SelectItem>
+              <SelectItem value="CHAT">채팅</SelectItem>
             </SelectContent>
-
           </Select>
           <Button
             onClick={markAllAsRead}

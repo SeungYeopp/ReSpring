@@ -36,12 +36,16 @@ public class SseService {
         SseEmitter emitter = emitters.get(userId);
         if (emitter != null) {
             try {
-                emitter.send(SseEmitter.event().name("notification").data(notificationDto));
+                // 💡 이미 전송된 알림인지 확인 후 전송
+                if (!notificationDto.isRead()) {
+                    emitter.send(SseEmitter.event().name("notification").data(notificationDto));
+                }
             } catch (IOException e) {
                 emitters.remove(userId);
             }
         }
     }
+
 
     public void sendNotification(UUID userId, NotificationSubscriptionDto notificationDto) {
         SseEmitter emitter = emitters.get(userId);
@@ -52,6 +56,10 @@ public class SseService {
                 emitters.remove(userId);
             }
         }
+    }
+
+    public boolean isUserSubscribed(UUID userId) {
+        return emitters.containsKey(userId);
     }
 
 }
