@@ -290,15 +290,20 @@ const Chat1 = () => {
 
   useEffect(() => {
     if (!socket || !currentRoom) return;
+  
     const handleNewProducerConsume = async ({ producerId, roomId }) => {
       console.log("handleNewProducerConsume - producerId:", producerId, "roomId:", roomId);
+  
       socket.emit("createTransport", (data) => {
         const transport = device.createRecvTransport(data);
+  
         transport.on("connect", async ({ dtlsParameters }, callback) => {
           console.log("[consume] Transport connect:", data.id);
           socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, callback);
         });
+  
         setConsumerTransport(transport);
+  
         socket.emit(
           "consume",
           {
@@ -313,6 +318,7 @@ const Chat1 = () => {
               console.error("❌ [consume] 오류:", response?.error);
               return;
             }
+  
             try {
               const consumer = await transport.consume({
                 id: response.id,
@@ -320,19 +326,32 @@ const Chat1 = () => {
                 kind: response.kind,
                 rtpParameters: response.rtpParameters,
               });
+  
               try {
-                consumer.resume();
+                await consumer.resume();
               } catch (err) {
                 console.error("consumer.resume() 오류:", err);
               }
+  
               console.log("[consume] consumer 생성:", consumer);
               setConsumer(consumer);
-              let stream = remoteVideoRef.current.srcObject;
-              if (!stream) {
-                stream = new MediaStream();
-              }
-              stream.addTrack(consumer.track);
-              remoteVideoRef.current.srcObject = stream;
+  
+              // ✅ 새 MediaStream 생성 및 트랙 추가
+              const newStream = new MediaStream([consumer.track]);
+              remoteVideoRef.current.srcObject = newStream;
+  
+              // ✅ 비디오 메타데이터 로드 후 재생 시도
+              remoteVideoRef.current.onloadedmetadata = () => {
+                remoteVideoRef.current.play().catch((err) => {
+                  console.error("🚫 remoteVideoRef play() 오류:", err);
+                });
+              };
+  
+              // ✅ 추가 안정성 확보 (로드된 데이터 감지)
+              remoteVideoRef.current.addEventListener("loadeddata", () => {
+                console.log("✅ remote video ready to play");
+              });
+              
             } catch (error) {
               console.error("❌ Consumer 생성 오류:", error);
             }
@@ -340,9 +359,14 @@ const Chat1 = () => {
         );
       });
     };
+  
     socket.on("triggerConsumeNew", handleNewProducerConsume);
-    return () => socket.off("triggerConsumeNew", handleNewProducerConsume);
+  
+    return () => {
+      socket.off("triggerConsumeNew", handleNewProducerConsume);
+    };
   }, [socket, currentRoom, device]);
+  
 
   useEffect(() => {
     if (!socket || !currentRoom) return;
@@ -608,17 +632,13 @@ const Chat1 = () => {
                 console.error("remoteVideoRef.current is not available");
                 return;
               }
-              let stream = remoteVideoRef.current.srcObject;
-              if (!stream) {
-                stream = new MediaStream();
-              }
-              stream.addTrack(consumer.track);
+              const stream = new MediaStream([consumer.track]);
+              remoteVideoRef.current.srcObject = stream;
+              remoteVideoRef.current.play().catch((err) => console.error("🚫 play() 오류:", err));
 
               console.log("Tracks:", stream.getTracks());
               console.log("Video Tracks:", stream.getVideoTracks());
               console.log("Audio Tracks:", stream.getAudioTracks());
-
-              remoteVideoRef.current.srcObject = stream;
               console.log("------------------------------")
               console.log(remoteVideoRef.current.srcObject);
             } catch (error) {
