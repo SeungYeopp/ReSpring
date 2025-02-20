@@ -158,6 +158,28 @@ const Chat1 = () => {
     const rtcSock = io("wss://i12a307.p.ssafy.io/socket.io/", {
       transports: ["websocket"],
     });
+  
+    // 연결 확인 로그 추가
+    rtcSock.on("connect", () => {
+      console.log("Socket.io connected on rtcSock");
+      // getRouterRtpCapabilities 이벤트를 서버에 요청합니다.
+      rtcSock.emit("getRouterRtpCapabilities", async (rtpCapabilities) => {
+        console.log("Received rtpCapabilities:", rtpCapabilities);
+        if (rtpCapabilities.error) {
+          console.error("❌ getRouterRtpCapabilities 오류:", rtpCapabilities.error);
+          return;
+        }
+        try {
+          const newDevice = new mediasoupClient.Device();
+          await newDevice.load({ routerRtpCapabilities: rtpCapabilities });
+          console.log("Device successfully loaded");
+          setDevice(newDevice);
+        } catch (error) {
+          console.error("❌ Device 초기화 오류:", error);
+        }
+      });
+    });
+  
     client.connect({}, () => {
       client.subscribe(`/topic/chat/myRooms/${currentUserId}`, updateMyRooms);
       client.subscribe(`/topic/chat/roomUpdated/${currentUserId}`, () => {
@@ -167,26 +189,13 @@ const Chat1 = () => {
     });
     setStompClient(client);
     setSocket(rtcSock);
-    rtcSock.emit("getRouterRtpCapabilities", async (rtpCapabilities) => {
-      console.log("Received rtpCapabilities:", rtpCapabilities);
-      if (rtpCapabilities.error) {
-        console.error("❌ getRouterRtpCapabilities 오류:", rtpCapabilities.error);
-        return;
-      }
-      try {
-        const newDevice = new mediasoupClient.Device();
-        await newDevice.load({ routerRtpCapabilities: rtpCapabilities });
-        console.log("Device successfully loaded");
-        setDevice(newDevice);
-      } catch (error) {
-        console.error("❌ Device 초기화 오류:", error);
-      }
-    });
+  
     return () => {
       client.disconnect();
       rtcSock.disconnect();
     };
   }, [currentUserId]);
+  
 
   useEffect(() => {
     const handleBeforeUnload = async () => {
