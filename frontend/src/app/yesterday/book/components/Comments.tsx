@@ -116,7 +116,7 @@ export default function Comments({ bookId }: { bookId: number }) {
   ))
 
   return (
-    <div className="space-y-6 p-4 bg-gradient-to-b from-background to-background/80">
+    <div className="space-y-6 px-4 bg-gradient-to-b from-background to-background/80">
       <div className="text-sm text-gray-600 font-medium mb-4">총 {comments.length}개의 댓글</div>
 
       <AnimatePresence>

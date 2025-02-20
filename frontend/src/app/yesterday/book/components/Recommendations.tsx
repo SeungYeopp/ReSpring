@@ -7,6 +7,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { getAllBooksByUserNickname, getLikedBooks, Book } from "@/lib/api/book" // API 함수 가져오기
 import { getUserInfo } from "@/lib/api"
+import { getBookById } from "@/lib/api/book";
 
 export default function Recommendations({ bookId }: { bookId: string }) {
   const [authorBooks, setAuthorBooks] = useState<Book[]>([])
@@ -141,14 +142,14 @@ export default function Recommendations({ bookId }: { bookId: string }) {
     const fetchRecommendations = async () => {
       try {
         const myInfo = await getUserInfo();
-        const currentBook = await getAllBooksByUserNickname(myInfo.userNickname)
-        const currentBookDetails = currentBook.find(book => book.id === Number(bookId))
+        const currentBook = await getBookById(parseInt(bookId, 10))
 
-        if (currentBookDetails) {
-          const authorNickname = currentBookDetails.authorNickname
-
+        if (currentBook) {
+          
           // 저자의 다른 자서전 가져오기
+          const authorNickname = currentBook.authorNickname
           const authorBooksData = await getAllBooksByUserNickname(authorNickname)
+
           setAuthorBooks(authorBooksData.filter(book => book.id !== Number(bookId)))
 
           // 구독 중인 작가의 자서전 가져오기
@@ -171,74 +172,84 @@ export default function Recommendations({ bookId }: { bookId: string }) {
       <div className="space-y-4">
         <h3 className="text-lg font-bold px-4">저자의 다른 이야기</h3>
         <div className="overflow-x-auto">
-          <div className="flex px-4 pb-4">
-            {authorBooks.map((book) => (
-              <Card
-                key={book.id}
-                className="border-0 bg-transparent flex-shrink-0 shadow-none"
-                style={{
-                  width: "calc((100vw - 32px) / 3)",
-                  maxWidth: "200px",
-                  minWidth: "120px",
-                  marginRight: "12px",
-                }}
-              >
-                <CardContent className="p-0 space-y-2">
-                  <AspectRatio ratio={156 / 234}>
-                    <Link href={`/yesterday/book/${book.id}`}>
-                      <Image
-                        src={book.coverImage || getRandomImage()}
-                        alt={book.title}
-                        fill
-                        className="object-cover w-full h-full rounded-lg"
-                      />
-                    </Link>
-                  </AspectRatio>
-                  <div className="space-y-1 px-1">
-                    <h4 className="font-medium text-sm leading-tight line-clamp-2">{book.title}</h4>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {followedBooks.length > 0 ? (
+            <div className="flex px-4 pb-4">
+              {authorBooks.map((book) => (
+                <Card
+                  key={book.id}
+                  className="border-0 bg-transparent flex-shrink-0 shadow-none"
+                  style={{
+                    width: "calc((100vw - 32px) / 3)",
+                    maxWidth: "200px",
+                    minWidth: "120px",
+                    marginRight: "12px",
+                  }}
+                >
+                  <CardContent className="p-0 space-y-2">
+                    <AspectRatio ratio={156 / 234}>
+                      <Link href={`/yesterday/book/${book.id}`}>
+                        <Image
+                          src={book.coverImage || getRandomImage()}
+                          alt={book.title}
+                          fill
+                          className="object-cover w-full h-full rounded-lg"
+                        />
+                      </Link>
+                    </AspectRatio>
+                    <div className="space-y-1 px-1">
+                      <h4 className="font-medium text-sm leading-tight line-clamp-2"><strong>{book.title}</strong></h4>
+                      <p className="text-xs text-muted-foreground">저자: {book.authorNickname}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            ) : (
+              <p className="text-sm text-muted-foreground px-4">💡 저자가 쓴 다른 봄날의 서가 없습니다.</p>
+          )}
         </div>
       </div>
 
       {/* 구독 중인 작가의 자서전 */}
       <div className="space-y-4">
-        <h3 className="text-lg font-bold px-4">내가 좋아요한 봄날의 서들</h3>
+        <h3 className="text-lg font-bold px-4">내가 좋아요한 봄날의 서</h3>
         <div className="overflow-x-auto">
-          <div className="flex px-4 pb-4">
-            {followedBooks.map((book) => (
-              <Card
-                key={book.id}
-                className="border-0 bg-transparent flex-shrink-0 shadow-none"
-                style={{
-                  width: "calc((100vw - 32px) / 3)",
-                  maxWidth: "200px",
-                  minWidth: "120px",
-                  marginRight: "12px",
-                }}
-              >
-                <CardContent className="p-0 space-y-2">
-                  <AspectRatio ratio={156 / 234}>
-                    <Link href={`/yesterday/book/${book.id}`}>
-                      <Image
-                        src={book.coverImage || getRandomImage()}
-                        alt={book.title}
-                        fill
-                        className="object-cover w-full h-full rounded-lg"
-                      />
-                    </Link>
-                  </AspectRatio>
-                  <div className="space-y-1 px-1">
-                    <h4 className="font-medium text-sm leading-tight line-clamp-2">{book.title}</h4>
-                    <p className="text-xs text-muted-foreground">작성자 ID: {book.authorNickname}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {followedBooks.length > 0 ? (
+            <div className="flex px-4 pb-4">
+              {followedBooks.map((book) => (
+                <Card
+                  key={book.id}
+                  className="border-0 bg-transparent flex-shrink-0 shadow-none"
+                  style={{
+                    width: "calc((100vw - 32px) / 3)",
+                    maxWidth: "200px",
+                    minWidth: "120px",
+                    marginRight: "12px",
+                  }}
+                >
+                  <CardContent className="p-0 space-y-2">
+                    <AspectRatio ratio={136 / 200}>
+                      <Link href={`/yesterday/book/${book.id}`}>
+                        <Image
+                          src={book.coverImage || getRandomImage()}
+                          alt={book.title}
+                          fill
+                          className="object-cover w-full h-full rounded-lg"
+                        />
+                      </Link>
+                    </AspectRatio>
+                    
+                    <div className="space-y-1 px-1">
+                      <h4 className="font-medium text-sm leading-tight line-clamp-2"><strong>{book.title}</strong></h4>
+                      <p className="text-xs text-muted-foreground">저자: {book.authorNickname}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            ) : (
+              <p className="text-sm text-muted-foreground px-4">💡 좋아요한 봄날의 서가 없습니다.</p>
+          )}
         </div>
       </div>
     </div>
