@@ -530,6 +530,23 @@ const Chat1 = () => {
   
     socket.emit("createTransport", (data) => {
       const transport = device.createSendTransport(data);
+
+      transport.on("produce", ({ kind, rtpParameters }, callback, errback) => {
+        console.log(`[produce] 요청 수신 - kind: ${kind}`);
+        socket.emit("produce", {
+          roomId: currentRoom.id,
+          transportId: transport.id,
+          kind,
+          rtpParameters,
+        }, ({ id, error }) => {
+          if (error) {
+            console.error("[produce] 서버 오류:", error);
+            return errback(error);
+          }
+          console.log("[produce] 서버에서 producer 생성 완료 - id:", id);
+          callback({ id });
+        });
+      });
   
       transport.on("connect", ({ dtlsParameters }, callback, errback) => {
         socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, (response) => {
@@ -598,6 +615,30 @@ const Chat1 = () => {
     }
     socket.emit("createTransport", (data) => {
       const transport = device.createRecvTransport(data);
+
+      transport.on("produce", ({ kind, rtpParameters }, callback, errback) => {
+        console.log("[produce] 요청 수신 - kind:", kind);
+    
+        socket.emit(
+          "produce",  // 서버에 produce 요청 전송
+          {
+            roomId: currentRoom.id,
+            transportId: transport.id,
+            kind,
+            rtpParameters,
+          },
+          ({ id, error }) => {
+            if (error) {
+              console.error("[produce] 서버 오류:", error);
+              return errback(error);
+            }
+            console.log("[produce] 서버에서 producer 생성 완료 - id:", id);
+            callback({ id }); // 서버에서 받은 producer id 반환
+          }
+        );
+      });
+
+
       transport.on("connect", async ({ dtlsParameters }, callback) => {
         console.log("[consume] Transport connecting with dtlsParameters:", dtlsParameters);
         socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, callback);
