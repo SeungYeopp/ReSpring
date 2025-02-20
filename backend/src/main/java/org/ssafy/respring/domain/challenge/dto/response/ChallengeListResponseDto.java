@@ -20,6 +20,7 @@ public class ChallengeListResponseDto {
     private String image;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime registerDate;
+    private boolean isParticipating;
     private Set<Tag> tags;
     private boolean isLiked;
     private Long likes;

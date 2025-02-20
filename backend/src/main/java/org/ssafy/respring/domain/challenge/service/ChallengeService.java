@@ -145,13 +145,31 @@ public class ChallengeService {
         });
 
         return challenges.stream()
-                .map(ch -> new ChallengeListResponseDto(
-                        ch.getId(), ch.getTitle(), ch.getDescription(), imageService.getSingleImageByEntity(ImageType.CHALLENGE, ch.getId()), ch.getRegisterDate(),
-                        tagRepository.findTagsByChallengeId(ch.getId()).stream().collect(Collectors.toSet()),
-                        isLikedChallenge(userId, ch.getId()),
-                        ch.getLikes(), ch.getViews(), ch.getParticipantCount(), getChallengeStatus(ch)
-                ))
-                .collect(Collectors.toList());
+          .map(ch -> {
+              boolean isLiked = isLikedChallenge(userId, ch.getId());
+              boolean isParticipating = (userId != null) &&
+                userChallengeRepository.existsByUserAndChallenge(
+                  userRepository.findById(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId)),
+                  ch
+                );
+
+              return new ChallengeListResponseDto(
+                ch.getId(),
+                ch.getTitle(),
+                ch.getDescription(),
+                imageService.getSingleImageByEntity(ImageType.CHALLENGE, ch.getId()),
+                ch.getRegisterDate(),
+                isParticipating, // ✅ 사용자 참가 여부 추가
+                tagRepository.findTagsByChallengeId(ch.getId()).stream().collect(Collectors.toSet()),
+                isLiked,
+                ch.getLikes(),
+                ch.getViews(),
+                ch.getParticipantCount(),
+                getChallengeStatus(ch)
+              );
+          })
+          .collect(Collectors.toList());
     }
 
 
@@ -495,17 +513,34 @@ public class ChallengeService {
     //   챌린지 검색 기능
     public List<ChallengeListResponseDto> searchChallenges(String keyword, UUID userId) {
         return challengeRepository.findByTitleContainingIgnoreCase(keyword).stream()
-                .sorted((c1, c2) -> c2.getRegisterDate().compareTo(c1.getRegisterDate())) // 최신순 정렬
-                .map(ch -> new ChallengeListResponseDto(
-                        ch.getId(), ch.getTitle(), ch.getDescription(),
-                        imageService.getSingleImageByEntity(ImageType.CHALLENGE, ch.getId()),
-                        ch.getRegisterDate(),
-                        tagRepository.findTagsByChallengeId(ch.getId()).stream().collect(Collectors.toSet()),
-                        isLikedChallenge(userId, ch.getId()),
-                        ch.getLikes(), ch.getViews(), ch.getParticipantCount(), getChallengeStatus(ch)
-                ))
-                .collect(Collectors.toList());
+          .sorted((c1, c2) -> c2.getRegisterDate().compareTo(c1.getRegisterDate())) // 최신순 정렬
+          .map(ch -> {
+              boolean isLiked = isLikedChallenge(userId, ch.getId());
+              boolean isParticipating = (userId != null) &&
+                userChallengeRepository.existsByUserAndChallenge(
+                  userRepository.findById(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId)),
+                  ch
+                );
+
+              return new ChallengeListResponseDto(
+                ch.getId(),
+                ch.getTitle(),
+                ch.getDescription(),
+                imageService.getSingleImageByEntity(ImageType.CHALLENGE, ch.getId()),
+                ch.getRegisterDate(),
+                isParticipating, // ✅ 사용자 참가 여부 추가
+                tagRepository.findTagsByChallengeId(ch.getId()).stream().collect(Collectors.toSet()),
+                isLiked,
+                ch.getLikes(),
+                ch.getViews(),
+                ch.getParticipantCount(),
+                getChallengeStatus(ch)
+              );
+          })
+          .collect(Collectors.toList());
     }
+
 
 
 
