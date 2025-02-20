@@ -1,13 +1,12 @@
 "use client"
 
 import type React from "react"
-
 import { useRouter, usePathname } from "next/navigation"
 import { useState, useEffect, type ChangeEvent } from "react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { getAllBooksAutocomplete } from "@/lib/api"
-import type { Book, BookAutoComplete } from "@/lib/api"
+import type { BookAutoComplete } from "@/lib/api"
 
 interface AutocompleteBookSearchBarProps {
   defaultValue: string | null
@@ -47,11 +46,10 @@ export const AutocompleteBookSearchBar = ({ defaultValue, placeholder }: Autocom
     setInputValue(event.target.value)
   }
 
-  const handleSearch: (query: string) => void = (query) => {
-    if (query) {
-      router.push(`${pathname}?q=${encodeURIComponent(query)}`)
-      setInputValue("");
-      setSuggestions([]);
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      router.push(`${pathname}?q=${encodeURIComponent(query.trim())}`)
+      setSuggestions([])
     } else {
       router.push(pathname)
     }

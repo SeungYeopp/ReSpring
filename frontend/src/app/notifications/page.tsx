@@ -9,6 +9,7 @@ import {
   UserPlus,
   Reply,
   Search,
+  Flag, // 추가된 아이콘
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,7 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNotificationsContext } from "./context/NotificationsContext";
 import { getSessionInfo } from "@/lib/api";
-
+import axiosAPI from "@/lib/api/axios";
 
 // ------------------------------------------------------------------
 // 타입 선언
@@ -42,20 +43,23 @@ export interface Notification {
   read: boolean;
 }
 
-export type NotificationType = "COMMENT" | "LIKE" | "SUBSCRIBE" | "REPLY";
+// 새로 "CHAT"과 "CHALLENGE" 타입을 추가
+// "FOLLOW"를 추가하여 서버의 구독 알림 값도 포함시킵니다.
+export type NotificationType =
+  | "COMMENT"
+  | "LIKE"
+  | "SUBSCRIBE"
+  | "REPLY"
+  | "CHAT"
+  | "CHALLENGE"
+  | "FOLLOW";
 
-
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 // 한 페이지에 한 번에 보여줄 알림 개수
 const ITEMS_PER_PAGE = 10;
 type ReadStatus = "ALL" | "READ" | "UNREAD";
-
-
-
-
 
 // ------------------------------------------------------------------
 // NotificationPage 컴포넌트
@@ -83,69 +87,123 @@ const NotificationPage = () => {
   //   }
   // }, []);
 
+  // const fetchInitialNotifications = useCallback(async () => {
+  //   try {
+  //     // 세션 정보에서 userId를 가져옵니다.
+  //     const userInfo = await getSessionInfo();
+  //     const userId = userInfo.userId;
+
+  //     // userId를 쿼리 파라미터로 전달하여 알림 데이터를 요청합니다.
+  //     const response = await fetch(`${API_BASE_URL}/notifications/${userId}`, {
+  //       credentials: "include",
+  //     });
+  //     if (!response.ok) {
+  //       throw new Error("네트워크 응답이 정상이 아닙니다");
+  //     }
+  //     const data: Notification[] = await response.json();
+  //     return data;
+  //   } catch (error) {
+  //     console.error("초기 알림 데이터 GET 요청 에러:", error);
+  //     return [];
+  //   }
+  // }, []);
+
+  // const markNotificationRead = async (notificationId: number) => {
+  //   try {
+  //     const response = await fetch(
+  //       `${API_BASE_URL}/notifications/${notificationId}/read`,
+  //       {
+  //         method: "PATCH",
+  //         headers: { "Content-Type": "application/json" },
+  //         credentials: "include",
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       throw new Error("알림 읽음 처리에 실패했습니다.");
+  //     }
+
+  //     const data = await response.json();
+  //     return data;
+  //   } catch (error) {
+  //     console.warn("알림 읽음 처리 응답 본문이 비어 있습니다:", error);
+  //     return null;
+  //   }
+  // };
+
+  // const markAllNotificationsRead = async () => {
+  //   try {
+  //     const response = await fetch(`${API_BASE_URL}/notifications/read-all`, {
+  //       method: "PATCH",
+  //       headers: { "Content-Type": "application/json" },
+  //       credentials: "include",
+  //         }
+  //     );
+
+  //     if (!response.ok) {
+  //       throw new Error("전체 알림 읽음 처리에 실패했습니다.");
+  //     }
+
+  //     const data = await response.json();
+  //     setNotifications((prev) =>
+  //       prev.map((notif) => ({ ...notif, read: true }))
+  //     );
+  //     return data;
+  //   } catch (error) {
+  //     console.error("전체 알림 읽음 처리 에러:", error);
+  //     return null;
+  //   }
+  // };
+  // axiosAPI 인스턴스를 사용하여 알림 데이터를 GET 하는 함수
   const fetchInitialNotifications = useCallback(async () => {
     try {
-      // 세션 정보에서 userId를 가져옵니다.
       const userInfo = await getSessionInfo();
       const userId = userInfo.userId;
-  
-      // userId를 쿼리 파라미터로 전달하여 알림 데이터를 요청합니다.
-      const response = await fetch(`${API_BASE_URL}/notifications/${userId}`, {
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error("네트워크 응답이 정상이 아닙니다");
-      }
-      const data: Notification[] = await response.json();
-      return data;
+      // axiosAPI는 baseURL, headers, withCredentials가 이미 설정되어 있습니다.
+      const response = await axiosAPI.get<Notification[]>(
+        `/notifications/${userId}`
+      );
+      return response.data;
     } catch (error) {
       console.error("초기 알림 데이터 GET 요청 에러:", error);
       return [];
     }
   }, []);
-  
 
+  // axiosAPI를 사용하여 개별 알림을 읽음 처리하는 함수
   const markNotificationRead = async (notificationId: number) => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/notifications/${notificationId}/read`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        }
+      // 세션 또는 인증정보에서 userId를 가져옴
+      const userInfo = await getSessionInfo();
+      const userId = userInfo.userId;
+
+      // 문서에 맞춰 userId를 path param에 넣어 호출
+      const response = await axiosAPI.patch(
+        `/notifications/${notificationId}/read/${userId}`
       );
-
-      if (!response.ok) {
-        throw new Error("알림 읽음 처리에 실패했습니다.");
-      }
-
-      const data = await response.json();
-      return data;
+      return response.data;
     } catch (error) {
-      console.warn("알림 읽음 처리 응답 본문이 비어 있습니다:", error);
+      console.error("알림 읽음 처리 에러:", error);
       return null;
     }
   };
 
+  // axiosAPI를 사용하여 전체 알림을 읽음 처리하는 함수
   const markAllNotificationsRead = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/notifications/read-all`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-          }
+      // 마찬가지로 userId를 가져옴
+      const userInfo = await getSessionInfo();
+      const userId = userInfo.userId;
+
+      // 문서에 맞춰 userId를 path param에 포함
+      const response = await axiosAPI.patch(
+        `/notifications/read-all/${userId}`
       );
 
-      if (!response.ok) {
-        throw new Error("전체 알림 읽음 처리에 실패했습니다.");
-      }
-
-      const data = await response.json();
       setNotifications((prev) =>
         prev.map((notif) => ({ ...notif, read: true }))
       );
-      return data;
+      return response.data;
     } catch (error) {
       console.error("전체 알림 읽음 처리 에러:", error);
       return null;
@@ -169,10 +227,10 @@ const NotificationPage = () => {
       // 데이터가 있든 없든 로딩 상태 해제
       setIsInitialLoad(false);
     };
-  
+
     initFetch();
   }, [fetchInitialNotifications]);
-  
+
   // ----------------------------------------------------------------
   // 상태 관리
   // ----------------------------------------------------------------
@@ -273,9 +331,29 @@ const NotificationPage = () => {
   // ----------------------------------------------------------------
   const filterAndSearchNotifications = useCallback(() => {
     let filtered = notifications;
+    // 수정된 필터링 로직: 구독 및 채팅(챌린지 포함) 알림을 targetType 또는 type으로 분기 처리
     if (filter !== "ALL") {
-      filtered = filtered.filter((notif) => notif.type === filter);
+      filtered = filtered.filter((notif) => {
+        if (filter === "SUBSCRIBE") {
+          // 구독 알림은 "SUBSCRIBE"와 "FOLLOW"를 모두 포함
+          return notif.type === "SUBSCRIBE" || notif.type === "FOLLOW";
+        }
+        if (filter === "CHAT") {
+          // 채팅 알림은 targetType으로만 필터링
+          return notif.targetType === "CHAT";
+        }
+        if (filter === "CHALLENGE") {
+          // 챌린지 알림은 targetType으로 필터링
+          return notif.targetType === "CHALLENGE";
+        }
+        if (filter === "COMMENT") {
+          // 댓글 필터: type이 "COMMENT" 이면서, 채팅 알림이 아닌(notif.targetType !== "CHAT") 경우만 포함
+          return notif.type === "COMMENT" && notif.targetType !== "CHAT";
+        }
+        return notif.type === filter;
+      });
     }
+
     if (readStatus !== "ALL") {
       filtered = filtered.filter((notif) =>
         readStatus === "READ" ? notif.read : !notif.read
@@ -325,15 +403,50 @@ const NotificationPage = () => {
   // ----------------------------------------------------------------
   // 기타 유틸리티 함수들
   // ----------------------------------------------------------------
-  const getNotificationLink = (targetType: string, targetId: number) => {
+  // const getNotificationLink = (targetType: string, targetId: number) => {
+  //   switch (targetType) {
+  //     case "POST":
+  //     case "COMMENT": // COMMENT도 POST와 동일하게 처리
+  //       return `/today/${targetId}`;
+  //     case "BOOK":
+  //       return `/yesterday/book/${targetId}`;
+  //     case "USER":
+  //       return `/profile/${targetId}`;
+  //     default:
+  //       return "/";
+  //   }
+  // };
+
+  const getNotificationLink = (
+    targetType: string,
+    targetId: number,
+    message?: string
+  ): string => {
+    if (targetType === "USER") {
+      // 메시지 형식 예시: "{닉네임}님이 당신을 구독했습니다."
+      if (message) {
+        const nicknameMatch = message.match(/^(.*?)님이/);
+        if (nicknameMatch && nicknameMatch[1]) {
+          return `/profile/${nicknameMatch[1]}`;
+        }
+      }
+      // 메시지가 없거나 닉네임 추출에 실패한 경우 적절한 fallback 처리
+      return "/";
+    }
+
+    // USER가 아닌 경우, targetType에 따라 다른 링크를 반환
     switch (targetType) {
       case "POST":
       case "COMMENT": // COMMENT도 POST와 동일하게 처리
         return `/today/${targetId}`;
       case "BOOK":
         return `/yesterday/book/${targetId}`;
-      case "USER":
-        return `/profile/${targetId}`;
+      case "CHAT":
+        // CHAT 타입은 항상 '/chat'으로 이동
+        return `/chat`;
+      case "CHALLENGE":
+        // CHALLENGE 타입은 targetId를 사용하여 '/tomorrow/{targetId}' 경로로 이동
+        return `/tomorrow/${targetId}`;
       default:
         return "/";
     }
@@ -349,6 +462,12 @@ const NotificationPage = () => {
         return <UserPlus className="w-4 h-4 text-green-500" />;
       case "REPLY":
         return <Reply className="w-4 h-4 text-purple-500" />;
+      case "CHAT":
+        // 채팅 알림은 MessageSquare 아이콘을 다른 색상으로 사용
+        return <MessageSquare className="w-4 h-4 text-indigo-500" />;
+      case "CHALLENGE":
+        // 챌린지 알림은 Flag 아이콘 사용
+        return <Flag className="w-4 h-4 text-orange-500" />;
       default:
         return <Bell className="w-4 h-4 text-gray-500" />;
     }
@@ -387,7 +506,7 @@ const NotificationPage = () => {
         </div>
       );
     }
-  
+
     // 로딩 완료 후, 알림 데이터가 없는 경우
     if (!isInitialLoad && notifications.length === 0) {
       return (
@@ -397,7 +516,7 @@ const NotificationPage = () => {
         </div>
       );
     }
-  
+
     // 데이터는 있으나, 현재 필터나 검색으로 표시될 알림이 없는 경우
     if (displayedNotifications.length === 0) {
       return (
@@ -406,7 +525,7 @@ const NotificationPage = () => {
         </div>
       );
     }
-  
+
     // 알림 데이터가 있는 경우
     return (
       <div className="space-y-4">
@@ -423,7 +542,11 @@ const NotificationPage = () => {
               </div>
               <div className="flex-grow min-w-0">
                 <Link
-                  href={getNotificationLink(notif.targetType, notif.targetId)}
+                  href={getNotificationLink(
+                    notif.targetType,
+                    notif.targetId,
+                    notif.message
+                  )}
                   className={`block text-sm ${
                     notif.read ? "text-gray-600" : "text-gray-800 font-medium"
                   }`}
@@ -452,14 +575,17 @@ const NotificationPage = () => {
           </div>
         ))}
         {hasMore && (
-          <div ref={loaderRef} className="flex justify-center items-center h-20">
+          <div
+            ref={loaderRef}
+            className="flex justify-center items-center h-20"
+          >
             {isLoadingMore && <LoadingSpinner />}
           </div>
         )}
       </div>
     );
   };
-  
+
   // ----------------------------------------------------------------
   // 최종 렌더링
   // ----------------------------------------------------------------
@@ -485,6 +611,7 @@ const NotificationPage = () => {
               <SelectItem value="LIKE">좋아요</SelectItem>
               <SelectItem value="SUBSCRIBE">구독</SelectItem>
               <SelectItem value="REPLY">답글</SelectItem>
+              <SelectItem value="CHAT">채팅</SelectItem>
             </SelectContent>
           </Select>
           <Button

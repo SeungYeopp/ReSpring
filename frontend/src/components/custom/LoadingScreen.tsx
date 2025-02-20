@@ -23,7 +23,7 @@ const LoadingScreen: React.FC = () => {
   }, [])
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#f0f0f0]">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#f0f0f0]">
       <motion.div
         animate={{
           scale: [1, 1.2, 1],
@@ -64,4 +64,3 @@ const LoadingScreen: React.FC = () => {
 }
 
 export default LoadingScreen
-

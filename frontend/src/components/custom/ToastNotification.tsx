@@ -2,10 +2,11 @@
 
 import type React from "react"
 import { useEffect, useState, useRef } from "react"
-import { Bell, MessageSquare, ThumbsUp, UserPlus, Reply, X } from "lucide-react"
+import { Flag, Bell, MessageSquare, ThumbsUp, UserPlus, Reply, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import type { Notification } from "@/app/notifications/types/notifications"
-
+import { getSessionInfo } from "@/lib/api"
+import axiosAPI from "@/lib/api/axios"
 interface ToastNotificationProps {
   notifications: Notification[]
 }
@@ -50,20 +51,45 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({ notifications }) 
       case "LIKE":
         return <ThumbsUp className="w-4 h-4 text-red-500" />
       case "SUBSCRIBE":
+      case "FOLLOW":
         return <UserPlus className="w-4 h-4 text-green-500" />
       case "REPLY":
         return <Reply className="w-4 h-4 text-purple-500" />
+      case "CHAT":
+        return <MessageSquare className="w-4 h-4 text-indigo-500" />
+      case "CHALLENGE":
+        return <Flag className="w-4 h-4 text-orange-500" />
       default:
         return <Bell className="w-4 h-4 text-gray-500" />
     }
   }
 
-  const getNotificationLink = (targetType: string, targetId: number) => {
+  const getNotificationLink = (
+    targetType: string,
+    targetId: number,
+    message?: string
+  ): string => {
+    if (targetType === "USER") {
+      // 예: "{닉네임}님이 당신을 구독했습니다." 형식의 메시지에서 닉네임 추출
+      if (message) {
+        const nicknameMatch = message.match(/^(.*?)님이/)
+        if (nicknameMatch && nicknameMatch[1]) {
+          return `/profile/${nicknameMatch[1]}`
+        }
+      }
+      return "/"
+    }
+  
     switch (targetType) {
       case "POST":
+      case "COMMENT":
         return `/today/${targetId}`
       case "BOOK":
         return `/yesterday/book/${targetId}`
+      case "CHAT":
+        return `/chat`
+      case "CHALLENGE":
+        return `/tomorrow/${targetId}`
       default:
         return "/"
     }
@@ -71,13 +97,15 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({ notifications }) 
 
   const markNotificationRead = async (notificationId: number) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-      })
-      if (!response.ok) throw new Error("알림 읽음 처리 실패")
+      const userInfo = await getSessionInfo()
+      const userId = userInfo.userId
+      const response = await axiosAPI.patch(
+        `/notifications/${notificationId}/read/${userId}`
+      )
+      return response.data
     } catch (error) {
       console.error(`알림 읽음 처리 실패 (id: ${notificationId})`, error)
+      return null
     }
   }
 
