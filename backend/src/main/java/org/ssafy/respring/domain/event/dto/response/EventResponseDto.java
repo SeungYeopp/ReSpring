@@ -8,9 +8,9 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 public class EventResponseDto {
-	private Long id;
-	private String eventName;
-	private LocalDateTime occurredAt;
-	private boolean isDisplay;
-	private String category;
+    private Long id;
+    private String eventName;
+    private LocalDateTime occurredAt;
+    private boolean isDisplay;
+    private String category;
 }

@@ -22,8 +22,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 
     }
+
     @ExceptionHandler(DuplicateUserNicknameException.class)
-    public ResponseEntity<Map<String,String>> duplicateUserNicknameException(Exception ex) {
+    public ResponseEntity<Map<String, String>> duplicateUserNicknameException(Exception ex) {
         Map<String, String> errorResponse = new HashMap<>();
         errorResponse.put("error", "DUPLICATE_USERNICKNAME");
         errorResponse.put("message", ex.getMessage());
@@ -31,7 +32,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ImageSizeUploadException.class)
-    public ResponseEntity<Map<String,String>> imageSizeUploadException(Exception ex) {
+    public ResponseEntity<Map<String, String>> imageSizeUploadException(Exception ex) {
         Map<String, String> errorResponse = new HashMap<>();
         errorResponse.put("error", "IMAGE_SIZE_UPLOAD");
         errorResponse.put("message", ex.getMessage());
@@ -41,9 +42,9 @@ public class GlobalExceptionHandler {
 
     //가장 마지막에 처리
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String,String>> runtimeExceptionHandler(RuntimeException e) {
-        Map<String,String> errorResponse = new HashMap<>();
-        errorResponse.put("error","RuntimeException");
+    public ResponseEntity<Map<String, String>> runtimeExceptionHandler(RuntimeException e) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "RuntimeException");
         errorResponse.put("message", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }

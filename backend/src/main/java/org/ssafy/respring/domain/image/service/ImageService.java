@@ -65,8 +65,6 @@ public class ImageService {
     }
 
 
-
-
     private S3Presigner createPresigner() {
         return S3Presigner.builder()
                 .region(Region.of(region))
@@ -74,7 +72,7 @@ public class ImageService {
                 .build();
     }
 
-     //  S3에 파일 업로드 후 객체 Key 반환
+    //  S3에 파일 업로드 후 객체 Key 반환
     public String uploadImageToS3(MultipartFile file, String folder) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("파일이 비어 있습니다.");
@@ -101,7 +99,7 @@ public class ImageService {
         return objectKey;
     }
 
-     // Presigned URL 생성
+    // Presigned URL 생성
     public String generatePresignedUrl(String objectKey) {
         if (objectKey == null || objectKey.isEmpty()) {
             throw new IllegalArgumentException("올바른 S3Key가 아니에요");
@@ -143,7 +141,7 @@ public class ImageService {
 
     public List<String> saveImages(List<MultipartFile> files, ImageType imageType, Long entityId) {
 
-        for(MultipartFile file : files) {
+        for (MultipartFile file : files) {
             validateFileSize(file);
         }
 
@@ -199,10 +197,6 @@ public class ImageService {
         //   DB에서 이미지 삭제
         imageRepository.deleteAll(imagesToDelete);
     }
-
-
-
-
 
 
     private void deleteImageFromS3(String objectKey) {

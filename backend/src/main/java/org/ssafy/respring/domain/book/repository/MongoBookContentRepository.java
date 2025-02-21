@@ -5,5 +5,6 @@ import org.ssafy.respring.domain.book.vo.BookContent;
 
 public interface MongoBookContentRepository extends MongoRepository<BookContent, String> {
     BookContent findByBookId(Long bookId);
+
     void deleteByBookId(Long bookId);
 }

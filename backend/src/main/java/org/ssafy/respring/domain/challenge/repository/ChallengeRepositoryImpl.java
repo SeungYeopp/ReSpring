@@ -9,15 +9,15 @@ import org.ssafy.respring.domain.challenge.vo.QChallenge;
 @RequiredArgsConstructor
 public class ChallengeRepositoryImpl implements ChallengeRepositoryQueryDsl {
 
-	private final JPAQueryFactory queryFactory;
+    private final JPAQueryFactory queryFactory;
 
-	@Override
-	public void incrementViews(Long challengeId) {
-		QChallenge challenge = QChallenge.challenge;
+    @Override
+    public void incrementViews(Long challengeId) {
+        QChallenge challenge = QChallenge.challenge;
 
-		queryFactory.update(challenge)
-		  .set(challenge.views, challenge.views.add(1))
-		  .where(challenge.id.eq(challengeId))
-		  .execute();
-	}
+        queryFactory.update(challenge)
+                .set(challenge.views, challenge.views.add(1))
+                .where(challenge.id.eq(challengeId))
+                .execute();
+    }
 }

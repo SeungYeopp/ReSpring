@@ -42,7 +42,8 @@ public class TagRecommendationService {
         if (cachedJson != null) {
             try {
                 List<ChallengeListResponseDto> cachedChallenges = objectMapper.readValue(
-                        cachedJson, new TypeReference<List<ChallengeListResponseDto>>() {}
+                        cachedJson, new TypeReference<List<ChallengeListResponseDto>>() {
+                        }
                 );
                 return cachedChallenges;
             } catch (Exception e) {

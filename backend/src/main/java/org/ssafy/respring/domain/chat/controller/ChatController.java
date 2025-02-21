@@ -68,7 +68,7 @@ public class ChatController {
         // ChatRoom 엔티티를 먼저 가져옴
         ChatRoom chatRoom = chatService.getRoomById(messageRequest.getRoomId());
 
-        if(!chatRoom.isOpenChat()){
+        if (!chatRoom.isOpenChat()) {
             //   사용자 목록 조회
             List<User> roomUsers = chatService.getRoomById(messageRequest.getRoomId()).getUsers();
             for (User user : roomUsers) {
@@ -94,7 +94,9 @@ public class ChatController {
 
     }
 
-    /**   모든 채팅방 조회 (WebSocket) */
+    /**
+     * 모든 채팅방 조회 (WebSocket)
+     */
     @MessageMapping("/chat/rooms")
     @SendTo("/topic/chat/rooms")
     public List<ChatRoomResponse> getAllRooms() {
@@ -108,7 +110,9 @@ public class ChatController {
                 .collect(Collectors.toList());
     }
 
-    /**   내 채팅방 조회 (WebSocket) */
+    /**
+     * 내 채팅방 조회 (WebSocket)
+     */
     @MessageMapping("/chat/myRooms/{userId}")
     @SendTo("/topic/chat/myRooms/{userId}")
     public List<ChatRoomResponse> getMyRooms(@DestinationVariable UUID userId) {
@@ -122,7 +126,9 @@ public class ChatController {
                 .collect(Collectors.toList());
     }
 
-    /**   방 참가 기능 */
+    /**
+     * 방 참가 기능
+     */
     @MessageMapping("/chat/joinRoom")
     public void joinRoom(ChatRoomRequest request) {
         UUID userId = UUID.fromString(request.getUserIds().get(0));
@@ -131,8 +137,6 @@ public class ChatController {
         // 참가한 사용자에게 업데이트된 방 정보를 전송
         messagingTemplate.convertAndSend("/topic/chat/myRooms/" + userId, getMyRooms(userId));
     }
-
-
 
 
     @Operation(summary = "채팅방 생성", description = "새로운 채팅방을 생성합니다.")
@@ -152,8 +156,6 @@ public class ChatController {
                 .userCount(chatRoom.getUsers().size())
                 .build();
     }
-
-
 
 
 //    @Operation(summary = "파일 업로드", description = "채팅 메시지에 파일을 업로드합니다.")
@@ -203,8 +205,6 @@ public class ChatController {
     }
 
 
-
-
 //    @Operation(summary = "방 이름으로 Room ID 조회", description = "특정 방 이름에 해당하는 Room ID를 반환합니다.")
 //    @GetMapping("/chat/room/findByName")
 //    @ResponseBody
@@ -215,7 +215,6 @@ public class ChatController {
 //        }
 //        return chatRoom.getId();
 //    }
-
 
 
     @Operation(summary = "채팅방 나가기", description = "사용자가 채팅방을 나갑니다.")
@@ -242,9 +241,6 @@ public class ChatController {
         messagingTemplate.convertAndSend("/topic/newRoom/" + request.getUser1(), response);
         messagingTemplate.convertAndSend("/topic/newRoom/" + request.getUser2(), response);
     }
-
-
-
 
 
     //   채팅방 접속 시 마지막 접속 시간 업데이트 (프론트에서 호출)

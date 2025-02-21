@@ -6,7 +6,8 @@ import org.ssafy.respring.domain.image.vo.ImageType;
 
 import java.util.List;
 
-public interface ImageRepository extends JpaRepository<Image, Long>, ImageRepositoryQuerydsl{
+public interface ImageRepository extends JpaRepository<Image, Long>, ImageRepositoryQuerydsl {
     List<Image> findByImageTypeAndEntityId(ImageType imageType, Long entityId);
+
     List<Image> findByImageTypeAndEntityIdAndS3KeyIn(ImageType imageType, Long entityId, List<String> deleteImageIds);
 }

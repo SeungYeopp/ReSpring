@@ -52,7 +52,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDto createComment(CommentRequestDto dto,UUID userId) {
+    public CommentResponseDto createComment(CommentRequestDto dto, UUID userId) {
         // 1. 유저 설정
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
@@ -114,7 +114,7 @@ public class CommentService {
 
         if (comment.getBook() != null) {
             Book book = comment.getBook();
-            if(book.getAuthor() == null){
+            if (book.getAuthor() == null) {
                 throw new IllegalStateException("❌ 자서전의 작성자 정보가 없습니다. postId=" + book.getId());
             }
             User bookOwner = book.getAuthor();
@@ -234,7 +234,7 @@ public class CommentService {
                 comment.getParent() != null ? comment.getParent().getId() : null,
                 comment.getPost() != null ? comment.getPost().getId() : null,   //   게시글 ID 추가
                 comment.getBook() != null ? comment.getBook().getId() : null,
-                comment.getPost() != null ? comment.getPost().getTitle(): null,
+                comment.getPost() != null ? comment.getPost().getTitle() : null,
                 comment.getBook() != null ? comment.getBook().getTitle() : null,
                 likeCount
         );
@@ -273,7 +273,9 @@ public class CommentService {
         }
     }
 
-    /** 📌 댓글 좋아요 토글 */
+    /**
+     * 📌 댓글 좋아요 토글
+     */
     @Transactional
     public boolean toggleCommentLike(Long commentId, UUID userId) {
         User user = userRepository.findById(userId)
@@ -310,14 +312,18 @@ public class CommentService {
         }
     }
 
-    /** 📌 댓글 좋아요 수 조회 */
+    /**
+     * 📌 댓글 좋아요 수 조회
+     */
     public int getCommentLikesCount(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 댓글을 찾을 수 없습니다."));
         return commentLikesRepository.countByComment(comment);
     }
 
-    /** 📌 사용자가 특정 댓글에 좋아요를 눌렀는지 확인 */
+    /**
+     * 📌 사용자가 특정 댓글에 좋아요를 눌렀는지 확인
+     */
     public boolean isCommentLikedByUser(Long commentId, UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
@@ -328,7 +334,9 @@ public class CommentService {
         return commentLikesRepository.findByUserAndComment(user, comment).isPresent();
     }
 
-    /** 📌 좋아요 많은 순 정렬 */
+    /**
+     * 📌 좋아요 많은 순 정렬
+     */
     public List<Comment> getCommentsSortedByLikes(Long postId) {
         return commentRepository.findByPostIdWithFetchJoin(postId)
                 .stream()

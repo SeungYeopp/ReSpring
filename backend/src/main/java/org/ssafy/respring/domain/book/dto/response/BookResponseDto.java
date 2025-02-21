@@ -14,35 +14,35 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookResponseDto {
-	private Long id;
-	private String authorNickname;
-	private String authorProfileImage;
-	private String title;
-	private String coverImage;
-	private Set<String> tags;
-	private boolean isLiked;
-	private Long likeCount;
-	private Long viewCount;
-	private Set<String> likedUsers;
-	private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
+    private Long id;
+    private String authorNickname;
+    private String authorProfileImage;
+    private String title;
+    private String coverImage;
+    private Set<String> tags;
+    private boolean isLiked;
+    private Long likeCount;
+    private Long viewCount;
+    private Set<String> likedUsers;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-	public static BookResponseDto toResponseDto(Book book, boolean isLiked, Long likeCount, Set<String> likedUsers, Long viewCount, String coverImage) {
-		return BookResponseDto.builder()
-				.id(book.getId())
-				.authorNickname(book.getAuthor().getUserNickname())
-				.authorProfileImage(book.getAuthor().getProfileImage())
-				.createdAt(book.getCreatedAt())
-				.updatedAt(book.getUpdatedAt())
-				.title(book.getTitle())
-				.coverImage(coverImage)
-				.tags(book.getTags())
-				.isLiked(isLiked)
-				.likedUsers(likedUsers)
-				.likeCount(likeCount)
-				.viewCount(viewCount)
-				.createdAt(book.getCreatedAt())
-				.updatedAt(book.getUpdatedAt())
-				.build();
-	}
+    public static BookResponseDto toResponseDto(Book book, boolean isLiked, Long likeCount, Set<String> likedUsers, Long viewCount, String coverImage) {
+        return BookResponseDto.builder()
+                .id(book.getId())
+                .authorNickname(book.getAuthor().getUserNickname())
+                .authorProfileImage(book.getAuthor().getProfileImage())
+                .createdAt(book.getCreatedAt())
+                .updatedAt(book.getUpdatedAt())
+                .title(book.getTitle())
+                .coverImage(coverImage)
+                .tags(book.getTags())
+                .isLiked(isLiked)
+                .likedUsers(likedUsers)
+                .likeCount(likeCount)
+                .viewCount(viewCount)
+                .createdAt(book.getCreatedAt())
+                .updatedAt(book.getUpdatedAt())
+                .build();
+    }
 }

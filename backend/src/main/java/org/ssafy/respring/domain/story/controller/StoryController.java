@@ -27,28 +27,29 @@ import java.util.UUID;
 public class StoryController {
     private final StoryService storyService;
     private final ImageService imageService;
+
     @PostMapping(consumes = {"multipart/form-data"})
     @Operation(summary = "글 조각 생성", description = "새로운 글 조각을 생성합니다.")
     public ResponseEntity<Long> createStory(
             @RequestPart("storyDto") @Valid StoryRequestDto requestDto,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images,HttpSession session
+            @RequestPart(value = "images", required = false) List<MultipartFile> images, HttpSession session
     ) throws IOException {
 
         imageService.validateTotalFileSize(images);
         UUID userId = (UUID) session.getAttribute("userId");
-        return ResponseEntity.ok(storyService.createStory(requestDto, images,userId));
+        return ResponseEntity.ok(storyService.createStory(requestDto, images, userId));
     }
-    
+
     @PatchMapping(value = "/{story_id}", consumes = {"multipart/form-data"})
     @Operation(summary = "글 조각 수정", description = "특정 글 조각을 수정합니다.")
     public ResponseEntity<Void> updateStory(
-        @Parameter(description = "글 조각 ID") @PathVariable(required = true) Long story_id,
-        @RequestPart("storyDto") @Valid StoryUpdateRequestDto requestDto,
-        @RequestPart(value = "images", required = false) List<MultipartFile> newImages,
-        HttpSession session
+            @Parameter(description = "글 조각 ID") @PathVariable(required = true) Long story_id,
+            @RequestPart("storyDto") @Valid StoryUpdateRequestDto requestDto,
+            @RequestPart(value = "images", required = false) List<MultipartFile> newImages,
+            HttpSession session
     ) throws IOException {
         UUID userId = (UUID) session.getAttribute("userId");
-        storyService.updateStory(story_id, requestDto, newImages,userId);
+        storyService.updateStory(story_id, requestDto, newImages, userId);
         return ResponseEntity.ok().build();
     }
 
@@ -58,7 +59,7 @@ public class StoryController {
             @Parameter(description = "글 조각 ID") @PathVariable Long story_id,
             HttpSession session
     ) {
-        UUID userId = (UUID)session.getAttribute("userId");
+        UUID userId = (UUID) session.getAttribute("userId");
         storyService.deleteStory(story_id, userId);
         return ResponseEntity.ok().build();
     }
@@ -68,7 +69,7 @@ public class StoryController {
     public ResponseEntity<List<StoryResponseDto>> getMyStories(
             HttpSession session
     ) {
-        UUID userId = (UUID)session.getAttribute("userId");
+        UUID userId = (UUID) session.getAttribute("userId");
         return ResponseEntity.ok(storyService.getMyStories(userId));
     }
 
@@ -78,7 +79,7 @@ public class StoryController {
             @Parameter(description = "글 조각 ID") @PathVariable Long story_id,
             HttpSession session
     ) {
-        UUID userId = (UUID)session.getAttribute("userId");
+        UUID userId = (UUID) session.getAttribute("userId");
 
         return ResponseEntity.ok(storyService.getStoryDetail(story_id, userId));
     }

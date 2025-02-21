@@ -6,7 +6,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 public class BookSortRequestDto {
     private String sortBy;

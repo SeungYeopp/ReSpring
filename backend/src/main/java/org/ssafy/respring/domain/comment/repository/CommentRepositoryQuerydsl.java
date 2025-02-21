@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface CommentRepositoryQuerydsl {
     List<Comment> findChildrenByParentId(Long parentId);
+
     List<Comment> findByPostIdWithFetchJoin(Long postId);
+
     List<Comment> findByBookIdWithFetchJoin(Long bookId);
 }

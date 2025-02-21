@@ -5,7 +5,8 @@ import lombok.*;
 import org.ssafy.respring.domain.book.vo.Book;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

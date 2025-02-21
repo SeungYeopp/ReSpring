@@ -27,6 +27,8 @@ pipeline {
         KAKAO_CLIENT_SECRET = credentials('KAKAO_CLIENT_SECRET')
         KAKAO_REDIRECT_URI = credentials('KAKAO_REDIRECT_URI')
         NEXT_PUBLIC_API_BASE_URL = credentials('NEXT_PUBLIC_API_BASE_URL')
+        MEDIASOUP_SERVER = credentials('MEDIASOUP_SERVER')
+        MEDIASOUP_ANNOUNCED_IP = credentials('MEDIASOUP_ANNOUNCED_IP')
     }
     stages {
         stage('Backend Build') {

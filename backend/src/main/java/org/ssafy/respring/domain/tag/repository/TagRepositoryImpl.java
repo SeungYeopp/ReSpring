@@ -133,10 +133,10 @@ public class TagRepositoryImpl implements TagRepositoryQueryDsl {
         QChallengeTag challengeTag = QChallengeTag.challengeTag;
 
         return queryFactory
-          .select(tag)
-          .from(challengeTag)
-          .join(challengeTag.tag, tag)
-          .where(challengeTag.challenge.id.eq(challengeId))
-          .fetch();
+                .select(tag)
+                .from(challengeTag)
+                .join(challengeTag.tag, tag)
+                .where(challengeTag.challenge.id.eq(challengeId))
+                .fetch();
     }
 }

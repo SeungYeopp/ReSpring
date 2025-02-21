@@ -126,7 +126,6 @@ public class ChatService {
     }
 
 
-
     public ChatMessageResponse saveMessage(Long roomId, UUID userId, String receiver, String content) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 채팅방을 찾을 수 없습니다."));
@@ -162,7 +161,6 @@ public class ChatService {
                 .timestamp(message.getTimestamp())
                 .build();
     }
-
 
 
     public ChatMessage saveFileMessage(Long roomId, UUID userId, MultipartFile file) throws IOException {
@@ -216,9 +214,6 @@ public class ChatService {
         message.setRead(true);
         chatMessageRepository.save(message);
     }
-
-
-
 
 
     public List<ChatRoom> getUserRooms(UUID userId) {
@@ -299,8 +294,6 @@ public class ChatService {
             }
         }
     }
-
-
 
 
     public Optional<ChatRoom> findByName(String chatRoomUUID) {

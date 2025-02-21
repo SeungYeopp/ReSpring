@@ -165,14 +165,11 @@ const Chat1 = () => {
 
   // WebSocket 및 WebRTC 초기화
   useEffect(() => {
-    console.log("1번 currentUserId:", currentUserId);
     if (!currentUserId) return;
 
     // SockJS + STOMP 연결
     const sock = new SockJS(SERVER_URL);
-    console.log("2번 sock:", sock);
     const client = Stomp.over(sock);
-    console.log("3번 client:", client);
     client.connect({}, () => {
       client.subscribe(`/topic/chat/myRooms/${currentUserId}`, updateMyRooms);
       client.subscribe(`/topic/chat/roomUpdated/${currentUserId}`, () => {
@@ -181,7 +178,6 @@ const Chat1 = () => {
       client.send("/app/chat/myRooms/" + currentUserId, {}, {});
     });
     setStompClient(client);
-    console.log("4번 client:", client);
 
     // Socket.io 연결
     const rtcSock = io("wss://i12a307.p.ssafy.io", {
@@ -189,13 +185,9 @@ const Chat1 = () => {
       transports: ["websocket"],
     });
     setSocket(rtcSock);
-    console.log("5번 rtcSock:", rtcSock);
 
     rtcSock.on("connect", () => {
-      console.log("Socket.io connected on rtcSock");
-      console.log("Emitting getRouterRtpCapabilities event...");
       rtcSock.emit("getRouterRtpCapabilities", async (rtpCapabilities) => {
-        console.log("Received rtpCapabilities:", rtpCapabilities);
         if (rtpCapabilities.error) {
           console.error("❌ getRouterRtpCapabilities 오류:", rtpCapabilities.error);
           return;
@@ -203,7 +195,6 @@ const Chat1 = () => {
         try {
           const newDevice = new mediasoupClient.Device();
           await newDevice.load({ routerRtpCapabilities: rtpCapabilities });
-          console.log("Device successfull y loaded:", newDevice);
           setDevice(newDevice);
         } catch (error) {
           console.error("❌ Device 초기화 오류:", error);
@@ -276,13 +267,11 @@ const Chat1 = () => {
     const handleNewProducerConsume = async ({ producerId, roomId, transportId, kind, rtpParameters }) => {
       if (roomId !== currentRoom.id) return; // 🚫 다른 방이면 무시
   
-      console.log("📥 새로운 producer 탐지:", producerId, "Room:", roomId);
   
       let transport = consumerTransport;
   
       // ✅ consumerTransport가 없으면 즉시 생성
       if (!transport) {
-        console.log("🚀 consumerTransport 생성 시작...");
   
         transport = device.createRecvTransport({
           id: `${currentRoom.id}-recv-transport`,
@@ -292,14 +281,9 @@ const Chat1 = () => {
         });
   
         transport.on("connect", ({ dtlsParameters }, callback) => {
-          console.log("[consume] Transport 연결 시도:", dtlsParameters);
           socket.emit("connectTransport", { transportId, dtlsParameters }, callback);
         });
-  
-        // transport.on("connectionstatechange", (state) => {
-        //   console.log(`🔄 Transport 상태 변경: ${state}`);
-        // });
-  
+
         setConsumerTransport(transport);
       }
   
@@ -313,7 +297,6 @@ const Chat1 = () => {
             return;
           }
   
-          console.log("✅ consume 응답 수신:", response);
   
           const consumer = await transport.consume({
             id: response.id,
@@ -360,7 +343,6 @@ const Chat1 = () => {
       const producerIds = await new Promise((resolve) => {
         socket.emit("getProducers", { roomId: String(currentRoom.id) }, resolve);
       });
-      console.log("현재 producerIds:", producerIds);
       if (producerIds.length > 0) {
         await startConsuming();
         setIsConsuming(true);
@@ -520,13 +502,11 @@ const Chat1 = () => {
       const transport = device.createSendTransport(data);
   
       transport.on("connect", ({ dtlsParameters }, callback, errback) => {
-        console.log("🔗 [publish] Transport 연결 시도...");
         socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, (response) => {
           if (response?.error) {
             console.error("🚫 [publish] connectTransport error:", response.error);
             return errback(response.error);
           }
-          console.log("✅ [publish] Transport 연결 완료");
           callback();
           startMediaProduction(transport); // 🎯 Transport 연결 완료 후 미디어 송출 시작
         });
@@ -539,14 +519,12 @@ const Chat1 = () => {
   const startMediaProduction = async (transport) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      console.log("🎥 getUserMedia 성공:", stream);
   
       localVideoRef.current.srcObject = stream;
   
       const produceTrack = async (track, kind) => {
         try {
           const producer = await transport.produce({ track, kind });
-          console.log(`✅ [produceTrack] ${kind} producer 생성: ${producer.id}`);
           return producer.id;
         } catch (err) {
           console.error(`❌ [produceTrack] ${kind} 트랙 생성 실패:`, err);
@@ -559,7 +537,6 @@ const Chat1 = () => {
   
       const producerIds = [videoProducerId, audioProducerId].filter(Boolean);
       if (producerIds.length) {
-        console.log("📢 [triggerConsumeNew] 이벤트 전송:", producerIds);
         socket.emit("triggerConsumeNew", { roomId: currentRoom.id, producerIds });
       } else {
         console.warn("⚠️ producer 생성 실패로 triggerConsumeNew 전송 취소");
@@ -582,7 +559,6 @@ const Chat1 = () => {
       socket.emit("getProducers", { roomId: String(currentRoom.id) }, resolve);
     });
   
-    console.log("startConsuming - received producerIds:", producerIds);
   
     const filteredProducerIds = producerIds.filter((id) => id !== producer);
     if (!filteredProducerIds.length) {
@@ -603,20 +579,17 @@ const Chat1 = () => {
           const newTransport = device.createRecvTransport(data);
   
           newTransport.on("connect", ({ dtlsParameters }, callback, errback) => {
-            console.log("🔗 [consume] Transport 연결 시도...");
             socket.emit("connectTransport", { transportId: data.id, dtlsParameters }, (response) => {
               if (response?.error) {
                 console.error("🚫 [consume] Transport 연결 오류:", response.error);
                 return errback(response.error);
               }
-              console.log("✅ [consume] Transport 연결 완료");
               callback();
               resolve(newTransport);
             });
           });
   
           newTransport.on("connectionstatechange", (state) => {
-            console.log(`🔄 Transport 상태 변경: ${state}`);
           });
         });
       });
@@ -636,7 +609,6 @@ const Chat1 = () => {
             rtpCapabilities: device.rtpCapabilities,
           },
           async (response) => {
-            console.log("📥 consume 응답:", response);
   
             if (!response || response.error) {
               console.error("🚫 consume 오류:", response?.error);
@@ -651,7 +623,6 @@ const Chat1 = () => {
                 rtpParameters: response.rtpParameters,
               });
   
-              console.log(`✅ consumer 생성 성공 - ID: ${consumer.id}, Kind: ${response.kind}`);
   
               const stream = new MediaStream([consumer.track]);
               if (remoteVideoRef.current) {

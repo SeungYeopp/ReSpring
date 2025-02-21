@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-public class ChallengeLikesRepositoryImpl implements ChallengeLikesQueryDsl{
+public class ChallengeLikesRepositoryImpl implements ChallengeLikesQueryDsl {
 
     private final JPAQueryFactory queryFactory;
 

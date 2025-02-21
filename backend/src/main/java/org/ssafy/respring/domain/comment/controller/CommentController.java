@@ -38,15 +38,15 @@ public class CommentController {
     @PostMapping("/posts")
     public ResponseEntity<CommentResponseDto> createPostComment(@RequestBody CommentRequestDto dto, HttpSession session) {
         UUID userId = (UUID) session.getAttribute("userId");
-        return ResponseEntity.ok(commentService.createComment(dto,userId));
+        return ResponseEntity.ok(commentService.createComment(dto, userId));
     }
 
     @Operation(summary = "책 댓글 생성", description = "책에 댓글을 작성합니다.")
     @ApiResponse(responseCode = "200", description = "댓글 생성 성공")
     @PostMapping("/books")
-    public ResponseEntity<CommentResponseDto> createBookComment(@RequestBody CommentRequestDto dto,HttpSession session) {
+    public ResponseEntity<CommentResponseDto> createBookComment(@RequestBody CommentRequestDto dto, HttpSession session) {
         UUID userId = (UUID) session.getAttribute("userId");
-        return ResponseEntity.ok(commentService.createComment(dto,userId));
+        return ResponseEntity.ok(commentService.createComment(dto, userId));
     }
 
     @Operation(summary = "게시글 댓글 수정", description = "특정 게시글 댓글의 내용을 수정합니다.")
@@ -67,7 +67,7 @@ public class CommentController {
             @PathVariable Long commentId,
             HttpSession session,
             @RequestBody String content) {
-            UUID userId = (UUID) session.getAttribute("userId");
+        UUID userId = (UUID) session.getAttribute("userId");
         return ResponseEntity.ok(commentService.updateComment(commentId, userId, content));
     }
 
@@ -77,7 +77,7 @@ public class CommentController {
     public ResponseEntity<Void> deletePostComment(
             @PathVariable Long commentId,
             HttpSession session
-            ) {
+    ) {
         UUID userId = (UUID) session.getAttribute("userId");
         commentService.deleteComment(commentId, userId);
         return ResponseEntity.noContent().build();
@@ -112,7 +112,7 @@ public class CommentController {
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
     @GetMapping("/books")
     public ResponseEntity<List<CommentDetailResponseDto>> getMyBookComments(HttpSession session) {
-       UUID userId = (UUID) session.getAttribute("userId");
+        UUID userId = (UUID) session.getAttribute("userId");
         return ResponseEntity.ok(commentService.getMyBookComments(userId));
     }
 
@@ -124,7 +124,9 @@ public class CommentController {
         return ResponseEntity.ok(children);
     }
 
-    /** 📌 댓글 좋아요 토글 */
+    /**
+     * 📌 댓글 좋아요 토글
+     */
     @Operation(summary = "댓글 좋아요 토글", description = "사용자가 댓글에 좋아요를 추가하거나 취소합니다.")
     @ApiResponse(responseCode = "200", description = "좋아요 성공 또는 취소됨 (true = 좋아요, false = 취소)")
     @PostMapping("/{commentId}/like")
@@ -136,7 +138,9 @@ public class CommentController {
         return ResponseEntity.ok(liked);
     }
 
-    /** 📌 특정 댓글 좋아요 개수 조회 */
+    /**
+     * 📌 특정 댓글 좋아요 개수 조회
+     */
     @Operation(summary = "댓글 좋아요 개수 조회", description = "특정 댓글의 좋아요 개수를 반환합니다.")
     @ApiResponse(responseCode = "200", description = "좋아요 개수 반환 성공")
     @GetMapping("/{commentId}/likes/count")
@@ -145,7 +149,9 @@ public class CommentController {
         return ResponseEntity.ok(likeCount);
     }
 
-    /** 📌 사용자가 특정 댓글에 좋아요 눌렀는지 여부 확인 */
+    /**
+     * 📌 사용자가 특정 댓글에 좋아요 눌렀는지 여부 확인
+     */
     @Operation(summary = "사용자 댓글 좋아요 확인", description = "사용자가 특정 댓글에 좋아요를 눌렀는지 확인합니다.")
     @ApiResponse(responseCode = "200", description = "좋아요 여부 반환 성공 (true = 좋아요, false = 좋아요 안 함)")
     @GetMapping("/{commentId}/likes/check")
@@ -157,7 +163,9 @@ public class CommentController {
         return ResponseEntity.ok(liked);
     }
 
-    /** 📌 댓글을 좋아요 높은 순으로 정렬하여 조회 */
+    /**
+     * 📌 댓글을 좋아요 높은 순으로 정렬하여 조회
+     */
     @Operation(summary = "좋아요 높은 순 댓글 조회", description = "특정 게시글의 댓글을 좋아요 개수 기준으로 내림차순 정렬하여 반환합니다.")
     @ApiResponse(responseCode = "200", description = "정렬된 댓글 목록 반환 성공")
     @GetMapping("/posts/{postId}/sorted-by-likes")

@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface EventRepositoryQuerydsl {
     List<Event> getTimelineByUserId(UUID userId);
+
     List<Event> getEventsSortedByOccurredAt(UUID userId);
 }

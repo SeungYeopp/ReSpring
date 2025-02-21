@@ -10,5 +10,6 @@ import java.util.LinkedHashMap;
 
 public record AICompileRequest(
         @NotBlank LinkedHashMap<String, String> content
-) { }
+) {
+}
 

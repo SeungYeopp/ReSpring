@@ -18,69 +18,69 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class EventService {
-	private final EventRepository eventRepository;
-	private final UserRepository userRepository;
+    private final EventRepository eventRepository;
+    private final UserRepository userRepository;
 
-	public Long createEvent(EventRequestDto requestDto,UUID userId) {
+    public Long createEvent(EventRequestDto requestDto, UUID userId) {
 
-		Event event = new Event();
-		event.setEventName(requestDto.getEventName());
-		event.setCategory(requestDto.getCategory());
-		event.setDisplay(requestDto.isDisplay());
-		event.setOccurredAt(requestDto.getOccurredAt());
+        Event event = new Event();
+        event.setEventName(requestDto.getEventName());
+        event.setCategory(requestDto.getCategory());
+        event.setDisplay(requestDto.isDisplay());
+        event.setOccurredAt(requestDto.getOccurredAt());
 
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
-		event.setUser(user);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        event.setUser(user);
 
-		eventRepository.save(event);
-		return event.getId();
-	}
+        eventRepository.save(event);
+        return event.getId();
+    }
 
-	public void updateEvent(Long id, EventRequestDto requestDto,UUID userId) {
-		Event event = eventRepository.findById(id)
-		  				.orElseThrow(() -> new IllegalArgumentException("Event not found"));
-		// 예외 처리)
-		if (!event.getUser().getId().equals(userId)) {
-			throw new IllegalArgumentException("You are not allowed to update this event");
-		}
-		event.setEventName(requestDto.getEventName());
-		event.setCategory(requestDto.getCategory());
-		event.setDisplay(requestDto.isDisplay());
-		event.setOccurredAt(requestDto.getOccurredAt());
-	}
+    public void updateEvent(Long id, EventRequestDto requestDto, UUID userId) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+        // 예외 처리)
+        if (!event.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("You are not allowed to update this event");
+        }
+        event.setEventName(requestDto.getEventName());
+        event.setCategory(requestDto.getCategory());
+        event.setDisplay(requestDto.isDisplay());
+        event.setOccurredAt(requestDto.getOccurredAt());
+    }
 
-	public void deleteEvent(Long id, UUID userId) {
-		Event event = eventRepository.findById(id)
-		  				.orElseThrow(() -> new IllegalArgumentException("Event not found"));
-		// 예외 처리)
-		if (!event.getUser().getId().equals(userId)) {
-			throw new IllegalArgumentException("You are not allowed to delete this event");
-		}
-		eventRepository.deleteById(id);
-	}
+    public void deleteEvent(Long id, UUID userId) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+        // 예외 처리)
+        if (!event.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("You are not allowed to delete this event");
+        }
+        eventRepository.deleteById(id);
+    }
 
-	public List<EventResponseDto> getMyEvents(UUID userId) {
-		return eventRepository.getEventsSortedByOccurredAt(userId)
-		  .stream()
-		  .map(this::toResponseDto)
-		  .collect(Collectors.toList());
-	}
+    public List<EventResponseDto> getMyEvents(UUID userId) {
+        return eventRepository.getEventsSortedByOccurredAt(userId)
+                .stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
+    }
 
-	public List<EventResponseDto> getTimelineByUserId(UUID userId) {
-		return eventRepository.getTimelineByUserId(userId)
-		  .stream()
-		  .map(this::toResponseDto)
-		  .collect(Collectors.toList());
-	}
+    public List<EventResponseDto> getTimelineByUserId(UUID userId) {
+        return eventRepository.getTimelineByUserId(userId)
+                .stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
+    }
 
-	private EventResponseDto toResponseDto(Event event) {
-		return new EventResponseDto(
-			event.getId(),
-		  	event.getEventName(),
-		  	event.getOccurredAt(),
-		  	event.isDisplay(),
-		  	event.getCategory()
-		);
-	}
+    private EventResponseDto toResponseDto(Event event) {
+        return new EventResponseDto(
+                event.getId(),
+                event.getEventName(),
+                event.getOccurredAt(),
+                event.isDisplay(),
+                event.getCategory()
+        );
+    }
 }
