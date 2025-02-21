@@ -32,7 +32,7 @@ public class UserController {
     public ResponseEntity<Void> signupUser(
             @Valid @RequestPart("signUpRequestDto") SignUpRequestDto signUpRequestDto,
             @RequestPart(value = "image", required = false) MultipartFile image) {
-        userService.addUser(signUpRequestDto,image);
+        userService.addUser(signUpRequestDto, image);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -55,7 +55,6 @@ public class UserController {
         LoginResponseDto responseDto = new LoginResponseDto(userId, userNickname, presignedUrl);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
-
 
 
     @Operation(summary = "특정 유저 조회 기능", description = "유저 닉네임으로 해당 유저의 정보를 조회합니다.")

@@ -44,7 +44,7 @@ public class AuthService {
                 ? imageService.generatePresignedUrl(s3Key)
                 : "https://i.imgur.com/QbLhsD7.png";
 
-        return userMapper.entityToDto(loginUser,profileImageUrl);
+        return userMapper.entityToDto(loginUser, profileImageUrl);
     }
 
 
@@ -60,8 +60,8 @@ public class AuthService {
         return "https://i.imgur.com/QbLhsD7.png";
     }
 
-    public LoginResponseDto createResponseDto(User user){
+    public LoginResponseDto createResponseDto(User user) {
         String image = getUserProfileImageUrl(user.getId());
-        return userMapper.entityToDto(user,image);
+        return userMapper.entityToDto(user, image);
     }
 }

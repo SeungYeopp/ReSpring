@@ -278,7 +278,7 @@ export async function deletePost(
   try {
     const response = await axiosAPI.delete(`/posts/${postId}?userId=${userId}`);
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     throw new Error("게시글 삭제 실패");
   }
 }

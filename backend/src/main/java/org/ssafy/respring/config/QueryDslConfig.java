@@ -13,17 +13,17 @@ import org.ssafy.respring.domain.chat.repository.MongoChatMessageRepository;
 
 @Configuration
 @EnableJpaRepositories(
-  basePackages = "org.ssafy.respring.domain",
-  excludeFilters = {
-		  @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = MongoBookContentRepository.class),
-		  @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = MongoChatMessageRepository.class),
-  }
+        basePackages = "org.ssafy.respring.domain",
+        excludeFilters = {
+                @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = MongoBookContentRepository.class),
+                @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = MongoChatMessageRepository.class),
+        }
 ) // MongoDB Repository는 JPA에서 제외
 @EntityScan(basePackages = "org.ssafy.respring.domain")
 public class QueryDslConfig {
 
-	@Bean
-	public JPAQueryFactory jpaQueryFactory(EntityManager em) {
-		return new JPAQueryFactory(em);
-	}
+    @Bean
+    public JPAQueryFactory jpaQueryFactory(EntityManager em) {
+        return new JPAQueryFactory(em);
+    }
 }

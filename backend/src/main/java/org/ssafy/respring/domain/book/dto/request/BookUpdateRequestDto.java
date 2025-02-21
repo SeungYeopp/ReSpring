@@ -8,9 +8,9 @@ import java.util.Set;
 
 @Data
 public class BookUpdateRequestDto {
-	private Long bookId;
-	private String title;
-	private Map<String, String> content;
-	private Set<String> tags;
-	private List<Long> storyIds;
+    private Long bookId;
+    private String title;
+    private Map<String, String> content;
+    private Set<String> tags;
+    private List<Long> storyIds;
 }

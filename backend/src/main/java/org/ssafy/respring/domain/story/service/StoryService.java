@@ -31,7 +31,7 @@ public class StoryService {
     /**
      * 스토리 생성
      */
-    public Long createStory(StoryRequestDto requestDto, List<MultipartFile> imageFiles,UUID userId) {
+    public Long createStory(StoryRequestDto requestDto, List<MultipartFile> imageFiles, UUID userId) {
         // 사용자 정보 설정
         User user = new User();
         user.setId(userId);
@@ -68,7 +68,7 @@ public class StoryService {
      * 스토리 수정
      */
     @Transactional
-    public void updateStory(Long storyId, StoryUpdateRequestDto requestDto, List<MultipartFile> imageFiles,UUID userId) {
+    public void updateStory(Long storyId, StoryUpdateRequestDto requestDto, List<MultipartFile> imageFiles, UUID userId) {
         // 스토리 조회
         Story story = storyRepository.findById(storyId)
                 .orElseThrow(() -> new IllegalArgumentException("Story not found - id: " + storyId));

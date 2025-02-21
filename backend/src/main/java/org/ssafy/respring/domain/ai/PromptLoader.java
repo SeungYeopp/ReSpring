@@ -17,22 +17,22 @@ import static org.ssafy.respring.domain.ai.PromptType.AUTOBIOGRAPHY;
 @Component
 @Slf4j
 public class PromptLoader {
-	@Value("classpath:prompts/system-AI-compile.st")
-	private Resource compileAIPromptResource;
+    @Value("classpath:prompts/system-AI-compile.st")
+    private Resource compileAIPromptResource;
 
-	private Map<PromptType, Resource> systemPromptResources;
+    private Map<PromptType, Resource> systemPromptResources;
 
-	@PostConstruct
-	public void initPromptResources() {
-		systemPromptResources = new EnumMap<>(PromptType.class);
-		systemPromptResources.put(AUTOBIOGRAPHY, compileAIPromptResource);
-	}
+    @PostConstruct
+    public void initPromptResources() {
+        systemPromptResources = new EnumMap<>(PromptType.class);
+        systemPromptResources.put(AUTOBIOGRAPHY, compileAIPromptResource);
+    }
 
-	public String getSystemPromptResource(PromptType promptType) {
-		try {
-			return new String(FileCopyUtils.copyToByteArray(systemPromptResources.get(promptType).getInputStream()), StandardCharsets.UTF_8);
-		} catch (IOException e){
-			throw new RuntimeException("Failed to load system prompt template", e);
-		}
-	}
+    public String getSystemPromptResource(PromptType promptType) {
+        try {
+            return new String(FileCopyUtils.copyToByteArray(systemPromptResources.get(promptType).getInputStream()), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load system prompt template", e);
+        }
+    }
 }

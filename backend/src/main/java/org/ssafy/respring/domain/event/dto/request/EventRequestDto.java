@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 
 @Data
 public class EventRequestDto {
-	private String eventName;
-	private LocalDateTime occurredAt;
-	private boolean isDisplay;
-	private String category;
+    private String eventName;
+    private LocalDateTime occurredAt;
+    private boolean isDisplay;
+    private String category;
 }

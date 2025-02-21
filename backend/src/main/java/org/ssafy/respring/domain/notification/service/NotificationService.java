@@ -103,7 +103,6 @@ public class NotificationService {
     }
 
 
-
     //   모든 알림 읽음 처리
     public void markAllAsRead(UUID userId) {
         User user = userRepository.findById(userId)
@@ -128,7 +127,6 @@ public class NotificationService {
 
         }
     }
-
 
 
     private NotificationDto toDto(Notification notification) {

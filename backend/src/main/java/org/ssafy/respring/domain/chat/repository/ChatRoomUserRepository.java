@@ -14,6 +14,7 @@ import java.util.UUID;
 
 public interface ChatRoomUserRepository extends JpaRepository<ChatRoomUser, Long> {
     Optional<ChatRoomUser> findByChatRoomAndUser(ChatRoom chatRoom, User user);
+
     boolean existsByChatRoom(ChatRoom chatRoom);
 
     @Modifying

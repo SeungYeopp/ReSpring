@@ -5,6 +5,6 @@ import org.ssafy.respring.domain.story.vo.Story;
 import java.util.List;
 import java.util.UUID;
 
-public interface StoryRepositoryQueryDsl  {
+public interface StoryRepositoryQueryDsl {
     List<Story> findAllByUserIdSortedByUpdatedAt(UUID userId);
 }

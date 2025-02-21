@@ -9,5 +9,6 @@ import java.util.UUID;
 
 public interface ChatRoomRepositoryQuerydsl {
     List<ChatRoom> findRoomsByUserId(UUID userId);
+
     Optional<ChatRoom> findExactPrivateRoom(User user1, User user2);
 }

@@ -75,10 +75,10 @@ public class BookLikesRedisService {
                 if (book != null && user != null) {
                     if (!bookLikesRepository.existsByBookAndUser(book, user)) { // 중복 방지
                         bookLikesRepository.save(BookLikes.builder()
-                          .book(book)
-                          .user(user)
-                          .likedAt(LocalDateTime.now())
-                          .build());
+                                .book(book)
+                                .user(user)
+                                .likedAt(LocalDateTime.now())
+                                .build());
                     }
                 }
             });

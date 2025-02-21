@@ -27,7 +27,7 @@ public class UserService {
     public void addUser(SignUpRequestDto signUpRequestDto, MultipartFile image) {
 
         validatesignUpDto(signUpRequestDto);
-        
+
         User user = userMapper.dtoToEntity(signUpRequestDto);
 
         String profileImageUrl = (image != null && !image.isEmpty())
@@ -39,7 +39,7 @@ public class UserService {
         PasswordEncryptionResultDto encryptionResult = OpenCrypt.encryptPw(signUpRequestDto.getPassword());
         user.changePassword(encryptionResult.getHashedPassword());
 
-        if(user.getProvider() == null) {
+        if (user.getProvider() == null) {
             user.setProvider("LOCAL");
         }
 
@@ -54,10 +54,10 @@ public class UserService {
 
 
     private void validatesignUpDto(SignUpRequestDto signUpRequestDto) {
-        if(userRepository.existsByUserNickname(signUpRequestDto.getUserNickname())){
+        if (userRepository.existsByUserNickname(signUpRequestDto.getUserNickname())) {
             throw new IllegalArgumentException("DUPLICATE_USERNICKNAME");
         }
-        if(userRepository.existsByEmail(signUpRequestDto.getEmail())){
+        if (userRepository.existsByEmail(signUpRequestDto.getEmail())) {
             throw new IllegalArgumentException("DUPLICATE_EMAIL");
         }
     }

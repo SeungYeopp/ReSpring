@@ -10,7 +10,10 @@ import java.util.Optional;
 
 public interface UserChallengeRepository extends JpaRepository<UserChallenge, Long> {
     List<UserChallenge> findByUser(User user);
+
     List<UserChallenge> findByChallenge(Challenge challenge);
+
     Optional<UserChallenge> findByUserAndChallenge(User user, Challenge challenge);
+
     boolean existsByUserAndChallenge(User user, Challenge challenge);
 }

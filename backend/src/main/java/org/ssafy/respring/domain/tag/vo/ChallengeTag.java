@@ -5,7 +5,8 @@ import lombok.*;
 import org.ssafy.respring.domain.challenge.vo.Challenge;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

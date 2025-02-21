@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.UUID;
 
 
-
 @Tag(name = "챌린지 API", description = "챌린지 관련 CRUD 및 참가 기능을 제공합니다.")
 @RestController
 @RequestMapping("/challenges")

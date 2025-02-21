@@ -12,7 +12,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "user")
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -50,7 +51,6 @@ public class User {
         this.profileImage = profileImage;
         this.provider = provider;
     }
-
 
 
     public void changePassword(String encryptedPassword) {

@@ -8,8 +8,8 @@ import java.util.Set;
 
 @Data
 public class BookRequestDto {
-	private String title;
-	private Map<String, String> content;
-	private Set<String> tags;
-	private List<Long> storyIds;
+    private String title;
+    private Map<String, String> content;
+    private Set<String> tags;
+    private List<Long> storyIds;
 }

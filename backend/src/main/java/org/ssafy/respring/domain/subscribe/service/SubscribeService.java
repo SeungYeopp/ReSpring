@@ -159,30 +159,30 @@ public class SubscribeService {
     //   내가 구독한 사용자의 봄날의 서 조회
     public List<SubscribedBookResponseDto> getSubscribedUsersBooks(UUID userId) {
         User user = userRepository.findById(userId)
-          .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다."));
 
         // 구독한 사용자 목록 가져오기
         List<User> subscribedUsers = subscribeRepository.findBySubscriber(user).stream()
-          .map(Subscribe::getSubscribedTo)
-          .collect(Collectors.toList());
+                .map(Subscribe::getSubscribedTo)
+                .collect(Collectors.toList());
 
         // 구독한 사용자가 작성한 책 조회 후 DTO 변환
         return bookRepository.findByAuthorIn(subscribedUsers).stream()
-          .map(book -> SubscribedBookResponseDto.builder()
-            .id(book.getId())
-            .title(book.getTitle())
-            .coverImage(imageService.generatePresignedUrl(book.getCoverImage()))
-            .tags(book.getTags())
-            .isLiked(bookLikesRedisService.isLiked(book.getId(), userId)) //   좋아요 여부
-            .likeCount(bookLikesRedisService.getLikeCount(book.getId())) //   좋아요 수
-            .viewCount(bookViewsRedisService.getViewCount(book.getId())) //   조회 수
-            .likedUsers(bookLikesRedisService.getLikedUsers(book.getId())) //   좋아요 누른 사용자 목록
-            .createdAt(book.getCreatedAt())
-            .updatedAt(book.getUpdatedAt())
-            .authorNickname(book.getAuthor().getUserNickname()) //   작성자 이름
-            .authorProfileImage(imageService.generatePresignedUrl(book.getAuthor().getProfileImage()))
-            .build())
-          .collect(Collectors.toList());
+                .map(book -> SubscribedBookResponseDto.builder()
+                        .id(book.getId())
+                        .title(book.getTitle())
+                        .coverImage(imageService.generatePresignedUrl(book.getCoverImage()))
+                        .tags(book.getTags())
+                        .isLiked(bookLikesRedisService.isLiked(book.getId(), userId)) //   좋아요 여부
+                        .likeCount(bookLikesRedisService.getLikeCount(book.getId())) //   좋아요 수
+                        .viewCount(bookViewsRedisService.getViewCount(book.getId())) //   조회 수
+                        .likedUsers(bookLikesRedisService.getLikedUsers(book.getId())) //   좋아요 누른 사용자 목록
+                        .createdAt(book.getCreatedAt())
+                        .updatedAt(book.getUpdatedAt())
+                        .authorNickname(book.getAuthor().getUserNickname()) //   작성자 이름
+                        .authorProfileImage(imageService.generatePresignedUrl(book.getAuthor().getProfileImage()))
+                        .build())
+                .collect(Collectors.toList());
     }
 
     //   내가 구독한 사용자 전체 조회

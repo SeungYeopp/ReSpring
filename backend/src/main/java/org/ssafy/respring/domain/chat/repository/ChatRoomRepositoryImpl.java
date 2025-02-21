@@ -38,7 +38,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryQuerydsl {
     }
 
 
-
     @Override
     public Optional<ChatRoom> findExactPrivateRoom(User user1, User user2) {
         QChatRoom chatRoom = QChatRoom.chatRoom;
@@ -57,7 +56,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryQuerydsl {
 
         return Optional.ofNullable(result);
     }
-
 
 
 }

@@ -8,6 +8,8 @@ import java.util.UUID;
 
 public interface TagRepositoryQueryDsl {
     List<Long> getUserTagIds(UUID userId);
+
     List<Challenge> recommendChallenges(UUID userId);
+
     List<Tag> findTagsByChallengeId(Long challengeId);
 }

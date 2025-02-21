@@ -13,7 +13,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "book")
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
