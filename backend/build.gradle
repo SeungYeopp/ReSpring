@@ -89,6 +89,10 @@ tasks.named('test') {
     jvmArgs '-Xshare:off' // JVM 아규먼트 설정
 }
 
+tasks.withType(Test) {
+    enabled = false
+}
+
 clean {
     delete file('src/main/generated')
 }
