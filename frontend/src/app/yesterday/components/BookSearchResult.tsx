@@ -61,11 +61,11 @@ export const BookSearchResult: React.FC<BookSearchResultProps> = ({ query }) => 
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-spring-forest">검색 결과: "{query}"</h2>
+      <h2 className="text-2xl font-bold text-spring-forest px-4">검색 결과: "{query}"</h2>
       {searchResults.length === 0 ? (
         <div className="text-center">검색 결과가 없습니다.</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
           {searchResults.map((book: Book) => (
             <Card key={book.id ?? Math.random()} className="flex overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => onClickBook(book.id)}>
               <div className="w-1/3 relative">
