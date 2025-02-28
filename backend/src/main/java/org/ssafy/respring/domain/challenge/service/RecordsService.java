@@ -1,6 +1,7 @@
 package org.ssafy.respring.domain.challenge.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.ssafy.respring.domain.challenge.repository.RecordsRepository;
@@ -11,8 +12,12 @@ import org.ssafy.respring.domain.user.repository.UserRepository;
 import org.ssafy.respring.domain.user.vo.User;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,87 +27,112 @@ public class RecordsService {
     private final ChallengeRepository challengeRepository;
     private final UserRepository userRepository;
 
-    // ✅ 챌린지 성공 여부 기록 (날짜 변경 시 isSuccess 초기화)
+    @Transactional
     public void recordChallenge(UUID userId, Long challengeId, boolean isSuccess) {
-        // 🔹 User 엔티티 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
 
         Challenge challenge = challengeRepository.findById(challengeId)
-                .orElseThrow(() -> new RuntimeException("Challenge not found"));
+                .orElseThrow(() -> new IllegalArgumentException("❌ 챌린지를 찾을 수 없습니다. ID: " + challengeId));
 
         LocalDate today = LocalDate.now();
-        LocalDate startDate = challenge.getStartDate().toLocalDate();
-        LocalDate endDate = challenge.getEndDate().toLocalDate();
+        LocalDate yesterday = today.minusDays(1);
 
-        // ✅ 챌린지가 시작 전이면 기록 불가
-        if (today.isBefore(startDate)) {
-            throw new IllegalStateException("챌린지가 아직 시작되지 않았습니다.");
-        }
-
-        // ✅ 챌린지가 종료 후이면 기록 불가
-        if (today.isAfter(endDate)) {
-            throw new IllegalStateException("챌린지가 이미 종료되었습니다.");
-        }
-
-        // ✅ 기존 기록 가져오기 (recordStartDate를 기준으로 최신 데이터 조회)
-        Optional<Records> existingRecordOpt = recordsRepository.findTopByUserAndChallengeOrderByRecordStartDateDesc(user, challenge);
+        // ✅ 기존 기록 가져오기
+        Optional<Records> existingRecordOpt = recordsRepository.findTopByUserAndChallengeOrderByLastUpdatedDateDesc(user, challenge);
 
         if (existingRecordOpt.isPresent()) {
             Records record = existingRecordOpt.get();
 
-            // ✅ 어제 기록이 false였고 오늘 true이면 새로운 record 생성
-            if (!record.isSuccess() && isSuccess) {
-                // 🔥 새로운 기록 생성
+            // ✅ last_updated_date가 어제라면 기존 row 업데이트
+            if (record.getLastUpdatedDate().equals(yesterday)) {
+                record.setIsSuccess(true);
+                record.setLastUpdatedDate(today);
+                recordsRepository.save(record);
+            } else {
+                // ✅ last_updated_date가 어제가 아니면 새로운 row 생성
                 Records newRecord = Records.builder()
                         .user(user)
                         .challenge(challenge)
-                        .recordStartDate(today) // ✅ 새로운 시작 날짜 설정
+                        .recordStartDate(today)
                         .lastUpdatedDate(today)
-                        .startDate(startDate)
-                        .endDate(endDate)
+                        .startDate(challenge.getStartDate().toLocalDate())
+                        .endDate(challenge.getEndDate().toLocalDate())
+                        .isSuccess(true)  // 버튼을 눌렀기 때문에 SUCCESS로 설정
                         .successCount(1)
-                        .totalDays((int) (endDate.toEpochDay() - startDate.toEpochDay() + 1))
+                        .totalDays((int) (challenge.getEndDate().toLocalDate().toEpochDay() - challenge.getStartDate().toLocalDate().toEpochDay() + 1))
                         .currentStreak(1)
                         .longestStreak(1)
-                        .isSuccess(true)
                         .build();
-
                 recordsRepository.save(newRecord);
-            } else {
-                // ✅ 기존 기록 업데이트
-                if (!record.getLastUpdatedDate().equals(today)) {
-                    record.setIsSuccess(false); // ✅ 하루 지나면 초기화
-                }
-
-                if (isSuccess) {
-                    record.setSuccessCount(record.getSuccessCount() + 1);
-                    record.setCurrentStreak(record.getCurrentStreak() + 1);
-                    record.setLongestStreak(Math.max(record.getLongestStreak(), record.getCurrentStreak()));
-                    record.setIsSuccess(true);
-                }
-
-                record.setLastUpdatedDate(today);
-                recordsRepository.save(record);
             }
         } else {
-            // ✅ 기존 기록이 없으면 새 기록 생성
+            // ✅ 기존 기록이 없으면 새로운 row 생성
             Records newRecord = Records.builder()
                     .user(user)
                     .challenge(challenge)
-                    .recordStartDate(today) // ✅ 새로운 시작 날짜 설정
+                    .recordStartDate(today)
                     .lastUpdatedDate(today)
-                    .startDate(startDate)
-                    .endDate(endDate)
-                    .successCount(isSuccess ? 1 : 0)
-                    .totalDays((int) (endDate.toEpochDay() - startDate.toEpochDay() + 1))
-                    .currentStreak(isSuccess ? 1 : 0)
-                    .longestStreak(isSuccess ? 1 : 0)
-                    .isSuccess(isSuccess)
+                    .startDate(challenge.getStartDate().toLocalDate())
+                    .endDate(challenge.getEndDate().toLocalDate())
+                    .isSuccess(true) // 버튼을 눌렀기 때문에 SUCCESS로 설정
+                    .successCount(1)
+                    .totalDays((int) (challenge.getEndDate().toLocalDate().toEpochDay() - challenge.getStartDate().toLocalDate().toEpochDay() + 1))
+                    .currentStreak(1)
+                    .longestStreak(1)
                     .build();
-
             recordsRepository.save(newRecord);
         }
     }
+
+    public Map<String, String> getChallengeRecords(UUID userId, Long challengeId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 사용자를 찾을 수 없습니다. ID: " + userId));
+
+        Challenge challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new IllegalArgumentException("❌ 챌린지를 찾을 수 없습니다. ID: " + challengeId));
+
+        LocalDate startDate = challenge.getStartDate().toLocalDate();
+        LocalDate today = LocalDate.now();
+        Map<String, String> records = new LinkedHashMap<>();
+
+        // ✅ 기본적으로 start_date부터 오늘까지 FAIL로 설정
+        for (LocalDate date = startDate; !date.isAfter(today); date = date.plusDays(1)) {
+            records.put(date.toString(), "FAIL");
+        }
+
+        // ✅ DB에서 기록 가져오기
+        List<Records> recordsList = recordsRepository.findByUserAndChallengeOrderByLastUpdatedDateAsc(user, challenge);
+
+        for (Records record : recordsList) {
+            LocalDate recordStart = record.getRecordStartDate();
+            LocalDate lastUpdated = record.getLastUpdatedDate();
+
+            // ✅ record_start_date ~ last_updated_date 범위를 SUCCESS로 설정
+            for (LocalDate date = recordStart; !date.isAfter(lastUpdated); date = date.plusDays(1)) {
+                records.put(date.toString(), "SUCCESS");
+            }
+        }
+
+        return records;
+    }
+
+
+
+
+
+
+
+
+
+
+//    @Scheduled(fixedRate = 60000)
+//    @Transactional
+//    public void resetIsSuccessDaily() {
+//        recordsRepository.resetIsSuccess();
+//        System.out.println("✅ 매일 자정에 is_success 초기화 완료!");
+//    }
+
+
 
 }
