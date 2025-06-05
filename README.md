@@ -8,24 +8,15 @@
 
 ## 🎯 핵심 기능
 
+| 기능 | 설명 | 예시 이미지 |
+|------|------|:-----------:|
+| 👶 온보딩 제공 | 사용자 친화적인 초기 진입 흐름 제공 | <p align="center"><img src="https://github.com/user-attachments/assets/2f9300fb-b511-4a8b-b9f4-1cc29ae54fe1" width="200"/></p> |
+| 📖 AI 자서전 편찬 | AI 기반 회고 질문 및 에피소드 작성 | <p align="center"><img src="https://github.com/user-attachments/assets/88aa4fcc-cbc8-4887-b846-f390dcac0fb8" width="200"/></p> |
+| 🧐 자서전 뷰어 | 커스터마이징 가능한 자서전 열람 기능 | <p align="center"><img src="https://github.com/user-attachments/assets/39145ae2-e334-4f11-a8d8-583097b3f202" width="200"/></p> |
+| ⌨️ 검색 기능 | Redis + ElasticSearch 기반 빠른 검색 기능 | <p align="center"><img src="https://github.com/user-attachments/assets/a2aa2907-2e60-40c5-9282-dee9aae84db0" width="250"/></p> |
+| 🏫 커뮤니티 | 퇴직자 간 소통을 위한 게시판 기능 | <p align="center"><img src="https://github.com/user-attachments/assets/ea9b46e9-8425-4284-9cfb-fde66c20b35e" width="200"/></p> |
+| 🏊 챌린지 | 주간 챌린지를 통해 글쓰기 활동 유도 | <p align="center"><img src="https://github.com/user-attachments/assets/cd49c05c-48b4-4e23-aae0-3a61dbb31c42" width="200"/></p> |
 
-#### 👶 사용자를 위한 온보딩 제공
-<img src="https://github.com/user-attachments/assets/2f9300fb-b511-4a8b-b9f4-1cc29ae54fe1" width="30%">
-
-#### 📖 AI 자서전 편찬 기능
-<img src="https://github.com/user-attachments/assets/88aa4fcc-cbc8-4887-b846-f390dcac0fb8" width="30%">
-
-#### 🧐 커스터마이징 가능한 자서전 뷰어 기능
-<img src="https://github.com/user-attachments/assets/39145ae2-e334-4f11-a8d8-583097b3f202" width="30%">
-
-#### ⌨️ 엘라스틱 서치와 레디스를 활용한 검색 기능
-<img src="https://github.com/user-attachments/assets/a2aa2907-2e60-40c5-9282-dee9aae84db0" width="50%">
-
-#### 🏫 커뮤니티 기능
-<img src="https://github.com/user-attachments/assets/ea9b46e9-8425-4284-9cfb-fde66c20b35e" width="30%">
-
-#### 🏊 챌린지 및 소통 기능
-<img src="https://github.com/user-attachments/assets/cd49c05c-48b4-4e23-aae0-3a61dbb31c42" width="30%">
 
 
 
